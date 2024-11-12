@@ -11,7 +11,7 @@ link-external-icon: true
 link-external-newwindow: true
 ---
 
-# Goals
+# Overview
 
 -   Transfer project files to Roberts Lab raven server as a working directory
 
@@ -94,4 +94,4 @@ md5sum -c *.md5
 Each file should show `OK` !
 :::
 
-# Summary
+# Summary & Next Steps 

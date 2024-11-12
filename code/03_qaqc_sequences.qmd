@@ -14,11 +14,6 @@ reference-location: margin
 citation-location: margin
 ---
 
-```{r setup, include = FALSE}
-# Set global chunk options
-knitr::opts_chunk$set(eval = FALSE, echo = TRUE, message = FALSE, warning = FALSE)
-```
-
 # 1 \| INTRODUCTION
 
 In this script, we will generate FastQC/MultiQC for raw sequences, conduct trimming and cleaning, then generate reports for cleaned sequences.

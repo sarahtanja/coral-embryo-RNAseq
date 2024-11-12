@@ -130,8 +130,6 @@ Great example of previous HISAT2 RNA-seq alignment in Sam White's notebook [here
 
 ## 6. Identify differentially expressed genes (DEG)s
 
-```         
--   using `DESeq-2`
-```
+-   `DESeq-2`
 
 ## 7.
