@@ -14,7 +14,7 @@ reference-location: margin
 citation-location: margin
 ---
 
-# 1 \| INTRODUCTION
+# Overview
 
 In this script, we will generate FastQC/MultiQC for raw sequences, conduct trimming and cleaning, then generate reports for cleaned sequences.
 
@@ -38,63 +38,11 @@ How to do a [for loop in bash](https://stackoverflow.com/questions/9612090/how-t
 Instead of \``git add –all` execute `find . -type f -size -104M -exec git add {} +` in terminal before making a git commit to only track files that are under the git size limit of 10MB.
 :::
 
-# 2 \| `FastQC` RAW READS
-
-FastQC on Raven lives: `/home/shared/FastQC/fastqc`
-
-```{bash}
-/home/shared/FastQC/fastqc -h
-```
-
-```{bash}
-# Set CPU threads to use
-threads=40
-
-# Populate array with FastQ files
-fastq_array=(~/sarahtanja/coral-embryo-leachate/rawfastq/00_fastq/*.fastq.gz)
-
-# Pass array contents to new variable
-fastqc_list=$(echo "${fastq_array[*]}")
-
-# Run FastQC
-# NOTE: Do NOT quote ${fastqc_list}
-/home/shared/FastQC/fastqc \
---threads ${threads} \
---outdir /home/shared/8TB_HDD_02/graceac9/analyses/pycno/ \
-${fastqc_list}
-```
-
-```{bash}
-cd rawfastq/00_fastq
-fastqc ./*.fastq.gz
-```
-
-Make a subdirectory for your FastQC results and move FastQC results there
-
-```{bash}
-cd ../output
-mkdir 03_qaqc
-mv ../../rawfastq/00_fastq/*fastqc* ./
-```
-
-# Compile the `MultiQC` report
-
-```{bash}
-cd ../output/03_qaqc
-multiqc ./
-```
-
-# Interpretation of `MultiQC` report for raw reads
-
-Watch a quick [6-min tutorial](https://www.youtube.com/watch?v=qPbIlO_KWN0) on how to navigate in the MultiQC Report
-
-# 3 \| FASTP CLEAN READS
-
 # Create a Bash variables file
 
 This allows usage of Bash variables across R Markdown chunks.
 
-## Data directories
+## Name directory paths
 
 ```{r, engine = bash}
 {
@@ -102,12 +50,13 @@ echo "#### Assign Variables ####"
 echo ""
 
 echo "# Data directories"
-echo 'export project_dir=~/sarahtanja/coral-embryo-leachate'
+echo 'export project_dir=/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox'
 echo 'export output_dir_top=${project_dir}/output'
 echo 'export output_dir_qaqc=${project_dir}/output/03_qaqc'
-echo 'export output_dir_trim=${project_dir}/output/03_qaqc/trim_reads_fastp'
-echo 'export output_dir_clean=${project_dir}/output/03_qaqc/clean_reads_fastqc'
-echo 'export raw_reads_dir=${project_dir}/rawfastq/00_fastq'
+echo 'export output_dir_raw=${project_dir}/output/03_qaqc/raw_reads'
+echo 'export output_dir_trim=${project_dir}/output/03_qaqc/trimmed_reads'
+echo 'export output_dir_clean=${project_dir}/output/03_qaqc/cleaned_reads'
+echo 'export raw_reads_dir=${project_dir}/rawfastq'
 echo ""
 } > .bashvars
 
@@ -189,19 +138,49 @@ echo ""
 cat .bashvars
 ```
 
-## Printing
+
+# Use `FastQC` to quality check the raw reads
+
+FastQC on Raven lives: `/home/shared/FastQC/fastqc`
 
 ```{r, engine = 'bash'}
-{
-echo "# Print formatting"
-echo 'export line="--------------------------------------------------------"'
-echo ""
-} >> .bashvars
+# Load bash variables into memory
+source .bashvars
 
-cat .bashvars
+${fastqc} -h
 ```
 
-# Clean reads with `fastp`
+```{r, engine = 'bash'}
+# Load bash variables into memory
+source .bashvars
+
+# Populate array with FastQ files
+fastq_array=(${raw_reads_dir}/*.fastq.gz)
+
+# Pass array contents to new variable
+fastqc_list=$(echo "${fastq_array[*]}")
+
+# Run FastQC
+# NOTE: Do NOT quote ${fastqc_list}
+${fastqc} \
+--threads ${threads} \
+--outdir ${output_dir_raw} \
+${fastqc_list}
+```
+
+
+# Compile a report of the raw reads quality using `MultiQC`
+
+```{bash}
+cd ../output/03_qaqc
+multiqc ./
+```
+
+# Interpretation of `MultiQC` report for raw reads
+
+Watch a quick [6-min tutorial](https://www.youtube.com/watch?v=qPbIlO_KWN0) on how to navigate in the MultiQC Report
+
+# Use `fastp` to clean reads
 
 -   remove adapters
 -   remove low-quality reads
@@ -295,7 +274,7 @@ do
 done
 ```
 
-# Quality check trimmed reads with `FastQC`& compile report with `MultiQC`
+# Quality check trimmed reads with `FastQC` & compile report with `MultiQC`
 
 ```{r, engine= 'bash'}
 # Load bash variables into memory
@@ -348,6 +327,6 @@ echo "FastQC zip files removed."
 echo ""
 ```
 
-# Summary
+# Summary & Next Steps
 
 Clean sequences are now ready for alignment.

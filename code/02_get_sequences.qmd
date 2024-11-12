@@ -26,14 +26,21 @@ Environment:
 
 # Get sequences
 
+::: callout-tip
+Follow the sftp data download guide from azenta found [here](https://web.azenta.com/hubfs/2019-03%20GEN%20NGS%20-%20ATAC-Seq%20FAQs/13012-M&G%200523%20sFTP%20Data%20Download%20Guide.pdf)
+:::
+
 1.  First access the server that you want to download sequences to. Make sure there is plenty of space on the server for these large files.
 2.  From within the desired server, navigate using `cd` commands to the directory that you want the files copied to.
-3.  Here, we used Azenta for sequencing services and are accessing their server which has the raw files we need. Once inside your target directory where you want to transfer these files to, `.ssh` into the Azenta server using `sftp username@azenta.genewiz.com`
-4.  Type in the password to access the azenta server (sent to you in an email from azenta when they notified you that the sequences were generated)
+3.  Here, we used Azenta for sequencing services and are accessing their server which has the raw files we need. Once inside your target directory where you want to transfer these files to, `.ssh` into the Azenta server using `sftp username@sftp.genewiz.com`
+4.  The command line will ask if you want to add `sftp.genewiz.com` as a known host... type `yes` to continue and press enter
+5.  Type in the password to access the azenta server (sent to you in an email from azenta when they notified you that the sequences were generated)
+6.  Navigate to your project directory
+7.  Download all files within the folder using `mget *`
 
 # Check file integrity
 
-We chek file integrity with `md5sum` .
+Check file integrity with `md5sum` .
 
 What is an MD5 checksum? An MD5 checksum is a set of 32 hexadecimal letters and numbers that represent a file's mathematical algorithm. It's used to verify that a file is an accurate copy of the original and hasn't been modified or corrupted.
 
@@ -43,8 +50,8 @@ What is an MD5 checksum? An MD5 checksum is a set of 32 hexadecimal letters and 
 
 `6C14_R1_001.fastq.gz.md5` is a MD5 checksum output file that Azenta generated, it looks like:
 
-```{bash}
-cd ../rawfastq/00_fastq/
+```{r, engine = 'bash'}
+cd ../rawfastq/
 less -S 6C14_R1_001.fastq.gz.md5
 ```
 
@@ -53,7 +60,7 @@ less -S 6C14_R1_001.fastq.gz.md5
 The `md5sum` command will **generate a MD5 checksum** for the file I downloaded from the Azenta server:
 
 ```{r, engine='bash'}
-md5sum ../rawfastq/00_fastq/6C14_R1_001.fastq.gz
+md5sum ../rawfastq/6C14_R1_001.fastq.gz
 ```
 
 Success! The checksums are the same.
@@ -73,7 +80,7 @@ The following command will:
 -   compare the MD5 checksum from the azenta provided `*md5` file to the generated MD5 checksums
 
 ```{bash}
-cd ../rawfastq/00_fastq # move to the directory that has both fastq.gz and md5 files
+cd ../rawfastq # move to the directory that has both fastq.gz and md5 files
 md5sum -c 6C14_R1_001.fastq.gz.md5
 ```
 
@@ -86,7 +93,7 @@ Now lets do this for all the files transferred
 Use the `md5sum -c` command to compare the downloaded against all of Azenta's generated md5sums (the files ending in `.md5`) :
 
 ```{r, engine = 'bash'}
-cd ../rawfastq/00_fastq
+cd ../rawfastq
 md5sum -c *.md5
 ```
 
@@ -94,4 +101,48 @@ md5sum -c *.md5
 Each file should show `OK` !
 :::
 
-# Summary & Next Steps 
+# Summary & Next Steps
+
+Now that we have access to all the raw fastq files in `/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/rawfastq` we can continue by checking it for sequencing quality in step 3, `03_qaqc_sequences.qmd`
+
+## P.S.
+
+After 30 days Azenta no longer hosts the data files.
+
+They now live in two places as backups to this project!
+
+> NCBI
+
+> Roberts Lab Gannet Server
+
+`/var/services/homes/stanja/mcap-2024-rnaseq/`
+
+You can get the data using `rsync`
+
+```{r, engine = 'bash'}
+rsync -avz stanja@gannet.fish.washington.edu:/var/services/homes/stanja/mcap-2024-rnaseq/30-1075224139/00_fastq/ \
+/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/rawfastq
+```
+
+Or you can get it with `scp`
+
+```{r, engine = 'bash'}
+scp -r stanja@gannet.fish.washington.edu:/var/services/homes/stanja/mcap-2024-rnaseq/30-1075224139/00_fastq/ \
+/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/rawfastq
+
+```
+
+Check that all the files transferred. We have 63 samples... which means each one has 4 files (a R1, R1.md5, R2, & R2.md5)
+
+```{r, engine = 'bash'}
+print(63*4)
+```
+
+There should be 252 files
+
+```{r, engine = 'bash'}
+cd ../rawfastq
+ls | wc -l
+```
+
+If you need to re-download data from one of these backup locations check the md5 checksums again as above!
