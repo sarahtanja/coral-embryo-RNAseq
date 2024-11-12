@@ -1,0 +1,208 @@
+---
+title: "Step 4: Align sequence reads to annotated *M. capitata* genome"
+subtitle: "Using `HISAT2`"
+author: "Sarah Tanja"
+date: 10/21/2024
+format:
+  gfm: default  # or html if you want to render in HTML
+toc: true
+toc-depth: 3
+link-external-icon: true
+link-external-newwindow: true
+reference-location: margin
+citation-location: margin
+---
+
+# Align reads using HISAT 2
+
+This notebook will align trimmed M. capitata RNA-seq data to the M. capitata genome using hierarchical indexing for spliced alignment of transcripts HISAT2 [@zhang_rapid_2021]. Followed by StringTie (Pertea et al. 2016, 2015) for transcript assembly/identification and count matrices for downstream expression analysis with DESeq2.
+
+Input(s)
+
+-   Trimmed FastQ files, with format: `*fastp-trim.fq.gz` are located in `output/03_qaqc/trim_reads_fastp`
+
+-   HISAT 2 genome index:
+
+-   Genome GTF:
+
+    -   Genome [Version 3](http://cyanophora.rutgers.edu/montipora/) [@stephens2022]
+    -   [GFF](http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.gff3.gz) from Rutgers (or [GFF fixed](https://github.com/AHuffmyer/EarlyLifeHistory_Energetics/raw/master/Mcap2020/Data/TagSeq/Montipora_capitata_HIv3.genes_fixed.gff3.gz) from AHuffmyer?)
+    -   [genomes, indexes, & feature tracks](https://robertslab.github.io/resources/Genomic-Resources/#montipora-capitata) from Roberts Lab Handbook
+
+-   Sample metadata: `~metadata/rna_metadata.csv`
+
+# Download genome files
+
+## Annotated Reference Genome for *Montipora capitata*
+
+Deep Dive project with genomes of interest: https://github.com/urol-e5/deep-dive
+
+*Montipora capitata* Genome version V3, Rutgers University: <http://cyanophora.rutgers.edu/montipora/>
+
+Genome publication: <https://academic.oup.com/gigascience/article/doi/10.1093/gigascience/giac098/6815755>
+
+Nucleotide Coding Sequence (CDS): <http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.cds.fna.gz>
+
+This code grabs the *Montipora capitata* fasta file (rna.fna) of genes.
+
+```{r, genome-download, engine = 'bash'}
+# change from code directory to work in data directory
+cd ../data
+
+# make mcapgenome directory a subdirectory of data if not already present
+mkdir -p mcapgenome
+
+# change directory to ~data/mcapgenome
+cd mcapgenome
+
+# download the annotated genomes from the rutgers site if not already present
+[-f Montipora_capitata_HIv3.assembly.fasta.gz] || wget http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.assembly.fasta.gz
+```
+
+-   [`Montipora_capitata_HIv3.assembly.fasta`](https://owl.fish.washington.edu/halfshell/genomic-databank/Montipora_capitata_HIv3.assembly.fasta) (745MB)
+
+    -   MD5 checksum: `99819eadba1b13ed569bb902eef8da08`
+
+    -   Downloaded 2023017: <http://cyanophora.rutgers.edu/montipora/>
+
+```{r, genome-checksums, engine = 'bash'}
+# change to work in data genome folder
+cd ../data/mcapgenome
+
+# generate checksum for the genome assembly file
+md5sum *assembly*
+
+```
+
+## HISAT Index
+
+-   [`Montipora_capitata_HIv3-hisat2-indices.tar.gz`](https://gannet.fish.washington.edu/Atumefaciens/20230131-mcap-HIv3-hisat2-build-index/Montipora_capitata_HIv3-hisat2-indices.tar.gz) (tarball gzip; 1.2GB)
+
+    -   MD5 checksum: `c8accb6c54e843198c776f0d6f0c603d`
+
+    -   Needs to be unpacked before use!
+
+```{r, hisat-download, engine = 'bash'}
+# change to work in data genome directory
+cd ../data/mcapgenome
+
+# download the hisat index from Robert's Lab gannet server
+[-f Montipora_capitata_HIv3-hisat2-indices.tar.gz] || wget https://gannet.fish.washington.edu/Atumefaciens/20230131-mcap-HIv3-hisat2-build-index/Montipora_capitata_HIv3-hisat2-indices.tar.gz
+```
+
+```{r, hisat-checksum, engine = 'bash'}
+# change to work in data genome directory
+cd ../data/mcapgenome
+
+# generate checksum for the hisat index zip file
+md5sum *hisat2*
+```
+
+Unpack the tar.gz hisat index file using `tar -xvzf`
+
+-   `-x`: Extracts the contents of the archive.
+
+-   `-v`: Verbose, shows the files being extracted.
+
+-   `-z`: Tells `tar` that the archive is compressed with `gzip` (for `.tar.gz` files).
+
+-   `-f`: Specifies the file name of the archive to extract.
+
+This command will extract the contents of the `.tar.gz` file into the current directory:
+
+```{r, hisat-unzip, engine = 'bash'}
+cd ../data/mcapgenome
+tar -xvzf Montipora_capitata_HIv3-hisat2-indices.tar.gz
+```
+
+## Genome Feature Tracks
+
+[Generic Feature Format (GFF3)](https://gmod.org/wiki/GFF3)
+
+-   [`Montipora_capitata_HIv3.genes.gff3`](https://owl.fish.washington.edu/halfshell/genomic-databank/Montipora_capitata_HIv3.genes.gff3) (67MB)
+
+    -   MD5 checksum: `5f6b80ba2885471c8c1534932ccb7e84`
+
+    -   Downloaded 2023017: <http://cyanophora.rutgers.edu/montipora/>
+
+-   [`Montipora_capitata_HIv3.genes.gtf`](https://gannet.fish.washington.edu/Atumefaciens/20230127-mcap-gff_to_gtf/Montipora_capitata_HIv3.genes.gtf) (101MB)
+
+    -   MD5 checksum: `ceef8eca945199415b23d2f1f0dd2066`
+
+    -   Created 2023017: <https://github.com/urol-e5/timeseries_molecular/blob/cf654b9967c7a5d81e3aeca370b0c8f324badcbd/D-Apul/code/02.00-D-Apul-RNAseq-gff-to-gtf.Rmd>
+
+```{r, feature-tracks-download, engine = 'bash'}
+# change to work in data genome directory
+cd ../data/mcapgenome
+
+wget http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.gff3.gz
+
+wget https://gannet.fish.washington.edu/Atumefaciens/20230127-mcap-gff_to_gtf/Montipora_capitata_HIv3.genes.gtf
+```
+
+```{r, feature-tracks-checksum, engine = 'bash'}
+cd ../data/mcapgenome
+
+md5sum *.gff3.gz *.gtf *gff3
+```
+
+```{r, engine = 'bash'}
+
+cd ../data/mcapgenome
+
+head -10 Montipora_capitata_HIv3.genes.gff3
+
+```
+
+Load libraries and data.
+
+```{r}
+
+if ("tidyverse" %in% rownames(installed.packages()) == 'FALSE') install.packages('tidyverse')
+if ("tidyverse" %in% rownames(installed.packages()) == 'FALSE') install.packages('tidyverse')
+
+library(tidyverse)
+library(R.utils)
+
+```
+
+```{r}
+
+gff <- read.csv(file="../data/mcapgenome/Montipora_capitata_HIv3.genes.gff3", header=FALSE, sep="\t")
+
+gff_fixed <- read.csv(file="../data/mcapgenome/Montipora_capitata_HIv3.genes_fixed.gff3", header=FALSE, sep="\t")
+```
+
+# Trimmed RNA-seq reads
+
+> For now we're going to do a test run on just 10 samples from the early gastrula phase
+
+8 samples from control samples at 14 hours post fertilization, gastrula (C14):
+
+```{r, engine = 'bash'}
+cd ../output/03_qaqc/trim_reads_fastp
+ls *C14*
+```
+
+5 from highest pollution concentration at 14 hours post fertilization, gastrula (H14):
+
+```{r, engine = 'bash'}
+cd ../output/03_qaqc/trim_reads_fastp
+ls *H14*
+```
+
+```{r, engine = 'bash'}
+ls ../output/03_qaqc/trim_reads_fastp/*C14*.fq.gz
+```
+
+# Next Steps
+
+::: callout-important
+###### Don't forget to always rsync backup!
+
+```         
+rsync -avz stanja@gannet.fish.washington.edu:/volume2/web/stanja/stanja/coral-embryo-leachate/output/ /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-leachate/output/
+```
+:::
+
+# 

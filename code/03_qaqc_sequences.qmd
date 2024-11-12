@@ -1,0 +1,358 @@
+---
+title: "Step 3: QAQC RNA sequences"
+subtitle: "Use `FastQC`, `MultiQC`, and `Fastp` to clean up sequences"
+author: "Sarah Tanja"
+date: 10/10/2024
+date-format: long
+date-modified: today
+format: gfm
+toc: true
+toc-depth: 3
+link-external-icon: true
+link-external-newwindow: true
+reference-location: margin
+citation-location: margin
+---
+
+```{r setup, include = FALSE}
+# Set global chunk options
+knitr::opts_chunk$set(eval = FALSE, echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+# 1 \| INTRODUCTION
+
+In this script, we will generate FastQC/MultiQC for raw sequences, conduct trimming and cleaning, then generate reports for cleaned sequences.
+
+-   [fastqc](https://anaconda.org/bioconda/fastqc)
+
+*FastQC generates sequence quality information of your reads*
+
+-   [multiqc](https://anaconda.org/bioconda/multiqc), [git developer version](Installation)
+
+*Multiqc summarizes FastQC analysis logs and summarizes results in an html report*
+
+-   [fastp](https://anaconda.org/bioconda/fastp)
+
+*FastP provides fast all-in-one preprocessing for FastQ files*
+
+Reference bash variables from Roberts Lab [Code Snippets](https://robertslab.github.io/resources/code_Snippets/)
+
+How to do a [for loop in bash](https://stackoverflow.com/questions/9612090/how-to-loop-through-file-names-returned-by-find)
+
+::: {.callout-tip appearance="minimal"}
+Instead of \``git add –all` execute `find . -type f -size -104M -exec git add {} +` in terminal before making a git commit to only track files that are under the git size limit of 10MB.
+:::
+
+# 2 \| `FastQC` RAW READS
+
+FastQC on Raven lives: `/home/shared/FastQC/fastqc`
+
+```{bash}
+/home/shared/FastQC/fastqc -h
+```
+
+```{bash}
+# Set CPU threads to use
+threads=40
+
+# Populate array with FastQ files
+fastq_array=(~/sarahtanja/coral-embryo-leachate/rawfastq/00_fastq/*.fastq.gz)
+
+# Pass array contents to new variable
+fastqc_list=$(echo "${fastq_array[*]}")
+
+# Run FastQC
+# NOTE: Do NOT quote ${fastqc_list}
+/home/shared/FastQC/fastqc \
+--threads ${threads} \
+--outdir /home/shared/8TB_HDD_02/graceac9/analyses/pycno/ \
+${fastqc_list}
+```
+
+```{bash}
+cd rawfastq/00_fastq
+fastqc ./*.fastq.gz
+```
+
+Make a subdirectory for your FastQC results and move FastQC results there
+
+```{bash}
+cd ../output
+mkdir 03_qaqc
+mv ../../rawfastq/00_fastq/*fastqc* ./
+```
+
+# Compile the `MultiQC` report
+
+```{bash}
+cd ../output/03_qaqc
+multiqc ./
+```
+
+# Interpretation of `MultiQC` report for raw reads
+
+Watch a quick [6-min tutorial](https://www.youtube.com/watch?v=qPbIlO_KWN0) on how to navigate in the MultiQC Report
+
+# 3 \| FASTP CLEAN READS
+
+# Create a Bash variables file
+
+This allows usage of Bash variables across R Markdown chunks.
+
+## Data directories
+
+```{r, engine = bash}
+{
+echo "#### Assign Variables ####"
+echo ""
+
+echo "# Data directories"
+echo 'export project_dir=~/sarahtanja/coral-embryo-leachate'
+echo 'export output_dir_top=${project_dir}/output'
+echo 'export output_dir_qaqc=${project_dir}/output/03_qaqc'
+echo 'export output_dir_trim=${project_dir}/output/03_qaqc/trim_reads_fastp'
+echo 'export output_dir_clean=${project_dir}/output/03_qaqc/clean_reads_fastqc'
+echo 'export raw_reads_dir=${project_dir}/rawfastq/00_fastq'
+echo ""
+} > .bashvars
+
+cat .bashvars
+```
+
+## Program paths
+
+```{r, engine = 'bash'}
+{
+echo "# Paths to programs"
+echo 'export programs_dir="/home/shared"'
+echo 'export fastp="${programs_dir}/fastp"'
+echo 'export fastqc=${programs_dir}/FastQC-0.12.1/fastqc'
+echo 'export multiqc=/home/sam/programs/mambaforge/bin/multiqc'
+echo ""
+} >> .bashvars
+
+cat .bashvars
+```
+
+## Filename patterns
+
+```{r, engine = 'bash'}
+{
+echo "# Set FastQ filename patterns"
+echo "export fastq_pattern='*.fastq.gz'"
+echo "export R1_fastq_pattern='*_R1_*.fastq.gz'"
+echo "export R2_fastq_pattern='*_R2_*.fastq.gz'"
+echo "export trimmed_fastq_pattern='*fastp-trim.fq.gz'"
+echo ""
+} >> .bashvars
+
+cat .bashvars
+```
+
+## Thread count
+
+```{r, engine = 'bash'}
+{
+echo "# Set number of CPUs to use"
+echo 'export threads=40'
+echo ""
+} >> .bashvars
+
+cat .bashvars
+```
+
+## File name arrays
+
+```{r, engine = 'bash'}
+{
+echo "## Inititalize arrays"
+echo 'export fastq_array_R1=()'
+echo 'export fastq_array_R2=()'
+echo 'export raw_fastqs_array=()'
+echo 'export R1_names_array=()'
+echo 'export R2_names_array=()'
+echo ""
+} >> .bashvars
+
+cat .bashvars
+```
+
+## Program array
+
+```{r, engine = 'bash'}
+{
+echo "# Programs associative array"
+echo "declare -A programs_array"
+echo "programs_array=("
+echo '[fastp]="${fastp}" \'
+echo '[fastqc]="${fastqc}" \'
+echo '[multiqc]="${multiqc}" \'
+echo ")"
+echo ""
+} >> .bashvars
+
+cat .bashvars
+```
+
+## Printing
+
+```{r, engine = 'bash'}
+{
+echo "# Print formatting"
+echo 'export line="--------------------------------------------------------"'
+echo ""
+} >> .bashvars
+
+cat .bashvars
+```
+
+# Clean reads with `fastp`
+
+-   remove adapters
+-   remove low-quality reads
+-   remove reads with high number of unknown bases
+
+In this script, we are trimming and cleaning with the following settings:
+
+-   remove adapter sequences `--adapter_sequence=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA`
+-   enable polyX trimming on 3' end at length of 6 `--trim_poly_x 6`
+-   filter by minimum phred quality score of \>30 `-q 30`
+-   enable low complexity filter `-y`
+-   set complexity filter threshold of 50% required `-Y 50`
+
+`fastp` all [options](https://github.com/OpenGene/fastp?tab=readme-ov-file#:~:text=of%201%20~%206.-,all%20options,-usage%3A%20fastp%20%2Di) can be found in the fastp git README file. The following options are ones that we've chosen to use and an explanation of why:
+
+-   `--in1` \| Path to forward read input
+
+-   `--in2` \| Path to reverse read input
+
+-   `--qualified_quality_phred` \| The quality value that a base is qualified. Default 15 means phred quality \>=Q15 is qualified. Chosen value is 30.
+
+-   `--trim_poly_x 6` \| Enable polyX trimming in 3' ends. Trims any repeating sequence (AAAAAA, TTTTTT, CCCCCC, GGGGGG), the default is 10... here we've chosen if it has 6 or more repeating bases to trim them off. This is more conservative than 10 or more repeating bases, and will result in cleaner sequences that have fewer polyA tails leftover.
+
+-   `--detect_adapter_for_pe` \| This automatically detects Illumina adapter sequences for paired end (pe) sequences and trims them off. Adapters can be trimmed by overlap analysis, however, `--detect_adapter_for_pe` will usually result in slightly cleaner output than overlap detection alone. This results in a slightly slower run time.
+
+-   `--thread 16` \| fastp uses up to 16 threads (even if there are more available). If this is not specified, it uses 3 as a default.
+
+-   `--html` \| The html format report file name
+
+-   `--json` \| The json format report file name
+
+-   `-out1` \| Path to forward read output
+
+-   `--out2` \| Path to reverse read output
+
+```{bash}
+# Load bash variables into memory
+source .bashvars
+
+# Change to raw reads directory
+cd "${raw_reads_dir}"
+
+# Create arrays of fastq R1 files and sample names
+for fastq in ${R1_fastq_pattern}
+do
+  fastq_array_R1+=("${fastq}")
+  R1_names_array+=("$(echo "${fastq}" | awk -F"_" '{print $1}')")
+done
+
+# Create array of fastq R2 files
+for fastq in ${R2_fastq_pattern}
+do
+  fastq_array_R2+=("${fastq}")
+  R2_names_array+=("$(echo "${fastq}" | awk -F"_" '{print $1}')")
+done
+
+# Create list of fastq files used in analysis
+# Create MD5 checksum for reference
+if [ ! -f "${raw_reads_dir}"/*raw-fastq-checksums*fastq.gz.md5 ]; then
+for fastq in *.gz
+  do
+    md5sum ${fastq} >> "${output_dir_top}"/checksums/raw-fastq-checksums.md5
+  done
+fi
+
+# Run fastp on files
+# Adds JSON report output for downstream usage by MultiQC
+for index in "${!fastq_array_R1[@]}"
+do
+  R1_sample_name=$(echo "${R1_names_array[index]}")
+  R2_sample_name=$(echo "${R2_names_array[index]}")
+  ${fastp} \
+  --in1 ${fastq_array_R1[index]} \
+  --in2 ${fastq_array_R2[index]} \
+  --detect_adapter_for_pe \
+  --qualified_quality_phred 30 \
+  --thread 16 \
+  --trim_poly_x 6 \
+  --html "${output_dir_trim}"/"${R1_sample_name}".fastp-trim.report.html \
+  --json "${output_dir_trim}"/"${R1_sample_name}".fastp-trim.report.json \
+  --out1 "${output_dir_trim}"/"${R1_sample_name}"_R1_001.fastp-trim.fq.gz \
+  --out2 "${output_dir_trim}"/"${R2_sample_name}"_R2_001.fastp-trim.fq.gz \
+  2>> "${output_dir_trim}"/fastp.stderr
+
+
+  # Generate md5 checksums for newly trimmed files
+  cd "${output_dir_trim}"
+  md5sum "${R1_sample_name}"_R1_001.fastp-trim.fq.gz > "${R1_sample_name}"_R1_001.fastp-trim.fq.gz.md5
+  md5sum "${R2_sample_name}"_R2_001.fastp-trim.fq.gz > "${R2_sample_name}"_R2_001.fastp-trim.fq.gz.md5
+  cd -
+done
+```
+
+# Quality check trimmed reads with `FastQC`& compile report with `MultiQC`
+
+```{r, engine= 'bash'}
+# Load bash variables into memory
+source .bashvars
+
+# Make output directory if it doesn't exist
+mkdir --parents "${output_dir_trim}"
+
+############ RUN FASTQC ############
+
+
+# Create array of trimmed FastQs
+trimmed_fastqs_array=(${output_dir_trim}/${trimmed_fastq_pattern})
+
+# Pass array contents to new variable as space-delimited list
+trimmed_fastqc_list=$(echo "${trimmed_fastqs_array[*]}")
+
+echo "Beginning FastQC on trimmed reads..."
+echo ""
+
+# Run FastQC
+### NOTE: Do NOT quote raw_fastqc_list
+${programs_array[fastqc]} \
+--threads ${threads} \
+--outdir ${output_dir_clean} \
+--quiet \
+${trimmed_fastqc_list}
+
+echo "FastQC on trimmed reads complete!"
+echo ""
+
+############ END FASTQC ############
+
+############ RUN MULTIQC ############
+echo "Beginning MultiQC on trimmed FastQC..."
+echo ""
+
+${programs_array[multiqc]} ${output_dir_clean} -o ${output_dir_clean}
+
+echo ""
+echo "MultiQC on trimmed FastQs complete."
+echo ""
+
+############ END MULTIQC ############
+
+echo "Removing FastQC zip files."
+echo ""
+rm ${output_dir_clean}/*.zip
+echo "FastQC zip files removed."
+echo ""
+```
+
+# Summary
+
+Clean sequences are now ready for alignment.
