@@ -18,15 +18,20 @@ citation-location: margin
 
 In this script, we will generate FastQC/MultiQC for raw sequences, conduct trimming and cleaning, then generate reports for cleaned sequences.
 
--   [fastqc](https://anaconda.org/bioconda/fastqc)
+## [fastqc](https://anaconda.org/bioconda/fastqc)
 
 *FastQC generates sequence quality information of your reads*
 
--   [multiqc](https://anaconda.org/bioconda/multiqc), [git developer version](Installation)
+```{r, engine = 'bash'}
+/home/shared/FastQC-0.12.1/fastqc -h
 
-*Multiqc summarizes FastQC analysis logs and summarizes results in an html report*
+```
 
--   [fastp](https://anaconda.org/bioconda/fastp)
+## [multiqc](https://anaconda.org/bioconda/multiqc) 
+
+*Multiqc summarizes FastQC analysis logs and summarizes results in an html report. Checkout the* [git developer version](Installation)
+
+## [fastp](https://anaconda.org/bioconda/fastp)
 
 *FastP provides fast all-in-one preprocessing for FastQ files*
 
@@ -55,7 +60,6 @@ echo 'export output_dir_top=${project_dir}/output'
 echo 'export output_dir_qaqc=${project_dir}/output/03_qaqc'
 echo 'export output_dir_raw=${project_dir}/output/03_qaqc/raw_reads'
 echo 'export output_dir_trim=${project_dir}/output/03_qaqc/trimmed_reads'
-echo 'export output_dir_clean=${project_dir}/output/03_qaqc/cleaned_reads'
 echo 'export raw_reads_dir=${project_dir}/rawfastq'
 echo ""
 } > .bashvars
@@ -138,8 +142,7 @@ echo ""
 cat .bashvars
 ```
 
-
-# Use `FastQC` to quality check the raw reads
+# Quality check raw reads with `FastQC`
 
 FastQC on Raven lives: `/home/shared/FastQC/fastqc`
 
@@ -168,33 +171,23 @@ ${fastqc} \
 ${fastqc_list}
 ```
 
+# Compile a report of raw reads with `MultiQC`
 
-# Compile a report of the raw reads quality using `MultiQC`
+```{r, engine = 'bash'}
+# Load bash variables into memory
+source .bashvars
 
-```{bash}
-cd ../output/03_qaqc
-multiqc ./
+cd ../output/03_qaqc/raw_reads
+${multiqc} ./
 ```
 
 # Interpretation of `MultiQC` report for raw reads
 
 Watch a quick [6-min tutorial](https://www.youtube.com/watch?v=qPbIlO_KWN0) on how to navigate in the MultiQC Report
 
-# Use `fastp` to clean reads
+# Trim & Clean reads using `fastp`
 
--   remove adapters
--   remove low-quality reads
--   remove reads with high number of unknown bases
-
-In this script, we are trimming and cleaning with the following settings:
-
--   remove adapter sequences `--adapter_sequence=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA`
--   enable polyX trimming on 3' end at length of 6 `--trim_poly_x 6`
--   filter by minimum phred quality score of \>30 `-q 30`
--   enable low complexity filter `-y`
--   set complexity filter threshold of 50% required `-Y 50`
-
-`fastp` all [options](https://github.com/OpenGene/fastp?tab=readme-ov-file#:~:text=of%201%20~%206.-,all%20options,-usage%3A%20fastp%20%2Di) can be found in the fastp git README file. The following options are ones that we've chosen to use and an explanation of why:
+`fastp` all [options](https://github.com/OpenGene/fastp?tab=readme-ov-file#:~:text=of%201%20~%206.-,all%20options,-usage%3A%20fastp%20%2Di) can be found in the fastp git README file.
 
 -   `--in1` \| Path to forward read input
 
@@ -242,7 +235,7 @@ done
 if [ ! -f "${raw_reads_dir}"/*raw-fastq-checksums*fastq.gz.md5 ]; then
 for fastq in *.gz
   do
-    md5sum ${fastq} >> "${output_dir_top}"/checksums/raw-fastq-checksums.md5
+    md5sum ${fastq} >> "${output_dir_qaqc}"/checksums/raw-fastq-checksums.md5
   done
 fi
 
@@ -274,32 +267,33 @@ do
 done
 ```
 
-# Quality check trimmed reads with `FastQC` & compile report with `MultiQC`
+# Quality check trimmed reads with `FastQC`
 
 ```{r, engine= 'bash'}
 # Load bash variables into memory
 source .bashvars
 
-# Make output directory if it doesn't exist
-mkdir --parents "${output_dir_trim}"
-
 ############ RUN FASTQC ############
-
 
 # Create array of trimmed FastQs
 trimmed_fastqs_array=(${output_dir_trim}/${trimmed_fastq_pattern})
 
+echo "Files in trimmed_fastqs_array: ${trimmed_fastqs_array[@]}"
+
 # Pass array contents to new variable as space-delimited list
 trimmed_fastqc_list=$(echo "${trimmed_fastqs_array[*]}")
 
+echo ""
 echo "Beginning FastQC on trimmed reads..."
+echo ""
+echo "Output directory: ${output_dir_trim}"
 echo ""
 
 # Run FastQC
-### NOTE: Do NOT quote raw_fastqc_list
+### NOTE: Do NOT quote trimmed_fastqc_list
 ${programs_array[fastqc]} \
 --threads ${threads} \
---outdir ${output_dir_clean} \
+--outdir ${output_dir_trim} \
 --quiet \
 ${trimmed_fastqc_list}
 
@@ -307,12 +301,36 @@ echo "FastQC on trimmed reads complete!"
 echo ""
 
 ############ END FASTQC ############
+```
 
+```{r, engine = 'bash'}
+# Load bash variables into memory
+source .bashvars
+
+# Populate array with fastp-trim.fq.gz FastQ files
+trimmed_fastq_array=("${output_dir_trimmed}/*.fastp-trim.fq.gz")
+
+echo "Files in trimmed_fastqs_array: ${trimmed_fastqs_array[@]}"
+
+# Pass array contents to new variable
+fastqc_list=$(echo "${fastq_array[*]}")
+
+# Run FastQC
+# NOTE: Do NOT quote ${fastqc_list}
+${fastqc} \
+--threads ${threads} \
+--outdir ${output_dir_trim} \
+${fastqc_list}
+```
+
+# Compile report of trimmed reads with `MultiQC`
+
+```{r, engine = 'bash'}
 ############ RUN MULTIQC ############
 echo "Beginning MultiQC on trimmed FastQC..."
 echo ""
 
-${programs_array[multiqc]} ${output_dir_clean} -o ${output_dir_clean}
+${programs_array[multiqc]} ${output_dir_trim} -o ${output_dir_trim}
 
 echo ""
 echo "MultiQC on trimmed FastQs complete."
@@ -322,11 +340,11 @@ echo ""
 
 echo "Removing FastQC zip files."
 echo ""
-rm ${output_dir_clean}/*.zip
+rm ${output_dir_trim}/*.zip
 echo "FastQC zip files removed."
 echo ""
 ```
 
 # Summary & Next Steps
 
-Clean sequences are now ready for alignment.
+Trimmed reads are now ready for alignment in step 4, `04_align`

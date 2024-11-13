@@ -1,0 +1,3282 @@
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+>Illumina TruSeq Adapter Read 2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+
+Read1 before filtering:
+total reads: 18375779
+total bases: 2756366850
+Q20 bases: 2692178570(97.6713%)
+Q30 bases: 2578258358(93.5383%)
+
+Read2 before filtering:
+total reads: 18375779
+total bases: 2756366850
+Q20 bases: 2640800915(95.8073%)
+Q30 bases: 2465439795(89.4453%)
+
+Read1 after filtering:
+total reads: 17533943
+total bases: 2596545396
+Q20 bases: 2555470916(98.4181%)
+Q30 bases: 2460670244(94.7671%)
+
+Read2 after filtering:
+total reads: 17533943
+total bases: 2596552563
+Q20 bases: 2523409791(97.1831%)
+Q30 bases: 2372595685(91.3748%)
+
+Filtering result:
+reads passed filter: 35067886
+reads failed due to low quality: 1676646
+reads failed due to too many N: 1350
+reads failed due to too short: 5676
+reads with adapter trimmed: 2418226
+bases trimmed due to adapters: 66158885
+reads with polyX in 3' end: 211020
+bases trimmed in polyX tail: 3066344
+
+Duplication rate: 25.5501%
+
+Insert size peak (evaluated by paired-end reads): 259
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C14.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C14.fastp-trim.report.html
+
+/home/shared/fastp --in1 101112C14_R1_001.fastq.gz --in2 101112C14_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C14.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C14.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C14_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C14_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 90 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+>Illumina TruSeq Adapter Read 2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+
+Read1 before filtering:
+total reads: 18799748
+total bases: 2819962200
+Q20 bases: 2752874353(97.621%)
+Q30 bases: 2638669735(93.5711%)
+
+Read2 before filtering:
+total reads: 18799748
+total bases: 2819962200
+Q20 bases: 2717005573(96.349%)
+Q30 bases: 2556445166(90.6553%)
+
+Read1 after filtering:
+total reads: 18006483
+total bases: 2665896403
+Q20 bases: 2623521356(98.4105%)
+Q30 bases: 2527926624(94.8246%)
+
+Read2 after filtering:
+total reads: 18006483
+total bases: 2665915321
+Q20 bases: 2601838939(97.5965%)
+Q30 bases: 2463832607(92.4198%)
+
+Filtering result:
+reads passed filter: 36012966
+reads failed due to low quality: 1571592
+reads failed due to too many N: 1554
+reads failed due to too short: 13384
+reads with adapter trimmed: 2640644
+bases trimmed due to adapters: 69632509
+reads with polyX in 3' end: 223680
+bases trimmed in polyX tail: 4065247
+
+Duplication rate: 29.4717%
+
+Insert size peak (evaluated by paired-end reads): 260
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C4.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C4.fastp-trim.report.html
+
+/home/shared/fastp --in1 101112C4_R1_001.fastq.gz --in2 101112C4_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C4.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C4.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C4_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C4_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 89 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+>Illumina TruSeq Adapter Read 2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+
+Read1 before filtering:
+total reads: 18375779
+total bases: 2756366850
+Q20 bases: 2692178570(97.6713%)
+Q30 bases: 2578258358(93.5383%)
+
+Read2 before filtering:
+total reads: 18375779
+total bases: 2756366850
+Q20 bases: 2640800915(95.8073%)
+Q30 bases: 2465439795(89.4453%)
+
+Read1 after filtering:
+total reads: 17533943
+total bases: 2596545396
+Q20 bases: 2555470916(98.4181%)
+Q30 bases: 2460670244(94.7671%)
+
+Read2 after filtering:
+total reads: 17533943
+total bases: 2596552563
+Q20 bases: 2523409791(97.1831%)
+Q30 bases: 2372595685(91.3748%)
+
+Filtering result:
+reads passed filter: 35067886
+reads failed due to low quality: 1676646
+reads failed due to too many N: 1350
+reads failed due to too short: 5676
+reads with adapter trimmed: 2418226
+bases trimmed due to adapters: 66158885
+reads with polyX in 3' end: 211020
+bases trimmed in polyX tail: 3066344
+
+Duplication rate: 25.5501%
+
+Insert size peak (evaluated by paired-end reads): 259
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C14.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C14.fastp-trim.report.html
+
+/home/shared/fastp --in1 101112C14_R1_001.fastq.gz --in2 101112C14_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C14.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C14.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C14_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C14_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 91 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+>Illumina TruSeq Adapter Read 2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+
+Read1 before filtering:
+total reads: 18799748
+total bases: 2819962200
+Q20 bases: 2752874353(97.621%)
+Q30 bases: 2638669735(93.5711%)
+
+Read2 before filtering:
+total reads: 18799748
+total bases: 2819962200
+Q20 bases: 2717005573(96.349%)
+Q30 bases: 2556445166(90.6553%)
+
+Read1 after filtering:
+total reads: 18006483
+total bases: 2665896403
+Q20 bases: 2623521356(98.4105%)
+Q30 bases: 2527926624(94.8246%)
+
+Read2 after filtering:
+total reads: 18006483
+total bases: 2665915321
+Q20 bases: 2601838939(97.5965%)
+Q30 bases: 2463832607(92.4198%)
+
+Filtering result:
+reads passed filter: 36012966
+reads failed due to low quality: 1571592
+reads failed due to too many N: 1554
+reads failed due to too short: 13384
+reads with adapter trimmed: 2640644
+bases trimmed due to adapters: 69632509
+reads with polyX in 3' end: 223680
+bases trimmed in polyX tail: 4065247
+
+Duplication rate: 29.4717%
+
+Insert size peak (evaluated by paired-end reads): 260
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C4.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C4.fastp-trim.report.html
+
+/home/shared/fastp --in1 101112C4_R1_001.fastq.gz --in2 101112C4_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C4.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C4.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C4_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C4_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 91 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 18557546
+total bases: 2783631900
+Q20 bases: 2720343854(97.7264%)
+Q30 bases: 2608935247(93.7241%)
+
+Read2 before filtering:
+total reads: 18557546
+total bases: 2783631900
+Q20 bases: 2668051342(95.8479%)
+Q30 bases: 2491621491(89.5097%)
+
+Read1 after filtering:
+total reads: 17598839
+total bases: 2606306782
+Q20 bases: 2567949272(98.5283%)
+Q30 bases: 2479060919(95.1178%)
+
+Read2 after filtering:
+total reads: 17598839
+total bases: 2606510289
+Q20 bases: 2538601307(97.3946%)
+Q30 bases: 2395658586(91.9106%)
+
+Filtering result:
+reads passed filter: 35197678
+reads failed due to low quality: 1868002
+reads failed due to too many N: 1262
+reads failed due to too short: 48150
+reads with adapter trimmed: 2479056
+bases trimmed due to adapters: 67184768
+reads with polyX in 3' end: 210657
+bases trimmed in polyX tail: 7699057
+
+Duplication rate: 24.0197%
+
+Insert size peak (evaluated by paired-end reads): 251
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C9.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C9.fastp-trim.report.html
+
+/home/shared/fastp --in1 101112C9_R1_001.fastq.gz --in2 101112C9_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C9.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C9.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C9_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112C9_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 96 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 18598507
+total bases: 2789776050
+Q20 bases: 2725953760(97.7123%)
+Q30 bases: 2611527879(93.6107%)
+
+Read2 before filtering:
+total reads: 18598507
+total bases: 2789776050
+Q20 bases: 2679066328(96.0316%)
+Q30 bases: 2505802829(89.8209%)
+
+Read1 after filtering:
+total reads: 17648905
+total bases: 2601144154
+Q20 bases: 2561545444(98.4776%)
+Q30 bases: 2470585426(94.9807%)
+
+Read2 after filtering:
+total reads: 17648905
+total bases: 2601339040
+Q20 bases: 2537082919(97.5299%)
+Q30 bases: 2399714267(92.2492%)
+
+Filtering result:
+reads passed filter: 35297810
+reads failed due to low quality: 1845606
+reads failed due to too many N: 1226
+reads failed due to too short: 52372
+reads with adapter trimmed: 3682065
+bases trimmed due to adapters: 92200120
+reads with polyX in 3' end: 251729
+bases trimmed in polyX tail: 8411053
+
+Duplication rate: 22.7503%
+
+Insert size peak (evaluated by paired-end reads): 186
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112H14.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112H14.fastp-trim.report.html
+
+/home/shared/fastp --in1 101112H14_R1_001.fastq.gz --in2 101112H14_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112H14.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112H14.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112H14_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112H14_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 96 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 18944084
+total bases: 2841612600
+Q20 bases: 2776847552(97.7208%)
+Q30 bases: 2665716968(93.81%)
+
+Read2 before filtering:
+total reads: 18944084
+total bases: 2841612600
+Q20 bases: 2738288965(96.3639%)
+Q30 bases: 2575234415(90.6258%)
+
+Read1 after filtering:
+total reads: 18069809
+total bases: 2661471500
+Q20 bases: 2622561488(98.538%)
+Q30 bases: 2533426795(95.189%)
+
+Read2 after filtering:
+total reads: 18069809
+total bases: 2661709163
+Q20 bases: 2602071667(97.7594%)
+Q30 bases: 2469906988(92.794%)
+
+Filtering result:
+reads passed filter: 36139618
+reads failed due to low quality: 1706920
+reads failed due to too many N: 1336
+reads failed due to too short: 40294
+reads with adapter trimmed: 3674237
+bases trimmed due to adapters: 98296794
+reads with polyX in 3' end: 257590
+bases trimmed in polyX tail: 8076381
+
+Duplication rate: 26.595%
+
+Insert size peak (evaluated by paired-end reads): 240
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112H4.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112H4.fastp-trim.report.html
+
+/home/shared/fastp --in1 101112H4_R1_001.fastq.gz --in2 101112H4_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112H4.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112H4.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112H4_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112H4_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 97 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 19365059
+total bases: 2904758850
+Q20 bases: 2838055533(97.7037%)
+Q30 bases: 2720271032(93.6488%)
+
+Read2 before filtering:
+total reads: 19365059
+total bases: 2904758850
+Q20 bases: 2789746236(96.0405%)
+Q30 bases: 2610203507(89.8596%)
+
+Read1 after filtering:
+total reads: 18449970
+total bases: 2739304075
+Q20 bases: 2697150797(98.4612%)
+Q30 bases: 2600509438(94.9332%)
+
+Read2 after filtering:
+total reads: 18449970
+total bases: 2739519859
+Q20 bases: 2669263504(97.4355%)
+Q30 bases: 2519795608(91.9795%)
+
+Filtering result:
+reads passed filter: 36899940
+reads failed due to low quality: 1794272
+reads failed due to too many N: 1416
+reads failed due to too short: 34490
+reads with adapter trimmed: 1795930
+bases trimmed due to adapters: 55443070
+reads with polyX in 3' end: 247337
+bases trimmed in polyX tail: 7198494
+
+Duplication rate: 25.9544%
+
+Insert size peak (evaluated by paired-end reads): 250
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112H9.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112H9.fastp-trim.report.html
+
+/home/shared/fastp --in1 101112H9_R1_001.fastq.gz --in2 101112H9_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112H9.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112H9.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112H9_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112H9_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 99 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+>Illumina TruSeq Adapter Read 2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+
+Read1 before filtering:
+total reads: 19135174
+total bases: 2870276100
+Q20 bases: 2806309425(97.7714%)
+Q30 bases: 2691491619(93.7712%)
+
+Read2 before filtering:
+total reads: 19135174
+total bases: 2870276100
+Q20 bases: 2759437534(96.1384%)
+Q30 bases: 2585718131(90.086%)
+
+Read1 after filtering:
+total reads: 18363428
+total bases: 2716627455
+Q20 bases: 2674997837(98.4676%)
+Q30 bases: 2578416190(94.9124%)
+
+Read2 after filtering:
+total reads: 18363428
+total bases: 2716666233
+Q20 bases: 2644666906(97.3497%)
+Q30 bases: 2493973313(91.8027%)
+
+Filtering result:
+reads passed filter: 36726856
+reads failed due to low quality: 1536970
+reads failed due to too many N: 1566
+reads failed due to too short: 4956
+reads with adapter trimmed: 3004551
+bases trimmed due to adapters: 75947437
+reads with polyX in 3' end: 126239
+bases trimmed in polyX tail: 1704198
+
+Duplication rate: 22.5739%
+
+Insert size peak (evaluated by paired-end reads): 218
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112L14.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112L14.fastp-trim.report.html
+
+/home/shared/fastp --in1 101112L14_R1_001.fastq.gz --in2 101112L14_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112L14.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112L14.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112L14_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112L14_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 101 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+>Illumina TruSeq Adapter Read 2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+
+Read1 before filtering:
+total reads: 18649155
+total bases: 2797373250
+Q20 bases: 2732188886(97.6698%)
+Q30 bases: 2621025403(93.6959%)
+
+Read2 before filtering:
+total reads: 18649155
+total bases: 2797373250
+Q20 bases: 2694788116(96.3328%)
+Q30 bases: 2532657945(90.537%)
+
+Read1 after filtering:
+total reads: 17866374
+total bases: 2642523705
+Q20 bases: 2601660981(98.4536%)
+Q30 bases: 2508700448(94.9358%)
+
+Read2 after filtering:
+total reads: 17866374
+total bases: 2642534851
+Q20 bases: 2579189447(97.6029%)
+Q30 bases: 2439426964(92.3139%)
+
+Filtering result:
+reads passed filter: 35732748
+reads failed due to low quality: 1551770
+reads failed due to too many N: 1454
+reads failed due to too short: 12338
+reads with adapter trimmed: 2981297
+bases trimmed due to adapters: 75421889
+reads with polyX in 3' end: 216501
+bases trimmed in polyX tail: 3845585
+
+Duplication rate: 30.3298%
+
+Insert size peak (evaluated by paired-end reads): 240
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112L4.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112L4.fastp-trim.report.html
+
+/home/shared/fastp --in1 101112L4_R1_001.fastq.gz --in2 101112L4_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112L4.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112L4.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112L4_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112L4_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 99 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 19320545
+total bases: 2898081750
+Q20 bases: 2832610111(97.7409%)
+Q30 bases: 2716155935(93.7225%)
+
+Read2 before filtering:
+total reads: 19320545
+total bases: 2898081750
+Q20 bases: 2779802096(95.9187%)
+Q30 bases: 2597600484(89.6317%)
+
+Read1 after filtering:
+total reads: 18404865
+total bases: 2719094916
+Q20 bases: 2678337811(98.5011%)
+Q30 bases: 2583698295(95.0205%)
+
+Read2 after filtering:
+total reads: 18404865
+total bases: 2719294516
+Q20 bases: 2646866444(97.3365%)
+Q30 bases: 2495131866(91.7566%)
+
+Filtering result:
+reads passed filter: 36809730
+reads failed due to low quality: 1805568
+reads failed due to too many N: 1416
+reads failed due to too short: 24376
+reads with adapter trimmed: 3107588
+bases trimmed due to adapters: 83041521
+reads with polyX in 3' end: 217686
+bases trimmed in polyX tail: 5535343
+
+Duplication rate: 25.0883%
+
+Insert size peak (evaluated by paired-end reads): 260
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112L9.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112L9.fastp-trim.report.html
+
+/home/shared/fastp --in1 101112L9_R1_001.fastq.gz --in2 101112L9_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112L9.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112L9.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112L9_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112L9_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 110 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+>Illumina TruSeq Adapter Read 2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+
+Read1 before filtering:
+total reads: 18467391
+total bases: 2770108650
+Q20 bases: 2707695972(97.7469%)
+Q30 bases: 2595147916(93.684%)
+
+Read2 before filtering:
+total reads: 18467391
+total bases: 2770108650
+Q20 bases: 2656004247(95.8809%)
+Q30 bases: 2480742586(89.554%)
+
+Read1 after filtering:
+total reads: 17670439
+total bases: 2616008832
+Q20 bases: 2575461221(98.45%)
+Q30 bases: 2481259335(94.849%)
+
+Read2 after filtering:
+total reads: 17670439
+total bases: 2616012148
+Q20 bases: 2542279112(97.1815%)
+Q30 bases: 2390577842(91.3825%)
+
+Filtering result:
+reads passed filter: 35340878
+reads failed due to low quality: 1588656
+reads failed due to too many N: 1334
+reads failed due to too short: 3914
+reads with adapter trimmed: 2580293
+bases trimmed due to adapters: 68840332
+reads with polyX in 3' end: 163178
+bases trimmed in polyX tail: 2206012
+
+Duplication rate: 23.4587%
+
+Insert size peak (evaluated by paired-end reads): 260
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112M14.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112M14.fastp-trim.report.html
+
+/home/shared/fastp --in1 101112M14_R1_001.fastq.gz --in2 101112M14_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112M14.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112M14.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112M14_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112M14_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 101 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 18493393
+total bases: 2774008950
+Q20 bases: 2707382886(97.5982%)
+Q30 bases: 2594202076(93.5182%)
+
+Read2 before filtering:
+total reads: 18493393
+total bases: 2774008950
+Q20 bases: 2662453630(95.9786%)
+Q30 bases: 2494611739(89.928%)
+
+Read1 after filtering:
+total reads: 17487771
+total bases: 2582606302
+Q20 bases: 2543931160(98.5025%)
+Q30 bases: 2455529346(95.0795%)
+
+Read2 after filtering:
+total reads: 17487771
+total bases: 2582850421
+Q20 bases: 2521471796(97.6236%)
+Q30 bases: 2389460430(92.5125%)
+
+Filtering result:
+reads passed filter: 34975542
+reads failed due to low quality: 1952884
+reads failed due to too many N: 1250
+reads failed due to too short: 57110
+reads with adapter trimmed: 2955904
+bases trimmed due to adapters: 81554948
+reads with polyX in 3' end: 250031
+bases trimmed in polyX tail: 9857846
+
+Duplication rate: 22.5882%
+
+Insert size peak (evaluated by paired-end reads): 250
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112M4.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112M4.fastp-trim.report.html
+
+/home/shared/fastp --in1 101112M4_R1_001.fastq.gz --in2 101112M4_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112M4.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112M4.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112M4_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112M4_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 104 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 19002906
+total bases: 2850435900
+Q20 bases: 2787884781(97.8056%)
+Q30 bases: 2675223644(93.8531%)
+
+Read2 before filtering:
+total reads: 19002906
+total bases: 2850435900
+Q20 bases: 2749867408(96.4718%)
+Q30 bases: 2585694038(90.7122%)
+
+Read1 after filtering:
+total reads: 18190278
+total bases: 2658862598
+Q20 bases: 2619701418(98.5271%)
+Q30 bases: 2528995885(95.1157%)
+
+Read2 after filtering:
+total reads: 18190278
+total bases: 2659118467
+Q20 bases: 2599455268(97.7563%)
+Q30 bases: 2466846480(92.7693%)
+
+Filtering result:
+reads passed filter: 36380556
+reads failed due to low quality: 1586642
+reads failed due to too many N: 1280
+reads failed due to too short: 37334
+reads with adapter trimmed: 4928702
+bases trimmed due to adapters: 140259878
+reads with polyX in 3' end: 206147
+bases trimmed in polyX tail: 6644742
+
+Duplication rate: 23.8885%
+
+Insert size peak (evaluated by paired-end reads): 177
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112M9.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112M9.fastp-trim.report.html
+
+/home/shared/fastp --in1 101112M9_R1_001.fastq.gz --in2 101112M9_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112M9.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112M9.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112M9_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/101112M9_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 99 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 18131774
+total bases: 2719766100
+Q20 bases: 2660855746(97.834%)
+Q30 bases: 2554652087(93.9291%)
+
+Read2 before filtering:
+total reads: 18131774
+total bases: 2719766100
+Q20 bases: 2620679516(96.3568%)
+Q30 bases: 2458398401(90.3901%)
+
+Read1 after filtering:
+total reads: 17237372
+total bases: 2546060390
+Q20 bases: 2509946974(98.5816%)
+Q30 bases: 2426529927(95.3053%)
+
+Read2 after filtering:
+total reads: 17237372
+total bases: 2546248834
+Q20 bases: 2490008252(97.7912%)
+Q30 bases: 2364170022(92.8491%)
+
+Filtering result:
+reads passed filter: 34474744
+reads failed due to low quality: 1725230
+reads failed due to too many N: 1084
+reads failed due to too short: 62490
+reads with adapter trimmed: 3157583
+bases trimmed due to adapters: 79149812
+reads with polyX in 3' end: 214344
+bases trimmed in polyX tail: 8561876
+
+Duplication rate: 20.0065%
+
+Insert size peak (evaluated by paired-end reads): 198
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123C14.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123C14.fastp-trim.report.html
+
+/home/shared/fastp --in1 123C14_R1_001.fastq.gz --in2 123C14_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123C14.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123C14.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123C14_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123C14_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 93 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 18870343
+total bases: 2830551450
+Q20 bases: 2766836268(97.749%)
+Q30 bases: 2653100570(93.7309%)
+
+Read2 before filtering:
+total reads: 18870343
+total bases: 2830551450
+Q20 bases: 2731493107(96.5004%)
+Q30 bases: 2566332864(90.6655%)
+
+Read1 after filtering:
+total reads: 18071371
+total bases: 2648057097
+Q20 bases: 2607470600(98.4673%)
+Q30 bases: 2515096250(94.9789%)
+
+Read2 after filtering:
+total reads: 18071371
+total bases: 2648249047
+Q20 bases: 2588295607(97.7361%)
+Q30 bases: 2454017711(92.6657%)
+
+Filtering result:
+reads passed filter: 36142742
+reads failed due to low quality: 1566626
+reads failed due to too many N: 1290
+reads failed due to too short: 30028
+reads with adapter trimmed: 4872895
+bases trimmed due to adapters: 125573013
+reads with polyX in 3' end: 263447
+bases trimmed in polyX tail: 6547042
+
+Duplication rate: 25.3479%
+
+Insert size peak (evaluated by paired-end reads): 175
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123C4.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123C4.fastp-trim.report.html
+
+/home/shared/fastp --in1 123C4_R1_001.fastq.gz --in2 123C4_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123C4.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123C4.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123C4_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123C4_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 109 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 19048725
+total bases: 2857308750
+Q20 bases: 2795970762(97.8533%)
+Q30 bases: 2682895250(93.8959%)
+
+Read2 before filtering:
+total reads: 19048725
+total bases: 2857308750
+Q20 bases: 2754089000(96.3875%)
+Q30 bases: 2581873937(90.3603%)
+
+Read1 after filtering:
+total reads: 18225091
+total bases: 2693849698
+Q20 bases: 2654091229(98.5241%)
+Q30 bases: 2561461884(95.0856%)
+
+Read2 after filtering:
+total reads: 18225091
+total bases: 2694072737
+Q20 bases: 2630349514(97.6347%)
+Q30 bases: 2488800310(92.3806%)
+
+Filtering result:
+reads passed filter: 36450182
+reads failed due to low quality: 1604156
+reads failed due to too many N: 1184
+reads failed due to too short: 41928
+reads with adapter trimmed: 3033679
+bases trimmed due to adapters: 79643403
+reads with polyX in 3' end: 212633
+bases trimmed in polyX tail: 6747648
+
+Duplication rate: 23.3361%
+
+Insert size peak (evaluated by paired-end reads): 207
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123C9.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123C9.fastp-trim.report.html
+
+/home/shared/fastp --in1 123C9_R1_001.fastq.gz --in2 123C9_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123C9.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123C9.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123C9_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123C9_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 108 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+>Illumina TruSeq Adapter Read 2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+
+Read1 before filtering:
+total reads: 18602017
+total bases: 2790302550
+Q20 bases: 2726471928(97.7124%)
+Q30 bases: 2611545470(93.5936%)
+
+Read2 before filtering:
+total reads: 18602017
+total bases: 2790302550
+Q20 bases: 2685966499(96.2608%)
+Q30 bases: 2520165076(90.3187%)
+
+Read1 after filtering:
+total reads: 17867253
+total bases: 2630734765
+Q20 bases: 2588359123(98.3892%)
+Q30 bases: 2491343111(94.7014%)
+
+Read2 after filtering:
+total reads: 17867253
+total bases: 2630798922
+Q20 bases: 2563429160(97.4392%)
+Q30 bases: 2420067214(91.9898%)
+
+Filtering result:
+reads passed filter: 35734506
+reads failed due to low quality: 1463082
+reads failed due to too many N: 1436
+reads failed due to too short: 5010
+reads with adapter trimmed: 3673144
+bases trimmed due to adapters: 98678897
+reads with polyX in 3' end: 161704
+bases trimmed in polyX tail: 2209125
+
+Duplication rate: 22.6797%
+
+Insert size peak (evaluated by paired-end reads): 185
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123H14.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123H14.fastp-trim.report.html
+
+/home/shared/fastp --in1 123H14_R1_001.fastq.gz --in2 123H14_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123H14.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123H14.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123H14_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123H14_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 102 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 18333059
+total bases: 2749958850
+Q20 bases: 2688029664(97.748%)
+Q30 bases: 2579061542(93.7855%)
+
+Read2 before filtering:
+total reads: 18333059
+total bases: 2749958850
+Q20 bases: 2639628710(95.9879%)
+Q30 bases: 2468037531(89.7482%)
+
+Read1 after filtering:
+total reads: 17402927
+total bases: 2552504131
+Q20 bases: 2515635379(98.5556%)
+Q30 bases: 2430440620(95.2179%)
+
+Read2 after filtering:
+total reads: 17402927
+total bases: 2552706585
+Q20 bases: 2488946237(97.5022%)
+Q30 bases: 2353268192(92.1872%)
+
+Filtering result:
+reads passed filter: 34805854
+reads failed due to low quality: 1808762
+reads failed due to too many N: 1098
+reads failed due to too short: 50404
+reads with adapter trimmed: 4371764
+bases trimmed due to adapters: 116272751
+reads with polyX in 3' end: 280710
+bases trimmed in polyX tail: 8845519
+
+Duplication rate: 28.2339%
+
+Insert size peak (evaluated by paired-end reads): 156
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123H4.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123H4.fastp-trim.report.html
+
+/home/shared/fastp --in1 123H4_R1_001.fastq.gz --in2 123H4_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123H4.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123H4.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123H4_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123H4_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 108 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 19029717
+total bases: 2854457550
+Q20 bases: 2787455534(97.6527%)
+Q30 bases: 2672807171(93.6363%)
+
+Read2 before filtering:
+total reads: 19029717
+total bases: 2854457550
+Q20 bases: 2756392493(96.5645%)
+Q30 bases: 2597305979(90.9912%)
+
+Read1 after filtering:
+total reads: 18146760
+total bases: 2647238224
+Q20 bases: 2606863456(98.4748%)
+Q30 bases: 2516049628(95.0443%)
+
+Read2 after filtering:
+total reads: 18146760
+total bases: 2647540150
+Q20 bases: 2592320169(97.9143%)
+Q30 bases: 2466584621(93.1651%)
+
+Filtering result:
+reads passed filter: 36293520
+reads failed due to low quality: 1684112
+reads failed due to too many N: 1220
+reads failed due to too short: 80582
+reads with adapter trimmed: 6103946
+bases trimmed due to adapters: 151222473
+reads with polyX in 3' end: 375952
+bases trimmed in polyX tail: 14300529
+
+Duplication rate: 28.1451%
+
+Insert size peak (evaluated by paired-end reads): 155
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123H9.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123H9.fastp-trim.report.html
+
+/home/shared/fastp --in1 123H9_R1_001.fastq.gz --in2 123H9_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123H9.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123H9.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123H9_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123H9_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 97 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 18011050
+total bases: 2701657500
+Q20 bases: 2636644556(97.5936%)
+Q30 bases: 2524096349(93.4277%)
+
+Read2 before filtering:
+total reads: 18011050
+total bases: 2701657500
+Q20 bases: 2602212732(96.3191%)
+Q30 bases: 2440590509(90.3368%)
+
+Read1 after filtering:
+total reads: 17104746
+total bases: 2522590618
+Q20 bases: 2482708244(98.419%)
+Q30 bases: 2392844844(94.8566%)
+
+Read2 after filtering:
+total reads: 17104746
+total bases: 2522810797
+Q20 bases: 2465940077(97.7457%)
+Q30 bases: 2338604688(92.6984%)
+
+Filtering result:
+reads passed filter: 34209492
+reads failed due to low quality: 1748774
+reads failed due to too many N: 1070
+reads failed due to too short: 62764
+reads with adapter trimmed: 3338285
+bases trimmed due to adapters: 86143544
+reads with polyX in 3' end: 287274
+bases trimmed in polyX tail: 10485636
+
+Duplication rate: 22.3593%
+
+Insert size peak (evaluated by paired-end reads): 186
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123L14.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123L14.fastp-trim.report.html
+
+/home/shared/fastp --in1 123L14_R1_001.fastq.gz --in2 123L14_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123L14.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123L14.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123L14_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123L14_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 102 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 18834650
+total bases: 2825197500
+Q20 bases: 2752919365(97.4417%)
+Q30 bases: 2635478527(93.2848%)
+
+Read2 before filtering:
+total reads: 18834650
+total bases: 2825197500
+Q20 bases: 2714212394(96.0716%)
+Q30 bases: 2546739405(90.1438%)
+
+Read1 after filtering:
+total reads: 17773802
+total bases: 2625447004
+Q20 bases: 2584494177(98.4402%)
+Q30 bases: 2492533600(94.9375%)
+
+Read2 after filtering:
+total reads: 17773802
+total bases: 2625668576
+Q20 bases: 2566118547(97.732%)
+Q30 bases: 2433359692(92.6758%)
+
+Filtering result:
+reads passed filter: 35547604
+reads failed due to low quality: 1979234
+reads failed due to too many N: 1242
+reads failed due to too short: 141220
+reads with adapter trimmed: 3229616
+bases trimmed due to adapters: 85358775
+reads with polyX in 3' end: 533029
+bases trimmed in polyX tail: 25341452
+
+Duplication rate: 31.2923%
+
+Insert size peak (evaluated by paired-end reads): 196
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123L4.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123L4.fastp-trim.report.html
+
+/home/shared/fastp --in1 123L4_R1_001.fastq.gz --in2 123L4_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123L4.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123L4.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123L4_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123L4_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 95 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 18260735
+total bases: 2739110250
+Q20 bases: 2679455946(97.8221%)
+Q30 bases: 2572027921(93.9001%)
+
+Read2 before filtering:
+total reads: 18260735
+total bases: 2739110250
+Q20 bases: 2635527232(96.2184%)
+Q30 bases: 2467621132(90.0884%)
+
+Read1 after filtering:
+total reads: 17349984
+total bases: 2553756475
+Q20 bases: 2517226013(98.5695%)
+Q30 bases: 2432434712(95.2493%)
+
+Read2 after filtering:
+total reads: 17349984
+total bases: 2553982470
+Q20 bases: 2494598358(97.6748%)
+Q30 bases: 2363322531(92.5348%)
+
+Filtering result:
+reads passed filter: 34699968
+reads failed due to low quality: 1758098
+reads failed due to too many N: 1210
+reads failed due to too short: 62194
+reads with adapter trimmed: 3625705
+bases trimmed due to adapters: 97823735
+reads with polyX in 3' end: 206013
+bases trimmed in polyX tail: 8452449
+
+Duplication rate: 22.6085%
+
+Insert size peak (evaluated by paired-end reads): 187
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123L9.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123L9.fastp-trim.report.html
+
+/home/shared/fastp --in1 123L9_R1_001.fastq.gz --in2 123L9_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123L9.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123L9.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123L9_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123L9_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 104 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 18853790
+total bases: 2828068500
+Q20 bases: 2761346280(97.6407%)
+Q30 bases: 2645958185(93.5606%)
+
+Read2 before filtering:
+total reads: 18853790
+total bases: 2828068500
+Q20 bases: 2711981572(95.8952%)
+Q30 bases: 2533645802(89.5893%)
+
+Read1 after filtering:
+total reads: 17894888
+total bases: 2630013424
+Q20 bases: 2590291799(98.4897%)
+Q30 bases: 2498745188(95.0088%)
+
+Read2 after filtering:
+total reads: 17894888
+total bases: 2630264149
+Q20 bases: 2562155694(97.4106%)
+Q30 bases: 2418294774(91.9411%)
+
+Filtering result:
+reads passed filter: 35789776
+reads failed due to low quality: 1864346
+reads failed due to too many N: 1226
+reads failed due to too short: 52232
+reads with adapter trimmed: 3997089
+bases trimmed due to adapters: 108934886
+reads with polyX in 3' end: 308399
+bases trimmed in polyX tail: 9956262
+
+Duplication rate: 25.924%
+
+Insert size peak (evaluated by paired-end reads): 249
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123M4.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123M4.fastp-trim.report.html
+
+/home/shared/fastp --in1 123M4_R1_001.fastq.gz --in2 123M4_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123M4.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123M4.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123M4_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123M4_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 109 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+>Illumina TruSeq Adapter Read 2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+
+Read1 before filtering:
+total reads: 18324402
+total bases: 2748660300
+Q20 bases: 2684491725(97.6655%)
+Q30 bases: 2572883482(93.605%)
+
+Read2 before filtering:
+total reads: 18324402
+total bases: 2748660300
+Q20 bases: 2645740410(96.2556%)
+Q30 bases: 2486549562(90.4641%)
+
+Read1 after filtering:
+total reads: 17545758
+total bases: 2599706659
+Q20 bases: 2558544606(98.4167%)
+Q30 bases: 2465079249(94.8214%)
+
+Read2 after filtering:
+total reads: 17545758
+total bases: 2599733702
+Q20 bases: 2535800317(97.5408%)
+Q30 bases: 2398915284(92.2754%)
+
+Filtering result:
+reads passed filter: 35091516
+reads failed due to low quality: 1547962
+reads failed due to too many N: 1494
+reads failed due to too short: 7832
+reads with adapter trimmed: 2541110
+bases trimmed due to adapters: 64836923
+reads with polyX in 3' end: 143511
+bases trimmed in polyX tail: 2176876
+
+Duplication rate: 24.7736%
+
+Insert size peak (evaluated by paired-end reads): 250
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123M9.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123M9.fastp-trim.report.html
+
+/home/shared/fastp --in1 123M9_R1_001.fastq.gz --in2 123M9_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123M9.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123M9.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123M9_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/123M9_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 97 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 18988310
+total bases: 2848246500
+Q20 bases: 2784061636(97.7465%)
+Q30 bases: 2669219896(93.7145%)
+
+Read2 before filtering:
+total reads: 18988310
+total bases: 2848246500
+Q20 bases: 2739094537(96.1677%)
+Q30 bases: 2565558922(90.075%)
+
+Read1 after filtering:
+total reads: 18114186
+total bases: 2673943819
+Q20 bases: 2633125945(98.4735%)
+Q30 bases: 2539437926(94.9698%)
+
+Read2 after filtering:
+total reads: 18114186
+total bases: 2674147739
+Q20 bases: 2607772703(97.5179%)
+Q30 bases: 2464866835(92.1739%)
+
+Filtering result:
+reads passed filter: 36228372
+reads failed due to low quality: 1712442
+reads failed due to too many N: 1306
+reads failed due to too short: 34500
+reads with adapter trimmed: 3336499
+bases trimmed due to adapters: 85934456
+reads with polyX in 3' end: 236185
+bases trimmed in polyX tail: 6699527
+
+Duplication rate: 24.3619%
+
+Insert size peak (evaluated by paired-end reads): 187
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415C14.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415C14.fastp-trim.report.html
+
+/home/shared/fastp --in1 131415C14_R1_001.fastq.gz --in2 131415C14_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415C14.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415C14.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415C14_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415C14_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 108 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 19068531
+total bases: 2860279650
+Q20 bases: 2792904933(97.6445%)
+Q30 bases: 2676468503(93.5737%)
+
+Read2 before filtering:
+total reads: 19068531
+total bases: 2860279650
+Q20 bases: 2757311932(96.4001%)
+Q30 bases: 2593108822(90.6593%)
+
+Read1 after filtering:
+total reads: 18229776
+total bases: 2680777869
+Q20 bases: 2638753295(98.4324%)
+Q30 bases: 2543670045(94.8855%)
+
+Read2 after filtering:
+total reads: 18229776
+total bases: 2680984658
+Q20 bases: 2619047676(97.6898%)
+Q30 bases: 2483391391(92.6298%)
+
+Filtering result:
+reads passed filter: 36459552
+reads failed due to low quality: 1640114
+reads failed due to too many N: 1292
+reads failed due to too short: 36104
+reads with adapter trimmed: 4005927
+bases trimmed due to adapters: 106649396
+reads with polyX in 3' end: 364599
+bases trimmed in polyX tail: 9337599
+
+Duplication rate: 31.3139%
+
+Insert size peak (evaluated by paired-end reads): 188
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415C4.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415C4.fastp-trim.report.html
+
+/home/shared/fastp --in1 131415C4_R1_001.fastq.gz --in2 131415C4_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415C4.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415C4.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415C4_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415C4_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 109 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 18522107
+total bases: 2778316050
+Q20 bases: 2718830316(97.8589%)
+Q30 bases: 2610897441(93.9741%)
+
+Read2 before filtering:
+total reads: 18522107
+total bases: 2778316050
+Q20 bases: 2682562659(96.5535%)
+Q30 bases: 2520572147(90.723%)
+
+Read1 after filtering:
+total reads: 17727979
+total bases: 2623056516
+Q20 bases: 2584944379(98.547%)
+Q30 bases: 2496542301(95.1768%)
+
+Read2 after filtering:
+total reads: 17727979
+total bases: 2623271392
+Q20 bases: 2565540890(97.7993%)
+Q30 bases: 2433358110(92.7604%)
+
+Filtering result:
+reads passed filter: 35455958
+reads failed due to low quality: 1542944
+reads failed due to too many N: 1312
+reads failed due to too short: 44000
+reads with adapter trimmed: 2755641
+bases trimmed due to adapters: 72226343
+reads with polyX in 3' end: 192256
+bases trimmed in polyX tail: 6912807
+
+Duplication rate: 23.6123%
+
+Insert size peak (evaluated by paired-end reads): 208
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415C9.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415C9.fastp-trim.report.html
+
+/home/shared/fastp --in1 131415C9_R1_001.fastq.gz --in2 131415C9_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415C9.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415C9.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415C9_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415C9_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 106 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 19215988
+total bases: 2882398200
+Q20 bases: 2819803629(97.8284%)
+Q30 bases: 2706723618(93.9053%)
+
+Read2 before filtering:
+total reads: 19215988
+total bases: 2882398200
+Q20 bases: 2781641230(96.5044%)
+Q30 bases: 2612534828(90.6375%)
+
+Read1 after filtering:
+total reads: 18443621
+total bases: 2718110600
+Q20 bases: 2677697200(98.5132%)
+Q30 bases: 2584244748(95.075%)
+
+Read2 after filtering:
+total reads: 18443621
+total bases: 2718301116
+Q20 bases: 2655577600(97.6925%)
+Q30 bases: 2514468538(92.5015%)
+
+Filtering result:
+reads passed filter: 36887242
+reads failed due to low quality: 1516112
+reads failed due to too many N: 1386
+reads failed due to too short: 27236
+reads with adapter trimmed: 3666778
+bases trimmed due to adapters: 96964430
+reads with polyX in 3' end: 213054
+bases trimmed in polyX tail: 5702493
+
+Duplication rate: 23.5329%
+
+Insert size peak (evaluated by paired-end reads): 249
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415H14.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415H14.fastp-trim.report.html
+
+/home/shared/fastp --in1 131415H14_R1_001.fastq.gz --in2 131415H14_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415H14.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415H14.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415H14_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415H14_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 109 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+>Illumina TruSeq Adapter Read 2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+
+Read1 before filtering:
+total reads: 20365920
+total bases: 3054888000
+Q20 bases: 2985959085(97.7437%)
+Q30 bases: 2866758531(93.8417%)
+
+Read2 before filtering:
+total reads: 20365920
+total bases: 3054888000
+Q20 bases: 2950792720(96.5925%)
+Q30 bases: 2781306612(91.0445%)
+
+Read1 after filtering:
+total reads: 19582400
+total bases: 2888852155
+Q20 bases: 2844852219(98.4769%)
+Q30 bases: 2744883468(95.0164%)
+
+Read2 after filtering:
+total reads: 19582400
+total bases: 2888858336
+Q20 bases: 2823266978(97.7295%)
+Q30 bases: 2677432152(92.6813%)
+
+Filtering result:
+reads passed filter: 39164800
+reads failed due to low quality: 1558638
+reads failed due to too many N: 1622
+reads failed due to too short: 6780
+reads with adapter trimmed: 3797455
+bases trimmed due to adapters: 96860751
+reads with polyX in 3' end: 213381
+bases trimmed in polyX tail: 3347062
+
+Duplication rate: 29.6158%
+
+Insert size peak (evaluated by paired-end reads): 217
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415H4.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415H4.fastp-trim.report.html
+
+/home/shared/fastp --in1 131415H4_R1_001.fastq.gz --in2 131415H4_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415H4.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415H4.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415H4_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415H4_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 106 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 18751120
+total bases: 2812668000
+Q20 bases: 2749515017(97.7547%)
+Q30 bases: 2637105259(93.7581%)
+
+Read2 before filtering:
+total reads: 18751120
+total bases: 2812668000
+Q20 bases: 2705459286(96.1884%)
+Q30 bases: 2534882809(90.1238%)
+
+Read1 after filtering:
+total reads: 17891458
+total bases: 2645920302
+Q20 bases: 2606163022(98.4974%)
+Q30 bases: 2514775101(95.0435%)
+
+Read2 after filtering:
+total reads: 17891458
+total bases: 2646109057
+Q20 bases: 2580912084(97.5361%)
+Q30 bases: 2440683650(92.2367%)
+
+Filtering result:
+reads passed filter: 35782916
+reads failed due to low quality: 1685822
+reads failed due to too many N: 1324
+reads failed due to too short: 32178
+reads with adapter trimmed: 2867578
+bases trimmed due to adapters: 75332153
+reads with polyX in 3' end: 220723
+bases trimmed in polyX tail: 6215835
+
+Duplication rate: 24.6527%
+
+Insert size peak (evaluated by paired-end reads): 239
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415H9.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415H9.fastp-trim.report.html
+
+/home/shared/fastp --in1 131415H9_R1_001.fastq.gz --in2 131415H9_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415H9.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415H9.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415H9_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415H9_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 107 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 19273665
+total bases: 2891049750
+Q20 bases: 2824707309(97.7052%)
+Q30 bases: 2707197117(93.6406%)
+
+Read2 before filtering:
+total reads: 19273665
+total bases: 2891049750
+Q20 bases: 2776998183(96.055%)
+Q30 bases: 2599030978(89.8992%)
+
+Read1 after filtering:
+total reads: 18356692
+total bases: 2720147988
+Q20 bases: 2678385706(98.4647%)
+Q30 bases: 2582541809(94.9412%)
+
+Read2 after filtering:
+total reads: 18356692
+total bases: 2720385590
+Q20 bases: 2651736027(97.4765%)
+Q30 bases: 2504612240(92.0683%)
+
+Filtering result:
+reads passed filter: 36713384
+reads failed due to low quality: 1799146
+reads failed due to too many N: 1320
+reads failed due to too short: 33480
+reads with adapter trimmed: 2464298
+bases trimmed due to adapters: 66686999
+reads with polyX in 3' end: 186523
+bases trimmed in polyX tail: 6051382
+
+Duplication rate: 21.6442%
+
+Insert size peak (evaluated by paired-end reads): 260
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415L14.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415L14.fastp-trim.report.html
+
+/home/shared/fastp --in1 131415L14_R1_001.fastq.gz --in2 131415L14_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415L14.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415L14.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415L14_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415L14_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 111 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+>Illumina TruSeq Adapter Read 2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+
+Read1 before filtering:
+total reads: 19001670
+total bases: 2850250500
+Q20 bases: 2770005345(97.1846%)
+Q30 bases: 2639120750(92.5926%)
+
+Read2 before filtering:
+total reads: 19001670
+total bases: 2850250500
+Q20 bases: 2737283446(96.0366%)
+Q30 bases: 2565246677(90.0007%)
+
+Read1 after filtering:
+total reads: 18124879
+total bases: 2679898668
+Q20 bases: 2627514389(98.0453%)
+Q30 bases: 2516628782(93.9076%)
+
+Read2 after filtering:
+total reads: 18124879
+total bases: 2679830798
+Q20 bases: 2606676355(97.2702%)
+Q30 bases: 2457996715(91.7221%)
+
+Filtering result:
+reads passed filter: 36249758
+reads failed due to low quality: 1727216
+reads failed due to too many N: 1510
+reads failed due to too short: 24856
+reads with adapter trimmed: 2534247
+bases trimmed due to adapters: 71642015
+reads with polyX in 3' end: 786484
+bases trimmed in polyX tail: 11400729
+
+Duplication rate: 55.5945%
+
+Insert size peak (evaluated by paired-end reads): 240
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415L4.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415L4.fastp-trim.report.html
+
+/home/shared/fastp --in1 131415L4_R1_001.fastq.gz --in2 131415L4_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415L4.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415L4.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415L4_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415L4_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 94 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 19295022
+total bases: 2894253300
+Q20 bases: 2828526972(97.7291%)
+Q30 bases: 2712000222(93.7029%)
+
+Read2 before filtering:
+total reads: 19295022
+total bases: 2894253300
+Q20 bases: 2765282290(95.5439%)
+Q30 bases: 2575942026(89.002%)
+
+Read1 after filtering:
+total reads: 18257942
+total bases: 2701818455
+Q20 bases: 2661836631(98.5202%)
+Q30 bases: 2568232831(95.0557%)
+
+Read2 after filtering:
+total reads: 18257942
+total bases: 2702038776
+Q20 bases: 2626003572(97.186%)
+Q30 bases: 2470203747(91.42%)
+
+Filtering result:
+reads passed filter: 36515884
+reads failed due to low quality: 2014744
+reads failed due to too many N: 1388
+reads failed due to too short: 58028
+reads with adapter trimmed: 2828284
+bases trimmed due to adapters: 75289597
+reads with polyX in 3' end: 268921
+bases trimmed in polyX tail: 11081758
+
+Duplication rate: 22.2207%
+
+Insert size peak (evaluated by paired-end reads): 259
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415L9.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415L9.fastp-trim.report.html
+
+/home/shared/fastp --in1 131415L9_R1_001.fastq.gz --in2 131415L9_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415L9.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415L9.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415L9_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415L9_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 112 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 19399630
+total bases: 2909944500
+Q20 bases: 2842997071(97.6994%)
+Q30 bases: 2724707441(93.6343%)
+
+Read2 before filtering:
+total reads: 19399630
+total bases: 2909944500
+Q20 bases: 2795750495(96.0757%)
+Q30 bases: 2613345936(89.8074%)
+
+Read1 after filtering:
+total reads: 18476991
+total bases: 2738195533
+Q20 bases: 2696193727(98.4661%)
+Q30 bases: 2599308930(94.9278%)
+
+Read2 after filtering:
+total reads: 18476991
+total bases: 2738454812
+Q20 bases: 2668702592(97.4529%)
+Q30 bases: 2517242147(91.922%)
+
+Filtering result:
+reads passed filter: 36953982
+reads failed due to low quality: 1790450
+reads failed due to too many N: 1358
+reads failed due to too short: 53470
+reads with adapter trimmed: 2550838
+bases trimmed due to adapters: 67028287
+reads with polyX in 3' end: 277246
+bases trimmed in polyX tail: 10081200
+
+Duplication rate: 23.9545%
+
+Insert size peak (evaluated by paired-end reads): 198
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415M14.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415M14.fastp-trim.report.html
+
+/home/shared/fastp --in1 131415M14_R1_001.fastq.gz --in2 131415M14_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415M14.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415M14.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415M14_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415M14_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 110 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 19034780
+total bases: 2855217000
+Q20 bases: 2789649139(97.7036%)
+Q30 bases: 2674068519(93.6555%)
+
+Read2 before filtering:
+total reads: 19034780
+total bases: 2855217000
+Q20 bases: 2745730934(96.1654%)
+Q30 bases: 2572440275(90.0961%)
+
+Read1 after filtering:
+total reads: 18115716
+total bases: 2684278157
+Q20 bases: 2643455853(98.4792%)
+Q30 bases: 2550222370(95.0059%)
+
+Read2 after filtering:
+total reads: 18115716
+total bases: 2684474407
+Q20 bases: 2619586814(97.5829%)
+Q30 bases: 2478826798(92.3394%)
+
+Filtering result:
+reads passed filter: 36231432
+reads failed due to low quality: 1795416
+reads failed due to too many N: 1320
+reads failed due to too short: 41392
+reads with adapter trimmed: 2242688
+bases trimmed due to adapters: 65321956
+reads with polyX in 3' end: 259687
+bases trimmed in polyX tail: 7748208
+
+Duplication rate: 26.5291%
+
+Insert size peak (evaluated by paired-end reads): 260
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415M4.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415M4.fastp-trim.report.html
+
+/home/shared/fastp --in1 131415M4_R1_001.fastq.gz --in2 131415M4_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415M4.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415M4.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415M4_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415M4_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 109 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 18921850
+total bases: 2838277500
+Q20 bases: 2777295194(97.8514%)
+Q30 bases: 2667652425(93.9884%)
+
+Read2 before filtering:
+total reads: 18921850
+total bases: 2838277500
+Q20 bases: 2729151219(96.1552%)
+Q30 bases: 2555780898(90.0469%)
+
+Read1 after filtering:
+total reads: 18084361
+total bases: 2676298050
+Q20 bases: 2638129110(98.5738%)
+Q30 bases: 2548977577(95.2427%)
+
+Read2 after filtering:
+total reads: 18084361
+total bases: 2676509735
+Q20 bases: 2608758098(97.4687%)
+Q30 bases: 2463926478(92.0574%)
+
+Filtering result:
+reads passed filter: 36168722
+reads failed due to low quality: 1647712
+reads failed due to too many N: 1284
+reads failed due to too short: 25982
+reads with adapter trimmed: 2827022
+bases trimmed due to adapters: 72900564
+reads with polyX in 3' end: 181272
+bases trimmed in polyX tail: 5195762
+
+Duplication rate: 24.8958%
+
+Insert size peak (evaluated by paired-end reads): 197
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415M9.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415M9.fastp-trim.report.html
+
+/home/shared/fastp --in1 131415M9_R1_001.fastq.gz --in2 131415M9_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415M9.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415M9.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415M9_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/131415M9_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 110 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+>Illumina TruSeq Adapter Read 2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+
+Read1 before filtering:
+total reads: 18413101
+total bases: 2761965150
+Q20 bases: 2697335138(97.66%)
+Q30 bases: 2584670565(93.5809%)
+
+Read2 before filtering:
+total reads: 18413101
+total bases: 2761965150
+Q20 bases: 2670761806(96.6979%)
+Q30 bases: 2515879100(91.0902%)
+
+Read1 after filtering:
+total reads: 17750030
+total bases: 2619789397
+Q20 bases: 2576808504(98.3594%)
+Q30 bases: 2480615272(94.6876%)
+
+Read2 after filtering:
+total reads: 17750030
+total bases: 2619822655
+Q20 bases: 2559937647(97.7142%)
+Q30 bases: 2424970721(92.5624%)
+
+Filtering result:
+reads passed filter: 35500060
+reads failed due to low quality: 1315538
+reads failed due to too many N: 1404
+reads failed due to too short: 9200
+reads with adapter trimmed: 3450487
+bases trimmed due to adapters: 83637842
+reads with polyX in 3' end: 284747
+bases trimmed in polyX tail: 4542688
+
+Duplication rate: 29.1108%
+
+Insert size peak (evaluated by paired-end reads): 197
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/13M14.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/13M14.fastp-trim.report.html
+
+/home/shared/fastp --in1 13M14_R1_001.fastq.gz --in2 13M14_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/13M14.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/13M14.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/13M14_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/13M14_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 100 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 19231233
+total bases: 2884684950
+Q20 bases: 2823188346(97.8682%)
+Q30 bases: 2712605405(94.0347%)
+
+Read2 before filtering:
+total reads: 19231233
+total bases: 2884684950
+Q20 bases: 2783266054(96.4842%)
+Q30 bases: 2617254249(90.7293%)
+
+Read1 after filtering:
+total reads: 18353287
+total bases: 2700741165
+Q20 bases: 2663218336(98.6106%)
+Q30 bases: 2575754379(95.3721%)
+
+Read2 after filtering:
+total reads: 18353287
+total bases: 2700968011
+Q20 bases: 2643015815(97.8544%)
+Q30 bases: 2512248583(93.0129%)
+
+Filtering result:
+reads passed filter: 36706574
+reads failed due to low quality: 1705362
+reads failed due to too many N: 1256
+reads failed due to too short: 49274
+reads with adapter trimmed: 4072299
+bases trimmed due to adapters: 105458172
+reads with polyX in 3' end: 197306
+bases trimmed in polyX tail: 7444409
+
+Duplication rate: 22.164%
+
+Insert size peak (evaluated by paired-end reads): 188
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456C4.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456C4.fastp-trim.report.html
+
+/home/shared/fastp --in1 456C4_R1_001.fastq.gz --in2 456C4_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456C4.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456C4.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456C4_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456C4_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 99 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 17696480
+total bases: 2654472000
+Q20 bases: 2592722068(97.6737%)
+Q30 bases: 2484957264(93.614%)
+
+Read2 before filtering:
+total reads: 17696480
+total bases: 2654472000
+Q20 bases: 2559550046(96.4241%)
+Q30 bases: 2404707207(90.5908%)
+
+Read1 after filtering:
+total reads: 16854919
+total bases: 2485029276
+Q20 bases: 2446578803(98.4527%)
+Q30 bases: 2360267311(94.9795%)
+
+Read2 after filtering:
+total reads: 16854919
+total bases: 2485206907
+Q20 bases: 2429678530(97.7656%)
+Q30 bases: 2306436246(92.8066%)
+
+Filtering result:
+reads passed filter: 33709838
+reads failed due to low quality: 1619902
+reads failed due to too many N: 1174
+reads failed due to too short: 62046
+reads with adapter trimmed: 3255009
+bases trimmed due to adapters: 84956382
+reads with polyX in 3' end: 396818
+bases trimmed in polyX tail: 11588479
+
+Duplication rate: 34.5924%
+
+Insert size peak (evaluated by paired-end reads): 240
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456H4.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456H4.fastp-trim.report.html
+
+/home/shared/fastp --in1 456H4_R1_001.fastq.gz --in2 456H4_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456H4.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456H4.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456H4_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456H4_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 99 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+>Illumina TruSeq Adapter Read 2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+
+Read1 before filtering:
+total reads: 22586502
+total bases: 3387975300
+Q20 bases: 3296240728(97.2923%)
+Q30 bases: 3144158958(92.8035%)
+
+Read2 before filtering:
+total reads: 22586502
+total bases: 3387975300
+Q20 bases: 3243905175(95.7476%)
+Q30 bases: 3033718479(89.5437%)
+
+Read1 after filtering:
+total reads: 21457031
+total bases: 3178186506
+Q20 bases: 3120493818(98.1847%)
+Q30 bases: 2993816061(94.1989%)
+
+Read2 after filtering:
+total reads: 21457031
+total bases: 3178173738
+Q20 bases: 3089013686(97.1946%)
+Q30 bases: 2909817254(91.5563%)
+
+Filtering result:
+reads passed filter: 42914062
+reads failed due to low quality: 2226560
+reads failed due to too many N: 1772
+reads failed due to too short: 30610
+reads with adapter trimmed: 2681859
+bases trimmed due to adapters: 75328534
+reads with polyX in 3' end: 733230
+bases trimmed in polyX tail: 13514392
+
+Duplication rate: 39.1511%
+
+Insert size peak (evaluated by paired-end reads): 249
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456H9.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456H9.fastp-trim.report.html
+
+/home/shared/fastp --in1 456H9_R1_001.fastq.gz --in2 456H9_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456H9.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456H9.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456H9_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456H9_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 117 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 18824759
+total bases: 2823713850
+Q20 bases: 2759726416(97.7339%)
+Q30 bases: 2645636775(93.6935%)
+
+Read2 before filtering:
+total reads: 18824759
+total bases: 2823713850
+Q20 bases: 2718475849(96.2731%)
+Q30 bases: 2549035278(90.2724%)
+
+Read1 after filtering:
+total reads: 17883348
+total bases: 2614842644
+Q20 bases: 2576073511(98.5173%)
+Q30 bases: 2486896346(95.1069%)
+
+Read2 after filtering:
+total reads: 17883348
+total bases: 2615232492
+Q20 bases: 2556750762(97.7638%)
+Q30 bases: 2426960555(92.8009%)
+
+Filtering result:
+reads passed filter: 35766696
+reads failed due to low quality: 1807424
+reads failed due to too many N: 1162
+reads failed due to too short: 74236
+reads with adapter trimmed: 5116396
+bases trimmed due to adapters: 135490258
+reads with polyX in 3' end: 296348
+bases trimmed in polyX tail: 10990344
+
+Duplication rate: 21.9716%
+
+Insert size peak (evaluated by paired-end reads): 155
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456L14.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456L14.fastp-trim.report.html
+
+/home/shared/fastp --in1 456L14_R1_001.fastq.gz --in2 456L14_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456L14.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456L14.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456L14_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456L14_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 107 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+>Illumina TruSeq Adapter Read 2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+
+Read1 before filtering:
+total reads: 18001418
+total bases: 2700212700
+Q20 bases: 2628347740(97.3385%)
+Q30 bases: 2510218652(92.9637%)
+
+Read2 before filtering:
+total reads: 18001418
+total bases: 2700212700
+Q20 bases: 2604198783(96.4442%)
+Q30 bases: 2451027510(90.7716%)
+
+Read1 after filtering:
+total reads: 17243850
+total bases: 2538398425
+Q20 bases: 2491875683(98.1672%)
+Q30 bases: 2392087539(94.2361%)
+
+Read2 after filtering:
+total reads: 17243850
+total bases: 2538422503
+Q20 bases: 2477352754(97.5942%)
+Q30 bases: 2345796019(92.4116%)
+
+Filtering result:
+reads passed filter: 34487700
+reads failed due to low quality: 1500272
+reads failed due to too many N: 1436
+reads failed due to too short: 13428
+reads with adapter trimmed: 3485484
+bases trimmed due to adapters: 93421327
+reads with polyX in 3' end: 472738
+bases trimmed in polyX tail: 7383128
+
+Duplication rate: 43.6521%
+
+Insert size peak (evaluated by paired-end reads): 239
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456L4.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456L4.fastp-trim.report.html
+
+/home/shared/fastp --in1 456L4_R1_001.fastq.gz --in2 456L4_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456L4.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456L4.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456L4_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456L4_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 81 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+>Illumina TruSeq Adapter Read 2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+
+Read1 before filtering:
+total reads: 18181680
+total bases: 2727252000
+Q20 bases: 2662295289(97.6182%)
+Q30 bases: 2550213480(93.5085%)
+
+Read2 before filtering:
+total reads: 18181680
+total bases: 2727252000
+Q20 bases: 2629327871(96.4094%)
+Q30 bases: 2471801356(90.6334%)
+
+Read1 after filtering:
+total reads: 17454163
+total bases: 2569320404
+Q20 bases: 2527537474(98.3738%)
+Q30 bases: 2433281776(94.7053%)
+
+Read2 after filtering:
+total reads: 17454163
+total bases: 2569364524
+Q20 bases: 2507370982(97.5872%)
+Q30 bases: 2371867848(92.3134%)
+
+Filtering result:
+reads passed filter: 34908326
+reads failed due to low quality: 1440202
+reads failed due to too many N: 1396
+reads failed due to too short: 13436
+reads with adapter trimmed: 3639593
+bases trimmed due to adapters: 97229218
+reads with polyX in 3' end: 236248
+bases trimmed in polyX tail: 4304267
+
+Duplication rate: 29.368%
+
+Insert size peak (evaluated by paired-end reads): 197
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456L9.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456L9.fastp-trim.report.html
+
+/home/shared/fastp --in1 456L9_R1_001.fastq.gz --in2 456L9_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456L9.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456L9.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456L9_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456L9_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 96 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+>Illumina TruSeq Adapter Read 2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+
+Read1 before filtering:
+total reads: 18519634
+total bases: 2777945100
+Q20 bases: 2715907793(97.7668%)
+Q30 bases: 2605742442(93.8011%)
+
+Read2 before filtering:
+total reads: 18519634
+total bases: 2777945100
+Q20 bases: 2674111796(96.2622%)
+Q30 bases: 2509681968(90.3431%)
+
+Read1 after filtering:
+total reads: 17764204
+total bases: 2628209610
+Q20 bases: 2588044459(98.4718%)
+Q30 bases: 2495609339(94.9547%)
+
+Read2 after filtering:
+total reads: 17764204
+total bases: 2628243403
+Q20 bases: 2562456028(97.4969%)
+Q30 bases: 2420521572(92.0966%)
+
+Filtering result:
+reads passed filter: 35528408
+reads failed due to low quality: 1503586
+reads failed due to too many N: 1414
+reads failed due to too short: 5860
+reads with adapter trimmed: 2764968
+bases trimmed due to adapters: 72821096
+reads with polyX in 3' end: 148872
+bases trimmed in polyX tail: 2200805
+
+Duplication rate: 25.0889%
+
+Insert size peak (evaluated by paired-end reads): 250
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456M14.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456M14.fastp-trim.report.html
+
+/home/shared/fastp --in1 456M14_R1_001.fastq.gz --in2 456M14_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456M14.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456M14.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456M14_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456M14_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 99 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 19132549
+total bases: 2869882350
+Q20 bases: 2802548779(97.6538%)
+Q30 bases: 2688236912(93.6706%)
+
+Read2 before filtering:
+total reads: 19132549
+total bases: 2869882350
+Q20 bases: 2757805179(96.0947%)
+Q30 bases: 2585770210(90.1002%)
+
+Read1 after filtering:
+total reads: 18186509
+total bases: 2686117253
+Q20 bases: 2646265873(98.5164%)
+Q30 bases: 2554591597(95.1035%)
+
+Read2 after filtering:
+total reads: 18186509
+total bases: 2686363920
+Q20 bases: 2621203227(97.5744%)
+Q30 bases: 2481012321(92.3558%)
+
+Filtering result:
+reads passed filter: 36373018
+reads failed due to low quality: 1832428
+reads failed due to too many N: 1350
+reads failed due to too short: 58302
+reads with adapter trimmed: 3208436
+bases trimmed due to adapters: 84871571
+reads with polyX in 3' end: 289336
+bases trimmed in polyX tail: 11180648
+
+Duplication rate: 25.9935%
+
+Insert size peak (evaluated by paired-end reads): 150
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456M4.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456M4.fastp-trim.report.html
+
+/home/shared/fastp --in1 456M4_R1_001.fastq.gz --in2 456M4_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456M4.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456M4.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456M4_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456M4_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 108 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 17435038
+total bases: 2615255700
+Q20 bases: 2554185361(97.6648%)
+Q30 bases: 2448006087(93.6048%)
+
+Read2 before filtering:
+total reads: 17435038
+total bases: 2615255700
+Q20 bases: 2520068327(96.3603%)
+Q30 bases: 2363967168(90.3914%)
+
+Read1 after filtering:
+total reads: 16533649
+total bases: 2421202082
+Q20 bases: 2384959851(98.5031%)
+Q30 bases: 2302993370(95.1178%)
+
+Read2 after filtering:
+total reads: 16533649
+total bases: 2421437314
+Q20 bases: 2369008583(97.8348%)
+Q30 bases: 2250825382(92.9541%)
+
+Filtering result:
+reads passed filter: 33067298
+reads failed due to low quality: 1725810
+reads failed due to too many N: 1002
+reads failed due to too short: 75966
+reads with adapter trimmed: 4420126
+bases trimmed due to adapters: 117569071
+reads with polyX in 3' end: 353286
+bases trimmed in polyX tail: 12224724
+
+Duplication rate: 28.5866%
+
+Insert size peak (evaluated by paired-end reads): 187
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456M9.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456M9.fastp-trim.report.html
+
+/home/shared/fastp --in1 456M9_R1_001.fastq.gz --in2 456M9_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456M9.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456M9.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456M9_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/456M9_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 98 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+>Illumina TruSeq Adapter Read 2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+
+Read1 before filtering:
+total reads: 19033542
+total bases: 2855031300
+Q20 bases: 2781007870(97.4073%)
+Q30 bases: 2656992939(93.0635%)
+
+Read2 before filtering:
+total reads: 19033542
+total bases: 2855031300
+Q20 bases: 2744482593(96.1279%)
+Q30 bases: 2576061896(90.2288%)
+
+Read1 after filtering:
+total reads: 18161660
+total bases: 2686471623
+Q20 bases: 2638573883(98.2171%)
+Q30 bases: 2534034860(94.3258%)
+
+Read2 after filtering:
+total reads: 18161660
+total bases: 2686459944
+Q20 bases: 2617387691(97.4289%)
+Q30 bases: 2472352884(92.0301%)
+
+Filtering result:
+reads passed filter: 36323320
+reads failed due to low quality: 1723472
+reads failed due to too many N: 1504
+reads failed due to too short: 18788
+reads with adapter trimmed: 2725896
+bases trimmed due to adapters: 72778621
+reads with polyX in 3' end: 517038
+bases trimmed in polyX tail: 8106643
+
+Duplication rate: 46.8801%
+
+Insert size peak (evaluated by paired-end reads): 240
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/45C14.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/45C14.fastp-trim.report.html
+
+/home/shared/fastp --in1 45C14_R1_001.fastq.gz --in2 45C14_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/45C14.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/45C14.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/45C14_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/45C14_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 95 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 17854814
+total bases: 2678222100
+Q20 bases: 2614138724(97.6072%)
+Q30 bases: 2504421852(93.5106%)
+
+Read2 before filtering:
+total reads: 17854814
+total bases: 2678222100
+Q20 bases: 2576937616(96.2182%)
+Q30 bases: 2413366496(90.1108%)
+
+Read1 after filtering:
+total reads: 16857014
+total bases: 2483912020
+Q20 bases: 2446873447(98.5089%)
+Q30 bases: 2362779678(95.1233%)
+
+Read2 after filtering:
+total reads: 16857014
+total bases: 2484122737
+Q20 bases: 2429396497(97.797%)
+Q30 bases: 2305923538(92.8265%)
+
+Filtering result:
+reads passed filter: 33714028
+reads failed due to low quality: 1883442
+reads failed due to too many N: 942
+reads failed due to too short: 111216
+reads with adapter trimmed: 3439094
+bases trimmed due to adapters: 89867511
+reads with polyX in 3' end: 402865
+bases trimmed in polyX tail: 17419548
+
+Duplication rate: 27.8414%
+
+Insert size peak (evaluated by paired-end reads): 150
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/45C9.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/45C9.fastp-trim.report.html
+
+/home/shared/fastp --in1 45C9_R1_001.fastq.gz --in2 45C9_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/45C9.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/45C9.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/45C9_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/45C9_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 90 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 18748137
+total bases: 2812220550
+Q20 bases: 2739743093(97.4228%)
+Q30 bases: 2616465178(93.0391%)
+
+Read2 before filtering:
+total reads: 18748137
+total bases: 2812220550
+Q20 bases: 2706995416(96.2583%)
+Q30 bases: 2541661492(90.3792%)
+
+Read1 after filtering:
+total reads: 17788928
+total bases: 2627659802
+Q20 bases: 2583063305(98.3028%)
+Q30 bases: 2484627006(94.5566%)
+
+Read2 after filtering:
+total reads: 17788928
+total bases: 2627803102
+Q20 bases: 2566153931(97.654%)
+Q30 bases: 2433873969(92.6201%)
+
+Filtering result:
+reads passed filter: 35577856
+reads failed due to low quality: 1851792
+reads failed due to too many N: 1104
+reads failed due to too short: 65522
+reads with adapter trimmed: 2793871
+bases trimmed due to adapters: 77713465
+reads with polyX in 3' end: 624626
+bases trimmed in polyX tail: 15775867
+
+Duplication rate: 35.4487%
+
+Insert size peak (evaluated by paired-end reads): 239
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/45H14.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/45H14.fastp-trim.report.html
+
+/home/shared/fastp --in1 45H14_R1_001.fastq.gz --in2 45H14_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/45H14.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/45H14.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/45H14_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/45H14_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 104 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+>Illumina TruSeq Adapter Read 2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+
+Read1 before filtering:
+total reads: 21538044
+total bases: 3230706600
+Q20 bases: 3153551975(97.6118%)
+Q30 bases: 3022324967(93.55%)
+
+Read2 before filtering:
+total reads: 21538044
+total bases: 3230706600
+Q20 bases: 3114042740(96.3889%)
+Q30 bases: 2929632001(90.6808%)
+
+Read1 after filtering:
+total reads: 20660050
+total bases: 3053494563
+Q20 bases: 3004565952(98.3976%)
+Q30 bases: 2894395034(94.7896%)
+
+Read2 after filtering:
+total reads: 20660050
+total bases: 3053551857
+Q20 bases: 2980017730(97.5918%)
+Q30 bases: 2821171332(92.3898%)
+
+Filtering result:
+reads passed filter: 41320100
+reads failed due to low quality: 1743360
+reads failed due to too many N: 1752
+reads failed due to too short: 10876
+reads with adapter trimmed: 3394757
+bases trimmed due to adapters: 89962926
+reads with polyX in 3' end: 280987
+bases trimmed in polyX tail: 4633468
+
+Duplication rate: 30.834%
+
+Insert size peak (evaluated by paired-end reads): 239
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/67C9.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/67C9.fastp-trim.report.html
+
+/home/shared/fastp --in1 67C9_R1_001.fastq.gz --in2 67C9_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/67C9.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/67C9.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/67C9_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/67C9_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 114 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 19237566
+total bases: 2885634900
+Q20 bases: 2820673934(97.7488%)
+Q30 bases: 2707091130(93.8127%)
+
+Read2 before filtering:
+total reads: 19237566
+total bases: 2885634900
+Q20 bases: 2786709204(96.5718%)
+Q30 bases: 2623094095(90.9018%)
+
+Read1 after filtering:
+total reads: 18475015
+total bases: 2728606350
+Q20 bases: 2686837059(98.4692%)
+Q30 bases: 2592265997(95.0033%)
+
+Read2 after filtering:
+total reads: 18475015
+total bases: 2728832779
+Q20 bases: 2667149285(97.7396%)
+Q30 bases: 2528670991(92.6649%)
+
+Filtering result:
+reads passed filter: 36950030
+reads failed due to low quality: 1504186
+reads failed due to too many N: 1428
+reads failed due to too short: 19488
+reads with adapter trimmed: 3224473
+bases trimmed due to adapters: 84787517
+reads with polyX in 3' end: 240452
+bases trimmed in polyX tail: 5728079
+
+Duplication rate: 27.0515%
+
+Insert size peak (evaluated by paired-end reads): 229
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/6C14.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/6C14.fastp-trim.report.html
+
+/home/shared/fastp --in1 6C14_R1_001.fastq.gz --in2 6C14_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/6C14.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/6C14.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/6C14_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/6C14_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 114 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 18705404
+total bases: 2805810600
+Q20 bases: 2712633671(96.6791%)
+Q30 bases: 2559966316(91.238%)
+
+Read2 before filtering:
+total reads: 18705404
+total bases: 2805810600
+Q20 bases: 2675358860(95.3507%)
+Q30 bases: 2482504447(88.4773%)
+
+Read1 after filtering:
+total reads: 17434073
+total bases: 2529298071
+Q20 bases: 2473006738(97.7744%)
+Q30 bases: 2357717137(93.2163%)
+
+Read2 after filtering:
+total reads: 17434073
+total bases: 2529357117
+Q20 bases: 2453927550(97.0178%)
+Q30 bases: 2310395792(91.3432%)
+
+Filtering result:
+reads passed filter: 34868146
+reads failed due to low quality: 2428242
+reads failed due to too many N: 882
+reads failed due to too short: 113538
+reads with adapter trimmed: 5331614
+bases trimmed due to adapters: 156914135
+reads with polyX in 3' end: 1913177
+bases trimmed in polyX tail: 37791235
+
+Duplication rate: 46.5937%
+
+Insert size peak (evaluated by paired-end reads): 150
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789C4.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789C4.fastp-trim.report.html
+
+/home/shared/fastp --in1 789C4_R1_001.fastq.gz --in2 789C4_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789C4.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789C4.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789C4_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789C4_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 97 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+>Illumina TruSeq Adapter Read 2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+
+Read1 before filtering:
+total reads: 18139506
+total bases: 2720925900
+Q20 bases: 2662076908(97.8372%)
+Q30 bases: 2555377192(93.9157%)
+
+Read2 before filtering:
+total reads: 18139506
+total bases: 2720925900
+Q20 bases: 2625008912(96.4748%)
+Q30 bases: 2466448502(90.6474%)
+
+Read1 after filtering:
+total reads: 17470665
+total bases: 2565580269
+Q20 bases: 2526806876(98.4887%)
+Q30 bases: 2437050126(94.9902%)
+
+Read2 after filtering:
+total reads: 17470665
+total bases: 2565617928
+Q20 bases: 2503847902(97.5924%)
+Q30 bases: 2366969977(92.2573%)
+
+Filtering result:
+reads passed filter: 34941330
+reads failed due to low quality: 1332144
+reads failed due to too many N: 1322
+reads failed due to too short: 4216
+reads with adapter trimmed: 3953460
+bases trimmed due to adapters: 110589757
+reads with polyX in 3' end: 140354
+bases trimmed in polyX tail: 1975673
+
+Duplication rate: 24.1593%
+
+Insert size peak (evaluated by paired-end reads): 228
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789H14.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789H14.fastp-trim.report.html
+
+/home/shared/fastp --in1 789H14_R1_001.fastq.gz --in2 789H14_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789H14.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789H14.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789H14_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789H14_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 96 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+>Illumina TruSeq Adapter Read 2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+
+Read1 before filtering:
+total reads: 19426184
+total bases: 2913927600
+Q20 bases: 2848345501(97.7494%)
+Q30 bases: 2731591934(93.7426%)
+
+Read2 before filtering:
+total reads: 19426184
+total bases: 2913927600
+Q20 bases: 2802469600(96.175%)
+Q30 bases: 2628394116(90.2011%)
+
+Read1 after filtering:
+total reads: 18622241
+total bases: 2763032826
+Q20 bases: 2719929400(98.44%)
+Q30 bases: 2621450728(94.8758%)
+
+Read2 after filtering:
+total reads: 18622241
+total bases: 2763060896
+Q20 bases: 2691742357(97.4189%)
+Q30 bases: 2540546925(91.9468%)
+
+Filtering result:
+reads passed filter: 37244482
+reads failed due to low quality: 1598850
+reads failed due to too many N: 1428
+reads failed due to too short: 7608
+reads with adapter trimmed: 2294329
+bases trimmed due to adapters: 60762600
+reads with polyX in 3' end: 192588
+bases trimmed in polyX tail: 2620649
+
+Duplication rate: 31.7479%
+
+Insert size peak (evaluated by paired-end reads): 259
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789H4.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789H4.fastp-trim.report.html
+
+/home/shared/fastp --in1 789H4_R1_001.fastq.gz --in2 789H4_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789H4.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789H4.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789H4_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789H4_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 102 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 18753749
+total bases: 2813062350
+Q20 bases: 2749883623(97.7541%)
+Q30 bases: 2636254847(93.7148%)
+
+Read2 before filtering:
+total reads: 18753749
+total bases: 2813062350
+Q20 bases: 2704584545(96.1438%)
+Q30 bases: 2531977643(90.0079%)
+
+Read1 after filtering:
+total reads: 17847013
+total bases: 2645190843
+Q20 bases: 2605176298(98.4873%)
+Q30 bases: 2513037552(95.004%)
+
+Read2 after filtering:
+total reads: 17847013
+total bases: 2645393669
+Q20 bases: 2581240610(97.5749%)
+Q30 bases: 2440488866(92.2543%)
+
+Filtering result:
+reads passed filter: 35694026
+reads failed due to low quality: 1757346
+reads failed due to too many N: 1322
+reads failed due to too short: 54804
+reads with adapter trimmed: 2381343
+bases trimmed due to adapters: 64700560
+reads with polyX in 3' end: 208960
+bases trimmed in polyX tail: 9017067
+
+Duplication rate: 22.7323%
+
+Insert size peak (evaluated by paired-end reads): 259
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789H9.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789H9.fastp-trim.report.html
+
+/home/shared/fastp --in1 789H9_R1_001.fastq.gz --in2 789H9_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789H9.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789H9.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789H9_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789H9_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 107 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 18574732
+total bases: 2786209800
+Q20 bases: 2722969909(97.7303%)
+Q30 bases: 2611082429(93.7145%)
+
+Read2 before filtering:
+total reads: 18574732
+total bases: 2786209800
+Q20 bases: 2679597925(96.1736%)
+Q30 bases: 2510540202(90.1059%)
+
+Read1 after filtering:
+total reads: 17704060
+total bases: 2585341797
+Q20 bases: 2546552321(98.4996%)
+Q30 bases: 2457505635(95.0553%)
+
+Read2 after filtering:
+total reads: 17704060
+total bases: 2585591458
+Q20 bases: 2523175254(97.586%)
+Q30 bases: 2387732452(92.3476%)
+
+Filtering result:
+reads passed filter: 35408120
+reads failed due to low quality: 1694392
+reads failed due to too many N: 1256
+reads failed due to too short: 45696
+reads with adapter trimmed: 5212258
+bases trimmed due to adapters: 141645027
+reads with polyX in 3' end: 225390
+bases trimmed in polyX tail: 7767881
+
+Duplication rate: 22.9834%
+
+Insert size peak (evaluated by paired-end reads): 166
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789L14.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789L14.fastp-trim.report.html
+
+/home/shared/fastp --in1 789L14_R1_001.fastq.gz --in2 789L14_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789L14.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789L14.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789L14_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789L14_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 106 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+>Illumina TruSeq Adapter Read 2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+
+Read1 before filtering:
+total reads: 18878185
+total bases: 2831727750
+Q20 bases: 2766123223(97.6832%)
+Q30 bases: 2655952161(93.7926%)
+
+Read2 before filtering:
+total reads: 18878185
+total bases: 2831727750
+Q20 bases: 2728249104(96.3457%)
+Q30 bases: 2566929521(90.6489%)
+
+Read1 after filtering:
+total reads: 18087712
+total bases: 2677397150
+Q20 bases: 2637475610(98.5089%)
+Q30 bases: 2545925145(95.0896%)
+
+Read2 after filtering:
+total reads: 18087712
+total bases: 2677407194
+Q20 bases: 2613855822(97.6264%)
+Q30 bases: 2475317146(92.452%)
+
+Filtering result:
+reads passed filter: 36175424
+reads failed due to low quality: 1561040
+reads failed due to too many N: 1366
+reads failed due to too short: 18540
+reads with adapter trimmed: 2799040
+bases trimmed due to adapters: 72493321
+reads with polyX in 3' end: 190069
+bases trimmed in polyX tail: 4559735
+
+Duplication rate: 28.5902%
+
+Insert size peak (evaluated by paired-end reads): 240
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789L4.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789L4.fastp-trim.report.html
+
+/home/shared/fastp --in1 789L4_R1_001.fastq.gz --in2 789L4_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789L4.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789L4.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789L4_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789L4_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 99 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+>Illumina TruSeq Adapter Read 2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+
+Read1 before filtering:
+total reads: 18496615
+total bases: 2774492250
+Q20 bases: 2709673714(97.6638%)
+Q30 bases: 2595308021(93.5417%)
+
+Read2 before filtering:
+total reads: 18496615
+total bases: 2774492250
+Q20 bases: 2668452861(96.1781%)
+Q30 bases: 2500480124(90.1239%)
+
+Read1 after filtering:
+total reads: 17724948
+total bases: 2627996843
+Q20 bases: 2585606991(98.387%)
+Q30 bases: 2488939212(94.7086%)
+
+Read2 after filtering:
+total reads: 17724948
+total bases: 2628003064
+Q20 bases: 2559548473(97.3952%)
+Q30 bases: 2413660896(91.8439%)
+
+Filtering result:
+reads passed filter: 35449896
+reads failed due to low quality: 1531460
+reads failed due to too many N: 1530
+reads failed due to too short: 10344
+reads with adapter trimmed: 2274775
+bases trimmed due to adapters: 60575960
+reads with polyX in 3' end: 215151
+bases trimmed in polyX tail: 3673506
+
+Duplication rate: 29.718%
+
+Insert size peak (evaluated by paired-end reads): 239
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789L9.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789L9.fastp-trim.report.html
+
+/home/shared/fastp --in1 789L9_R1_001.fastq.gz --in2 789L9_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789L9.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789L9.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789L9_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789L9_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 100 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+>Illumina TruSeq Adapter Read 2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+
+Read1 before filtering:
+total reads: 21043995
+total bases: 3156599250
+Q20 bases: 3081835345(97.6315%)
+Q30 bases: 2954106706(93.5851%)
+
+Read2 before filtering:
+total reads: 21043995
+total bases: 3156599250
+Q20 bases: 3040447141(96.3203%)
+Q30 bases: 2857439550(90.5227%)
+
+Read1 after filtering:
+total reads: 20149727
+total bases: 2979493782
+Q20 bases: 2932626880(98.427%)
+Q30 bases: 2825967622(94.8472%)
+
+Read2 after filtering:
+total reads: 20149727
+total bases: 2979549982
+Q20 bases: 2907762505(97.5907%)
+Q30 bases: 2750637590(92.3172%)
+
+Filtering result:
+reads passed filter: 40299454
+reads failed due to low quality: 1771098
+reads failed due to too many N: 1698
+reads failed due to too short: 15740
+reads with adapter trimmed: 3318705
+bases trimmed due to adapters: 86082242
+reads with polyX in 3' end: 219744
+bases trimmed in polyX tail: 4540259
+
+Duplication rate: 28.3513%
+
+Insert size peak (evaluated by paired-end reads): 227
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789M14.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789M14.fastp-trim.report.html
+
+/home/shared/fastp --in1 789M14_R1_001.fastq.gz --in2 789M14_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789M14.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789M14.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789M14_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789M14_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 112 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+>Illumina TruSeq Adapter Read 2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+
+Read1 before filtering:
+total reads: 19650104
+total bases: 2947515600
+Q20 bases: 2874691491(97.5293%)
+Q30 bases: 2753260240(93.4095%)
+
+Read2 before filtering:
+total reads: 19650104
+total bases: 2947515600
+Q20 bases: 2837230477(96.2584%)
+Q30 bases: 2665519493(90.4328%)
+
+Read1 after filtering:
+total reads: 18782474
+total bases: 2782406087
+Q20 bases: 2737011904(98.3685%)
+Q30 bases: 2635596100(94.7236%)
+
+Read2 after filtering:
+total reads: 18782474
+total bases: 2782430228
+Q20 bases: 2714274432(97.5505%)
+Q30 bases: 2566896506(92.2538%)
+
+Filtering result:
+reads passed filter: 37564948
+reads failed due to low quality: 1705486
+reads failed due to too many N: 1420
+reads failed due to too short: 28354
+reads with adapter trimmed: 2636754
+bases trimmed due to adapters: 69559683
+reads with polyX in 3' end: 345801
+bases trimmed in polyX tail: 8038255
+
+Duplication rate: 33.4873%
+
+Insert size peak (evaluated by paired-end reads): 239
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789M4.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789M4.fastp-trim.report.html
+
+/home/shared/fastp --in1 789M4_R1_001.fastq.gz --in2 789M4_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789M4.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789M4.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789M4_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/789M4_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 110 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 18677158
+total bases: 2801573700
+Q20 bases: 2735889274(97.6554%)
+Q30 bases: 2622537482(93.6094%)
+
+Read2 before filtering:
+total reads: 18677158
+total bases: 2801573700
+Q20 bases: 2695886046(96.2276%)
+Q30 bases: 2528198442(90.2421%)
+
+Read1 after filtering:
+total reads: 17801670
+total bases: 2629022284
+Q20 bases: 2588482872(98.458%)
+Q30 bases: 2496429764(94.9566%)
+
+Read2 after filtering:
+total reads: 17801670
+total bases: 2629223850
+Q20 bases: 2565630888(97.5813%)
+Q30 bases: 2427261657(92.3186%)
+
+Filtering result:
+reads passed filter: 35603340
+reads failed due to low quality: 1711986
+reads failed due to too many N: 1254
+reads failed due to too short: 37736
+reads with adapter trimmed: 3146880
+bases trimmed due to adapters: 81691244
+reads with polyX in 3' end: 314183
+bases trimmed in polyX tail: 8674336
+
+Duplication rate: 30.7109%
+
+Insert size peak (evaluated by paired-end reads): 248
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/7C14.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/7C14.fastp-trim.report.html
+
+/home/shared/fastp --in1 7C14_R1_001.fastq.gz --in2 7C14_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/7C14.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/7C14.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/7C14_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/7C14_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 106 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+>Illumina TruSeq Adapter Read 2
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+
+Read1 before filtering:
+total reads: 21876868
+total bases: 3281530200
+Q20 bases: 3207982887(97.7587%)
+Q30 bases: 3075921231(93.7344%)
+
+Read2 before filtering:
+total reads: 21876868
+total bases: 3281530200
+Q20 bases: 3156363785(96.1857%)
+Q30 bases: 2957205557(90.1167%)
+
+Read1 after filtering:
+total reads: 20985047
+total bases: 3115764600
+Q20 bases: 3067302764(98.4446%)
+Q30 bases: 2955630542(94.8605%)
+
+Read2 after filtering:
+total reads: 20985047
+total bases: 3115802001
+Q20 bases: 3034706216(97.3973%)
+Q30 bases: 2861398441(91.8351%)
+
+Filtering result:
+reads passed filter: 41970094
+reads failed due to low quality: 1774932
+reads failed due to too many N: 1676
+reads failed due to too short: 7034
+reads with adapter trimmed: 2282583
+bases trimmed due to adapters: 63388972
+reads with polyX in 3' end: 187552
+bases trimmed in polyX tail: 2682945
+
+Duplication rate: 25.9936%
+
+Insert size peak (evaluated by paired-end reads): 249
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/89C14.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/89C14.fastp-trim.report.html
+
+/home/shared/fastp --in1 89C14_R1_001.fastq.gz --in2 89C14_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/89C14.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/89C14.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/89C14_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/89C14_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 118 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 18848232
+total bases: 2827234800
+Q20 bases: 2758956447(97.585%)
+Q30 bases: 2642217825(93.4559%)
+
+Read2 before filtering:
+total reads: 18848232
+total bases: 2827234800
+Q20 bases: 2722751890(96.3044%)
+Q30 bases: 2556496610(90.4239%)
+
+Read1 after filtering:
+total reads: 17939554
+total bases: 2646983917
+Q20 bases: 2605348597(98.4271%)
+Q30 bases: 2511383050(94.8772%)
+
+Read2 after filtering:
+total reads: 17939554
+total bases: 2647176024
+Q20 bases: 2585991519(97.6887%)
+Q30 bases: 2451455540(92.6064%)
+
+Filtering result:
+reads passed filter: 35879108
+reads failed due to low quality: 1759818
+reads failed due to too many N: 1270
+reads failed due to too short: 56268
+reads with adapter trimmed: 3297801
+bases trimmed due to adapters: 87444218
+reads with polyX in 3' end: 342429
+bases trimmed in polyX tail: 11244360
+
+Duplication rate: 28.1838%
+
+Insert size peak (evaluated by paired-end reads): 239
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/89C9.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/89C9.fastp-trim.report.html
+
+/home/shared/fastp --in1 89C9_R1_001.fastq.gz --in2 89C9_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/89C9.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/89C9.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/89C9_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/89C9_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 108 seconds
+Detecting adapter sequence for read1...
+>Illumina TruSeq Adapter Read 1
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+
+Detecting adapter sequence for read2...
+No adapter detected for read2
+
+Read1 before filtering:
+total reads: 18701929
+total bases: 2805289350
+Q20 bases: 2743207540(97.787%)
+Q30 bases: 2632650084(93.8459%)
+
+Read2 before filtering:
+total reads: 18701929
+total bases: 2805289350
+Q20 bases: 2705197757(96.432%)
+Q30 bases: 2540391185(90.5572%)
+
+Read1 after filtering:
+total reads: 17844468
+total bases: 2621978715
+Q20 bases: 2583128320(98.5183%)
+Q30 bases: 2494744648(95.1474%)
+
+Read2 after filtering:
+total reads: 17844468
+total bases: 2622178899
+Q20 bases: 2563943772(97.7791%)
+Q30 bases: 2433311011(92.7973%)
+
+Filtering result:
+reads passed filter: 35688936
+reads failed due to low quality: 1665116
+reads failed due to too many N: 1158
+reads failed due to too short: 48648
+reads with adapter trimmed: 4303762
+bases trimmed due to adapters: 109485067
+reads with polyX in 3' end: 256454
+bases trimmed in polyX tail: 8163203
+
+Duplication rate: 25.8764%
+
+Insert size peak (evaluated by paired-end reads): 176
+
+JSON report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/89M9.fastp-trim.report.json
+HTML report: /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/89M9.fastp-trim.report.html
+
+/home/shared/fastp --in1 89M9_R1_001.fastq.gz --in2 89M9_R2_001.fastq.gz --detect_adapter_for_pe --qualified_quality_phred 30 --thread 16 --trim_poly_x 6 --html /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/89M9.fastp-trim.report.html --json /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/89M9.fastp-trim.report.json --out1 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/89M9_R1_001.fastp-trim.fq.gz --out2 /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/trimmed_reads/89M9_R2_001.fastp-trim.fq.gz 
+fastp v0.23.2, time used: 108 seconds
