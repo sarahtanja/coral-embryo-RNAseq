@@ -27,7 +27,7 @@ In this script, we will generate FastQC/MultiQC for raw sequences, conduct trimm
 
 ```
 
-## [multiqc](https://anaconda.org/bioconda/multiqc) 
+## [multiqc](https://anaconda.org/bioconda/multiqc)
 
 *Multiqc summarizes FastQC analysis logs and summarizes results in an html report. Checkout the* [git developer version](Installation)
 
@@ -60,6 +60,7 @@ echo 'export output_dir_top=${project_dir}/output'
 echo 'export output_dir_qaqc=${project_dir}/output/03_qaqc'
 echo 'export output_dir_raw=${project_dir}/output/03_qaqc/raw_reads'
 echo 'export output_dir_trim=${project_dir}/output/03_qaqc/trimmed_reads'
+echo 'export output_dir_fastqc=${output_dir_trim}/fastqc'
 echo 'export raw_reads_dir=${project_dir}/rawfastq'
 echo ""
 } > .bashvars
@@ -269,7 +270,9 @@ done
 
 # Quality check trimmed reads with `FastQC`
 
-```{r, engine= 'bash'}
+Using a for loop to unzip and run fastqc sequentially... this uses less CPU. When I try to run them all at once the CPU usage gets bogged down. This takes longer, but completes in \~5hrs.
+
+```{r, engine = 'bash'}
 # Load bash variables into memory
 source .bashvars
 
@@ -279,58 +282,42 @@ source .bashvars
 trimmed_fastqs_array=(${output_dir_trim}/${trimmed_fastq_pattern})
 
 echo "Files in trimmed_fastqs_array: ${trimmed_fastqs_array[@]}"
-
-# Pass array contents to new variable as space-delimited list
-trimmed_fastqc_list=$(echo "${trimmed_fastqs_array[*]}")
-
 echo ""
 echo "Beginning FastQC on trimmed reads..."
 echo ""
-echo "Output directory: ${output_dir_trim}"
+echo "Output directory: ${output_dir_trim}/fastqc"
 echo ""
 
-# Run FastQC
-### NOTE: Do NOT quote trimmed_fastqc_list
-${programs_array[fastqc]} \
---threads ${threads} \
---outdir ${output_dir_trim} \
---quiet \
-${trimmed_fastqc_list}
+# Run FastQC sequentially on each file in the array
+for fastq_file in "${trimmed_fastqs_array[@]}"; do
+    echo "Processing file: ${fastq_file}"
+    ${fastqc} \
+    --threads 40 \
+    --outdir ${output_dir_trim}/fastqc \
+    --quiet \
+    "${fastq_file}"
+    echo "Completed FastQC for ${fastq_file}"
+done
 
-echo "FastQC on trimmed reads complete!"
+echo ""
+echo "FastQC on all trimmed reads complete!"
 echo ""
 
 ############ END FASTQC ############
 ```
 
-```{r, engine = 'bash'}
-# Load bash variables into memory
-source .bashvars
-
-# Populate array with fastp-trim.fq.gz FastQ files
-trimmed_fastq_array=("${output_dir_trimmed}/*.fastp-trim.fq.gz")
-
-echo "Files in trimmed_fastqs_array: ${trimmed_fastqs_array[@]}"
-
-# Pass array contents to new variable
-fastqc_list=$(echo "${fastq_array[*]}")
-
-# Run FastQC
-# NOTE: Do NOT quote ${fastqc_list}
-${fastqc} \
---threads ${threads} \
---outdir ${output_dir_trim} \
-${fastqc_list}
-```
-
 # Compile report of trimmed reads with `MultiQC`
 
 ```{r, engine = 'bash'}
+
+# Load bash variables into memory
+source .bashvars
+
 ############ RUN MULTIQC ############
 echo "Beginning MultiQC on trimmed FastQC..."
 echo ""
 
-${programs_array[multiqc]} ${output_dir_trim} -o ${output_dir_trim}
+${multiqc} ${output_dir_fastqc} -o ${output_dir_fastqc}
 
 echo ""
 echo "MultiQC on trimmed FastQs complete."
@@ -340,7 +327,7 @@ echo ""
 
 echo "Removing FastQC zip files."
 echo ""
-rm ${output_dir_trim}/*.zip
+rm ${output_dir_fastqc}/*.zip
 echo "FastQC zip files removed."
 echo ""
 ```
