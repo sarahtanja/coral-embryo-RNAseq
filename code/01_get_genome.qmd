@@ -62,9 +62,18 @@ gunzip Montipora_capitata_HIv3.assembly.fasta.gz
 [Learn How to Generate and Verify Files with MD5 Checksum in Linux](https://www.tecmint.com/generate-verify-check-files-md5-checksum-linux/)
 :::
 
+# Checkout genome GFF format
+
 ```{r, engine='bash'}
 cd ../input/genome
 md5sum *Montipora_capitata*
+```
+
+```{r, engine = 'bash'}
+
+cd ../input/genome
+
+head -10 Montipora_capitata_HIv3.genes.gff3
 ```
 
 # Summary & Next Steps
@@ -73,4 +82,13 @@ So we now have the reference genome V3 files located at `../input/genome`
 
 ::: callout-info
 **Next Step:** Go to `02_get_sequences` to download raw FASTQ files from Azenta
+:::
+
+::: callout-important
+###### Don't forget to always rsync backup!
+
+```         
+rsync -avz /media/4TB_JPG_ext/stanja/gitprojects \
+stanja@gannet.fish.washington.edu:/volume2/web/stanja/ravenbackup
+```
 :::

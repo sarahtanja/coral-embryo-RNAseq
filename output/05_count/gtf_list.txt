@@ -1,0 +1,12 @@
+101112C14	../output/04_align/stringtie/101112C14.gtf
+101112H14	../output/04_align/stringtie/101112H14.gtf
+123C14	../output/04_align/stringtie/123C14.gtf
+123H14	../output/04_align/stringtie/123H14.gtf
+131415C14	../output/04_align/stringtie/131415C14.gtf
+131415H14	../output/04_align/stringtie/131415H14.gtf
+45C14	../output/04_align/stringtie/45C14.gtf
+45H14	../output/04_align/stringtie/45H14.gtf
+6C14	../output/04_align/stringtie/6C14.gtf
+789H14	../output/04_align/stringtie/789H14.gtf
+7C14	../output/04_align/stringtie/7C14.gtf
+89C14	../output/04_align/stringtie/89C14.gtf

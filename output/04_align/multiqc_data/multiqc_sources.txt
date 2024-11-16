@@ -1,0 +1,2 @@
+Module	Section	Sample Name	Source
+Bowtie 2 / HiSAT2	all_sections	hisat	/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/hisat.out

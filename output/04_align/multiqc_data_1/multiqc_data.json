@@ -1,0 +1,629 @@
+{
+    "report_data_sources": {
+        "Bowtie 2 / HiSAT2": {
+            "all_sections": {
+                "101112C14_hisat": "/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/101112C14_hisat.out",
+                "101112H14_hisat": "/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/101112H14_hisat.out",
+                "123C14_hisat": "/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/123C14_hisat.out",
+                "123H14_hisat": "/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/123H14_hisat.out",
+                "131415C14_hisat": "/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/131415C14_hisat.out",
+                "131415H14_hisat": "/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/131415H14_hisat.out",
+                "45C14_hisat": "/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/45C14_hisat.out",
+                "45H14_hisat": "/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/45H14_hisat.out",
+                "6C14_hisat": "/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/6C14_hisat.out",
+                "789H14_hisat": "/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/789H14_hisat.out",
+                "7C14_hisat": "/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/7C14_hisat.out",
+                "89C14_hisat": "/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/89C14_hisat.out"
+            }
+        }
+    },
+    "report_general_stats_data": [
+        {
+            "101112C14_hisat": {
+                "total_reads": 17500004,
+                "paired_total": 17500004,
+                "paired_aligned_none": 6545966,
+                "paired_aligned_one": 9721746,
+                "paired_aligned_multi": 1232292,
+                "paired_aligned_discord_one": 732088,
+                "paired_aligned_mate_none": 10021054,
+                "paired_aligned_mate_one": 1385573,
+                "paired_aligned_mate_multi": 221129,
+                "overall_alignment_rate": 71.37,
+                "paired_aligned_mate_multi_halved": 110564.5,
+                "paired_aligned_mate_none_halved": 5010527.0,
+                "paired_aligned_mate_one_halved": 692786.5
+            },
+            "101112H14_hisat": {
+                "total_reads": 17614389,
+                "paired_total": 17614389,
+                "paired_aligned_none": 7888494,
+                "paired_aligned_one": 8570316,
+                "paired_aligned_multi": 1155579,
+                "paired_aligned_discord_one": 1037606,
+                "paired_aligned_mate_none": 12037009,
+                "paired_aligned_mate_one": 1397660,
+                "paired_aligned_mate_multi": 267107,
+                "overall_alignment_rate": 65.83,
+                "paired_aligned_mate_multi_halved": 133553.5,
+                "paired_aligned_mate_none_halved": 6018504.5,
+                "paired_aligned_mate_one_halved": 698830.0
+            },
+            "123C14_hisat": {
+                "total_reads": 17205291,
+                "paired_total": 17205291,
+                "paired_aligned_none": 8001252,
+                "paired_aligned_one": 8161388,
+                "paired_aligned_multi": 1042651,
+                "paired_aligned_discord_one": 890766,
+                "paired_aligned_mate_none": 12749847,
+                "paired_aligned_mate_one": 1232405,
+                "paired_aligned_mate_multi": 238720,
+                "overall_alignment_rate": 62.95,
+                "paired_aligned_mate_multi_halved": 119360.0,
+                "paired_aligned_mate_none_halved": 6374923.5,
+                "paired_aligned_mate_one_halved": 616202.5
+            },
+            "123H14_hisat": {
+                "total_reads": 17835465,
+                "paired_total": 17835465,
+                "paired_aligned_none": 5323803,
+                "paired_aligned_one": 11221360,
+                "paired_aligned_multi": 1290302,
+                "paired_aligned_discord_one": 1287796,
+                "paired_aligned_mate_none": 6012276,
+                "paired_aligned_mate_one": 1780333,
+                "paired_aligned_mate_multi": 279405,
+                "overall_alignment_rate": 83.15,
+                "paired_aligned_mate_multi_halved": 139702.5,
+                "paired_aligned_mate_none_halved": 3006138.0,
+                "paired_aligned_mate_one_halved": 890166.5
+            },
+            "131415C14_hisat": {
+                "total_reads": 18079855,
+                "paired_total": 18079855,
+                "paired_aligned_none": 7787679,
+                "paired_aligned_one": 9038951,
+                "paired_aligned_multi": 1253225,
+                "paired_aligned_discord_one": 941752,
+                "paired_aligned_mate_none": 12009403,
+                "paired_aligned_mate_one": 1429029,
+                "paired_aligned_mate_multi": 253422,
+                "overall_alignment_rate": 66.79,
+                "paired_aligned_mate_multi_halved": 126711.0,
+                "paired_aligned_mate_none_halved": 6004701.5,
+                "paired_aligned_mate_one_halved": 714514.5
+            },
+            "131415H14_hisat": {
+                "total_reads": 18412554,
+                "paired_total": 18412554,
+                "paired_aligned_none": 8041382,
+                "paired_aligned_one": 9095233,
+                "paired_aligned_multi": 1275939,
+                "paired_aligned_discord_one": 1026926,
+                "paired_aligned_mate_none": 12362581,
+                "paired_aligned_mate_one": 1412745,
+                "paired_aligned_mate_multi": 253586,
+                "overall_alignment_rate": 66.43,
+                "paired_aligned_mate_multi_halved": 126793.0,
+                "paired_aligned_mate_none_halved": 6181290.5,
+                "paired_aligned_mate_one_halved": 706372.5
+            },
+            "45C14_hisat": {
+                "total_reads": 18108014,
+                "paired_total": 18108014,
+                "paired_aligned_none": 13486151,
+                "paired_aligned_one": 4052190,
+                "paired_aligned_multi": 569673,
+                "paired_aligned_discord_one": 343994,
+                "paired_aligned_mate_none": 25594288,
+                "paired_aligned_mate_one": 591428,
+                "paired_aligned_mate_multi": 98598,
+                "overall_alignment_rate": 29.33,
+                "paired_aligned_mate_multi_halved": 49299.0,
+                "paired_aligned_mate_none_halved": 12797144.0,
+                "paired_aligned_mate_one_halved": 295714.0
+            },
+            "45H14_hisat": {
+                "total_reads": 17734804,
+                "paired_total": 17734804,
+                "paired_aligned_none": 10742131,
+                "paired_aligned_one": 6055722,
+                "paired_aligned_multi": 936951,
+                "paired_aligned_discord_one": 564474,
+                "paired_aligned_mate_none": 19312312,
+                "paired_aligned_mate_one": 919590,
+                "paired_aligned_mate_multi": 123412,
+                "overall_alignment_rate": 45.55,
+                "paired_aligned_mate_multi_halved": 61706.0,
+                "paired_aligned_mate_none_halved": 9656156.0,
+                "paired_aligned_mate_one_halved": 459795.0
+            },
+            "6C14_hisat": {
+                "total_reads": 18440902,
+                "paired_total": 18440902,
+                "paired_aligned_none": 10309946,
+                "paired_aligned_one": 7012627,
+                "paired_aligned_multi": 1118329,
+                "paired_aligned_discord_one": 704344,
+                "paired_aligned_mate_none": 17924050,
+                "paired_aligned_mate_one": 1090390,
+                "paired_aligned_mate_multi": 196764,
+                "overall_alignment_rate": 51.4,
+                "paired_aligned_mate_multi_halved": 98382.0,
+                "paired_aligned_mate_none_halved": 8962025.0,
+                "paired_aligned_mate_one_halved": 545195.0
+            },
+            "789H14_hisat": {
+                "total_reads": 17443692,
+                "paired_total": 17443692,
+                "paired_aligned_none": 6949427,
+                "paired_aligned_one": 9290340,
+                "paired_aligned_multi": 1203925,
+                "paired_aligned_discord_one": 1148756,
+                "paired_aligned_mate_none": 9811975,
+                "paired_aligned_mate_one": 1501098,
+                "paired_aligned_mate_multi": 288269,
+                "overall_alignment_rate": 71.88,
+                "paired_aligned_mate_multi_halved": 144134.5,
+                "paired_aligned_mate_none_halved": 4905987.5,
+                "paired_aligned_mate_one_halved": 750549.0
+            },
+            "7C14_hisat": {
+                "total_reads": 17763474,
+                "paired_total": 17763474,
+                "paired_aligned_none": 8053813,
+                "paired_aligned_one": 8402967,
+                "paired_aligned_multi": 1306694,
+                "paired_aligned_discord_one": 838912,
+                "paired_aligned_mate_none": 12878615,
+                "paired_aligned_mate_one": 1321346,
+                "paired_aligned_mate_multi": 229841,
+                "overall_alignment_rate": 63.75,
+                "paired_aligned_mate_multi_halved": 114920.5,
+                "paired_aligned_mate_none_halved": 6439307.5,
+                "paired_aligned_mate_one_halved": 660673.0
+            },
+            "89C14_hisat": {
+                "total_reads": 20949425,
+                "paired_total": 20949425,
+                "paired_aligned_none": 6720949,
+                "paired_aligned_one": 12711243,
+                "paired_aligned_multi": 1517233,
+                "paired_aligned_discord_one": 769732,
+                "paired_aligned_mate_none": 9955988,
+                "paired_aligned_mate_one": 1689417,
+                "paired_aligned_mate_multi": 257029,
+                "overall_alignment_rate": 76.24,
+                "paired_aligned_mate_multi_halved": 128514.5,
+                "paired_aligned_mate_none_halved": 4977994.0,
+                "paired_aligned_mate_one_halved": 844708.5
+            }
+        }
+    ],
+    "report_general_stats_headers": [
+        {
+            "overall_alignment_rate": {
+                "title": "% Aligned",
+                "description": "overall alignment rate",
+                "max": 100,
+                "min": 0,
+                "suffix": "%",
+                "scale": "YlGn",
+                "namespace": "Bowtie 2 / HiSAT2",
+                "rid": "mqc-generalstats-bowtie_2_hisat2-overall_alignment_rate",
+                "format": "{:,.1f}",
+                "colour": "55,126,184",
+                "hidden": null,
+                "ceiling": null,
+                "floor": null,
+                "minRange": null,
+                "shared_key": null,
+                "modify": null,
+                "placement": 1000.0,
+                "dmax": 100.0,
+                "dmin": 0.0
+            }
+        }
+    ],
+    "report_multiqc_command": "/home/sam/programs/mambaforge/bin/multiqc 101112C14_hisat.out 101112H14_hisat.out 123C14_hisat.out 123H14_hisat.out 131415C14_hisat.out 131415H14_hisat.out 45C14_hisat.out 45H14_hisat.out 6C14_hisat.out 789H14_hisat.out 7C14_hisat.out 89C14_hisat.out",
+    "report_plot_data": {
+        "bowtie2_pe_plot": {
+            "plot_type": "bar_graph",
+            "samples": [
+                [
+                    "101112C14_hisat",
+                    "101112H14_hisat",
+                    "123C14_hisat",
+                    "123H14_hisat",
+                    "131415C14_hisat",
+                    "131415H14_hisat",
+                    "45C14_hisat",
+                    "45H14_hisat",
+                    "6C14_hisat",
+                    "789H14_hisat",
+                    "7C14_hisat",
+                    "89C14_hisat"
+                ]
+            ],
+            "datasets": [
+                [
+                    {
+                        "name": "PE mapped uniquely",
+                        "data": [
+                            9721746.0,
+                            8570316.0,
+                            8161388.0,
+                            11221360.0,
+                            9038951.0,
+                            9095233.0,
+                            4052190.0,
+                            6055722.0,
+                            7012627.0,
+                            9290340.0,
+                            8402967.0,
+                            12711243.0
+                        ],
+                        "color": "#20568f"
+                    },
+                    {
+                        "name": "PE mapped discordantly uniquely",
+                        "data": [
+                            732088.0,
+                            1037606.0,
+                            890766.0,
+                            1287796.0,
+                            941752.0,
+                            1026926.0,
+                            343994.0,
+                            564474.0,
+                            704344.0,
+                            1148756.0,
+                            838912.0,
+                            769732.0
+                        ],
+                        "color": "#5c94ca"
+                    },
+                    {
+                        "name": "PE one mate mapped uniquely",
+                        "data": [
+                            692786.5,
+                            698830.0,
+                            616202.5,
+                            890166.5,
+                            714514.5,
+                            706372.5,
+                            295714.0,
+                            459795.0,
+                            545195.0,
+                            750549.0,
+                            660673.0,
+                            844708.5
+                        ],
+                        "color": "#95ceff"
+                    },
+                    {
+                        "name": "PE multimapped",
+                        "data": [
+                            1232292.0,
+                            1155579.0,
+                            1042651.0,
+                            1290302.0,
+                            1253225.0,
+                            1275939.0,
+                            569673.0,
+                            936951.0,
+                            1118329.0,
+                            1203925.0,
+                            1306694.0,
+                            1517233.0
+                        ],
+                        "color": "#f7a35c"
+                    },
+                    {
+                        "name": "PE one mate multimapped",
+                        "data": [
+                            110564.5,
+                            133553.5,
+                            119360.0,
+                            139702.5,
+                            126711.0,
+                            126793.0,
+                            49299.0,
+                            61706.0,
+                            98382.0,
+                            144134.5,
+                            114920.5,
+                            128514.5
+                        ],
+                        "color": "#ffeb75"
+                    },
+                    {
+                        "name": "PE neither mate aligned",
+                        "data": [
+                            5010527.0,
+                            6018504.5,
+                            6374923.5,
+                            3006138.0,
+                            6004701.5,
+                            6181290.5,
+                            12797144.0,
+                            9656156.0,
+                            8962025.0,
+                            4905987.5,
+                            6439307.5,
+                            4977994.0
+                        ],
+                        "color": "#981919"
+                    }
+                ]
+            ],
+            "config": {
+                "ylab": "# Reads",
+                "cpswitch_counts_label": "Number of Reads",
+                "id": "bowtie2_pe_plot",
+                "title": "Bowtie 2: PE Alignment Scores"
+            }
+        }
+    },
+    "report_saved_raw_data": {
+        "multiqc_bowtie2": {
+            "101112C14_hisat": {
+                "total_reads": 17500004,
+                "paired_total": 17500004,
+                "paired_aligned_none": 6545966,
+                "paired_aligned_one": 9721746,
+                "paired_aligned_multi": 1232292,
+                "paired_aligned_discord_one": 732088,
+                "paired_aligned_mate_none": 10021054,
+                "paired_aligned_mate_one": 1385573,
+                "paired_aligned_mate_multi": 221129,
+                "overall_alignment_rate": 71.37,
+                "paired_aligned_mate_multi_halved": 110564.5,
+                "paired_aligned_mate_none_halved": 5010527.0,
+                "paired_aligned_mate_one_halved": 692786.5
+            },
+            "101112H14_hisat": {
+                "total_reads": 17614389,
+                "paired_total": 17614389,
+                "paired_aligned_none": 7888494,
+                "paired_aligned_one": 8570316,
+                "paired_aligned_multi": 1155579,
+                "paired_aligned_discord_one": 1037606,
+                "paired_aligned_mate_none": 12037009,
+                "paired_aligned_mate_one": 1397660,
+                "paired_aligned_mate_multi": 267107,
+                "overall_alignment_rate": 65.83,
+                "paired_aligned_mate_multi_halved": 133553.5,
+                "paired_aligned_mate_none_halved": 6018504.5,
+                "paired_aligned_mate_one_halved": 698830.0
+            },
+            "123C14_hisat": {
+                "total_reads": 17205291,
+                "paired_total": 17205291,
+                "paired_aligned_none": 8001252,
+                "paired_aligned_one": 8161388,
+                "paired_aligned_multi": 1042651,
+                "paired_aligned_discord_one": 890766,
+                "paired_aligned_mate_none": 12749847,
+                "paired_aligned_mate_one": 1232405,
+                "paired_aligned_mate_multi": 238720,
+                "overall_alignment_rate": 62.95,
+                "paired_aligned_mate_multi_halved": 119360.0,
+                "paired_aligned_mate_none_halved": 6374923.5,
+                "paired_aligned_mate_one_halved": 616202.5
+            },
+            "123H14_hisat": {
+                "total_reads": 17835465,
+                "paired_total": 17835465,
+                "paired_aligned_none": 5323803,
+                "paired_aligned_one": 11221360,
+                "paired_aligned_multi": 1290302,
+                "paired_aligned_discord_one": 1287796,
+                "paired_aligned_mate_none": 6012276,
+                "paired_aligned_mate_one": 1780333,
+                "paired_aligned_mate_multi": 279405,
+                "overall_alignment_rate": 83.15,
+                "paired_aligned_mate_multi_halved": 139702.5,
+                "paired_aligned_mate_none_halved": 3006138.0,
+                "paired_aligned_mate_one_halved": 890166.5
+            },
+            "131415C14_hisat": {
+                "total_reads": 18079855,
+                "paired_total": 18079855,
+                "paired_aligned_none": 7787679,
+                "paired_aligned_one": 9038951,
+                "paired_aligned_multi": 1253225,
+                "paired_aligned_discord_one": 941752,
+                "paired_aligned_mate_none": 12009403,
+                "paired_aligned_mate_one": 1429029,
+                "paired_aligned_mate_multi": 253422,
+                "overall_alignment_rate": 66.79,
+                "paired_aligned_mate_multi_halved": 126711.0,
+                "paired_aligned_mate_none_halved": 6004701.5,
+                "paired_aligned_mate_one_halved": 714514.5
+            },
+            "131415H14_hisat": {
+                "total_reads": 18412554,
+                "paired_total": 18412554,
+                "paired_aligned_none": 8041382,
+                "paired_aligned_one": 9095233,
+                "paired_aligned_multi": 1275939,
+                "paired_aligned_discord_one": 1026926,
+                "paired_aligned_mate_none": 12362581,
+                "paired_aligned_mate_one": 1412745,
+                "paired_aligned_mate_multi": 253586,
+                "overall_alignment_rate": 66.43,
+                "paired_aligned_mate_multi_halved": 126793.0,
+                "paired_aligned_mate_none_halved": 6181290.5,
+                "paired_aligned_mate_one_halved": 706372.5
+            },
+            "45C14_hisat": {
+                "total_reads": 18108014,
+                "paired_total": 18108014,
+                "paired_aligned_none": 13486151,
+                "paired_aligned_one": 4052190,
+                "paired_aligned_multi": 569673,
+                "paired_aligned_discord_one": 343994,
+                "paired_aligned_mate_none": 25594288,
+                "paired_aligned_mate_one": 591428,
+                "paired_aligned_mate_multi": 98598,
+                "overall_alignment_rate": 29.33,
+                "paired_aligned_mate_multi_halved": 49299.0,
+                "paired_aligned_mate_none_halved": 12797144.0,
+                "paired_aligned_mate_one_halved": 295714.0
+            },
+            "45H14_hisat": {
+                "total_reads": 17734804,
+                "paired_total": 17734804,
+                "paired_aligned_none": 10742131,
+                "paired_aligned_one": 6055722,
+                "paired_aligned_multi": 936951,
+                "paired_aligned_discord_one": 564474,
+                "paired_aligned_mate_none": 19312312,
+                "paired_aligned_mate_one": 919590,
+                "paired_aligned_mate_multi": 123412,
+                "overall_alignment_rate": 45.55,
+                "paired_aligned_mate_multi_halved": 61706.0,
+                "paired_aligned_mate_none_halved": 9656156.0,
+                "paired_aligned_mate_one_halved": 459795.0
+            },
+            "6C14_hisat": {
+                "total_reads": 18440902,
+                "paired_total": 18440902,
+                "paired_aligned_none": 10309946,
+                "paired_aligned_one": 7012627,
+                "paired_aligned_multi": 1118329,
+                "paired_aligned_discord_one": 704344,
+                "paired_aligned_mate_none": 17924050,
+                "paired_aligned_mate_one": 1090390,
+                "paired_aligned_mate_multi": 196764,
+                "overall_alignment_rate": 51.4,
+                "paired_aligned_mate_multi_halved": 98382.0,
+                "paired_aligned_mate_none_halved": 8962025.0,
+                "paired_aligned_mate_one_halved": 545195.0
+            },
+            "789H14_hisat": {
+                "total_reads": 17443692,
+                "paired_total": 17443692,
+                "paired_aligned_none": 6949427,
+                "paired_aligned_one": 9290340,
+                "paired_aligned_multi": 1203925,
+                "paired_aligned_discord_one": 1148756,
+                "paired_aligned_mate_none": 9811975,
+                "paired_aligned_mate_one": 1501098,
+                "paired_aligned_mate_multi": 288269,
+                "overall_alignment_rate": 71.88,
+                "paired_aligned_mate_multi_halved": 144134.5,
+                "paired_aligned_mate_none_halved": 4905987.5,
+                "paired_aligned_mate_one_halved": 750549.0
+            },
+            "7C14_hisat": {
+                "total_reads": 17763474,
+                "paired_total": 17763474,
+                "paired_aligned_none": 8053813,
+                "paired_aligned_one": 8402967,
+                "paired_aligned_multi": 1306694,
+                "paired_aligned_discord_one": 838912,
+                "paired_aligned_mate_none": 12878615,
+                "paired_aligned_mate_one": 1321346,
+                "paired_aligned_mate_multi": 229841,
+                "overall_alignment_rate": 63.75,
+                "paired_aligned_mate_multi_halved": 114920.5,
+                "paired_aligned_mate_none_halved": 6439307.5,
+                "paired_aligned_mate_one_halved": 660673.0
+            },
+            "89C14_hisat": {
+                "total_reads": 20949425,
+                "paired_total": 20949425,
+                "paired_aligned_none": 6720949,
+                "paired_aligned_one": 12711243,
+                "paired_aligned_multi": 1517233,
+                "paired_aligned_discord_one": 769732,
+                "paired_aligned_mate_none": 9955988,
+                "paired_aligned_mate_one": 1689417,
+                "paired_aligned_mate_multi": 257029,
+                "overall_alignment_rate": 76.24,
+                "paired_aligned_mate_multi_halved": 128514.5,
+                "paired_aligned_mate_none_halved": 4977994.0,
+                "paired_aligned_mate_one_halved": 844708.5
+            }
+        },
+        "multiqc_general_stats": {
+            "101112C14_hisat": {
+                "Bowtie 2 / HiSAT2_mqc-generalstats-bowtie_2_hisat2-overall_alignment_rate": 71.37
+            },
+            "101112H14_hisat": {
+                "Bowtie 2 / HiSAT2_mqc-generalstats-bowtie_2_hisat2-overall_alignment_rate": 65.83
+            },
+            "123C14_hisat": {
+                "Bowtie 2 / HiSAT2_mqc-generalstats-bowtie_2_hisat2-overall_alignment_rate": 62.95
+            },
+            "123H14_hisat": {
+                "Bowtie 2 / HiSAT2_mqc-generalstats-bowtie_2_hisat2-overall_alignment_rate": 83.15
+            },
+            "131415C14_hisat": {
+                "Bowtie 2 / HiSAT2_mqc-generalstats-bowtie_2_hisat2-overall_alignment_rate": 66.79
+            },
+            "131415H14_hisat": {
+                "Bowtie 2 / HiSAT2_mqc-generalstats-bowtie_2_hisat2-overall_alignment_rate": 66.43
+            },
+            "45C14_hisat": {
+                "Bowtie 2 / HiSAT2_mqc-generalstats-bowtie_2_hisat2-overall_alignment_rate": 29.33
+            },
+            "45H14_hisat": {
+                "Bowtie 2 / HiSAT2_mqc-generalstats-bowtie_2_hisat2-overall_alignment_rate": 45.55
+            },
+            "6C14_hisat": {
+                "Bowtie 2 / HiSAT2_mqc-generalstats-bowtie_2_hisat2-overall_alignment_rate": 51.4
+            },
+            "789H14_hisat": {
+                "Bowtie 2 / HiSAT2_mqc-generalstats-bowtie_2_hisat2-overall_alignment_rate": 71.88
+            },
+            "7C14_hisat": {
+                "Bowtie 2 / HiSAT2_mqc-generalstats-bowtie_2_hisat2-overall_alignment_rate": 63.75
+            },
+            "89C14_hisat": {
+                "Bowtie 2 / HiSAT2_mqc-generalstats-bowtie_2_hisat2-overall_alignment_rate": 76.24
+            }
+        }
+    },
+    "config_analysis_dir_abs": [
+        "/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/101112C14_hisat.out",
+        "/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/101112H14_hisat.out",
+        "/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/123C14_hisat.out",
+        "/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/123H14_hisat.out",
+        "/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/131415C14_hisat.out",
+        "/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/131415H14_hisat.out",
+        "/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/45C14_hisat.out",
+        "/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/45H14_hisat.out",
+        "/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/6C14_hisat.out",
+        "/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/789H14_hisat.out",
+        "/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/7C14_hisat.out",
+        "/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/89C14_hisat.out"
+    ],
+    "config_analysis_dir": [
+        "101112C14_hisat.out",
+        "101112H14_hisat.out",
+        "123C14_hisat.out",
+        "123H14_hisat.out",
+        "131415C14_hisat.out",
+        "131415H14_hisat.out",
+        "45C14_hisat.out",
+        "45H14_hisat.out",
+        "6C14_hisat.out",
+        "789H14_hisat.out",
+        "7C14_hisat.out",
+        "89C14_hisat.out"
+    ],
+    "config_creation_date": "2024-11-15, 21:12 PST",
+    "config_git_hash": null,
+    "config_intro_text": null,
+    "config_report_comment": null,
+    "config_report_header_info": null,
+    "config_script_path": "/home/sam/programs/mambaforge/lib/python3.10/site-packages/multiqc/utils",
+    "config_short_version": "1.14",
+    "config_subtitle": null,
+    "config_title": null,
+    "config_version": "1.14"
+}

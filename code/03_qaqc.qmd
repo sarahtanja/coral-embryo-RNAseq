@@ -253,6 +253,8 @@ do
   --qualified_quality_phred 30 \
   --thread 16 \
   --trim_poly_x 6 \
+  --trim_front1 10 \
+  --trim_front2 10 \
   --html "${output_dir_trim}"/"${R1_sample_name}".fastp-trim.report.html \
   --json "${output_dir_trim}"/"${R1_sample_name}".fastp-trim.report.json \
   --out1 "${output_dir_trim}"/"${R1_sample_name}"_R1_001.fastp-trim.fq.gz \
@@ -335,3 +337,12 @@ echo ""
 # Summary & Next Steps
 
 Trimmed reads are now ready for alignment in step 4, `04_align`
+
+::: callout-important
+###### Don't forget to always rsync backup!
+
+```         
+rsync -avz /media/4TB_JPG_ext/stanja/gitprojects \
+stanja@gannet.fish.washington.edu:/volume2/web/stanja/ravenbackup
+```
+:::

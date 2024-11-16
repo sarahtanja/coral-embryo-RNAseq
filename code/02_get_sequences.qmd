@@ -105,6 +105,15 @@ Each file should show `OK` !
 
 Now that we have access to all the raw fastq files in `/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/rawfastq` we can continue by checking it for sequencing quality in step 3, `03_qaqc_sequences.qmd`
 
+::: callout-important
+###### Don't forget to always rsync backup!
+
+```         
+rsync -avz /media/4TB_JPG_ext/stanja/gitprojects \
+stanja@gannet.fish.washington.edu:/volume2/web/stanja/ravenbackup
+```
+:::
+
 ## P.S.
 
 After 30 days Azenta no longer hosts the data files.

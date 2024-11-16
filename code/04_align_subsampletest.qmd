@@ -13,51 +13,11 @@ reference-location: margin
 citation-location: margin
 ---
 
-# Align reads using HISAT 2
-
 This notebook will align trimmed M. capitata RNA-seq data to the M. capitata genome using hierarchical indexing for spliced alignment of transcripts HISAT2 [@zhang_rapid_2021]. Followed by StringTie (Pertea et al. 2016, 2015) for transcript assembly/identification and count matrices for downstream expression analysis with DESeq2.
 
-Input(s)
+#### Inputs
 
--   Trimmed FastQ files, with format: `*fastp-trim.fq.gz` are located in `output/03_qaqc/trim_reads_fastp`
-
--   HISAT 2 genome index:
-
--   Genome GTF:
-
-    -   Genome [Version 3](http://cyanophora.rutgers.edu/montipora/) [@stephens2022]
-    -   [GFF](http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.gff3.gz) from Rutgers (or [GFF fixed](https://github.com/AHuffmyer/EarlyLifeHistory_Energetics/raw/master/Mcap2020/Data/TagSeq/Montipora_capitata_HIv3.genes_fixed.gff3.gz) from AHuffmyer?)
-    -   [genomes, indexes, & feature tracks](https://robertslab.github.io/resources/Genomic-Resources/#montipora-capitata) from Roberts Lab Handbook
-
--   Sample metadata: `~metadata/rna_metadata.csv`
-
-# Download genome files
-
-## Annotated Reference Genome for *Montipora capitata*
-
-Deep Dive project with genomes of interest: https://github.com/urol-e5/deep-dive
-
-*Montipora capitata* Genome version V3, Rutgers University: <http://cyanophora.rutgers.edu/montipora/>
-
-Genome publication: <https://academic.oup.com/gigascience/article/doi/10.1093/gigascience/giac098/6815755>
-
-Nucleotide Coding Sequence (CDS): <http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.cds.fna.gz>
-
-This code grabs the *Montipora capitata* fasta file (rna.fna) of genes.
-
-```{r, genome-download, engine = 'bash'}
-# change from code directory to work in data directory
-cd ../data
-
-# make mcapgenome directory a subdirectory of data if not already present
-mkdir -p mcapgenome
-
-# change directory to ~data/mcapgenome
-cd mcapgenome
-
-# download the annotated genomes from the rutgers site if not already present
-[-f Montipora_capitata_HIv3.assembly.fasta.gz] || wget http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.assembly.fasta.gz
-```
+-   Trimmed FastQ files, with format: `*fastp-trim.fq.gz` are located in `output/03_qaqc/trimmed_reads`
 
 -   [`Montipora_capitata_HIv3.assembly.fasta`](https://owl.fish.washington.edu/halfshell/genomic-databank/Montipora_capitata_HIv3.assembly.fasta) (745MB)
 
@@ -65,16 +25,62 @@ cd mcapgenome
 
     -   Downloaded 2023017: <http://cyanophora.rutgers.edu/montipora/>
 
-```{r, genome-checksums, engine = 'bash'}
-# change to work in data genome folder
-cd ../data/mcapgenome
+    -   [Version 3](http://cyanophora.rutgers.edu/montipora/) [@stephens2022]
 
-# generate checksum for the genome assembly file
-md5sum *assembly*
+-   [`Montipora_capitata_HIv3.genes.gff3`](https://owl.fish.washington.edu/halfshell/genomic-databank/Montipora_capitata_HIv3.genes.gff3) (67MB)
+
+    -   MD5 checksum: `5f6b80ba2885471c8c1534932ccb7e84`
+
+    -   Downloaded 2023017: <http://cyanophora.rutgers.edu/montipora/>
+
+    -   [GFF](http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.gff3.gz) from Rutgers (or [GFF fixed](https://github.com/AHuffmyer/EarlyLifeHistory_Energetics/raw/master/Mcap2020/Data/TagSeq/Montipora_capitata_HIv3.genes_fixed.gff3.gz) from AHuffmyer script [here](https://github.com/AHuffmyer/EarlyLifeHistory_Energetics/blob/master/Mcap2020/Scripts/TagSeq/Genome_V3/fix_gff_format.Rmd) )
+
+-   [`Montipora_capitata_HIv3.genes.gtf`](https://gannet.fish.washington.edu/Atumefaciens/20230127-mcap-gff_to_gtf/Montipora_capitata_HIv3.genes.gtf) (101MB)
+
+    -   MD5 checksum: `ceef8eca945199415b23d2f1f0dd2066`
+
+    -   Created 2023017: <https://robertslab.github.io/sams-notebook/2023/01/27/Data-Wrangling-M.capitata-Genome-GFF-to-GTF-Using-gffread.html>
+
+-   Genome Indexes ([`HISAT2`](https://daehwankimlab.github.io/hisat2/))
+
+    -   [`Montipora_capitata_HIv3-hisat2-indices.tar.gz`](https://gannet.fish.washington.edu/Atumefaciens/20230131-mcap-HIv3-hisat2-build-index/Montipora_capitata_HIv3-hisat2-indices.tar.gz) (tarball gzip; 1.2GB)
+
+        -   MD5 checksum: `c8accb6c54e843198c776f0d6f0c603d`
+
+        -   Needs to be unpacked before use!
+
+::: callout-note
+You can located [genomes, indexes, & feature tracks](https://robertslab.github.io/resources/Genomic-Resources/#montipora-capitata) for *M. capitata* in the Roberts Lab Handbook
+:::
+
+-   Sample metadata: `metadata/mcap_RNAseq_simplified_metadata.csv`
+
+#### Outputs
+
+# Download GTF
+
+-   [`Montipora_capitata_HIv3.genes.gtf`](https://gannet.fish.washington.edu/Atumefaciens/20230127-mcap-gff_to_gtf/Montipora_capitata_HIv3.genes.gtf) (101MB)
+
+    -   MD5 checksum: `ceef8eca945199415b23d2f1f0dd2066`
+
+    -   Created 2023017: <https://robertslab.github.io/sams-notebook/2023/01/27/Data-Wrangling-M.capitata-Genome-GFF-to-GTF-Using-gffread.html>
+
+```{r, gtf-download, engine='bash'}
+cd ../input/genome
+
+wget https://gannet.fish.washington.edu/Atumefaciens/20230127-mcap-gff_to_gtf/Montipora_capitata_HIv3.genes.gtf
 
 ```
 
-## HISAT Index
+```{r, gtf-checksum, engine='bash'}
+# change to work in data genome directory
+cd ../input/genome
+
+# generate checksum for the hisat index zip file
+md5sum *gtf*
+```
+
+# Download HISAT Index
 
 -   [`Montipora_capitata_HIv3-hisat2-indices.tar.gz`](https://gannet.fish.washington.edu/Atumefaciens/20230131-mcap-HIv3-hisat2-build-index/Montipora_capitata_HIv3-hisat2-indices.tar.gz) (tarball gzip; 1.2GB)
 
@@ -84,7 +90,7 @@ md5sum *assembly*
 
 ```{r, hisat-download, engine = 'bash'}
 # change to work in data genome directory
-cd ../data/mcapgenome
+cd ../input/hisat
 
 # download the hisat index from Robert's Lab gannet server
 [-f Montipora_capitata_HIv3-hisat2-indices.tar.gz] || wget https://gannet.fish.washington.edu/Atumefaciens/20230131-mcap-HIv3-hisat2-build-index/Montipora_capitata_HIv3-hisat2-indices.tar.gz
@@ -92,7 +98,7 @@ cd ../data/mcapgenome
 
 ```{r, hisat-checksum, engine = 'bash'}
 # change to work in data genome directory
-cd ../data/mcapgenome
+cd ../input/hisat
 
 # generate checksum for the hisat index zip file
 md5sum *hisat2*
@@ -111,50 +117,11 @@ Unpack the tar.gz hisat index file using `tar -xvzf`
 This command will extract the contents of the `.tar.gz` file into the current directory:
 
 ```{r, hisat-unzip, engine = 'bash'}
-cd ../data/mcapgenome
+cd ../input/hisat
 tar -xvzf Montipora_capitata_HIv3-hisat2-indices.tar.gz
 ```
 
-## Genome Feature Tracks
-
-[Generic Feature Format (GFF3)](https://gmod.org/wiki/GFF3)
-
--   [`Montipora_capitata_HIv3.genes.gff3`](https://owl.fish.washington.edu/halfshell/genomic-databank/Montipora_capitata_HIv3.genes.gff3) (67MB)
-
-    -   MD5 checksum: `5f6b80ba2885471c8c1534932ccb7e84`
-
-    -   Downloaded 2023017: <http://cyanophora.rutgers.edu/montipora/>
-
--   [`Montipora_capitata_HIv3.genes.gtf`](https://gannet.fish.washington.edu/Atumefaciens/20230127-mcap-gff_to_gtf/Montipora_capitata_HIv3.genes.gtf) (101MB)
-
-    -   MD5 checksum: `ceef8eca945199415b23d2f1f0dd2066`
-
-    -   Created 2023017: <https://github.com/urol-e5/timeseries_molecular/blob/cf654b9967c7a5d81e3aeca370b0c8f324badcbd/D-Apul/code/02.00-D-Apul-RNAseq-gff-to-gtf.Rmd>
-
-```{r, feature-tracks-download, engine = 'bash'}
-# change to work in data genome directory
-cd ../data/mcapgenome
-
-wget http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.gff3.gz
-
-wget https://gannet.fish.washington.edu/Atumefaciens/20230127-mcap-gff_to_gtf/Montipora_capitata_HIv3.genes.gtf
-```
-
-```{r, feature-tracks-checksum, engine = 'bash'}
-cd ../data/mcapgenome
-
-md5sum *.gff3.gz *.gtf *gff3
-```
-
-```{r, engine = 'bash'}
-
-cd ../data/mcapgenome
-
-head -10 Montipora_capitata_HIv3.genes.gff3
-
-```
-
-Load libraries and data.
+# Load Libraries
 
 ```{r}
 
@@ -165,6 +132,8 @@ library(tidyverse)
 library(R.utils)
 
 ```
+
+# Load Metadata
 
 ```{r}
 
@@ -177,31 +146,273 @@ gff_fixed <- read.csv(file="../data/mcapgenome/Montipora_capitata_HIv3.genes_fix
 
 > For now we're going to do a test run on just 10 samples from the early gastrula phase
 
-8 samples from control samples at 14 hours post fertilization, gastrula (C14):
+7 samples from control samples at 14 hours post fertilization, gastrula (C14):
 
 ```{r, engine = 'bash'}
-cd ../output/03_qaqc/trim_reads_fastp
-ls *C14*
+cd ../output/03_qaqc/trimmed_reads
+ls *C14*fq.gz
 ```
 
 5 from highest pollution concentration at 14 hours post fertilization, gastrula (H14):
 
 ```{r, engine = 'bash'}
-cd ../output/03_qaqc/trim_reads_fastp
-ls *H14*
+cd ../output/03_qaqc/trimmed_reads
+ls *H14*fq.gz
 ```
 
-```{r, engine = 'bash'}
-ls ../output/03_qaqc/trim_reads_fastp/*C14*.fq.gz
+# Create a Bash variables file
+
+This allows usage of Bash variables across R Markdown chunks.
+
+## Name directory paths
+
+```{r, engine = bash}
+{
+echo "#### Assign Variables ####"
+echo ""
+echo "# Data directories"
+echo 'export project_dir=/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox'
+echo 'export output_dir=${project_dir}/output'
+echo 'export output_dir_align=${project_dir}/output/04_align'
+echo 'export output_dir_trim=${project_dir}/output/03_qaqc/trimmed_reads'
+echo ""
+} > .bashvars
+
+cat .bashvars
 ```
 
-# Next Steps
+# Explore genome files
+
+## Fasta
+
+Here is the fasta file
+
+```{r, locate-fasta, engine='bash'}
+
+ls  ../input/genome/Montipora_capitata_HIv3.assembly.fasta
+
+```
+
+## GFF
+
+Here is the gff file provided by rutgers
+
+```{r, explore-gff, engine='bash'}
+
+head ../input/genome/Montipora_capitata_HIv3.genes.gff3
+```
+
+Here is the modified gff rutgers file generated by A. Huffmyer. Note that the gff-fixed file generated by A. Huffmyer [here](https://github.com/AHuffmyer/EarlyLifeHistory_Energetics/blob/master/Mcap2020/Scripts/TagSeq/Genome_V3/fix_gff_format.Rmd) *adds transcript and gene id into GFF file for alignment... adding transcript_id= and gene_id= to 'gene' column because we need that label to map our data"*
+
+```{r, explore-gff-fixed, engine='bash'}
+
+head -n 5 ../input/genome/Montipora_capitata_HIv3.genes_fixed.gff3
+```
+
+## GTF
+
+```{r, gtf-head, engine='bash'}
+head -n 5 ../input/genome/Montipora_capitata_HIv3.genes.gtf
+```
+
+```{r, gtf-gene-count, engine='bash'}
+grep -c "CDS" ../input/genome/Montipora_capitata_HIv3.genes.gtf
+```
+
+```{r, gtf-exon-count, engine='bash'}
+grep -c "exon" ../input/genome/Montipora_capitata_HIv3.genes.gtf
+```
+
+```{r, gtf-transcript-count, engine='bash'}
+grep -c "transcript" ../input/genome/Montipora_capitata_HIv3.genes.gtf
+```
+
+```{r, gtf-gene-count, engine='bash'}
+grep -c "gene" ../input/genome/Montipora_capitata_HIv3.genes.gtf
+```
+
+# Extract exons
+
+```{r, exon, engine='bash'}
+/home/shared/hisat2-2.2.1/hisat2_extract_exons.py \
+../input/genome/Montipora_capitata_HIv3.genes.gtf \
+> ../output/04_align/exon.tab
+```
+
+```{r, exon-head, engine='bash'}
+head ../output/04_align/exon.tab
+wc -l ../output/04_align/exon.tab #count the number of files 
+```
+
+# Extract splice sites
+
+```{r, extract-splices, engine='bash'}
+
+/home/shared/hisat2-2.2.1/hisat2_extract_splice_sites.py \
+../input/genome/Montipora_capitata_HIv3.genes.gtf \
+> ../output/04_align/splice_sites.tab
+```
+
+```{r, exon-head, engine='bash'}
+head ../output/04_align/splice_sites.tab
+wc -l ../output/04_align/splice_sites.tab #count the number of files 
+```
+
+> Sam says HISAT index build for M cap included exons and splice sites [here](https://robertslab.github.io/sams-notebook/posts/2023/2023-01-31-Genome-Indexing—M.capitata-HIv3-Assembly-with-HiSat2-on-Mox/index.html)
+
+# Test HISAT Alignment & make sams
+
+Align only the early gastrula control group (this is all files in `../output/03_qaqc/trimmed_reads/` that have a `*C14*R2_001.fastp-trim.fq.gz` filename pattern)
+
+The following code lines explained:
+
+1.  `find ../output/03_qaqc/trimmed_reads/*C14*R2_001.fastp-trim.fq.gz` : This finds all reverse read files (\_R2_001.fastp-trim.fq.gz) that match the filename pattern in the `../output/03_qaqc/trimmed_reads` directory.
+
+2.  `xargs -n 1 basename -s _R2_001.fastp-trim.fq.gz`: basename -s removes the suffix \_R2_001.fastp-trim.fq.gz from each file, leaving only the sample identifier (e.g., 101112C14, 123C14, etc.).
+
+3.  `xargs -I{}`: The xargs -I{} loop replaces {} with each sample identifier to construct the hisat2 command for each sample.
+
+4.  `/home/shared/hisat2-2.2.1/hisat2`: This is the HISAT2 command for aligning reads to a reference genome.
+
+5.  `-x ../input/hisat/Montipora_capitata_HIv3`: Specifies the path to the HISAT2 index for the reference genome.[^1]
+
+6.  `--dta`: This option enables HISAT2's "Downstream Transcriptome Analysis" mode, which optimizes output for transcriptome assembly and gene-level analyses.
+
+7.  `-p 20`: Specifies that the command should use 20 CPU threads to speed up the alignment process.
+
+8.  `-1 ../output/03_qaqc/trimmed_reads/{}_R1_001.fastp-trim.fq.gz`: Uses {} to insert the sample identifier and specify the path to the corresponding forward read file (\_R1_001.fastp-trim.fq.gz).
+
+9.  `-2 ../output/03_qaqc/trimmed_reads{}_R2_001.fastp-trim.fq.gz`: Uses {} to specify the reverse read file (\_R2_001.fastp-trim.fq.gz).
+
+10. `-S ../output/15-Apul-hisat/{}.sam`: Specifies the output path for the alignment results in SAM format, using `{}` to name the file after each sample identifier.
+
+11. `2> ../output/15-Apul-hisat/hisat.out`: Redirects any error messages or log information from `hisat2` to a file named `hisat.out`, where you can check for alignment statistics or troubleshooting information.
+
+[^1]: When a HISAT2 index is split into multiple files with extensions like `.1.ht2`, `.2.ht2`, up to `.8.ht2`, the `-x` option in the code for HISAT2 automatically detects and loads all parts of a multi-file index as long as you specify the **base name**
+
+This modification should correctly align each sample's forward and reverse reads using the HISAT2 index. It will result in one sam file per pair of forward and reverse reads.
+
+::: callout-caution
+SAM files are very large (these are each \~20GB!) and take a long time to generate... look up ways to speed this up for running larger batches of files
+:::
+
+```{r, test-align-loop, engine='bash'}
+for file in ../output/03_qaqc/trimmed_reads/*[CH]14*R2_001.fastp-trim.fq.gz
+do
+sample_name=$(basename -s _R2_001.fastp-trim.fq.gz ${file})
+echo "${file} - ${sample_name}"
+done
+```
+
+```{r, align-C&H14, engine='bash'}
+for file in ../output/03_qaqc/trimmed_reads/*[CH]14*R2_001.fastp-trim.fq.gz 
+do 
+sample_name=${basename -s _R2_001.fastp-trim.fq.gz ${file}} \
+/home/shared/hisat2-2.2.1/hisat2 \
+-x ../input/hisat/Montipora_capitata_HIv3 \
+--dta \
+-p 20 \
+-1 ../output/03_qaqc/trimmed_reads/${sample_name}_R1_001.fastp-trim.fq.gz \
+-2 ../output/03_qaqc/trimmed_reads/${sample_name}_R2_001.fastp-trim.fq.gz \
+-S ../output/04_align/sam/${sample_name}.sam \
+2> ../output/04_align/${sample_name}_hisat.out
+done
+```
+
+```{r, engine='bash'}
+for file in ../output/03_qaqc/trimmed_reads/*[CH]14*R2_001.fastp-trim.fq.gz
+do
+  sample_name=$(basename "$file" _R2_001.fastp-trim.fq.gz)
+  /home/shared/hisat2-2.2.1/hisat2 \
+    -x ../input/hisat/Montipora_capitata_HIv3 \
+    --dta \
+    -p 20 \
+    -1 ../output/03_qaqc/trimmed_reads/"${sample_name}_R1_001.fastp-trim.fq.gz" \
+    -2 ../output/03_qaqc/trimmed_reads/"${sample_name}_R2_001.fastp-trim.fq.gz" \
+    -S ../output/04_align/sam/"${sample_name}.sam" \
+    2> ../output/04_align/"${sample_name}_hisat.out"
+done
+
+```
+
+# Look at alignment stats
+
+Use MultiQc to make a html report of alignment stats in the `hisat.out` file
+
+```{r, engine='bash'}
+
+cd ../output/04_align
+
+/home/sam/programs/mambaforge/bin/multiqc *_hisat.out
+```
+
+# Convert to bams
+
+> The SAM output of each HISAT2 run must be sorted and converted to BAM using samtools
+
+```{r, sam-to-bam, engine='bash'}
+
+for samfile in ../output/04_align/sam/*.sam; do 
+  # Define the base filename without path and extension 
+  base_name=$(basename "${samfile%.sam}")
+
+  # Set the paths for the BAM and sorted BAM files in the new output directory 
+  bamfile="../output/04_align/bam/${base_name}.bam"  
+  sorted_bamfile="../output/04_align/bam/${base_name}.sorted.bam"
+
+  # Convert SAM to BAM 
+  /home/shared/samtools-1.12/samtools view -bS -@ 20 "$samfile" > "$bamfile"
+
+  # Sort the BAM file and save it in the desired directory 
+  /home/shared/samtools-1.12/samtools sort -@ 20 "$bamfile" -o "$sorted_bamfile"
+
+  # Index the sorted BAM file 
+  /home/shared/samtools-1.12/samtools index -@ 20 "$sorted_bamfile"
+
+  # Optionally, remove the unsorted BAM file to save space 
+  rm "$bamfile"
+done
+```
+
+# IGV
+
+\[igv.org\](https://igv.org/)
+
+# StringTie
+
+::: callout-tip
+StringTie makes the gtf files used in count matrix
+:::
+
+merge with samtools?? Or stingtie? Or either?
+
+> for each RNA-Seq sample, run StringTie to assemble the read alignments obtained in the previous step; it is recommended to run StringTie with the -G option if the reference annotation is available
+>
+> run StringTie with **--merge** in order to generate a non-redundant set of transcripts observed in any of the RNA-Seq samples assembled previously. The stringtie --merge mode takes as input a list of all the assembled transcripts files (in GTF format) previously obtained for each sample, as well as a reference annotation file (-G option) if available.
+>
+> for each RNA-Seq sample, run StringTie using the -B/-b and -e options in order to estimate transcript abundances and generate read coverage tables for Ballgown. The -e option is not required but recommended for this run in order to produce more accurate abundance estimations of the input transcripts. Each StringTie run in this step will take as input the sorted read alignments (BAM file) obtained in step 1 for the corresponding sample and the -G option with the merged transcripts (GTF file) generated by stringtie --merge in step 3. Please note that this is the only case where the -G option is not used with a reference annotation, but with the global, merged set of transcripts as observed across all samples.
+
+```{r, engine='bash'}
+find ../output/04_align/bam/*sorted.bam \
+| xargs basename -s .sorted.bam | xargs -I{} \
+/home/shared/stringtie-2.2.1.Linux_x86_64/stringtie \
+-p 20 \
+-eB \
+-G ../input/genome/Montipora_capitata_HIv3.genes_fixed.gff3 \
+-o ../output/04_align/stringtie/{}.gtf \
+../output/04_align/bam/{}.sorted.bam
+```
+
+# Summary & Next Steps
+
+We generated alignment files in this step that we will assemble using `StringTie` in step 5, `05_assemble`
 
 ::: callout-important
 ###### Don't forget to always rsync backup!
 
 ```         
-rsync -avz stanja@gannet.fish.washington.edu:/volume2/web/stanja/stanja/coral-embryo-leachate/output/ /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-leachate/output/
+rsync -avz /media/4TB_JPG_ext/stanja/gitprojects\
+stanja\@gannet.fish.washington.edu:/volume2/web/stanja/ravenbackup
 ```
 :::
 

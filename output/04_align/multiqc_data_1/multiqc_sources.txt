@@ -1,0 +1,13 @@
+Module	Section	Sample Name	Source
+Bowtie 2 / HiSAT2	all_sections	101112C14_hisat	/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/101112C14_hisat.out
+Bowtie 2 / HiSAT2	all_sections	101112H14_hisat	/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/101112H14_hisat.out
+Bowtie 2 / HiSAT2	all_sections	123C14_hisat	/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/123C14_hisat.out
+Bowtie 2 / HiSAT2	all_sections	123H14_hisat	/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/123H14_hisat.out
+Bowtie 2 / HiSAT2	all_sections	131415C14_hisat	/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/131415C14_hisat.out
+Bowtie 2 / HiSAT2	all_sections	131415H14_hisat	/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/131415H14_hisat.out
+Bowtie 2 / HiSAT2	all_sections	45C14_hisat	/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/45C14_hisat.out
+Bowtie 2 / HiSAT2	all_sections	45H14_hisat	/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/45H14_hisat.out
+Bowtie 2 / HiSAT2	all_sections	6C14_hisat	/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/6C14_hisat.out
+Bowtie 2 / HiSAT2	all_sections	789H14_hisat	/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/789H14_hisat.out
+Bowtie 2 / HiSAT2	all_sections	7C14_hisat	/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/7C14_hisat.out
+Bowtie 2 / HiSAT2	all_sections	89C14_hisat	/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/04_align/89C14_hisat.out
