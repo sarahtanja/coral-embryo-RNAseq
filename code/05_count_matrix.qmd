@@ -41,3 +41,12 @@ python3 /home/shared/stringtie-2.2.1.Linux_x86_64/prepDE.py3 \
 -g ../output/05_count/gene_count_matrix.csv \
 -t ../output/05_count/transcript_count_matrix.csv
 ```
+
+::: callout-important
+###### Don't forget to always rsync backup!
+
+```         
+rsync -avz /media/4TB_JPG_ext/stanja/gitprojects\
+stanja\@gannet.fish.washington.edu:/volume2/web/stanja/ravenbackup
+```
+:::

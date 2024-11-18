@@ -1,0 +1,156 @@
+---
+title: "Step 6: Data Exploration of Count Matrix"
+subtitle: "Using `DESeq2`"
+author: "Sarah Tanja"
+date: 11/18/2024
+format:
+  gfm: default  # or html if you want to render in HTML
+toc: true
+toc-depth: 3
+link-external-icon: true
+link-external-newwindow: true
+reference-location: margin
+citation-location: margin
+---
+
+# Install packages
+
+```{r}
+if ("tidyverse" %in% rownames(installed.packages()) == 'FALSE') install.packages('tidyverse') 
+if ("DESeq2" %in% rownames(installed.packages()) == 'FALSE') install.packages('DESeq2')
+if ("RColorBrewer" %in% rownames(installed.packages()) == 'FALSE') install.packages('RColorBrewer')
+if ("ComplexHeatmap" %in% rownames(installed.packages()) == 'FALSE') install.packages('ComplexHeatmap')
+if ("pheatmap" %in% rownames(installed.packages()) == 'FALSE') install.packages('pheatmap')
+if ("data.table" %in% rownames(installed.packages()) == 'FALSE') install.packages('data.table')
+if ("genefilter" %in% rownames(installed.packages()) == 'FALSE') install.packages('genefilter')
+if ("kableExtra" %in% rownames(installed.packages()) == 'FALSE') install.packages('kableExtra')
+```
+
+```{r}
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("DESeq2")
+```
+
+```{r}
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("ComplexHeatmap")
+```
+
+```{r}
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("genefilter")
+```
+
+# Load packages
+
+```{r}
+library(tidyverse)
+library(DESeq2)
+library(RColorBrewer)
+library(ComplexHeatmap)
+library(pheatmap)
+library(kableExtra)
+library(genefilter)
+```
+
+# Import metadata
+
+```{r}
+metadata <- read.csv("../metadata/mcap_RNAseq_simplified_metadata.csv")
+head(metadata)
+```
+
+Make a new column that represents the 12 distinct treatment groups in the experiment
+
+```{r}
+metadata <- metadata %>% 
+  mutate(treatment = paste(development_stage, pvc_leachate_level)) %>% 
+  relocate(treatment, .after = collection_date)
+
+metadata
+```
+
+# Import gene count matrix (gcm)
+
+-   `check.names = FALSE` removed the 'X' from in front of sample id's in the column headers
+
+```{r}
+gcm <- read.csv("../output/05_count/gene_count_matrix.csv", check.names = FALSE)
+head(gcm)
+```
+
+The count matrix should show counts of whole numbers (integers) ... since each column shows <int> as the data type we know that the counts are already integers
+
+### Check that there are no genes with 0 counts across all samples
+
+-   **`across(2:ncol(gcount))`:**
+
+    -   This specifies columns 2 to the last column for summing, skipping the first (character) column.
+
+-   **`rowSums()` Calculation:**
+
+    -   The `rowSums()` function works only on numeric data, so this ensures non-numeric columns are excluded.
+
+-   The `filter(Total != 0)` removes rows where the sum across numeric columns is zero.
+
+-   `dplyr::select(-Total)` removes the temporary `Total` column.
+
+```{r}
+nrow(gcm)
+
+gcm <- gcm %>% 
+  mutate(total = rowSums(across(2:ncol(gcm)))) %>% 
+  filter(total !=0) %>% 
+  dplyr::select(-total)
+
+nrow(gcm)
+```
+
+There was a total of 54,384 genes in the original gene count matrix, which we filtered down to 40,721 after removing any genes that had 0 sequences across all of our samples.
+
+# pOverA
+
+[pOverA](https://rdrr.io/bioc/genefilter/man/pOverA.html) is a function in the genefilter package that specifies the minimum count for a proportion of samples for each gene.
+
+Here, we are using a pOverA of 0.08.
+
+We have 63 samples that span three embryonic phases (20 cleavage, 21 prawn chip, 22 early gastrula)
+
+```{r}
+ephases <- table(metadata$development_stage)
+
+kable(ephases, caption = "Number of samples binned by embryonic phase")
+```
+
+And 4 pollution exposure levels (18 control, 15 low, 15 mid, 15 high)
+
+```{r}
+pexposure <- table(metadata$pvc_leachate_level)
+
+kable(pexposure, caption = "Number of samples binned by pollution exposure levels")
+```
+
+Giving us 12 distinct treatment groups
+
+tgroup \<- table(metadata\$treatment)
+
+print(tgroup)
+
+```{r}
+tgroup <- table(metadata$treatment)
+
+# Use kable to print the table in a cleaner format
+kable(tgroup, caption = "Number of samples binned by treatment", format = "markdown")
+```
+
+We expect there to be different genes present in the early embryonic development phases... and we hypothesize that there will be differential expression in response the pollution exposure at each of these developmental checkpoints.
+
+Therefore, we will accept genes that are present in 5/60 = 0.08 of the samples because we expect different expression by life stage. We are further setting the minimum count of genes to 10, such that 7% of the samples must have a gene count of \>10 in order for the gene to remain in the data set.
+
+Filter in the package "genefilter". Pre-filtering our dataset to reduce the memory size dataframe, increase the speed of the transformation and testing functions, and improve quality of statistical analysis by removing low-coverage counts. Removed counts could represent outliers in the data and removing these improves sensitivity of statistical tests.
