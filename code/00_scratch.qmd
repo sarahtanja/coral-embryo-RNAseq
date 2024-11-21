@@ -1,0 +1,62 @@
+pOverA / kOverA doesn't work…?
+
+pOverA is a function that specifies the minimum count for a proportion of samples for each gene.
+
+{r}
+help(pOverA)
+
+kOverA is a function that specifies the minimum count for a number of samples for each gene.
+
+{r}
+help(kOverA)
+
+ex.
+
+Suppose we want to select genes that have an expression measure above 200 in at least 5 samples. To do that we use the function kOverA.
+
+There are three steps that must be performed.
+
+Create function(s) implementing the filtering criteria.
+
+Assemble it (them) into a (combined) filtering function.
+
+Apply the filtering function to the expression matrix.
+
+f1 <- kOverA(5, 200)
+ffun <- filterfun(f1)
+wh1 <- genefilter(exprs(sample.ExpressionSet), ffun)
+sum(wh1)
+
+## [1] 159
+
+Here f1 is a function that implies our "expression measure above 200 in at least 5 samples" criterion, the function ffun is the filtering function (which in this case consists of only one criterion), and we apply it using r Biocpkg("genefilter"). There were 159 genes that satisfied the criterion and passed the filter.
+
+genefilter
+
+```{r}
+# p is percent
+pfilt <- (pOverA(0.3, 10))
+pffun <- filterfun(pfilt)
+pfilt_list <- genefilter(gcm, pffun)
+
+pgkeep <- gcm[pfilt_list,]
+
+nrow(gcm)
+nrow(pgkeep)
+```
+
+```{r}
+# k is number of samples
+kfilt <- (kOverA(4, 10))
+kffun <- filterfun(kfilt)
+kfilt_list <- genefilter(gcm, kffun)
+
+kgkeep <- gcm[kfilt_list,]
+
+nrow(gcm)
+nrow(kgkeep)
+```
+
+::: callout-warning
+After filtering... we're left with very few (5!? really!?) genes that were expressed more than *only* 5 times in about a third of the samples ...this seems way off... even visually I can tell there are more than that when I scroll through the gene count matrix
+:::

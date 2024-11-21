@@ -23,18 +23,23 @@ citation-location: margin
 ls ../output/04_align/stringtie/*gtf 
 ```
 
-```{r, engine='bash'}
-ls ../output/04_align/stringtie/*gtf > ../output/05_count/gtf_list.txt
+```{r, engine="bash"}
+cd ../output/04_align/stringtie 
+find . -type f -name "*.gtf" | wc -l
 ```
+Should be 63 total samples!
 
+Save the list of basenames (sample_names) and their respective file paths to gtf_list.txt 
 ```{r, engine='bash'}
 ls ../output/04_align/stringtie/*.gtf | awk -F'/' '{path=$0; file=$NF; gsub(".gtf$", "", file); print file "\t" path}' > ../output/05_count/gtf_list.txt
 ```
 
+Look at the gtf_list.txt we just made to make sure there is a basename and a filepath for each sample
 ```{r, engine='bash'}
 cat ../output/05_count/gtf_list.txt
 ```
 
+Run the python script `prepDR.py3`, which takes the basenames, filepaths to gtf files and churns out a gene count matrix and a transcript count matrix. 
 ```{r, engine='bash'}
 python3 /home/shared/stringtie-2.2.1.Linux_x86_64/prepDE.py3 \
 -i ../output/05_count/gtf_list.txt \

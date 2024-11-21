@@ -1,0 +1,233 @@
+---
+title: "Step 7: Differential Expression Analysis"
+subtitle: "Using `DESeq2`"
+author: "Sarah Tanja"
+date: 11/20/2024
+format:
+  gfm: default  # or html if you want to render in HTML
+toc: true
+toc-depth: 3
+link-external-icon: true
+link-external-newwindow: true
+reference-location: margin
+citation-location: margin
+---
+
+# Install packages
+
+```{r}
+if ("tidyverse" %in% rownames(installed.packages()) == 'FALSE') install.packages('tidyverse') 
+if ("DESeq2" %in% rownames(installed.packages()) == 'FALSE') install.packages('DESeq2')
+if ("RColorBrewer" %in% rownames(installed.packages()) == 'FALSE') install.packages('RColorBrewer')
+if ("ComplexHeatmap" %in% rownames(installed.packages()) == 'FALSE') install.packages('ComplexHeatmap')
+if ("pheatmap" %in% rownames(installed.packages()) == 'FALSE') install.packages('pheatmap')
+if ("kableExtra" %in% rownames(installed.packages()) == 'FALSE') install.packages('kableExtra')
+if ("viridis" %in% rownames(installed.packages()) == 'FALSE') install.packages('viridis')
+```
+
+```{r}
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("ComplexHeatmap")
+```
+
+# Load packages
+
+```{r}
+library(tidyverse)
+library(DESeq2)
+library(RColorBrewer)
+library(viridis)
+library(pheatmap)
+library(kableExtra)
+library(ComplexHeatmap)
+```
+
+# Import metadata
+```{r}
+metadata <- read.csv("../metadata/metadata.csv")
+```
+
+
+# Import DESeq Data Object
+
+```{r}
+# Load the DESeq2 object in a different script
+load("../output/06_exploration/deseq2_object.RData")
+```
+
+# [Differential Expression Analysis](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#differential-expression-analysis)
+
+```{r}
+dds_i_deseq <- DESeq(dds_i)
+```
+
+```{r}
+res <-  results(dds_i_deseq)
+
+res
+```
+
+Results have n rows (in our case 22,634) of genes and 6 columns
+
+```{r}
+colnames(res)
+```
+
+1.  `baseMean` The first column, `baseMean`, is the average of the normalized count values, divided by the size factors, taken over all samples in the *DESeqDataSet*.
+2.  `log2FoldChange` The column `log2FoldChange` is the effect size estimate. It tells us how much the gene's expression seems to have changed due to treatment comparison. This value is reported on a logarithmic scale to base 2: for example, a log2 fold change of 1.5 means that the gene's expression is increased by a multiplicative factor of $2^{1.5} = 2.82$
+3.  `lfcSE` Of course, this log2FoldChange estimate has an uncertainty associated with it, which is available in the column `lfcSE`, the standard error estimate for the log2 fold change estimate
+4.  `stat`
+5.  `pvalue` *DESeq2* performs for each gene a *hypothesis test* to see whether evidence is sufficient to decide against the *null hypothesis* that there is zero effect of the treatment on the gene and that the observed difference between treatment and control was merely caused by experimental variability (i.e., the type of variability that you can expect between different samples in the same treatment group). As usual in statistics, the result of this test is reported as a *p* value, and it is found in the column `pvalue`. Remember that a *p* value indicates the probability that a fold change as strong as the observed one, or even stronger, would be seen under the situation described by the null hypothesis.
+6.  `padj`
+
+## Lower the false discovery rate (alpha)
+
+# [Model Technical Variation](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#multi-factor-designs)
+
+> **Experiments with many samples**: in experiments with many samples (e.g. 50, 100, etc.) it is highly likely that there will be technical variation affecting the observed counts. Failing to model this additional technical variation will lead to spurious results. Many methods exist that can be used to model technical variation, which can be easily included in the DESeq2 design to control for technical variation while estimating effects of interest. See the [RNA-seq workflow](http://www.bioconductor.org/help/workflows/rnaseqGene) for examples of using RUV or SVA in combination with DESeq2. For more details on why it is important to control for technical variation in large sample experiments, see the following [thread](https://twitter.com/mikelove/status/1513468597288452097), also archived [here](https://htmlpreview.github.io/?https://github.com/frederikziebell/science_tweetorials/blob/master/DESeq2_many_samples.html) by Frederik Ziebell.
+
+# [Interactions](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#interactions)
+
+# [Likelihood Ratio Test](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#likelihood-ratio-test)
+
+The LRT is therefore useful for testing multiple terms at once, for example testing 3 or more levels of a factor at once, or all interactions between two variables. The LRT for count data is conceptually similar to an analysis of variance (ANOVA) calculation in linear regression, except that in the case of the Negative Binomial GLM, we use an analysis of deviance (ANODEV), where the deviance captures the difference in likelihood between a full and a reduced model.
+
+The likelihood ratio test can be performed by specifying test="LRT" when using the DESeq function, and providing a reduced design formula, e.g. one in which a number of terms from design(dds) are removed. The degrees of freedom for the test is obtained from the difference between the number of parameters in the two models. A simple likelihood ratio test, if the full design was \~condition would look like:
+
+```{r}
+dds_i_lrt <- DESeq(dds_i, test="LRT", reduced=~1)
+```
+
+From this, we are going to filter by adjusted p value \<0.05, this is generated by the LRT test statistic.
+
+```{r}
+DEG_results<-results(dds_i_lrt)
+DEG_results <- as.data.frame(subset(DEG_results, padj<0.05))
+
+DEG_results$gene <- rownames(DEG_results)
+rownames(DEG_results) <- NULL
+dim(DEG_results)
+```
+
+There are 16,504 DEGs out of 22,634 (\~73%) of total genes
+
+```{r}
+results(dds_i_lrt)
+```
+
+## [I ran a likelihood ratio test, but results() only gives me one comparison.](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#i-ran-a-likelihood-ratio-test-but-results-only-gives-me-one-comparison.)
+
+> "... How do I get the p values for all of the variables/levels that were removed in the reduced design?"
+>
+> This is explained in the help page for ?results in the section about likelihood ratio test p-values, but we will restate the answer here. When one performs a likelihood ratio test, the p values and the test statistic (the stat column) are values for the test that removes all of the variables which are present in the full design and not in the reduced design. This tests the null hypothesis that all the coefficients from these variables and levels of these factors are equal to zero.
+>
+> The likelihood ratio test p values therefore represent a test of all the variables and all the levels of factors which are among these variables. However, the results table only has space for one column of log fold change, so a single variable and a single comparison is shown (among the potentially multiple log fold changes which were tested in the likelihood ratio test). This is indicated at the top of the results table with the text, e.g., log2 fold change (MLE): condition C vs A, followed by, LRT p-value: '\~ batch + condition' vs '\~ batch'. This indicates that the p value is for the likelihood ratio test of all the variables and all the levels, while the log fold change is a single comparison from among those variables and levels. See the help page for results for more details.
+
+## Conduct RLOG transformation for visualization.
+
+```{r}
+DEG_results_rlog <- dds_i[unique(DEG_results$gene)]
+
+dim(DEG_results_rlog)
+
+DEG_results_rlog <- rlog(DEG_results_rlog) 
+```
+
+# Plot heatmap of DEGs
+
+Set themes and metadata.
+
+```{r}
+
+legend_names_col = colnames(assay(DEG_results_rlog))
+
+# Extract the annotation dataframe
+df <- as.data.frame(colData(dds_i)[,c("pvc_leachate_level", "embryonic_phase")])
+
+names(df)<- c("pvc_leachate_level", "embryonic_phase")
+rownames(df) <- legend_names_col
+
+levels(df$pvc_leachate_level) 
+levels(df$embryonic_phase)
+```
+
+Plot heatmap of z-scores of expression.
+
+```{r}
+
+zscore_heatmap <- pheatmap(assay(DEG_results_rlog), 
+                             cluster_rows=TRUE, 
+                             show_rownames=FALSE,         # Do not show row names
+                             color=inferno(10),           # From viridis package
+                             show_colnames=FALSE,         # Do not show row names
+                             fontsize_row=3, 
+                             scale="row", 
+                             cluster_cols=TRUE, 
+                             annotation_col=df, 
+                             labels_col=legend_names_col, 
+                             clustering_distance_rows = "euclidean", 
+                             clustering_distance_cols = "euclidean", 
+                             cutree_rows = 3)
+
+zscore_heatmap
+
+
+# Save the heatmap as a png
+ggsave("../output/07_deg/zscore_heatmap.png", plot = zscore_heatmap, width = 8, height = 6, dpi = 600)
+```
+
+# PERMANOVA and PCA of DEGs 
+
+Conduct PERMANOVA by embryonic_phase and pvc_leachate_level 
+
+Export data for PERMANOVA test.  
+```{r}
+test_DEG<-t(assay(DEG_results_rlog)) #export as matrix
+test_DEG<-as.data.frame(test_DEG)
+dim(test_DEG)
+```
+Rows are samples (63) and columns are z scores of the differentially expressed genes (16,504)
+
+```{r}
+#add category columns
+
+test_DEG <- test_DEG %>%
+  mutate(
+    sample_name = rownames(.),
+    embryonic_phase = metadata$embryonic_phase[match(sample_name, metadata$sample_name)],
+    pvc_leachate_level = metadata$pvc_leachate_level[match(sample_name, metadata$sample_name)],
+    .before = 1 # Place these columns before the first column
+  ) 
+
+dim(test_DEG)
+```
+We've added 3 columns to positions [ ,1-3], increasing column dim from 16504 to 16507
+
+
+```{r}
+test_DEG$sample_name
+```
+```{r}
+test_DEG$embryonic_phase
+```
+
+```{r}
+test_DEG$pvc_leachate_level
+```
+
+Build PERMANOVA model for DEG's that are different between temperatures.  
+```{r}
+dim(test_DEG)
+
+scaled_test_DEG <-prcomp(test_DEG[c(3:16507)], scale=TRUE, center=TRUE)
+fviz_eig(scaled_test_DEG)
+
+# scale data
+vegan_DEG <- scale(test_DEG[c(3:16507)])
+
+# PerMANOVA 
+permanova_DEG<-adonis2(vegan_DEG ~ embryonic_phase, data = test_DEG, method='eu')
+permanova_DEG
+```
