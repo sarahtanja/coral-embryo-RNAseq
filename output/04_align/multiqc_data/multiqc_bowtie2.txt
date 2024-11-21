@@ -1,2 +1,0 @@
-Sample	total_reads	paired_total	paired_aligned_none	paired_aligned_one	paired_aligned_multi	paired_aligned_discord_one	paired_aligned_mate_none	paired_aligned_mate_one	paired_aligned_mate_multi	overall_alignment_rate	paired_aligned_mate_multi_halved	paired_aligned_mate_none_halved	paired_aligned_mate_one_halved
-hisat	17470665	17470665	5547543	10627258	1295864	46605	9910729	972164	118983	71.64	59491.5	4955364.5	486082.0

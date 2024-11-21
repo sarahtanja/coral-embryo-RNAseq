@@ -1,2 +1,0 @@
-Sample	Bowtie 2 / HiSAT2_mqc-generalstats-bowtie_2_hisat2-overall_alignment_rate
-hisat	71.64
