@@ -46,27 +46,128 @@ library(ComplexHeatmap)
 ```
 
 # Import metadata
+
 ```{r}
 metadata <- read.csv("../metadata/metadata.csv")
+metadata_4 <- read.csv("../metadata/metadata_4.csv")
+metadata_9<- read.csv("../metadata/metadata_9.csv")
+metadata_14 <- read.csv("../metadata/metadata_14.csv")
+  
 ```
-
 
 # Import DESeq Data Object
 
 ```{r}
 # Load the DESeq2 object in a different script
-load("../output/06_exploration/deseq2_object.RData")
+load("../output/06_exploration/dds_i.RData")
+load("../output/06_exploration/dds_4.RData")
+load("../output/06_exploration/dds_9.RData")
+load("../output/06_exploration/dds_14.RData")
 ```
 
+# Run DESEq2
 
-# [Likelihood Ratio Test](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#likelihood-ratio-test)
+## 4hpf
+
+```{r}
+dds_4_deseq <- DESeq(dds_4)
+```
+
+```{r}
+summary(results(dds_4_deseq), alpha = 0.05)
+```
+
+## 9hpf
+
+```{r}
+dds_9_deseq <- DESeq(dds_9)
+```
+
+```{r}
+summary(results(dds_9_deseq), alpha = 0.05)
+```
+
+## 14hpf
+
+```{r}
+dds_14_deseq <- DESeq(dds_14)
+```
+
+```{r}
+summary(results(dds_14_deseq), alpha = 0.05)
+```
+
+# [Likelihood Ratio Test](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#likelihood-ratio-test), Wald
 
 The LRT is therefore useful for testing multiple terms at once, for example testing 3 or more levels of a factor at once, or all interactions between two variables. The LRT for count data is conceptually similar to an analysis of variance (ANOVA) calculation in linear regression, except that in the case of the Negative Binomial GLM, we use an analysis of deviance (ANODEV), where the deviance captures the difference in likelihood between a full and a reduced model.
 
 The likelihood ratio test can be performed by specifying test="LRT" when using the DESeq function, and providing a reduced design formula, e.g. one in which a number of terms from design(dds) are removed. The degrees of freedom for the test is obtained from the difference between the number of parameters in the two models.
 
 ```{r}
-dds_i_lrt <- DESeq(dds_i, test="LRT", reduced=~1)
+dds_i_wald <- DESeq(dds_i, test="Wald")
+```
+
+```{r}
+results(dds_i_wald)
+```
+
+```{r}
+summary(results(dds_i_wald), alpha = 0.05)
+```
+
+> For analyses using the likelihood ratio test (using [`nbinomLRT`](http://raven.fish.washington.edu:8787/help/library/DESeq2/help/nbinomLRT)), the p-values are determined solely by the difference in deviance between the full and reduced model formula. A single log2 fold change is printed in the results table for consistency with other results table outputs, however the test statistic and p-values may nevertheless involve the testing of one or more log2 fold changes. Which log2 fold change is printed in the results table can be controlled using the `name` argument, or by default this will be the estimated coefficient for the last element of `resultsNames(object)`.
+
+> `contrast=c("condition","treated","untreated")`. Multiple results can be returned for analyses beyond a simple two group comparison, so `results` takes arguments `contrast` and `name` to help the user pick out the comparisons of interest for printing a results table. The use of the `contrast` argument is recommended for exact specification of the levels which should be compared and their order.
+
+## Names
+
+```{r}
+resultsNames(dds_i_wald)
+```
+
+# Embryonic Phase
+
+# Cleavage
+
+## Prawnchip Low vs. Mid
+
+```{r}
+prawnchip_low_vs_mid <- results(dds_i_wald, contrast=list('embryonic_phaseprawnchip.pvc_leachate_levellow', 'embryonic_phaseprawnchip.pvc_leachate_levelmid'))
+
+prawnchip_low_vs_mid <- as.data.frame(subset(prawnchip_low_vs_mid, padj<0.05))
+
+prawnchip_low_vs_mid$contrast <- c('prawnchip_low_vs_mid')
+prawnchip_low_vs_mid$gene <- rownames(prawnchip_low_vs_mid)
+rownames(prawnchip_low_vs_mid) <- NULL
+
+prawnchip_low_vs_mid
+```
+
+## Prawnchip Low vs. High
+
+```{r}
+prawnchip_low_vs_high <- results(dds_i_wald, contrast=list('embryonic_phaseprawnchip.pvc_leachate_levellow', 'embryonic_phaseprawnchip.pvc_leachate_levelhigh'))
+prawnchip_low_vs_high <- as.data.frame(subset(prawnchip_low_vs_high, padj<0.05))
+#NBvsB_33_deg <- as.data.frame(subset(NBvsB_33_deg, abs(log2FoldChange)>1))
+prawnchip_low_vs_high$contrast <- c('prawnchip_low_vs_high')
+prawnchip_low_vs_high$gene <- rownames(prawnchip_low_vs_high)
+rownames(prawnchip_low_vs_high) <- NULL
+
+prawnchip_low_vs_high
+```
+
+## Prawnchip Mid vs. High
+
+```{r}
+prawnchip_mid_vs_high <- results(dds_i_wald, contrast=list('embryonic_phaseprawnchip.pvc_leachate_levelmid', 'embryonic_phaseprawnchip.pvc_leachate_levelhigh'))
+
+prawnchip_mid_vs_high <- as.data.frame(subset(prawnchip_mid_vs_high, padj<0.05))
+
+prawnchip_mid_vs_high$contrast <- c('prawnchip_mid_vs_high')
+prawnchip_mid_vs_high$gene <- rownames(prawnchip_mid_vs_high)
+rownames(prawnchip_mid_vs_high) <- NULL
+
+prawnchip_mid_vs_high
 ```
 
 From this, we are going to filter by adjusted p value \<0.05, this is generated by the LRT test statistic.
@@ -80,7 +181,7 @@ rownames(DEG_results) <- NULL
 dim(DEG_results)
 ```
 
-There are 16,504 DEGs out of 22,634 (\~73%) of total genes that have adjusted pvalues less than 0.05... so these are the genes that are significantly differentially expressed. 
+There are 16,504 DEGs out of 22,634 (\~73%) of total genes that have adjusted pvalues less than 0.05... so these are the genes that are significantly differentially expressed.
 
 ```{r}
 colnames(DEG_results)
@@ -94,7 +195,7 @@ Results have n rows (in our case 16,504) of genes and 7 columns
 4.  `stat`
 5.  `pvalue` *DESeq2* performs for each gene a *hypothesis test* to see whether evidence is sufficient to decide against the *null hypothesis* that there is zero effect of the treatment on the gene and that the observed difference between treatment and control was merely caused by experimental variability (i.e., the type of variability that you can expect between different samples in the same treatment group). As usual in statistics, the result of this test is reported as a *p* value, and it is found in the column `pvalue`. Remember that a *p* value indicates the probability that a fold change as strong as the observed one, or even stronger, would be seen under the situation described by the null hypothesis.
 6.  `padj`
-7. `gene`
+7.  `gene`
 
 ## [I ran a likelihood ratio test, but results() only gives me one comparison.](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#i-ran-a-likelihood-ratio-test-but-results-only-gives-me-one-comparison.)
 
@@ -178,13 +279,12 @@ pheatmap(
 dev.off()
 ```
 
+# PERMANOVA of DEGs
 
+Conduct PERMANOVA by embryonic_phase and pvc_leachate_level
 
-# PERMANOVA of DEGs 
+Export data for PERMANOVA test.
 
-Conduct PERMANOVA by embryonic_phase and pvc_leachate_level 
-
-Export data for PERMANOVA test.  
 ```{r}
 test_DEG<-t(assay(DEG_results_rlog)) #export as matrix
 test_DEG<-as.data.frame(test_DEG)
@@ -207,7 +307,7 @@ test_DEG <- test_DEG %>%
 dim(test_DEG)
 ```
 
-We've added 3 columns to positions [ ,1-3], increasing column dim from 16504 to 16507
+We've added 3 columns to positions \[ ,1-3\], increasing column dim from 16504 to 16507
 
 ```{r}
 test_DEG$sample_name
@@ -221,13 +321,11 @@ test_DEG$embryonic_phase
 test_DEG$pvc_leachate_level
 ```
 
-Build PERMANOVA model for DEG's that are different between temperatures.  
+Build PERMANOVA model for DEG's that are different between temperatures.
 
 The function fviz_eig() is part of the `factoextra` package in R.
 
-About fviz_eig()
-It is used to visualize the eigenvalues (also known as scree plot) in multivariate analysis such as Principal Component Analysis (PCA), Correspondence Analysis (CA), and others.
-The eigenvalues represent the variance explained by each principal component or dimension.
+About fviz_eig() It is used to visualize the eigenvalues (also known as scree plot) in multivariate analysis such as Principal Component Analysis (PCA), Correspondence Analysis (CA), and others. The eigenvalues represent the variance explained by each principal component or dimension.
 
 ```{r}
 dim(test_DEG)
@@ -244,6 +342,7 @@ permanova_DEG
 ```
 
 # PCA of zscores
+
 ```{r}
 zscore_PCAdata <-
   plotPCA(
@@ -284,6 +383,7 @@ ggsave(
 )
 
 ```
+
 # Perform clustering
 
 ```{r}
@@ -304,18 +404,19 @@ meta<-meta%>%
 cluster_vst <- matrix[clustering_sig_genes$gene, ] #rows are DEGs and columns are sample ID
 ```
 
-Run with minimum 15 genes per cluster to detect large clusters because we have many DEGs. This will take awhile to run.  
+Run with minimum 15 genes per cluster to detect large clusters because we have many DEGs. This will take awhile to run.
+
 ```{r}
 # Use the `degPatterns` function from the 'DEGreport' package to show gene clusters across sample groups
 clusters <- degPatterns(cluster_vst, metadata = meta, time = "lifestage", col=NULL, plot=FALSE, minc = 15)
 
 ```
 
-# Save gene lists for functional enrichment 
+# Save gene lists for functional enrichment
+
 ## Significantly differentially expressed genes
 
-DEG_results: List of DEG's and fold change/pvalues
-DEG_results_rlog: Count matrix of genes from DEG list 
+DEG_results: List of DEG's and fold change/pvalues DEG_results_rlog: Count matrix of genes from DEG list
 
 ```{r}
 dim(DEG_results)
@@ -335,9 +436,9 @@ deg_counts<-deg_counts%>%
 write_csv(deg_counts, "../output/07_deg/deg_counts.csv")
 ```
 
-## All genes detected 
+## All genes detected
 
-List of all genes in the dataset (gvst) = 22,634 genes which will serve as a reference for functional enrichment.   
+List of all genes in the dataset (gvst) = 22,634 genes which will serve as a reference for functional enrichment.
 
 ```{r}
 rld_i <- rlog(dds_i, blind=FALSE)
@@ -355,7 +456,6 @@ all_genes<-all_genes%>%
 
 write_csv(file="../output/07_deg/all_genes.csv", all_genes)
 ```
-
 
 # Summary & Next Steps
 

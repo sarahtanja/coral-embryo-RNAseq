@@ -1,0 +1,23 @@
+sample_no,sample_name,parents,group,treatment,embryonic_phase,pvc_leachate_level,hours_post_fertilization,pvc_leachate_concentration_mg.L
+1,101112C14,101112,C14,early gastrula_control,earlygastrula,control,14,0
+4,101112H14,101112,H14,early gastrula_high,earlygastrula,high,14,1
+7,101112L14,101112,L14,early gastrula_low,earlygastrula,low,14,0.01
+10,101112M14,101112,M14,early gastrula_mid,earlygastrula,mid,14,0.1
+13,123C14,123,C14,early gastrula_control,earlygastrula,control,14,0
+16,123H14,123,H14,early gastrula_high,earlygastrula,high,14,1
+19,123L14,123,L14,early gastrula_low,earlygastrula,low,14,0.01
+24,131415C14,131415,C14,early gastrula_control,earlygastrula,control,14,0
+27,131415H14,131415,H14,early gastrula_high,earlygastrula,high,14,1
+30,131415L14,131415,L14,early gastrula_low,earlygastrula,low,14,0.01
+33,131415M14,131415,M14,early gastrula_mid,earlygastrula,mid,14,0.1
+36,13M14,13,M14,early gastrula_mid,earlygastrula,mid,14,0.1
+40,456L14,456,L14,early gastrula_low,earlygastrula,low,14,0.01
+43,456M14,456,M14,early gastrula_mid,earlygastrula,mid,14,0.1
+46,45C14,45,C14,early gastrula_control,earlygastrula,control,14,0
+48,45H14,45,H14,early gastrula_high,earlygastrula,high,14,1
+50,6C14,6,C14,early gastrula_control,earlygastrula,control,14,0
+52,789H14,789,H14,early gastrula_high,earlygastrula,high,14,1
+55,789L14,789,L14,early gastrula_low,earlygastrula,low,14,0.01
+58,789M14,789,M14,early gastrula_mid,earlygastrula,mid,14,0.1
+60,7C14,7,C14,early gastrula_control,earlygastrula,control,14,0
+61,89C14,89,C14,early gastrula_control,earlygastrula,control,14,0
