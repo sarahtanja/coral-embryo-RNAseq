@@ -1,0 +1,19 @@
+---
+title: "Step 8: Gene Ontology (GO) Terms Functional Enrichment"
+subtitle: "Using `DESeq2`"
+author: "Sarah Tanja"
+date: 11/20/2024
+format:
+  gfm: default  
+toc: true
+toc-depth: 3
+link-external-icon: true
+link-external-newwindow: true
+reference-location: margin
+citation-location: margin
+---
+
+Read in annotation file. 
+
+Downloaded functional annotation (version 3) from: http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.EggNog_results.txt.gz (EggNog) and http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.KEGG_results.txt.gz (KEGG). 
+Unzipped on desktop. I then removed the # in #query in the first column, otherwise it does not read in column names.  

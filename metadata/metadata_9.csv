@@ -1,22 +1,22 @@
 sample_no,sample_name,parents,group,treatment,embryonic_phase,pvc_leachate_level,hours_post_fertilization,pvc_leachate_concentration_mg.L
-3,101112C9,101112,C9,prawn chip_control,prawnchip,control,9,0
-6,101112H9,101112,H9,prawn chip_high,prawnchip,high,9,1
-9,101112L9,101112,L9,prawn chip_low,prawnchip,low,9,0.01
-12,101112M9,101112,M9,prawn chip_mid,prawnchip,mid,9,0.1
-15,123C9,123,C9,prawn chip_control,prawnchip,control,9,0
-18,123H9,123,H9,prawn chip_high,prawnchip,high,9,1
-21,123L9,123,L9,prawn chip_low,prawnchip,low,9,0.01
-23,123M9,123,M9,prawn chip_mid,prawnchip,mid,9,0.1
-26,131415C9,131415,C9,prawn chip_control,prawnchip,control,9,0
-29,131415H9,131415,H9,prawn chip_high,prawnchip,high,9,1
-32,131415L9,131415,L9,prawn chip_low,prawnchip,low,9,0.01
-35,131415M9,131415,M9,prawn chip_mid,prawnchip,mid,9,0.1
-39,456H9,456,H9,prawn chip_high,prawnchip,high,9,1
-42,456L9,456,L9,prawn chip_low,prawnchip,low,9,0.01
-45,456M9,456,M9,prawn chip_mid,prawnchip,mid,9,0.1
-47,45C9,45,C9,prawn chip_control,prawnchip,control,9,0
-49,67C9,67,C9,prawn chip_control,prawnchip,control,9,0
-54,789H9,789,H9,prawn chip_high,prawnchip,high,9,1
-57,789L9,789,L9,prawn chip_low,prawnchip,low,9,0.01
-62,89C9,89,C9,prawn chip_control,prawnchip,control,9,0
-63,89M9,89,M9,prawn chip_mid,prawnchip,mid,9,0.1
+3,101112C9,101112,C9,prawnchip_control,prawnchip,control,9,0
+6,101112H9,101112,H9,prawnchip_high,prawnchip,high,9,1
+9,101112L9,101112,L9,prawnchip_low,prawnchip,low,9,0.01
+12,101112M9,101112,M9,prawnchip_mid,prawnchip,mid,9,0.1
+15,123C9,123,C9,prawnchip_control,prawnchip,control,9,0
+18,123H9,123,H9,prawnchip_high,prawnchip,high,9,1
+21,123L9,123,L9,prawnchip_low,prawnchip,low,9,0.01
+23,123M9,123,M9,prawnchip_mid,prawnchip,mid,9,0.1
+26,131415C9,131415,C9,prawnchip_control,prawnchip,control,9,0
+29,131415H9,131415,H9,prawnchip_high,prawnchip,high,9,1
+32,131415L9,131415,L9,prawnchip_low,prawnchip,low,9,0.01
+35,131415M9,131415,M9,prawnchip_mid,prawnchip,mid,9,0.1
+39,456H9,456,H9,prawnchip_high,prawnchip,high,9,1
+42,456L9,456,L9,prawnchip_low,prawnchip,low,9,0.01
+45,456M9,456,M9,prawnchip_mid,prawnchip,mid,9,0.1
+47,45C9,45,C9,prawnchip_control,prawnchip,control,9,0
+49,67C9,67,C9,prawnchip_control,prawnchip,control,9,0
+54,789H9,789,H9,prawnchip_high,prawnchip,high,9,1
+57,789L9,789,L9,prawnchip_low,prawnchip,low,9,0.01
+62,89C9,89,C9,prawnchip_control,prawnchip,control,9,0
+63,89M9,89,M9,prawnchip_mid,prawnchip,mid,9,0.1

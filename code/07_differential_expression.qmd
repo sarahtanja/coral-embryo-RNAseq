@@ -2,7 +2,7 @@
 title: "Step 7: Differential Expression Analysis"
 subtitle: "Using `DESeq2`"
 author: "Sarah Tanja"
-date: 11/20/2024
+date: 05/05/2025
 format:
   gfm: default  # or html if you want to render in HTML
 toc: true
@@ -55,7 +55,7 @@ metadata_14 <- read.csv("../metadata/metadata_14.csv")
   
 ```
 
-# Import DESeq Data Object
+# Import DESeq Data Objects
 
 ```{r}
 # Load the DESeq2 object in a different script
@@ -67,10 +67,20 @@ load("../output/06_exploration/dds_14.RData")
 
 # Run DESEq2
 
+## Interaction
+
+```{r}
+dds_i_deseq <- DESeq(dds_i)
+```
+
+```{r}
+summary(results(dds_i_deseq))
+```
+
 ## 4hpf
 
 ```{r}
-dds_4_deseq <- DESeq(dds_4)
+dds_4_deseq <- DESeq(dds_4_out)
 ```
 
 ```{r}
@@ -97,32 +107,63 @@ dds_14_deseq <- DESeq(dds_14)
 summary(results(dds_14_deseq), alpha = 0.05)
 ```
 
-# [Likelihood Ratio Test](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#likelihood-ratio-test), Wald
+# [Likelihood Ratio Test](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#likelihood-ratio-test),
 
 The LRT is therefore useful for testing multiple terms at once, for example testing 3 or more levels of a factor at once, or all interactions between two variables. The LRT for count data is conceptually similar to an analysis of variance (ANOVA) calculation in linear regression, except that in the case of the Negative Binomial GLM, we use an analysis of deviance (ANODEV), where the deviance captures the difference in likelihood between a full and a reduced model.
 
-The likelihood ratio test can be performed by specifying test="LRT" when using the DESeq function, and providing a reduced design formula, e.g. one in which a number of terms from design(dds) are removed. The degrees of freedom for the test is obtained from the difference between the number of parameters in the two models.
+The likelihood ratio test can be performed by specifying test="LRT" when using the DESeq function, and providing a reduced design formula, e.g. one in which a number of terms from design(dds) are removed. The degrees of freedom for the test is obtained from the difference between the number of parameters in the two models. For analyses using the likelihood ratio test (using [`nbinomLRT`](http://raven.fish.washington.edu:8787/help/library/DESeq2/help/nbinomLRT)), the p-values are determined solely by the difference in deviance between the full and reduced model formula. A single log2 fold change is printed in the results table for consistency with other results table outputs, however the test statistic and p-values may nevertheless involve the testing of one or more log2 fold changes. Which log2 fold change is printed in the results table can be controlled using the `name` argument, or by default this will be the estimated coefficient for the last element of `resultsNames(object)`.
+
+```{r}
+dds_i_lrt <- DESeq(dds_i, test="LRT")
+```
+
+```{r}
+dds_4_lrt <- DESeq(dds_4, test="LRT")
+```
+
+# Wald
 
 ```{r}
 dds_i_wald <- DESeq(dds_i, test="Wald")
 ```
 
 ```{r}
-results(dds_i_wald)
+dds_4_wald <- DESeq(dds_4, test="Wald")
+dds_9_wald <- DESeq(dds_9, test="Wald")
+dds_14_wald <- DESeq(dds_14, test="Wald")
+```
+
+```{r}
+save(dds_i_wald, file = "../output/07_deg/dds_i_wald.RData")
+save(dds_4_wald, file = "../output/07_deg/dds_4_wald.RData")
+save(dds_9_wald, file = "../output/07_deg/dds_9_wald.RData")
+save(dds_14_wald, file = "../output/07_deg/dds_14_wald.RData")
 ```
 
 ```{r}
 summary(results(dds_i_wald), alpha = 0.05)
 ```
 
-> For analyses using the likelihood ratio test (using [`nbinomLRT`](http://raven.fish.washington.edu:8787/help/library/DESeq2/help/nbinomLRT)), the p-values are determined solely by the difference in deviance between the full and reduced model formula. A single log2 fold change is printed in the results table for consistency with other results table outputs, however the test statistic and p-values may nevertheless involve the testing of one or more log2 fold changes. Which log2 fold change is printed in the results table can be controlled using the `name` argument, or by default this will be the estimated coefficient for the last element of `resultsNames(object)`.
+```{r}
+summary(results(dds_4_wald), alpha = 0.05)
+```
+
+```{r}
+summary(results(dds_9_wald), alpha = 0.05)
+```
+
+```{r}
+summary(results(dds_14_wald), alpha = 0.05)
+```
 
 > `contrast=c("condition","treated","untreated")`. Multiple results can be returned for analyses beyond a simple two group comparison, so `results` takes arguments `contrast` and `name` to help the user pick out the comparisons of interest for printing a results table. The use of the `contrast` argument is recommended for exact specification of the levels which should be compared and their order.
 
-## Names
-
 ```{r}
 resultsNames(dds_i_wald)
+```
+
+```{r}
+?results
 ```
 
 # Embryonic Phase
@@ -134,13 +175,17 @@ resultsNames(dds_i_wald)
 ```{r}
 prawnchip_low_vs_mid <- results(dds_i_wald, contrast=list('embryonic_phaseprawnchip.pvc_leachate_levellow', 'embryonic_phaseprawnchip.pvc_leachate_levelmid'))
 
-prawnchip_low_vs_mid <- as.data.frame(subset(prawnchip_low_vs_mid, padj<0.05))
+prawnchip_low_vs_mid_df <- as.data.frame(subset(prawnchip_low_vs_mid, padj<0.05))
 
-prawnchip_low_vs_mid$contrast <- c('prawnchip_low_vs_mid')
-prawnchip_low_vs_mid$gene <- rownames(prawnchip_low_vs_mid)
-rownames(prawnchip_low_vs_mid) <- NULL
+prawnchip_low_vs_mid_df$contrast <- c('prawnchip_low_vs_mid')
+prawnchip_low_vs_mid_df$gene <- rownames(prawnchip_low_vs_mid_df)
+rownames(prawnchip_low_vs_mid_df) <- NULL
 
-prawnchip_low_vs_mid
+prawnchip_low_vs_mid_df
+```
+
+```{r}
+summary(prawnchip_low_vs_mid, alpha = 0.05)
 ```
 
 ## Prawnchip Low vs. High
@@ -173,7 +218,7 @@ prawnchip_mid_vs_high
 From this, we are going to filter by adjusted p value \<0.05, this is generated by the LRT test statistic.
 
 ```{r}
-DEG_results <- results(dds_i_lrt)
+DEG_results <- results(dds_i_wald)
 DEG_results <- as.data.frame(subset(DEG_results, padj<0.05))
 
 DEG_results$gene <- rownames(DEG_results)

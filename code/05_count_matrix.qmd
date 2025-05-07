@@ -1,6 +1,6 @@
 ---
-title: "Step 5: Create a Count Matrix and run Differential Gene Expression"
-subtitle: "Using `DESeq2`"
+title: "Step 5: Create a Count Matrix"
+subtitle: "Using a python script`"
 author: "Sarah Tanja"
 date: 11/14/2024
 format:
@@ -46,6 +46,7 @@ python3 /home/shared/stringtie-2.2.1.Linux_x86_64/prepDE.py3 \
 -g ../output/05_count/gene_count_matrix.csv \
 -t ../output/05_count/transcript_count_matrix.csv
 ```
+
 
 ::: callout-important
 ###### Don't forget to always rsync backup!

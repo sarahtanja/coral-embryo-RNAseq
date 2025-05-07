@@ -1,0 +1,322 @@
+---
+title: "Step 6: Data Exploration of Count Matrix"
+subtitle: "Using `DESeq2`"
+author: "Sarah Tanja"
+date: 11/18/2024
+format:
+  gfm: default  # or html if you want to render in HTML
+toc: true
+toc-depth: 3
+link-external-icon: true
+link-external-newwindow: true
+reference-location: margin
+citation-location: margin
+---
+
+Resources:
+
+[RNA-seq workflow](https://master.bioconductor.org/packages/release/workflows/vignettes/rnaseqGene/inst/doc/rnaseqGene.html)
+
+[DESeq2 Vignette](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html)
+
+
+# Load packages
+
+```{r}
+library(tidyverse)
+library(kableExtra)
+```
+
+# Import metadata
+
+```{r}
+metadata <- read.csv("../metadata/mcap_RNAseq_simplified_metadata.csv")
+head(metadata)
+```
+
+## Format metadata
+
+Remove space in metadata development_stage condition column and rename to embryonic_phase
+
+```{r}
+metadata$embryonic_phase <- gsub(" ", "", metadata$development_stage)
+head(metadata)
+```
+
+Make a new column that represents the 12 distinct treatment groups in the experiment
+
+```{r}
+metadata <- metadata %>% 
+  mutate(treatment = paste(embryonic_phase, pvc_leachate_level, sep="_")) %>% 
+  relocate(treatment, .after = collection_date)
+
+metadata
+```
+
+Make a new column that represents the parent crosses
+
+```{r}
+metadata <- metadata %>% 
+  mutate(parents = sub("^(.*?)[CLMH].*", "\\1", sample_name)) %>% 
+  relocate(parents, .after = sample_name)
+
+head(metadata)
+```
+
+Make a new column that simplifies the treatment group name
+
+```{r}
+metadata <- metadata %>% 
+  mutate(group = sub(".*?([CLMH].*)", "\\1", sample_name)) %>% 
+  relocate(group, .after = parents)
+
+head(metadata)
+```
+
+Reorder factors
+
+```{r}
+
+metadata$embryonic_phase<-as.factor(metadata$embryonic_phase)
+
+metadata$embryonic_phase<-fct_relevel(metadata$embryonic_phase, "cleavage", "prawnchip", "earlygastrula")
+
+```
+
+```{r}
+metadata$pvc_leachate_level<-as.factor(metadata$pvc_leachate_level)
+
+metadata$pvc_leachate_level<-fct_relevel(metadata$pvc_leachate_level, "control", "low", "mid", "high")
+
+```
+
+Select columns of interest
+
+```{r}
+metadata <- metadata %>% dplyr::select(sample_no, sample_name, parents, group, treatment, embryonic_phase, pvc_leachate_level, hours_post_fertilization, pvc_leachate_concentration_mg.L)
+
+head(metadata)
+```
+
+Write out re-formatted metadata.csv
+
+```{r}
+#output metadata for other analyses 
+write_csv(metadata, "../metadata/metadata.csv")
+
+save(metadata, file = "../output/06_exploration/metadata.RData")
+```
+
+# Understanding experimental treatments
+
+We have 63 samples that span three embryonic phases (20 cleavage, 21 prawn chip, 22 early gastrula)
+
+```{r}
+ephases <- table(metadata$embryonic_phase)
+
+kable(ephases, caption = "Number of samples binned by embryonic phase", booktabs = TRUE) %>%
+  kable_styling(full_width = FALSE, position = "center")
+```
+
+And 4 pollution exposure levels (18 control, 15 low, 15 mid, 15 high)
+
+```{r}
+pexposure <- table(metadata$pvc_leachate_level)
+
+kable(pexposure, caption = "Number of samples binned by pollution exposure levels", booktabs = TRUE) %>%
+  kable_styling(full_width = FALSE, position = "center")
+```
+
+Giving us 12 distinct treatment groups
+
+```{r}
+tgroup <- table(metadata$treatment)
+
+# Use kable to print the table in a cleaner format
+kable(tgroup, caption = "Number of samples binned by treatment", format = "markdown", booktabs = TRUE) %>%
+  kable_styling(full_width = FALSE, position = "center")
+```
+
+We expect there to be different genes present in the early embryonic development phases... and we hypothesize that there will be differential expression in response the pollution exposure at each of these developmental checkpoints.
+
+Our minimum number of samples that have a unique treatment is 5...
+
+Therefore, we will accept genes that are present in 5 of the samples because we are hypothesizing different expression by *embryonic_phase \* pvc_leachate_level*.
+
+# Import gene count matrix (gcm)
+
+> In this count matrix, each row represents a gene, each column a sequenced RNA library, and the values give the estimated counts of fragments that were probabilistically assigned to the respective gene in each library by `HISAT2`
+
+-   `check.names = FALSE` removed the 'X' from in front of sample id's in the column headers
+
+```{r}
+gcm <- read.csv("../output/05_count/gene_count_matrix.csv", row.names="gene_id", check.names = FALSE)
+head(gcm)
+```
+
+The count matrix should show counts of whole numbers (integers) ... since each column shows <int> as the data type we know that the counts are already integers
+
+# [Prefiltering](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#pre-filtering)
+
+Pre-filtering our dataset reduces the memory size of the dataframe, increases the speed of the transformation and testing functions, and improves quality of statistical analysis by removing low-coverage counts. Removed counts could represent outliers in the data and removing these improves sensitivity of statistical tests.
+
+## Full
+
+### Filter out genes with 0 counts across all samples
+
+-   **`across(everything())`:**
+
+    -   This specifies across all columns
+
+-   **`rowSums()` Calculation:**
+
+    -   The `rowSums()` function works only on numeric data, so this ensures non-numeric columns are excluded.
+
+-   The `filter(Total != 0)` removes rows where the sum across numeric columns is zero.
+
+-   `dplyr::select(-Total)` removes the temporary `Total` column.
+
+```{r}
+nrow(gcm)
+
+gcm_filt <- gcm %>% 
+  mutate(total = rowSums(across(everything()))) %>% 
+  filter(total !=0) %>% 
+  dplyr::select(-total)
+
+nrow(gcm_filt)
+```
+
+::: callout-note
+There was a total of 54,384 genes in the original gene count matrix (all 63 samples), which we filtered down to 46,010 after removing any genes that had 0 sequences across all of our samples.
+:::
+
+### Tidy filter
+
+-   **`across(everything(), ~ . > 10)`**: This applies the condition `> 10` to all columns of the data frame. For each cell, it returns `TRUE` if the value is greater than 10 and `FALSE` otherwise.
+
+-   **`rowSums()`**: This counts the number of `TRUE` values for each row. It adds up how many columns in each row have values greater than 10.
+
+-   **`>= 0.08 * ncol(df)`**: This checks if the count of `TRUE` values in each row is greater than or equal to 8% of the total number of columns (`ncol(df)`).
+
+```{r}
+# Filter rows where at least 8% of the columns have a value greater than 10
+gcm_tidyfilt <- gcm_filt %>%
+  filter(rowSums(across(everything(), ~ . > 10)) >= 0.08 * ncol(gcm))
+
+nrow(gcm_filt)
+nrow(gcm_tidyfilt)
+
+save(gcm_tidyfilt, file = "../output/06_exploration/gcm_tidyfilt.RData")
+```
+
+::: callout-note
+We further reduced our gene count matrix from 46,010 to 22,634 genes by selecting genes present in at least 8% of the samples
+:::
+
+## Pairwise
+
+We are going to run DGE analysis on each timepoint separately (as well as together) so let's setup gene count matrices for each of 4, 9, and 14 hours post fertilization
+
+### 4hpf
+
+```{r}
+gcm_filt_4 <- gcm %>% 
+  dplyr::select(matches("[CLMH]4"))
+```
+
+```{r}
+nrow(gcm_filt_4)
+
+gcm_filt_4 <- gcm_filt_4 %>% 
+  mutate(total = rowSums(across(everything()))) %>% 
+  filter(total !=0) %>% 
+  dplyr::select(-total)
+
+nrow(gcm_filt_4)
+```
+
+54384 total genes filtered down to 29343 genes that were non-zero across all 4hpf samples
+
+```{r}
+# Filter rows where at least (5/20) 25% of the columns have a value greater than 10
+gcm_tidyfilt_4 <- gcm_filt_4 %>%
+  filter(rowSums(across(everything(), ~ . > 10)) >= 0.25 * ncol(gcm_filt_4))
+
+nrow(gcm_filt_4)
+nrow(gcm_tidyfilt_4)
+
+save(gcm_tidyfilt_4, file = "../output/06_exploration/gcm_tidyfilt_4.RData")
+```
+
+::: callout-note
+29343 non-zero genes were filtered down to 14,191 genes that have at least 10 copies in at least 25% of the 4hpf samples (25% is representing one of the four treatment groups)
+:::
+
+### 9hpf
+
+```{r}
+gcm_filt_9 <- gcm %>% 
+  dplyr::select(matches("[CLMH]9"))
+```
+
+```{r}
+nrow(gcm_filt_9)
+
+gcm_filt_9 <- gcm_filt_9 %>% 
+  mutate(total = rowSums(across(everything()))) %>% 
+  filter(total !=0) %>% 
+  dplyr::select(-total)
+
+nrow(gcm_filt_9)
+```
+54384 filtered down to 38057 non-zero genes across all 9hpf samples
+
+```{r}
+# Filter rows where at least (5/20) 25% of the columns have a value greater than 10
+gcm_tidyfilt_9 <- gcm_filt_9 %>%
+  filter(rowSums(across(everything(), ~ . > 10)) >= 0.25 * ncol(gcm_filt_9))
+
+nrow(gcm_filt_9)
+nrow(gcm_tidyfilt_9)
+
+save(gcm_tidyfilt_9, file = "../output/06_exploration/gcm_tidyfilt_9.RData")
+```
+
+::: callout-note
+38057 non-zero genes were filtered down to 17,368 genes that have at least 10 copies in at least 25% of the 9hpf samples (25% is representing one of the four treatment groups)
+:::
+
+### 14hpf
+
+```{r}
+gcm_filt_14 <- gcm %>% 
+  dplyr::select(matches("[CLMH]14"))
+```
+
+```{r}
+nrow(gcm_filt_14)
+
+gcm_filt_14 <- gcm_filt_14 %>% 
+  mutate(total = rowSums(across(everything()))) %>% 
+  filter(total !=0) %>% 
+  dplyr::select(-total)
+
+nrow(gcm_filt_14)
+```
+
+54384 filtered down to 44058 non zero genes across all 14hpf samples
+
+```{r}
+# Filter rows where at least (5/20) 25% of the columns have a value greater than 10
+gcm_tidyfilt_14 <- gcm_filt_14 %>%
+  filter(rowSums(across(everything(), ~ . > 10)) >= 0.25 * ncol(gcm_filt_14))
+
+nrow(gcm_filt_14)
+nrow(gcm_tidyfilt_14)
+
+save(gcm_tidyfilt_14, file = "../output/06_exploration/gcm_tidyfilt_14.RData")
+```
+::: callout-note
+44058 non-zero genes were filtered down to 21,447 genes that have at least 10 copies in at least 25% of the 14hpf samples (25% is representing one of the four treatment groups)
+:::
