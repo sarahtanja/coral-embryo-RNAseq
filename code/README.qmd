@@ -65,6 +65,25 @@ This roadmap was built off the following resources and references from:
 
 # Handling Large Files with Git
 
+Setup .gitignore file to ignore filetypes that will be large!
+
+```         
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.bashvars
+*.bam
+*.sam
+*.fastq
+*.fq
+*.fastq.gz
+*.fq.gz
+*.fasta
+*.fa
+*.gff3
+```
+
 Execute this code in terminal prior to committing to add all files under 50M
 
 ::: {.callout-tip appearance="minimal"}
@@ -79,9 +98,20 @@ Execute this code in terminal prior to committing to add all files under 50M
 
 -   `-exec git add {} +`: Executes the `git add` command on all found files, adding them to the Git staging area.
 
+## Git ritual
+
+```         
+git status  
+find . -type f -size -50M -exec git add {} +
+git commit -m "commit message here"
+git pull
+git push
+git status
+```
+
 # Pipeline birds-eye view
 
-## 1. Receive raw FASTA files 
+## 1. Receive raw FASTA files
 
 -   files are already `demultiplexed`
 

@@ -17,7 +17,7 @@ citation-location: margin
 
 > prepDE.py derives hypothetical read counts for each transcript from the coverage values estimated by StringTie for each transcript, by using this simple formula: reads_per_transcript = coverage \* transcript_len / read_len
 
-# Count Matrix
+# Generate Count Matrix
 
 ```{r, engine='bash'}
 ls ../output/04_align/stringtie/*gtf 
