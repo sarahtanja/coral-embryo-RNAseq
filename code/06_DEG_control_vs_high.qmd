@@ -1,0 +1,212 @@
+---
+title: "Control vs High"
+subtitle: "DESeq2 across all developmental stages"
+author: "Sarah Tanja"
+date: 05/08/2025
+format:
+  gfm: default  # or html if you want to render in HTML
+toc: true
+toc-depth: 3
+link-external-icon: true
+link-external-newwindow: true
+reference-location: margin
+citation-location: margin
+---
+
+# Load libraries
+
+```{r}
+library(tidyverse)
+library(DESeq2)
+library(vsn)
+library(pheatmap)
+library(RColorBrewer)
+```
+
+# Filter count matrix
+
+We want to look at the `control` group (embryos developed in 0.22 um filtered seawater) vs. the `high` group across all embryonic stages. To do this let's start by filtering the count matrix to only the samples of interest.
+
+```{r}
+load("../output/06_exploration/gcm_tidyfilt.RData")
+```
+
+The genes are the rows. The samples are the columns.
+
+remove outlier samples
+
+```{r}
+gcm_filtout <- gcm_tidyfilt %>% 
+  select(-"131415L4", -"789C4")
+```
+
+remove low & mid
+
+```{r}
+gcm_controlvshigh <- gcm_filtout %>% 
+  select(-matches("L|M"))
+```
+
+# Setup metadata
+
+> It is absolutely critical that the columns of the count matrix and the rows of the column data (information about samples) are in the same order. DESeq2 will not make guesses as to which column of the count matrix belongs to which row of the column data, these must be provided to DESeq2 already in consistent order.
+
+```{r}
+load("../output/06_exploration/metadata.RData")
+```
+
+The samples are rows
+
+remove outlier samples
+
+```{r}
+metadata_out <- metadata %>% 
+  filter(!sample_name %in% c("131415L4", "789C4"))
+```
+
+remove low & mid
+
+```{r}
+metadata_controlvshigh <- metadata_out %>% 
+  filter(grepl("C|H", sample_name))
+```
+
+confirm metadata sample_name matches gene count matrix columns. The following code checks that all the sample names in the metadata dataframe match the column names in the gene count matrix. It should return 'TRUE'
+
+```{r}
+meta <- (metadata_controlvshigh$sample_name)
+gene_matrix <- (colnames(gcm_controlvshigh))
+meta_check <- data.frame(meta, gene_matrix)
+
+all(meta == gene_matrix)
+```
+
+# Make DESeq Object
+
+Make [DESeq Dataset Object from Count Matrix](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#count-matrix-input) Create a DESeqDataSet design from gene count matrix and treatment conditions.
+
+```{r}
+#Set DESeq2 design for 1 factor with 2 levels
+dds_cvh <- DESeqDataSetFromMatrix(countData = gcm_controlvshigh,
+                              colData = metadata_controlvshigh, 
+                              design = ~ pvc_leachate_level)
+```
+
+# Visualizations
+
+> In order to test for differential expression, we operate on raw counts and use discrete distributions... However for visualization or clustering -- it might be useful to work with transformed versions of the count data.
+
+## Count transformations
+
+```{r}
+# This is now the 
+vsd_cvh <- vst(dds_cvh, blind=FALSE)
+
+# This is the r-log transformed DESeq Data
+rld_cvh <- rlog(dds_cvh, blind=FALSE)
+```
+
+```{r}
+dds_cvh <- estimateSizeFactors(dds_cvh)
+
+df <- bind_rows(
+  as_data_frame(log2(counts(dds_cvh, normalized=TRUE)[, 1:2]+1)) %>%
+         mutate(transformation = "log2(x + 1)"),
+  as_data_frame(assay(vsd_cvh)[, 1:2]) %>% mutate(transformation = "vst"),
+  as_data_frame(assay(rld_cvh)[, 1:2]) %>% mutate(transformation = "rlog"))
+  
+colnames(df)[1:2] <- c("x", "y")  
+
+lvls <- c("log2(x + 1)", "vst", "rlog")
+df$transformation <- factor(df$transformation, levels=lvls)
+
+ggplot(df, aes(x = x, y = y)) +
+  geom_hex(bins = 80) +
+  coord_fixed() +
+  facet_grid(. ~ transformation) +
+  ggtitle("Control vs. High across development Count Transformation Comparisons")
+```
+
+```{r}
+meanSdPlot(assay(vsd_cvh))
+meanSdPlot(assay(rld_cvh))
+```
+
+## PCA
+
+```{r}
+# Perform PCA on rlog transformed count data
+pca_cvh <- prcomp(t(assay(rld_cvh)), scale = TRUE)
+
+pca_cvh_plot <- plotPCA(rld_cvh, intgroup=c("pvc_leachate_level"), returnData=TRUE)
+
+percentVar <- round(100 * attr(pca_cvh_plot, "percentVar"))
+
+# Make the plot
+PCA_CVH_plot <- ggplot(pca_cvh_plot, aes(PC1, PC2, 
+                              color=pvc_leachate_level)) +
+                              #geom_text(aes(label = name), size = 3) +  # Add labels from the 'name' column
+                              geom_point(size=3) +
+                              xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+                              ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
+                              coord_fixed() + 
+                              theme_minimal()
+
+# Display the plot
+PCA_CVH_plot
+
+# Save the plot as a png
+#ggsave("../output/06_exploration/PCAout4.png", plot = PCAout4, width = 8, height = 6, dpi = 600)
+```
+
+## Heatmap
+
+```{r}
+
+# 1. Select the top 50 genes by mean expression
+top_genes <- order(rowMeans(counts(dds_cvh, normalized = TRUE)), decreasing = TRUE)[1:50]
+
+# 2. Extract rlog-transformed matrix
+rlog_matrix <- assay(rld_cvh)[top_genes, ]
+
+# 3. Extract only pvc_leachate_level annotation
+annotation_df <- as.data.frame(colData(dds_cvh)[, "pvc_leachate_level", drop = FALSE])
+
+# Ensure it's a factor in correct order: control, high
+annotation_df$pvc_leachate_level <- factor(annotation_df$pvc_leachate_level, levels = c("control", "high"))
+
+# 4. Order samples by pvc_leachate_level
+ordered_cols <- order(annotation_df$pvc_leachate_level)
+
+# Reorder matrix and annotation
+rlog_matrix_ordered <- rlog_matrix[, ordered_cols]
+annotation_ordered <- annotation_df[ordered_cols, , drop = FALSE]
+
+# 5. Plot heatmap
+heatmap_colors <- colorRampPalette(rev(brewer.pal(n = 9, "RdBu")))(100)
+
+pheatmap(
+  rlog_matrix_ordered,
+  cluster_rows = FALSE,
+  cluster_cols = FALSE,
+  show_rownames = FALSE,
+  annotation_col = annotation_ordered,
+  color = heatmap_colors,
+  main = "Top 50 Most Expressed Genes (Control vs High)"
+)
+
+```
+
+# Run DESeq2
+
+```{r}
+dds_cvh_deseq <- DESeq(dds_cvh)
+```
+
+```{r}
+summary(results(dds_cvh_deseq))
+```
+
+::: callout-important
+There are zero differentially expressed genes between the control and high treatment groups across all developmental stages.
+:::

@@ -156,7 +156,9 @@ head(gcm)
 
 The count matrix should show counts of whole numbers (integers) ... since each column shows <int> as the data type we know that the counts are already integers
 
-# [Prefiltering](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#pre-filtering)
+# Prefiltering
+
+[Prefiltering](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#pre-filtering)
 
 Pre-filtering our dataset reduces the memory size of the dataframe, increases the speed of the transformation and testing functions, and improves quality of statistical analysis by removing low-coverage counts. Removed counts could represent outliers in the data and removing these improves sensitivity of statistical tests.
 
