@@ -1,10 +1,11 @@
 ---
-title: "Step 6: Data Exploration of Count Matrix"
-subtitle: "Using `DESeq2`"
+title: "Step 6: Tidy up Count Matrix"
+subtitle: "Conduct prefiltering"
 author: "Sarah Tanja"
-date: 11/18/2024
-format:
-  gfm: default  # or html if you want to render in HTML
+date: 2024-11-18
+date-modified: today
+format: gfm
+prefer-html: true
 toc: true
 toc-depth: 3
 link-external-icon: true
@@ -13,12 +14,21 @@ reference-location: margin
 citation-location: margin
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,         # Display code chunks
+  eval = TRUE,        # Evaluate code chunks
+  warning = FALSE,     # Hide warnings
+  message = FALSE,     # Hide messages
+  comment = ""         # Prevents appending '##' to beginning of lines in code output
+)
+```
+
 Resources:
 
 [RNA-seq workflow](https://master.bioconductor.org/packages/release/workflows/vignettes/rnaseqGene/inst/doc/rnaseqGene.html)
 
 [DESeq2 Vignette](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html)
-
 
 # Load packages
 
@@ -162,163 +172,107 @@ The count matrix should show counts of whole numbers (integers) ... since each c
 
 Pre-filtering our dataset reduces the memory size of the dataframe, increases the speed of the transformation and testing functions, and improves quality of statistical analysis by removing low-coverage counts. Removed counts could represent outliers in the data and removing these improves sensitivity of statistical tests.
 
-## Full
-
-### Filter out genes with 0 counts across all samples
-
--   **`across(everything())`:**
-
-    -   This specifies across all columns
-
--   **`rowSums()` Calculation:**
-
-    -   The `rowSums()` function works only on numeric data, so this ensures non-numeric columns are excluded.
-
--   The `filter(Total != 0)` removes rows where the sum across numeric columns is zero.
-
--   `dplyr::select(-Total)` removes the temporary `Total` column.
-
-```{r}
-nrow(gcm)
-
-gcm_filt <- gcm %>% 
-  mutate(total = rowSums(across(everything()))) %>% 
-  filter(total !=0) %>% 
-  dplyr::select(-total)
-
-nrow(gcm_filt)
-```
-
-::: callout-note
-There was a total of 54,384 genes in the original gene count matrix (all 63 samples), which we filtered down to 46,010 after removing any genes that had 0 sequences across all of our samples.
-:::
-
-### Tidy filter
-
 -   **`across(everything(), ~ . > 10)`**: This applies the condition `> 10` to all columns of the data frame. For each cell, it returns `TRUE` if the value is greater than 10 and `FALSE` otherwise.
 
 -   **`rowSums()`**: This counts the number of `TRUE` values for each row. It adds up how many columns in each row have values greater than 10.
 
 -   **`>= 0.08 * ncol(df)`**: This checks if the count of `TRUE` values in each row is greater than or equal to 8% of the total number of columns (`ncol(df)`).
 
+### All
+
 ```{r}
 # Filter rows where at least 8% of the columns have a value greater than 10
-gcm_tidyfilt <- gcm_filt %>%
+gcm_filt <- gcm %>%
   filter(rowSums(across(everything(), ~ . > 10)) >= 0.08 * ncol(gcm))
 
+nrow(gcm)
 nrow(gcm_filt)
-nrow(gcm_tidyfilt)
 
-save(gcm_tidyfilt, file = "../output/06_exploration/gcm_tidyfilt.RData")
+save(gcm_filt, file = "../output/06_tidyup/gcm_filt.RData")
+write_csv(gcm_filt, file = "../output/06_tidyup/gcm_filt.csv")
 ```
 
 ::: callout-note
-We further reduced our gene count matrix from 46,010 to 22,634 genes by selecting genes present in at least 8% of the samples
+We reduced our gene count matrix from 54,384 to 22,634 genes by selecting genes present (in counts of at least 10!) in at least 8% of the samples
 :::
 
-## Pairwise
-
-We are going to run DGE analysis on each timepoint separately (as well as together) so let's setup gene count matrices for each of 4, 9, and 14 hours post fertilization
+We are going to run DGE analysis on each hpf separately (as well as together) so let's setup gene count matrices for each of 4, 9, and 14 hours post fertilization
 
 ### 4hpf
 
 ```{r}
-gcm_filt_4 <- gcm %>% 
+gcm_4 <- gcm %>% 
   dplyr::select(matches("[CLMH]4"))
 ```
 
 ```{r}
-nrow(gcm_filt_4)
-
-gcm_filt_4 <- gcm_filt_4 %>% 
-  mutate(total = rowSums(across(everything()))) %>% 
-  filter(total !=0) %>% 
-  dplyr::select(-total)
-
-nrow(gcm_filt_4)
-```
-
-54384 total genes filtered down to 29343 genes that were non-zero across all 4hpf samples
-
-```{r}
 # Filter rows where at least (5/20) 25% of the columns have a value greater than 10
-gcm_tidyfilt_4 <- gcm_filt_4 %>%
-  filter(rowSums(across(everything(), ~ . > 10)) >= 0.25 * ncol(gcm_filt_4))
+gcm_filt_4 <- gcm_4 %>%
+  filter(rowSums(across(everything(), ~ . > 10)) >= 0.25 * ncol(gcm_4))
 
+nrow(gcm_4)
 nrow(gcm_filt_4)
-nrow(gcm_tidyfilt_4)
 
-save(gcm_tidyfilt_4, file = "../output/06_exploration/gcm_tidyfilt_4.RData")
+save(gcm_filt_4, file = "../output/06_tidyup/gcm_filt_4.RData")
+write_csv(gcm_filt_4, file = "../output/06_tidyup/gcm_filt_4.csv")
 ```
 
 ::: callout-note
-29343 non-zero genes were filtered down to 14,191 genes that have at least 10 copies in at least 25% of the 4hpf samples (25% is representing one of the four treatment groups)
+54384 genes were filtered down to 14,191 genes that have at least 10 copies in at least 25% of the 4hpf samples (25% is representing one of the four treatment groups)
 :::
 
 ### 9hpf
 
 ```{r}
-gcm_filt_9 <- gcm %>% 
+gcm_9 <- gcm %>% 
   dplyr::select(matches("[CLMH]9"))
 ```
 
 ```{r}
-nrow(gcm_filt_9)
-
-gcm_filt_9 <- gcm_filt_9 %>% 
-  mutate(total = rowSums(across(everything()))) %>% 
-  filter(total !=0) %>% 
-  dplyr::select(-total)
-
-nrow(gcm_filt_9)
-```
-54384 filtered down to 38057 non-zero genes across all 9hpf samples
-
-```{r}
 # Filter rows where at least (5/20) 25% of the columns have a value greater than 10
-gcm_tidyfilt_9 <- gcm_filt_9 %>%
-  filter(rowSums(across(everything(), ~ . > 10)) >= 0.25 * ncol(gcm_filt_9))
+gcm_filt_9 <- gcm_9 %>%
+  filter(rowSums(across(everything(), ~ . > 10)) >= 0.25 * ncol(gcm_9))
 
+nrow(gcm_9)
 nrow(gcm_filt_9)
-nrow(gcm_tidyfilt_9)
 
-save(gcm_tidyfilt_9, file = "../output/06_exploration/gcm_tidyfilt_9.RData")
+save(gcm_filt_9, file = "../output/06_tidyup/gcm_filt_9.RData")
+write_csv(gcm_filt_9, file = "../output/06_tidyup/gcm_filt_9.csv")
 ```
 
 ::: callout-note
-38057 non-zero genes were filtered down to 17,368 genes that have at least 10 copies in at least 25% of the 9hpf samples (25% is representing one of the four treatment groups)
+54384 genes were filtered down to 17,368 genes that have at least 10 copies in at least 25% of the 9hpf samples (25% is representing one of the four treatment groups)
 :::
 
 ### 14hpf
 
 ```{r}
-gcm_filt_14 <- gcm %>% 
+gcm_14 <- gcm %>% 
   dplyr::select(matches("[CLMH]14"))
 ```
 
 ```{r}
-nrow(gcm_filt_14)
-
-gcm_filt_14 <- gcm_filt_14 %>% 
-  mutate(total = rowSums(across(everything()))) %>% 
-  filter(total !=0) %>% 
-  dplyr::select(-total)
-
-nrow(gcm_filt_14)
-```
-
-54384 filtered down to 44058 non zero genes across all 14hpf samples
-
-```{r}
 # Filter rows where at least (5/20) 25% of the columns have a value greater than 10
-gcm_tidyfilt_14 <- gcm_filt_14 %>%
-  filter(rowSums(across(everything(), ~ . > 10)) >= 0.25 * ncol(gcm_filt_14))
+gcm_filt_14 <- gcm_14 %>%
+  filter(rowSums(across(everything(), ~ . > 10)) >= 0.25 * ncol(gcm_14))
 
+nrow(gcm_14)
 nrow(gcm_filt_14)
-nrow(gcm_tidyfilt_14)
 
-save(gcm_tidyfilt_14, file = "../output/06_exploration/gcm_tidyfilt_14.RData")
+save(gcm_filt_14, file = "../output/06_tidyup/gcm_tidyfilt_14.RData")
+write_csv(gcm_filt_14, file = "../output/06_tidyup/gcm_tidyfilt_14.csv")
 ```
+
 ::: callout-note
-44058 non-zero genes were filtered down to 21,447 genes that have at least 10 copies in at least 25% of the 14hpf samples (25% is representing one of the four treatment groups)
+54384 genes were filtered down to 21,447 genes that have at least 10 copies in at least 25% of the 14hpf samples (25% is representing one of the four treatment groups)
+:::
+
+::: callout-important
+More gene transcripts are present as embryonic development progresses!
+
+4hpf : 14,191
+
+9hpf : 17,368
+
+14hpf : 21,447
 :::
