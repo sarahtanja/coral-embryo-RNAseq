@@ -1,6 +1,6 @@
 ---
 title: "Step 6: Tidy up Count Matrix"
-subtitle: "Conduct prefiltering"
+subtitle: "Conduct prefiltering & identify outliers"
 author: "Sarah Tanja"
 date: 2024-11-18
 date-modified: today
@@ -49,16 +49,16 @@ head(metadata)
 Remove space in metadata development_stage condition column and rename to embryonic_phase
 
 ```{r}
-metadata$embryonic_phase <- gsub(" ", "", metadata$development_stage)
+metadata$embryonic_stage <- gsub(" ", "", metadata$development_stage)
 head(metadata)
 ```
 
-Make a new column that represents the 12 distinct treatment groups in the experiment
+Make a new column that represents the 12 distinct treatment groups (embryonic_phase x pvc_leachate_level) in the experiment
 
 ```{r}
 metadata <- metadata %>% 
-  mutate(treatment = paste(embryonic_phase, pvc_leachate_level, sep="_")) %>% 
-  relocate(treatment, .after = collection_date)
+  mutate(treatment_group = paste(embryonic_stage, pvc_leachate_level, sep="_")) %>% 
+  relocate(treatment_group, .after = collection_date)
 
 metadata
 ```
@@ -87,9 +87,9 @@ Reorder factors
 
 ```{r}
 
-metadata$embryonic_phase<-as.factor(metadata$embryonic_phase)
+metadata$embryonic_stage<-as.factor(metadata$embryonic_phase)
 
-metadata$embryonic_phase<-fct_relevel(metadata$embryonic_phase, "cleavage", "prawnchip", "earlygastrula")
+metadata$embryonic_stage<-fct_relevel(metadata$embryonic_phase, "cleavage", "prawnchip", "earlygastrula")
 
 ```
 
@@ -100,10 +100,16 @@ metadata$pvc_leachate_level<-fct_relevel(metadata$pvc_leachate_level, "control",
 
 ```
 
+```{r}
+metadata$hpf <- as.factor(metadata$hours_post_fertilization)
+metadata$hpf <- fct_relevel(metadata$hpf, "4", "9", "14")
+```
+
+
 Select columns of interest
 
 ```{r}
-metadata <- metadata %>% dplyr::select(sample_no, sample_name, parents, group, treatment, embryonic_phase, pvc_leachate_level, hours_post_fertilization, pvc_leachate_concentration_mg.L)
+metadata <- metadata %>% dplyr::select(sample_no, sample_name, parents, group, treatment_group, hpf, embryonic_stage, pvc_leachate_level, hours_post_fertilization, pvc_leachate_concentration_mg.L)
 
 head(metadata)
 ```
@@ -114,7 +120,7 @@ Write out re-formatted metadata.csv
 #output metadata for other analyses 
 write_csv(metadata, "../metadata/metadata.csv")
 
-save(metadata, file = "../output/06_exploration/metadata.RData")
+save(metadata, file = "../metadata/metadata.RData")
 ```
 
 # Understanding experimental treatments
@@ -259,8 +265,8 @@ gcm_filt_14 <- gcm_14 %>%
 nrow(gcm_14)
 nrow(gcm_filt_14)
 
-save(gcm_filt_14, file = "../output/06_tidyup/gcm_tidyfilt_14.RData")
-write_csv(gcm_filt_14, file = "../output/06_tidyup/gcm_tidyfilt_14.csv")
+save(gcm_filt_14, file = "../output/06_tidyup/gcm_filt_14.RData")
+write_csv(gcm_filt_14, file = "../output/06_tidyup/gcm_filt_14.csv")
 ```
 
 ::: callout-note
@@ -276,3 +282,164 @@ More gene transcripts are present as embryonic development progresses!
 
 14hpf : 21,447
 :::
+
+
+
+# Prep metadata for DESeq
+
+> It is absolutely critical that the columns of the count matrix and the rows of the column data (information about samples) are in the same order. DESeq2 will not make guesses as to which column of the count matrix belongs to which row of the column data, these must be provided to DESeq2 already in consistent order.
+
+### All
+The following code checks that all the sample names in the metadata dataframe match the column names in the gene count matrix. It should return 'TRUE'
+```{r}
+meta <- (metadata$sample_name)
+gene_matrix <- (colnames(gcm_filt))
+meta_check <- data.frame(meta, gene_matrix)
+
+all(meta == gene_matrix)
+```
+
+There should be 63 total samples (14hpf, 9hpf, & 4hpf)
+
+```{r}
+nrow(metadata)
+```
+Visually check that sample names in the metadata dataframe match the column names in the gene count matrix.
+```{r}
+# Render as a kableExtra table
+kable(meta_check, booktabs = TRUE) %>%
+  kable_styling(full_width = FALSE, position = "center")
+```
+
+### 4hpf
+
+```{r}
+
+# Filter rows where 'sample_name' matches the pattern [CLMH]4
+metadata_4 <- metadata %>% 
+  filter(str_detect(sample_name, "[CLMH]4"))
+
+# Check if all matched names are equal
+all(metadata_4$sample_name == colnames(gcm_filt_4))
+```
+
+```{r}
+length(metadata_4$sample_name)
+length(colnames(gcm_filt_4))
+```
+
+```{r}
+# Create a data frame to compare the matched column names
+meta_check_4 <- data.frame(
+  sample_name = metadata_4$sample_name, 
+  col_name = colnames(gcm_filt_4)
+)
+
+# Render as a kableExtra table
+kable(meta_check_4, booktabs = TRUE) %>%
+  kable_styling(full_width = FALSE, position = "center")
+```
+
+There should be 20 cleavage (4hpf) samples
+
+```{r}
+nrow(meta_check_4)
+```
+
+`pvc_leachate_level` should be a factor with 4 levels increasing from `control`, `low`, `mid`, `high`
+
+```{r}
+levels(metadata_4$pvc_leachate_level)
+```
+save metadata_4 
+```{r}
+save(metadata_4, file = "../metadata/metadata_4.RData")
+
+#output metadata for other analyses 
+write_csv(metadata_4, "../metadata/metadata_4.csv")
+```
+
+
+### 9hpf
+
+```{r}
+
+# Filter rows where 'sample_name' matches the pattern [CLMH]9
+metadata_9 <- metadata %>% 
+  filter(str_detect(sample_name, "[CLMH]9"))
+
+# Check if all matched names are equal
+all(metadata_9$sample_name == colnames(gcm_filt_9))
+```
+
+```{r}
+length(metadata_9$sample_name)
+length(colnames(gcm_filt_9))
+```
+
+```{r}
+# Create a data frame to compare the matched column names
+meta_check_9 <- data.frame(
+  sample_name = metadata_9$sample_name, 
+  col_name = colnames(gcm_filt_9)
+)
+
+# Render as a kableExtra table
+kable(meta_check_9, booktabs = TRUE) %>%
+  kable_styling(full_width = FALSE, position = "center")
+```
+
+There should be 21 prawn chip (9hpf) samples
+
+```{r}
+nrow(meta_check_9)
+```
+save metadata_9 
+```{r}
+save(metadata_9, file = "../metadata/metadata_9.RData")
+
+#output metadata for other analyses 
+write_csv(metadata_9, "../metadata/metadata_9.csv")
+```
+
+### 14hpf
+
+```{r}
+
+# Filter rows where 'sample_name' matches the pattern [CLMH]14
+metadata_14 <- metadata %>% 
+  filter(str_detect(sample_name, "[CLMH]14"))
+
+# Check if all matched names are equal
+all(metadata_14$sample_name == colnames(gcm_filt_14))
+```
+
+```{r}
+length(metadata_14$sample_name)
+length(colnames(gcm_filt_14))
+```
+
+```{r}
+# Create a data frame to compare the matched column names
+meta_check_14 <- data.frame(
+  sample_name = metadata_14$sample_name, 
+  col_name = colnames(gcm_filt_14)
+)
+
+# Render as a kableExtra table
+kable(meta_check_14, booktabs = TRUE) %>%
+  kable_styling(full_width = FALSE, position = "center")
+```
+
+There should be 22 early gastrula (14hpf) samples
+
+```{r}
+nrow(meta_check_14)
+```
+save metadata_14
+```{r}
+save(metadata_14, file = "../metadata/metadata_14.RData")
+
+#output metadata for other analyses 
+write_csv(metadata_14, "../metadata/metadata_14.csv")
+```
