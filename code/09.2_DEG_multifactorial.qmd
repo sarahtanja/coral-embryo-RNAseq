@@ -157,7 +157,9 @@ ggplot(data = data.frame(rowMeans(gcm)),
   
 ```
 
+::: callout-note
 As you can see in the above plot, the raw distribution of all read counts takes on a left-skewed negative binomial distribution.
+:::
 
 > Most DE packages assume that read counts possess a negative binomial distribution. The negative binomial distribution is an extension of distributions for binary variables such as the Poisson distribution, allowing for estimations of "equidispersion" and "overdispersion", equal and greater-than-expected variation in expression attributed to biological variability . - [MarineOmics](https://marineomics.github.io/DGE_comparison_v2.html#:~:text=library(lmerTest)-,Filter%20and%20visualize%20read%20counts,-Before%20model%20fitting)
 
@@ -185,7 +187,9 @@ keep <- rowSums(cpm(y) > .5) >= 3
 table(keep)
 ```
 
-Ok we're going to use our `gcm_filt_or` as our prefiltered and outlier removed gene count matrix from here out
+::: callout-important
+We're going to use our `gcm_filt_or` as our prefiltered and outlier removed gene count matrix from here out
+:::
 
 ```{r}
 # Set keep.lib.sizes = F and recalculate library sizes after filtering
@@ -317,13 +321,13 @@ y1 <- estimateDisp(y, robust = TRUE) # Estimate mean dispersal
 plotBCV(y1) 
 ```
 
-The above figure is an output of the plotBCV() function in edgeR, which visualises the biological coefficient of variation (otherwise known as dispersion) parameter fitted to individual genes (black circles), fitted across gene expression level (blue trendline), and averaged across the entire transcriptome (red horizontal line).
-
-The BCV/dispersion parameter is a necessary parameter, symbolized as θ in model specification, that must be estimated in negative binomial GLMs. θ represents the 'overdispersion' or the shape of a negative binomial distribution and is thus important for defining the distribution of read count data for a given gene during model fitting. Dispersion or θ can be input during model fitting in edgeR using the three estimates visualized in the above regression.
-
-Now that we've estimated dispersion, we will use these estimates to fit negative binomial GLMs to our read count data using the glmQLFit() function in edgeR, one of the more robust model fitting functions offered by edgeR.
-
-Using numeric values instead of factors so... hpf = embryonic_stage (equivalent to hpf in the tutorial... our time component) pvc_leachate_concentration_mg.L = pvc_leachate_level (equivalent to leachate/leachate in the tutorial... our environmental condition!)
+> The above figure is an output of the plotBCV() function in edgeR, which visualises the biological coefficient of variation (otherwise known as dispersion) parameter fitted to individual genes (black circles), fitted across gene expression level (blue trendline), and averaged across the entire transcriptome (red horizontal line).
+>
+> The BCV/dispersion parameter is a necessary parameter, symbolized as θ in model specification, that must be estimated in negative binomial GLMs. θ represents the 'overdispersion' or the shape of a negative binomial distribution and is thus important for defining the distribution of read count data for a given gene during model fitting. Dispersion or θ can be input during model fitting in edgeR using the three estimates visualized in the above regression.
+>
+> Now that we've estimated dispersion, we will use these estimates to fit negative binomial GLMs to our read count data using the glmQLFit() function in edgeR, one of the more robust model fitting functions offered by edgeR.
+>
+> Using numeric values instead of factors so... hpf = embryonic_stage (equivalent to hpf in the tutorial... our time component) pvc_leachate_concentration_mg.L = pvc_leachate_level (equivalent to leachate/leachate in the tutorial... our environmental condition!)
 
 ```{r}
 # Square environmental condition variable
@@ -388,7 +392,9 @@ plotMD(nl_leachate_2)
 
 In the two mean-difference plots above, red and blue colored points represent genes exhibiting significant differential expression attributed to `leachate` or `leachate_2` . As you can see, there is a lot of differential expression in this experiment resulting from both of these parameters. **Part of the reason for this large number of significant differentially expressed genes (DEGs) is that we have not applied a cutoff value for logFC.** For example, a logFC cutoff of 2.0 value would not designate any genes with an absolute logFC value less than 0.05 as a significant DEG. However, deciding on a logFC cutoff is very tricky! Since we used a continuous predictor for `leachate` during model fitting, the values in the y-axis of this plot are slopes representing the rate of change in expression per unit `leachate` (mg/L). Determining what slope represents a significant change in expression requires informed reasoning and a strong body of prior data. For that reason, we are not applying a logFC cutoff in this walkthrough.
 
-Next, we will use glmQLFTest() to test for differential expression attributed to interactions between `hpf` and `leachate` or `hpf` and `leachate_2` before producing mean-difference plots visualizing DEGs derived from these two interactions:
+Next, we will use glmQLFTest() to test for differential expression attributed to interactions between `hpf` and `leachate` or `hpf` and `leachate_2` before producing mean-difference plots visualizing DEGs derived from these two interactions.
+
+`glmQLFTest()` is an `edgeR` function for a Generalized Linear Model Quasi-Likelihood F-test, which tests for **differential expression** between conditions using **quasi-likelihood F-tests** in a **negative binomial generalized linear model (GLM)** framework.
 
 ```{r}
 ## Test for interactions between time and leachate or leachate^2
@@ -428,11 +434,11 @@ plotMD(nl_leachate_int)
 plotMD(nl_leachate_2_int)
 ```
 
-Taking a detour from tests for DEGs attributed to non-linear interactions, we can now output the residuals of our GLMs in order to better test for whether our data fit the assumptions of negative binomial distribution families. If the distribution of residuals from our GLMs are normal, this indicates that our data meet the assumption of the negative binomial distribution. We will use the equation for estimating Pearson residuals:
-
-$$
-residual=\frac{observed−fitted}{\sqrt{fitted(dispersion∗fitted)}}
-$$
+> Taking a detour from tests for DEGs attributed to non-linear interactions, we can now output the residuals of our GLMs in order to better test for whether our data fit the assumptions of negative binomial distribution families. If the distribution of residuals from our GLMs are normal, this indicates that our data meet the assumption of the negative binomial distribution. We will use the equation for estimating Pearson residuals:
+>
+> $$
+> residual=\frac{observed−fitted}{\sqrt{fitted(dispersion∗fitted)}}
+> $$
 
 ```{r}
 # Output observed
@@ -461,7 +467,9 @@ ggplot(data = melt(as.data.frame(resid.pearson)), aes(x = value)) +
 
 ```
 
+::: callout-note
 Our residuals appear to be normally distributed, indicating that our data fit the negative binomial distribution assumed by the GLM.
+:::
 
 Now let's get back to analyzing non-linear effects on gene expression!
 
@@ -556,7 +564,7 @@ ggplot(data = filter(tab_exp_avg, leachate_2_sig == "Yes"),
   labs(y = "Avg logCPM", title = "Non-linear changes in GE output by edgeR")
 ```
 
-> \[Our plots of non-linear changes in gene expression appear\] to include many trends that appear... well, linear. This is a pervasive issue in modeling non-linear regressions, and one potential pitfall of using outputs from packages such as edgeR or DESeq2 alone in testing for non-linear effects. The FDR-adjusted p -values we have used determine significance of non-linear effects essentially tell us the probability that a parameter value equal to or greater to what we have fitted could be generated given a random distribution of read counts. The p -value is not a representation of the strength of a non-linear effect relative to a linear effect. Numerous genes that nominally show significant non-linear effects of leachate may be only weakly affected, and a linear effect may in fact be more probable than a non-linear one despite what our p-values tell us. Instead of asking "for what genes may there be significant, non-linear effects of leachate ?", we should ask "for what genes should we test for significant, non-linear effects?".
+> Our plots of non-linear changes in gene expression appear to include many trends that appear... well, linear. This is a pervasive issue in modeling non-linear regressions, and one potential pitfall of using outputs from packages such as edgeR or DESeq2 alone in testing for non-linear effects. The FDR-adjusted p -values we have used determine significance of non-linear effects essentially tell us the probability that a parameter value equal to or greater to what we have fitted could be generated given a random distribution of read counts. The p -value is not a representation of the strength of a non-linear effect relative to a linear effect. Numerous genes that nominally show significant non-linear effects of leachate may be only weakly affected, and a linear effect may in fact be more probable than a non-linear one despite what our p-values tell us. Instead of asking "for what genes may there be significant, non-linear effects of leachate ?", we should ask "for what genes should we test for significant, non-linear effects?".
 
 > One of the best ways to determine whether a non-linear model is appropriate for a transcript is to determine whether it is more probable that its expression is linear or non-linear relative to a continuous predictor. We can calculate this relative probability using a likelihood ratio test (LRT). In the code chunk below, we will fit linear and 2nd order non-linear models to the expression of each gene before applying LRTs to each transcript. We will then further filter our edgeR dataset based on (i) significant differential expression attributed to non-linear effects and (ii) a significant LRT ratio supporting non-linear effects. Then, we will replot the expression levels of this re-filtered set. The code below fits gaussian linear models to log2-transformed CPM values, but can be adjusted to fit negative binomial GLMs to untransformed CPM similar to edgeR and DESeq2 by setting using the MASS package to set 'family = negative_binomial(theta = θ)' where θ = the dispersion estimate or biological coefficient of variation for a given transcript.
 
@@ -608,7 +616,7 @@ lrt_coeff_df <- merge(lrt_coeff_df,
 # Apply FDR adjustment to LRT p-values before filtering for sig non-linear effects
 lrt_coeff_df$FDR <- p.adjust(lrt_coeff_df$Pr..Chisq., method = "fdr")
 
-# Filter LRT results for sig FDR coeff... produces only 3 genes
+# Filter LRT results for sig FDR coeff... produces only 3 genes for pval 0.1!
 lrt_filt <- filter(lrt_coeff_df, FDR < 0.1)
 
 ## Plot sig nl genes according to LRT, grouped by timepoint and direction of beta 1 coefficient
@@ -640,12 +648,23 @@ ggplot(data = LRT_filt_df,
 ```
 
 ::: callout-important
-3 genes had likelihood of non-linear effect (p \< 0.1) as identified by LRT
+3 genes had likelihood of non-linear effect (p \< 0.1) as identified by LRT and DEG
 :::
 
 > ... the most robust estimate we have for non-linear effects of environmental conditions on gene expression over time comes from filtering for significant DEGs in edgeR *and* significant LRTs.
 
-> how does gene expression vary between exposure times for genes exhibiting significant interactions between *leachate*2\^2 and time? Let's produce an exploratory plot of non-linear expression across 0.5 and 7 hpfs of exposure for such genes identified using edgeR alone.
+## Save non-linear gene list
+
+`LRT_filt_df` is a dataframe gene id's with significant likelihood of nl effect in LRT
+
+```{r}
+write_csv(lrt_filt, "../output/09_multifactorial/lrt_filt.csv")
+LRT_filt_df
+```
+
+# Interaction
+
+> How does gene expression vary between exposure times for genes exhibiting significant interactions between *leachate*2\^2 and time? Let's produce an exploratory plot of non-linear expression across 0.5 and 7 hpfs of exposure for such genes identified using edgeR alone.
 
 ```{r}
 # Export diff expression data for transcripts with significant DE associated with interaction between leachate^2 and time
