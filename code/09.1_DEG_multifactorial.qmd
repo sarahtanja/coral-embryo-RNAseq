@@ -83,22 +83,7 @@ library(stringr)
 
 # Import Gene Count Matrix (gcm)
 
-In this count matrix, each row represents a gene, each column a sequenced RNA library, and the values give the estimated counts of fragments that were assigned to the respective gene in each library by `HISAT2`
-
--   `check.names = FALSE` removed the 'X' from in front of sample id's in the column headers
-
-```{r}
-gcm <- read.csv("../output/05_count/gene_count_matrix.csv", row.names="gene_id", check.names = FALSE)
-head(gcm)
-```
-
-The count matrix should show counts of whole numbers (integers) ... since each column shows <int> as the data type we know that the counts are already integers. Each column name represents a sample that is described by parental crosses (the first string of numbers), the pollution exposure (C, L, M, H), and the embryonic phase (4, 9, 14).
-
-::: callout-note
-`gcm` is the unfiltered gene count matrix of all 63 samples
-:::
-
-The following is a gene count matrix that has already been filtered for low gene counts and had two outlier samples removed:
+In this count matrix, each row represents a gene, each column a sequenced RNA library, and the values give the estimated counts of fragments that were assigned to the respective gene in each library by `HISAT2`. The following is a gene count matrix that has already been filtered for low gene counts and had two outlier samples removed:
 
 ```{r}
 load("../output/07_exploration/gcm_filt_or.RData")
@@ -111,15 +96,8 @@ load("../output/07_exploration/gcm_filt_or.RData")
 # Import metadata
 
 ```{r}
-metadata <- read.csv("../metadata/metadata.csv")
-head(metadata)
-```
-
-```{r}
 metadata_or <- read.csv("../metadata/metadata_or.csv")
 ```
-
-`metadata` is all 63 samples
 
 `metadata_or` has the outliers removed, and contains info for 61 samples
 
@@ -133,49 +111,13 @@ Therefore, we will accept genes that are present in 5 of the samples because we 
 
 Visualize Data for Negative Binomial Distribution
 
-Data must be rounded to nearest integer in order to be fit for negative binomial distribution
-
-```{r}
-str(gcm)
-```
-
-We can see that our gene count matrix is already made of whole integers
-
-## Plot distribution of unfiltered read counts across all samples
-
-```{r distr_unfiltered_reads}
-
-ggplot(data = data.frame(rowMeans(gcm)),
-  aes(x = rowMeans.gcm.)) +
-  geom_histogram(fill = "grey", binwidth = 5) +
-  xlim(0, 500) +
-  ylim(0, 5000) +
-  theme_classic() +
-  labs(title = "Distribution of unfiltered reads") +
-  labs(y = "Density", x = "Raw read counts",
-  title = "Read count distribution: untransformed, unnormalized, unfiltered")
-  
-```
-
-::: callout-note
-As you can see in the above plot, the raw distribution of all read counts takes on a left-skewed negative binomial distribution.
-:::
+Data must be rounded to nearest integer in order to be fit for negative binomial distribution, our gene count matrix is already made of whole integers
 
 > Most DE packages assume that read counts possess a negative binomial distribution. The negative binomial distribution is an extension of distributions for binary variables such as the Poisson distribution, allowing for estimations of "equidispersion" and "overdispersion", equal and greater-than-expected variation in expression attributed to biological variability . - [MarineOmics](https://marineomics.github.io/DGE_comparison_v2.html#:~:text=library(lmerTest)-,Filter%20and%20visualize%20read%20counts,-Before%20model%20fitting)
 
 > While looking at the distribution of your raw reads is useful, these are not in fact the data you will be inputting to tests of differential expression. Let's plot the distribution of filtered reads normalized by library size, expressed as log2 counts per million reads (logCPM). These are the reads we will use in our test, and after we plot their distribution, we will conduct one more, slightly more robust, test of our data's fit to the negative binomial distribution using residuals from fitted models. - [MarineOmics](https://marineomics.github.io/DGE_comparison_v2.html#:~:text=While%20looking%20at,from%20fitted%20models.)
 
-## Distibution of normalized, filtered read counts
-
-```{r}
-# Make a DGEList object for edgeR
-y <- DGEList(counts = gcm, remove.zeros = TRUE)
-
-# Let's remove samples with less than 0.5 cpm (this is ~10 counts in the count file) in fewer then 5/63 samples
-keep <- rowSums(cpm(y) > .5) >= 5
-
-table(keep)
-```
+## Distribution of normalized, filtered read counts
 
 ```{r}
 # Make a DGEList object for edgeR
@@ -186,10 +128,6 @@ keep <- rowSums(cpm(y) > .5) >= 3
 
 table(keep)
 ```
-
-::: callout-important
-We're going to use our `gcm_filt_or` as our prefiltered and outlier removed gene count matrix from here out
-:::
 
 ```{r}
 # Set keep.lib.sizes = F and recalculate library sizes after filtering
@@ -210,108 +148,7 @@ ggplot(data = data.frame(rowMeans(df_log)),
 
 ```
 
-# MDS plot visualizing experimental factors
-
-> Before analyzing our data, it is essential that we look at the multivariate relationships between our samples based on transcriptome-wide expression levels. Below is example code and output for a principal coordinates analysis (PCOA) plot that visualizes multifactorial RNA-seq replicates according to two predictor variables across major and minor latent variables or PCOA axes.
-
-```{r}
-# Export pcoa loadings
-dds.pcoa = pcoa(vegdist(t(df_log <- cpm(y, log = TRUE, prior.count = 2)),
-                          method = "euclidean") / 1000)
-
-# Create df of MDS vector loading
-scores <- dds.pcoa$vectors
-
-## Plot pcoa loadings of each sample, grouped by hpf and pvc_leachate_level
-
-# Calculate % variation explained by each eigenvector
-percent <- dds.pcoa$values$Eigenvalues
-cumulative_percent_variance <- (percent / sum( percent)) * 100
-
-# Prepare information for pcoa plot, then plot
-color <- c("steelblue1", "tomato1", "goldenrod1")
-par(mfrow = c(1, 1))
-plot(
-  scores[, 1],
-  scores[, 2],
-  cex = .5,
-  cex.axis = 1,
-  cex.lab = 1.25,
-  xlab = paste("PC1, ", round(cumulative_percent_variance[1], 2), "%"),
-  ylab = paste("PC2, ", round(cumulative_percent_variance[2], 2), "%")
-  )
-
-# Add visual groupings to pcoa plot
-ordihull(
-  scores,
-  as.factor(metadata_or$embryonic_stage),
-  border = NULL,
-  lty = 2,
-  lwd = .5,
-  label = F,
-  col = color,
-  draw = "polygon",
-  alpha = 100,
-  cex = .5
-  )
-
-ordispider(scores, as.factor(metadata_or$group), label = F) # Vectors connecting samples in same hpf x leachate group
-
-ordilabel(scores, cex = 0.5) # Label sample IDs
-```
-
-```{r}
-logCPM.pca <- prcomp(t (df_log))
-logCPM.pca.proportionvariances <-
-((logCPM.pca$sdev ^ 2) / (sum(logCPM.pca$sdev ^ 2))) * 100
-
-## Do treatment groups fully segregate? Wrap samples by hpf x leachate, not just hpf
-# Replot using logCPM.pca
-plot(
-  logCPM.pca$x,
-  type = "n",
-  main = NA,
-  xlab = paste("PC1, ", round(logCPM.pca.proportionvariances[1], 2), "%"),
-  ylab = paste("PC2, ", round(logCPM.pca.proportionvariances[2], 2), "%")
-  )
-
-points(logCPM.pca$x,
-       col = "black",
-       pch = 16,
-       cex = 1)
-       colors2 <-
-       c("steelblue1",
-         "dodgerblue2",
-         "tomato1",
-         "coral",
-         "goldenrod1",
-         "goldenrod3")
-       
-       ordihull(
-       logCPM.pca$x,
-       metadata_or$treatment_group,
-       border = NULL,
-       lty = 2,
-       lwd = .5,
-       col = colors2,
-       draw = "polygon",
-       alpha = 75,
-       cex = .5,
-       label = T
-       )
-```
-
-# Non-linear effects
-
-> One of the simplest non-linear relationships that can be fitted to the expression of a transcript across an continuous variable is a **second-order polynomial, otherwise known as a quadratic function, which can be expressed as yi=μ+β1x2+β2xyi=μ+β1x2+β2x where yy is the abundance of a given transcript (ii), μμ is the intercept, and yy is the continuous variable.** For the parabola generated by fitting a second-order polynomial, β1β1 \> 0 opens the parabola upwards while β1β1 \< 0 opens the parabola downwards. The vertex of the parabola is controlled by β2β2 such that when β1β1 is negative, greater β2β2 values result in the vertex falling at higher values of xx.
->
-> Quadratic polynomials applied to phenotypic performance curves commonly possess negative β1β1 values with positive β2β2 values: a downard-opening parabola with a positive vertex. However, **quadtratic curves fitted to gene expression data can take on a variety of postiive or negative forms similar to exponential curves, saturating curves, and parabolas.** For instance, the expression of a gene may peak an intermediate level of an environmental level before crashing or it may exponentially decline across that variable. Such trends may better model changes in the transcription of a gene compared to a linear model. To get started, we will fit non-linear second order polynomials before testing for whether model predictions for a given gene are significantly improved by a non-linear linear model. - [MarineOmics](https://marineomics.github.io/DGE_comparison_v2.html#Filter_and_visualize_read_counts:~:text=for%20differential%20expression.-,Non%2Dlinear%20effects,-Gene%20expression%20traits)
-
-## Non-linear effects: example in edgeR
-
-> Let's fit a second-order polynomial for the effect of leachate/leachate using edgeR. Using differential expression tests, we will then determine whether leachate/leachate affected a gene's rate of change in expression and expression maximum by applying differential expression tests to β1 and β2 parameters. By testing for differential expression attributed to intereactions between time and β1 or β2 , we will then test for whether these parameters were significantly different across exposure times such that 0.5 hpfs and 7 hpfs of acclimation to leachate/leachate altered the rate of change in expression across leachate/leachate (β1 ) or the maximum of expression (β2 ).
->
-> Since this is the first time we're fitting models to our data in this walkthrough, we will also output some important plots to help us explore and QC model predictions as we work toward testing for differential expression attributed to non-linear effects. - [MarineOmics](https://marineomics.github.io/DGE_comparison_v2.html#Non-linear_effects:~:text=linear%20linear%20model.-,Non%2Dlinear%20effects%3A%20example%20in%20edgeR,-Let%E2%80%99s%20fit%20a)
+# GLM
 
 ```{r}
 # Estimate dispersion coefficients
@@ -330,48 +167,88 @@ plotBCV(y1)
 > Using numeric values instead of factors so... hpf = embryonic_stage (equivalent to hpf in the tutorial... our time component) pvc_leachate_concentration_mg.L = pvc_leachate_level (equivalent to leachate/leachate in the tutorial... our environmental condition!)
 
 ```{r}
-# Square environmental condition variable
+# Square environmental condition variable and rename continuous variable leachate
 metadata_or <- metadata_or %>% 
   mutate(leachate = pvc_leachate_concentration_mg.L) %>% 
   mutate(leachate_2 = leachate^2)
 
-# pull out variables values for model
-hpf <- metadata_or$hpf
-leachate <- metadata_or$pvc_leachate_concentration_mg.L
-leachate_2 <- metadata_or$leachate_2
-
-
 # Fit multifactorial design matrix **include a term for hpf!**
-design_nl <- model.matrix(~ 1 + hpf + leachate + leachate_2 + hpf:leachate + hpf:leachate_2) # Generate multivariate edgeR glm
+design <- model.matrix(~ 1 + hpf + leachate + leachate_2 + hpf:leachate + hpf:leachate_2, data = metadata_or) # Generate multivariate edgeR glm
 
 # Fit quasi-likelihood, neg binom linear regression
-nl_fit <-
-    glmQLFit(y1, design_nl) # Fit multivariate model to counts
+fit <- glmQLFit(y1, design) # Fit multivariate model to counts
+
 ```
 
 ```{r}
-colnames(nl_fit)
+colnames(fit)
 ```
 
+## Perform `glmQLFTest()`
+
+`glmQLFTest()` is an `edgeR` function for a Generalized Linear Model Quasi-Likelihood F-test, which tests for **differential expression** between conditions using **quasi-likelihood F-tests** in a **negative binomial generalized linear model (GLM)** framework.
 
 ```{r}
-## Test for effect of leachate/leachate and leachate/leachate^2
-nl_leachate_2 <-
-    glmQLFTest(nl_fit,
-    coef = 4,
+
+## Test for each term of the model
+
+# linear effect of hours post fertilization 
+nl_hpf <- 
+  glmQLFTest(fit,
+    coef = 2,
     contrast = NULL,
     poisson.bound = FALSE) # Estimate significant DEGs
+
+# linear effect of leachate
 nl_leachate <-
-    glmQLFTest(nl_fit,
+    glmQLFTest(fit,
     coef = 3,
     contrast = NULL,
     poisson.bound = FALSE) # Estimate significant DEGs
 
+# non linear effect of leachate (leachate^2)
+nl_leachate2 <-
+    glmQLFTest(fit,
+    coef = 4,
+    contrast = NULL,
+    poisson.bound = FALSE) # Estimate significant DEGs
+
+# interaction of hpf and leachate
+nl_hpfleachate <-
+  glmQLFTest(fit,
+  coef = 5,
+  contrast = NULL,
+  poisson.bound = FALSE) # Estimate significant DEGs
+
+# interaction of hpf and leachate^2
+nl_hpfleachate2 <-
+  glmQLFTest(fit,
+  coef = 6,
+  contrast = NULL,
+  poisson.bound = FALSE) # Estimate significant DEGs
+
 # Make contrasts
+is.de_nl_hpf <-
+  decideTestsDGE(nl_hpf, adjust.method = "fdr", p.value = 0.05)
+
 is.de_nl_leachate <-
   decideTestsDGE(nl_leachate, adjust.method = "fdr", p.value = 0.05)
-is.de_nl_leachate_2 <-
-  decideTestsDGE(nl_leachate_2, adjust.method = "fdr", p.value = 0.05)
+
+is.de_nl_leachate2 <-
+  decideTestsDGE(nl_leachate2, adjust.method = "fdr", p.value = 0.05)
+
+is.de_nl_hpfleachate <-
+  decideTestsDGE(nl_hpfleachate, adjust.method = "fdr", p.value = 0.05) 
+
+is.de_nl_hpfleachate2 <-
+  decideTestsDGE(nl_hpfleachate2, adjust.method = "fdr", p.value = 0.05)
+```
+
+## DE summaries
+
+```{r}
+# Summarize differential expression attributed to hpf
+summary(is.de_nl_hpf)
 ```
 
 ```{r}
@@ -380,66 +257,49 @@ summary(is.de_nl_leachate)
 ```
 
 ```{r}
-# Summarize differential expression attributed to leachate_2
-summary(is.de_nl_leachate_2)
+# Summarize differential expression attributed to leachate2
+summary(is.de_nl_leachate2)
 ```
 
-We have just fit our first GLM to our read count data and have tested for differential expression across `leachate_2`/`leachate` . At this stage, it is important to output a few diagnostic plots. For example, edgeR has the function 'plotMD()' which, when input with a differential expression test object such as a glmQLFTest result, will produce a plot of differential expression log2 fold change values across gene expression level (log2 counts per million or logCPM). logCPM is a major component of gene function and statistical power, and is a useful variable to plot in order to make initial assessments of differential expression results.
+```{r}
+# Summarize differential expression attributed to hpf:leachate
+summary(is.de_nl_hpfleachate)
+```
+
+```{r}
+# Summarize differential expression attributed to hpf:leachate2
+summary(is.de_nl_hpfleachate2)
+```
+
+We have just fit our first GLM to our read count data and have tested for differential expression. At this stage, it is important to output a few diagnostic plots. For example, edgeR has the function 'plotMD()' which, when input with a differential expression test object such as a glmQLFTest result, will produce a plot of differential expression log2 fold change values across gene expression level (log2 counts per million or logCPM). logCPM is a major component of gene function and statistical power, and is a useful variable to plot in order to make initial assessments of differential expression results.
+
+## Volcano plots with `plotMD()`
 
 Visualizations of differential expression (logFC) across baseline logCPM can be produced by the plotMD() (short for "mean-difference") function in edgeR. To do so, plotMD() is input with the results of glmQLFTest, which we used above to test for differential expression attributable to the parameters leachate/leachate and leachate/leachate\^2. Let's produce two such plots for both parameters where "leachate/leachate_2" represents the leachate/leachate\^2 parameter:
 
 ```{r}
-# Plot differential expression due to leachate and leachate^2
+plotMD(nl_hpf)
+```
+
+```{r}
 plotMD(nl_leachate)
 ```
 
 ```{r}
-plotMD(nl_leachate_2)
-```
-
-In the two mean-difference plots above, red and blue colored points represent genes exhibiting significant differential expression attributed to `leachate` or `leachate_2` . As you can see, there is a lot of differential expression in this experiment resulting from both of these parameters. **Part of the reason for this large number of significant differentially expressed genes (DEGs) is that we have not applied a cutoff value for logFC.** For example, a logFC cutoff of 2.0 value would not designate any genes with an absolute logFC value less than 0.05 as a significant DEG. However, deciding on a logFC cutoff is very tricky! Since we used a continuous predictor for `leachate` during model fitting, the values in the y-axis of this plot are slopes representing the rate of change in expression per unit `leachate` (mg/L). Determining what slope represents a significant change in expression requires informed reasoning and a strong body of prior data. For that reason, we are not applying a logFC cutoff in this walkthrough.
-
-Next, we will use glmQLFTest() to test for differential expression attributed to interactions between `hpf` and `leachate` or `hpf` and `leachate_2` before producing mean-difference plots visualizing DEGs derived from these two interactions.
-
-`glmQLFTest()` is an `edgeR` function for a Generalized Linear Model Quasi-Likelihood F-test, which tests for **differential expression** between conditions using **quasi-likelihood F-tests** in a **negative binomial generalized linear model (GLM)** framework.
-
-```{r}
-## Test for interactions between time and leachate or leachate^2
-nl_leachate_int <-
-  glmQLFTest(nl_fit,
-  coef = 4,
-  contrast = NULL,
-  poisson.bound = FALSE) # Estimate significant DEGs
-nl_leachate_2_int <-
-  glmQLFTest(nl_fit,
-  coef = 5,
-  contrast = NULL,
-  poisson.bound = FALSE) # Estimate significant DEGs
-  
-# Make contrasts
-is.de_nl_leachate_int <-
-  decideTestsDGE(nl_leachate_int, adjust.method = "fdr", p.value = 0.05) # Make contrasts
-is.de_nl_leachate_2_int <-
-  decideTestsDGE(nl_leachate_2_int, adjust.method = "fdr", p.value = 0.05)
+plotMD(nl_leachate2)
 ```
 
 ```{r}
-# Summarize differential expression attributed to leachate 
-summary(is.de_nl_leachate_int)
+plotMD(nl_hpfleachate)
 ```
 
 ```{r}
-# Summarize differential expression attributed to leachate_2 
-summary(is.de_nl_leachate_2_int)
+plotMD(nl_hpfleachate2)
 ```
 
-```{r}
-plotMD(nl_leachate_int)
-```
+In the mean-difference plots above, red and blue colored points represent genes exhibiting significant differential expression attributed to their respective terms. **Part of the reason for this large number of significant differentially expressed genes (DEGs) is that we have not applied a cutoff value for logFC.** For example, a logFC cutoff of 2.0 value would not designate any genes with an absolute logFC value less than 0.05 as a significant DEG. However, deciding on a logFC cutoff is very tricky! Since we used a continuous predictor for `leachate` during model fitting, the values in the y-axis of this plot are slopes representing the rate of change in expression per unit `leachate` (mg/L). Determining what slope represents a significant change in expression requires informed reasoning and a strong body of prior data. For that reason, we are not applying a logFC cutoff.
 
-```{r}
-plotMD(nl_leachate_2_int)
-```
+## Confirm data fit to negative binomial
 
 > Taking a detour from tests for DEGs attributed to non-linear interactions, we can now output the residuals of our GLMs in order to better test for whether our data fit the assumptions of negative binomial distribution families. If the distribution of residuals from our GLMs are normal, this indicates that our data meet the assumption of the negative binomial distribution. We will use the equation for estimating Pearson residuals:
 >
@@ -449,13 +309,13 @@ plotMD(nl_leachate_2_int)
 
 ```{r}
 # Output observed
-y_nl <- nl_fit$counts
+y_nl <- fit$counts
 
 # Output fitted
-mu_nl <- nl_fit$fitted.values
+mu_nl <- fit$fitted.values
 
 # Output dispersion or coefficient of variation
-phi_nl <- nl_fit$dispersion
+phi_nl <- fit$dispersion
 
 # Calculate denominator
 v_nl <- mu_nl*(1+phi_nl*mu_nl)
@@ -480,32 +340,66 @@ Our residuals appear to be normally distributed, indicating that our data fit th
 
 Now let's get back to analyzing non-linear effects on gene expression!
 
-## Plotting non-linear effects
+## Pull out significant transcripts
 
 ```{r}
 ## Bin transcripts based on (i) whether they have a significant positive or negative vertex and then (ii) whether they showed significant interactions between beta1 (vertex value) and time.
 
 # Export diff expression data for transcripts with significant DE associated with leachate^2 parameter
-nl_leachate_2_sig <-
+nl_leachate2_sig <-
   topTags(
-  nl_leachate_2,
-  n = (2489 + 1922), # the number of up and down degs from is.de_nl_leachate_2
+  nl_leachate2,
+  n = (70 + 1599), # the number of up and down degs from is.de_nl_leachate2
   adjust.method = "BH",
   p.value = 0.05
   )
 
-nl_leachate_2_sig_geneids <- row.names(nl_leachate_2_sig) #Output a list of geneids associated with sig leachate^2 effect
+nl_leachate2_sig_geneids <- row.names(nl_leachate2_sig) #Output a list of geneids associated with sig leachate^2 effect
 
 nl_leachate_sig <-
   topTags(
   nl_leachate,
-  n = (3352 + 2934), # the number of up and down degs from is.de_nl_leachate
+  n = (1314 + 62), # the number of up and down degs from is.de_nl_leachate
   adjust.method = "BH",
   p.value = 0.05
   )
 
 nl_leachate_sig_geneids <- row.names(nl_leachate_sig) #Output a list of geneids associated with sig leachate effect
 
+nl_hpf_sig <-
+  topTags(
+  nl_hpf,
+  n = (9501 + 4102), # the number of up and down degs from is.de_nl_hpf
+  adjust.method = "BH",
+  p.value = 0.05
+  )
+
+nl_hpf_sig_geneids <- row.names(nl_hpf_sig) #Output a list of geneids associated with sig hpf effect
+
+nl_hpfleachate_sig <-
+  topTags(
+  nl_hpfleachate,
+  n = (40 + 631), # the number of up and down degs from is.de_nl_hpfleachate_int
+  adjust.method = "BH",
+  p.value = 0.05
+  )
+
+nl_hpfleachate_sig_geneids <- row.names(nl_hpfleachate_sig) #Output a list of geneids associated with sig hpf effect
+
+nl_hpfleachate2_sig <-
+  topTags(
+  nl_hpfleachate2,
+  n = (830 + 40), # the number of up and down degs from is.de_nl_leachate
+  adjust.method = "BH",
+  p.value = 0.05
+  )
+
+nl_hpfleachate2_sig_geneids <- row.names(nl_hpfleachate2_sig) #Output a list of geneids associated with sig hpf effect
+
+```
+
+# Visualize non linear expression
+```{r}
 # Create tabulated dataframe of mean expression across each leachate level with metadata for transcript ID and timepoint
 logCPM_df <- as.data.frame(df_log)
 
@@ -536,24 +430,30 @@ tab_exp_df <- tab_exp_df %>%
 
 # Create binary variable in df_all_log for significant non-linear expression
 tab_exp_df$leachate_2_sig <-
-  ifelse(tab_exp_df$geneid %in% nl_leachate_2_sig_geneids, "Yes", "No")
+  ifelse(tab_exp_df$geneid %in% nl_leachate2_sig_geneids, "Yes", "No")
 tab_exp_df$leachate_sig <-
   ifelse(tab_exp_df$geneid %in% nl_leachate_sig_geneids, "Yes", "No")
+tab_exp_df$hpf_sig <-
+  ifelse(tab_exp_df$geneid %in% nl_hpf_sig_geneids, "Yes", "No")
+tab_exp_df$hpfleachate_sig <-
+  ifelse(tab_exp_df$geneid %in% nl_hpfleachate_sig_geneids, "Yes", "No")
+tab_exp_df$hpfleachate_2_sig <-
+  ifelse(tab_exp_df$geneid %in% nl_hpfleachate2_sig_geneids, "Yes", "No")
 
 # Create a binary variable related to up or down-regulation
-up_genes <- filter(nl_leachate_sig$table, logFC > 0)
+up_genes <- filter(nl_hpf_sig$table, logFC > 0)
 
 tab_exp_df$logFC_dir <-
   ifelse(tab_exp_df$geneid %in% row.names(up_genes), "Up", "Down")
 
 # Add geneid to nl_leachate_int$coefficients
-nl_leachate_int$coefficients$geneid <- row.names(nl_leachate_int$coefficients)
+nl_hpfleachate$coefficients$geneid <- row.names(nl_hpfleachate$coefficients)
 
 # Estimate average logCPM per gene per timepoint
 tab_exp_avg <- summarySE(
   measurevar = "value",
   groupvars = c("leachate",     "hpf",       "geneid", 
-                "leachate_sig", "leachate_2_sig", "logFC_dir"),
+                "leachate_sig", "leachate_2_sig", "hpf_sig", "hpfleachate_sig", "hpfleachate_2_sig", "logFC_dir"),
   data = tab_exp_df
   )
 
@@ -582,11 +482,11 @@ tab_exp_df$leachate_2 <- tab_exp_df$leachate^2
 
 # Fit linear models - should take about 4 minutes
 lms <- dlply(tab_exp_df, c("geneid"), function(df) 
-lm(value ~ leachate + hpf + leachate:hpf, data = df))
+lm(value ~ hpf + leachate + hpf:leachate, data = df))
 
 # Fit non-linear models - should take about 2 minutes
 nlms <- dlply(tab_exp_df, c("geneid"), function(df) 
-lm(value ~ leachate + leachate_2 + hpf + leachate:hpf + leachate_2:hpf, data = df))
+lm(value ~ hpf + leachate + leachate_2 + hpf:leachate + hpf:leachate_2, data = df))
 
 # Output nlm coefficients into dataframe
 nlms_coeff <- ldply(nlms, coef)
@@ -638,6 +538,7 @@ tab_exp_avg$leachate_2_binom <- ifelse(tab_exp_avg$geneid %in% leachate_2_pos$ge
 # Filter for how many gene id's with significant likelihood of nl effect in LRT
 LRT_filt_df <- filter(tab_exp_avg, geneid %in% lrt_filt$geneid)
 
+
 # Plot
 ggplot(data = LRT_filt_df,
        aes(x = leachate, y = value)) +
@@ -672,15 +573,15 @@ save(nl_leachate_2_int, file = "../output/09_multifactorial/nl_leachate_2_int.RD
 
 # Interaction
 
-> How does gene expression vary between exposure times for genes exhibiting significant interactions between *leachate*2\^2 and time? Let's produce an exploratory plot of non-linear expression across 0.5 and 7 hpfs of exposure for such genes identified using edgeR alone.
+> How does gene expression vary between exposure times for genes exhibiting significant interactions between *leachate*2\^2 and time? Let's produce an exploratory plot of non-linear expression across hpf of exposure for such genes identified using edgeR alone.
 
 ```{r}
 # Export diff expression data for transcripts with significant DE associated with interaction between leachate^2 and time
-nl_leachate_2_int_sig <- topTags(nl_leachate_2_int, n = (3289 + 4317), adjust.method = "BH",p.value = 0.05)
-nl_leachate_2_int_sig_geneids <- row.names(nl_leachate_2_int_sig) #Output a list of geneids associated with sig leachate^2 x time interaction
+nl_leachate2_sig <- topTags(nl_leachate2, n = (70 + 1599), adjust.method = "BH",p.value = 0.05)
+nl_leachate2_sig_geneids <- row.names(nl_leachate2_sig) #Output a list of geneids associated with sig leachate^2 x time interaction
 
 # Filter down df for gene id's exhibit leachate significant effect in edgeR and significant likelihood of nl effect in LRT 
-edgeR_interaction_df <- filter(tab_exp_avg, geneid %in% nl_leachate_2_int_sig_geneids )
+edgeR_interaction_df <- filter(tab_exp_avg, geneid %in% nl_leachate2_sig_geneids )
 edgeR_interaction_df$gene_id_hpf <- paste(edgeR_interaction_df$geneid,
                                            edgeR_interaction_df$hpf,
                                            sep = "_")
@@ -739,7 +640,7 @@ str(y1)
 ```{r}
 # Fit multifactorial design matrix that includes an interaction term for leachate x hpf
 design_multi <-
-  model.matrix(~ 1 + leachate + leachate:hpf) #Generate multivariate edgeR glm
+  model.matrix(~ 1 + hpf + leachate + leachate:hpf) #Generate multivariate edgeR glm
   
 # Fit quasi-likelihood, neg binom linear regression
 multi_fit <-
@@ -869,7 +770,7 @@ head(metadata_or)
 
 dds <- DESeqDataSetFromMatrix(gcounts,
                               colData = metadata_or,
-                              design = formula( ~ 1 + leachate + hpf : leachate))
+                              design = formula( ~ 1 + hpf + leachate + leachate_2 + hpf:leachate + hpf:leachate_2))
 
 rld <- rlog(dds)
 rld.df <- assay(rld)
