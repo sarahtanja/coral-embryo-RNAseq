@@ -1,4 +1,4 @@
-sample_no,sample_name,parents,group,treatment_group,hpf,embryonic_stage,pvc_leachate_level,hours_post_fertilization,pvc_leachate_concentration_mg.L
+sample_no,sample_name,parents,group,treatment_group,hpf,embryonic_stage,leachate,hours_post_fertilization,pvc_leachate_concentration_mg.L
 1,101112C14,101112,C14,earlygastrula_control,14,earlygastrula,control,14,0
 4,101112H14,101112,H14,earlygastrula_high,14,earlygastrula,high,14,1
 7,101112L14,101112,L14,earlygastrula_low,14,earlygastrula,low,14,0.01

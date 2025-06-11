@@ -1,0 +1,126 @@
+
+# Load packages
+
+| Package                | Key Functions Used                                                            | Purpose                                                         |
+| ---------------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| **`plyr`**             | `dlply()`, `ldply()`                                                          | Apply functions to subsets of a data frame and combine results. |
+| **`lmtest`**           | `lrtest()`                                                                    | Perform likelihood ratio tests (LRT) between two models.        |
+| **`dplyr`**            | `filter()`, `bind_rows()`, `ifelse()` (via base)                              | Filtering and data manipulation.                                |
+| **`ggplot2`**          | `ggplot()`, `geom_path()`, `facet_grid()`, `geom_smooth()`, `theme_classic()` | Plotting.                                                       |
+| **`stats`** *(base R)* | `lm()`, `p.adjust()`                                                          | Linear modeling and multiple testing correction.                |
+| **`readr`**            | `read_csv()`, `write_csv()`                                                   | Read & Write CSV files to disk.                                 |
+
+
+```{r}
+library(readr)
+library(plyr)
+library(dplyr)
+library(lmtest)
+library(ggplot2)
+```
+
+
+```{r}
+tab_exp_df <- read_csv(file= "../output/09_multifactorial/tab_exp_df.csv")
+tab_exp_avg <- read_csv(file= "../output/09_multifactorial/tab_exp_avg.csv")
+```
+
+# Is non-linear model term appropriate?
+
+> One of the best ways to determine whether a non-linear model is appropriate for a transcript is to determine whether it is more probable that its expression is linear or non-linear relative to a continuous predictor. We can calculate this relative probability using a likelihood ratio test (LRT). In the code chunk below, we will fit linear and 2nd order non-linear models to the expression of each gene before applying LRTs to each transcript. We will then further filter our edgeR dataset based on (i) significant differential expression attributed to non-linear effects and (ii) a significant LRT ratio supporting non-linear effects. Then, we will replot the expression levels of this re-filtered set. The code below fits gaussian linear models to log2-transformed CPM values, but can be adjusted to fit negative binomial GLMs to untransformed CPM similar to edgeR and DESeq2 by setting using the MASS package to set 'family = negative_binomial(theta = θ)' where θ = the dispersion estimate or biological coefficient of variation for a given transcript.
+
+```{r}
+## Using dlply, fit linear and non-linear models to each gene
+# Create leachate^2 variable in df_all_log
+tab_exp_df$leachate_2 <- tab_exp_df$leachate^2
+
+# Fit linear models - should take about 4 minutes
+lms <- dlply(tab_exp_df, c("geneid"), function(df) 
+lm(value ~ hpf + leachate + hpf:leachate, data = df))
+
+# Fit non-linear models - should take about 2 minutes
+nlms <- dlply(tab_exp_df, c("geneid"), function(df) 
+lm(value ~ hpf + leachate + leachate_2 + hpf:leachate + hpf:leachate_2, data = df))
+
+# Output nlm coefficients into dataframe
+nlms_coeff <- ldply(nlms, coef)
+head(nlms_coeff)
+```
+
+
+```{r}
+## Apply LRTs to lm's and nlm's for each transcript - should take about 2 minutes
+lrts <- list() # Create list to add LRT results to
+
+for (i in 1:length(lms)) {
+  lrts[[i]] <- lrtest(lms[[i]], nlms[[i]]) # Apply LRTs with for loop
+}
+
+## Filter lrt results for transcripts with significantly higher likelihoods of nl model
+lrt_dfs <- list()
+
+# Turn list of LRT outputs into list of dataframes containing output info
+for (i in 1:length(lrts)) {
+  lrt_dfs[[i]] <- data.frame(lrts[i])
+}
+
+# Create singular dataframe with geneids and model outputs for chi-squared and LRT p-value
+lrt_coeff_df  <- na.omit(bind_rows(lrt_dfs, .id = "column_label")) # na.omit removes first row of each df, which lacks these data
+
+# Add geneid based on element number from original list of LRT outputs
+lrt_coeff_df <- merge(lrt_coeff_df,
+                      data.frame(geneid = names(nlms),
+                      column_label = as.character(seq(length(
+                      nlms
+                      )))),
+                      by = "column_label")
+                      
+# Apply FDR adjustment to LRT p-values before filtering for sig non-linear effects
+lrt_coeff_df$FDR <- p.adjust(lrt_coeff_df$Pr..Chisq., method = "fdr")
+
+# Filter LRT results for sig FDR coeff... produces only 3 genes for pval 0.1!
+lrt_filt <- filter(lrt_coeff_df, FDR < 0.1)
+
+## Plot sig nl genes according to LRT, grouped by timepoint and direction of beta 1 coefficient
+# Add beta coefficients to logCPM df
+leachate_pos <- filter(nlms_coeff, leachate > 0)
+leachate_2_pos <- filter(nlms_coeff, leachate_2 > 0)
+
+# Bin genes based on positive or negative leachate and leachate^2 betas
+tab_exp_avg$leachate_binom <- ifelse(tab_exp_avg$geneid %in% leachate_pos$geneid, "Positive", "Negative")
+tab_exp_avg$leachate_2_binom <- ifelse(tab_exp_avg$geneid %in% leachate_2_pos$geneid, "Concave", "Convex")
+
+# Filter for how many gene id's with significant likelihood of nl effect in LRT
+LRT_filt_df <- filter(tab_exp_avg, geneid %in% lrt_filt$geneid)
+
+
+# Plot
+ggplot(data = LRT_filt_df,
+       aes(x = leachate, y = value)) +
+  geom_path(
+    alpha = .25,
+    size = 0.25,
+    stat = "identity",
+    aes(group = as.factor(geneid))
+    ) +
+  facet_grid(leachate_2_binom ~ hpf) +
+  geom_smooth(method = "loess", se = TRUE, span = 1) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  labs(y = "Avg logCPM", title = "Non-linear changes in GE output by LRTs")
+```
+
+::: callout-important
+Only 3 genes had likelihood of non-linear effect (even with a $FDR < 0.1$!) as identified by LRT and DEG... this shows that the linear model describes the data just as well as the non-linear model. However our interaction terms are still important to include in the model! Out of curiosity I do want to see what these 3 'borderline' non-linear genes could be so we'll save them to blast later. 
+:::
+
+> ... the most robust estimate we have for non-linear effects of environmental conditions on gene expression over time comes from filtering for significant DEGs in edgeR *and* significant LRTs.
+
+## Save non-linear gene list
+`lrt_filt` is a dataframe with 3 genes that have $FDR < 0.1$ 
+
+```{r}
+write_csv(lrt_filt, "../output/09_multifactorial/lrt_filt.csv")
+```
+
+Now we can move forward with the multifactor linear model (and drop the non-linear quadratic terms!) 

@@ -1,4 +1,4 @@
-sample_no,sample_name,parents,group,treatment_group,hpf,embryonic_stage,pvc_leachate_level,hours_post_fertilization,pvc_leachate_concentration_mg.L
+sample_no,sample_name,parents,group,treatment_group,hpf,embryonic_stage,leachate,hours_post_fertilization,pvc_leachate_concentration_mg.L
 3,101112C9,101112,C9,prawnchip_control,9,prawnchip,control,9,0
 6,101112H9,101112,H9,prawnchip_high,9,prawnchip,high,9,1
 9,101112L9,101112,L9,prawnchip_low,9,prawnchip,low,9,0.01
