@@ -176,7 +176,7 @@ Red vs Blue lines:
 >
 > Now that we've estimated dispersion, we will use these estimates to fit negative binomial GLMs to our read count data using the `glmQLFit()` function in `edgeR`, one of the more robust model fitting functions offered by `edgeR`.
 
-# Fit GLM in edgeR
+# Fit linear GLM in edgeR
 `hpf` is a fixed effect factor with 3 levels (4, 9, 14)
 `leachate` is a fixed effect continuous variable describing pvc leachate concentration in mg/L (0, 0.01, 0.1, 1)
 ```{r}

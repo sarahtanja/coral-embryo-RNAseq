@@ -5,13 +5,25 @@ author: "Sarah Tanja"
 date: 2024-12-02
 date-modified: today
 format:
-  gfm: default  
-toc: true
-toc-depth: 2
-link-external-icon: true
-link-external-newwindow: true
-reference-location: margin
-citation-location: margin
+  gfm: default 
+  html:
+    respect-user-color-scheme: true
+    theme: solar
+    highlight-style: github
+    page-layout: full
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    reference-location: margin
+    citation-location: margin
 ---
 
 ```{r setup, include=FALSE}
@@ -27,6 +39,30 @@ knitr::opts_chunk$set(
 # Goals
 
 To follow the [MarineOmics Fitting Multifactorial Models of Differential Expression](https://marineomics.github.io/DGE_comparison_v2.html) walkthrough step-by-step with the gene count matrix from the [coral-embryo-RNAseq](https://github.com/sarahtanja/coral-embryo-RNAseq) project. I've copied and pasted many of the tutorial instructions and explanations in order for me to understand my data in context. Anything copied from [MarineOmics](https://marineomics.github.io/index.html) is in blockquotes. I have simply replaced their `pC02` environmental condition variable with `leachate` and their `day` time variable with hours post-fertilization, `hpf` .
+
+# Experimental design
+
+-   Egg-sperm bundles were cross-fertilized from genetically distinct parent colonies resulting in \~30 embryos per vial
+
+-   4 leachate levels (continuous variable)
+
+    -   0, 0.01, 0.1, 1 mg/L concentrations
+
+-   3 embryonic stages (discrete variable)
+
+    -   4, 9, 14 hours post fertilization
+
+    -   cleavage, prawn chip, early gastrula
+
+-   12 treatments, n = 4 or 5 per treatment
+
+-   Each pooled samples therefore represents genetic variation of up to 6 distinct colonies
+
+![](Experimental_Assay_Design.png)
+
+## Exploratory PCA & Heatmap
+
+![](images/vsd_4_out_PCA-01.png)
 
 # Install packages
 
@@ -74,7 +110,7 @@ if ("stringr" %in% rownames(installed.packages()) == 'FALSE')
 
 ```{r}
 # Load packages
- library(DESeq2)
+library(DESeq2)
 library(edgeR)
 library(tidyverse)
 library(ape)
@@ -209,7 +245,7 @@ ggplot(data = data.frame(rowMeans(df_log)),
 
 ::: callout-note
 | Region of Plot             | Interpretation                                        |
-|----------------------------|-------------------------------------------------------|
+|-------------------------|-----------------------------------------------|
 | **Left tail** (steep drop) | Near-zero or low-expression genes, NB distribution    |
 | **Middle bulk**            | Actively expressed genes --- roughly normal in logCPM |
 | **Right tail**             | Highly expressed genes (often a small fraction)       |
@@ -326,11 +362,13 @@ Difficult to ascertain any leachate patterns within hours post fertilization (em
 
 ## Non-linear effects: example in edgeR
 
+### Estimate dispersion
+
 > Let's fit a second-order polynomial for the effect of leachate/leachate using edgeR. Using differential expression tests, we will then determine whether leachate/leachate affected a gene's rate of change in expression and expression maximum by applying differential expression tests to β1 and β2 parameters. By testing for differential expression attributed to intereactions between time and β1 or β2 , we will then test for whether these parameters were significantly different across exposure times such that 0.5 hpfs and 7 hpfs of acclimation to leachate/leachate altered the rate of change in expression across leachate/leachate (β1 ) or the maximum of expression (β2 ).
 >
 > Since this is the first time we're fitting models to our data in this walkthrough, we will also output some important plots to help us explore and QC model predictions as we work toward testing for differential expression attributed to non-linear effects. - [MarineOmics](https://marineomics.github.io/DGE_comparison_v2.html#Non-linear_effects:~:text=linear%20linear%20model.-,Non%2Dlinear%20effects%3A%20example%20in%20edgeR,-Let%E2%80%99s%20fit%20a)
 
-```{r}
+```{r estimate-dispersion}
 # Estimate dispersion coefficients
 y1 <- estimateDisp(y, robust = TRUE) # Estimate mean dispersal
 
@@ -364,6 +402,8 @@ Red vs Blue lines:
 
 ![MarineOmics biological coefficient of variation plot for comparison](marine-omics-plotBCV.jpg)
 
+### Fit GLM
+
 > Now that we've estimated dispersion, we will use these estimates to fit negative binomial GLMs to our read count data using the glmQLFit() function in edgeR, one of the more robust model fitting functions offered by edgeR
 
 Using numeric values instead of factors so...
@@ -384,27 +424,45 @@ metadata_filt <- metadata_filt %>%
   mutate(leachate_2 = leachate^2)
 
 # pull out variables values for model
-hpf <- metadata_or$hpf
-leachate <- metadata_or$pvc_leachate_concentration_mg.L
-leachate_2 <- metadata_or$leachate_2
+hpf <- metadata_filt$hpf
+leachate <- metadata_filt$leachate
+leachate_2 <- metadata_filt$leachate_2
 
 # Fit multifactorial design matrix
-design_nl <- model.matrix(~ 1 + leachate_2 + leachate + leachate_2:hpf + leachate:hpf) 
+design_nl <- model.matrix(~ 1 + hpf + leachate + leachate_2 + hpf:leachate_2 + hpf:leachate) 
 # Generate multivariate edgeR glm
 
 # Fit quasi-likelihood, neg binom linear regression
 nl_fit <-
     glmQLFit(y1, design_nl) # Fit multivariate model to counts
+```
 
-## Test for effect of leachate/leachate and leachate/leachate^2
+```{r}
+colnames(nl_fit$design)
+```
+
+| Coefficient      | What it Represents                                                                             |
+|------------------|------------------------------------------------------|
+| **(Intercept)**  | The baseline expression: at `hpf = 4` and `leachate = 0`                                       |
+| **hpf9**         | The difference in expression at `9 hpf` vs `4 hpf` (when leachate = 0)                         |
+| **hpf14**        | The difference in expression at `14 hpf` vs `4 hpf` (when leachate = 0)                        |
+| **leachate**     | The effect of increasing leachate at **4 hpf**                                                 |
+| leachate_2       | The non-linear effect of increasing leachate                                                   |
+| hpf9:leachate_2  | How the non-linear leachate effect at `9 hpf` **differs** from the leachate effect at `4 hpf`  |
+| hpf14:leachate_2 | How the non-linear leachate effect at `14 hpf` **differs** from the leachate effect at `4 hpf` |
+| hpf9:leachate    | How the leachate effect at `9 hpf` **differs** from the leachate effect at `4 hpf`             |
+| hpf14:leachate   | How the leachate effect at `14 hpf` **differs** from the leachate effect at `4 hpf`            |
+
+```{r}
+## Test for effect of leachate and leachate^2
 nl_leachate_2 <-
     glmQLFTest(nl_fit,
-    coef = 2,
+    coef = 5,
     contrast = NULL,
     poisson.bound = FALSE) # Estimate significant DEGs
 nl_leachate <-
     glmQLFTest(nl_fit,
-    coef = 3,
+    coef = 4,
     contrast = NULL,
     poisson.bound = FALSE) # Estimate significant DEGs
 
@@ -425,7 +483,7 @@ summary(is.de_nl_leachate)
 summary(is.de_nl_leachate_2)
 ```
 
-We have just fit our first GLM to our read count data and have tested for differential expression across `leachate/leachate`/`leachate` . At this stage, it is important to output a few diagnostic plots. For example, edgeR has the function 'plotMD()' which, when input with a differential expression test object such as a glmQLFTest result, will produce a plot of differential expression log2 fold change values across gene expression level (log2 counts per million or logCPM). logCPM is a major component of gene function and statistical power, and is a useful variable to plot in order to make initial assessments of differential expression results.
+We have just fit our first GLM to our read count data and have tested for differential expression across `leachate_2`/`leachate` . At this stage, it is important to output a few diagnostic plots. For example, edgeR has the function 'plotMD()' which, when input with a differential expression test object such as a glmQLFTest result, will produce a plot of differential expression log2 fold change values across gene expression level (log2 counts per million or logCPM). logCPM is a major component of gene function and statistical power, and is a useful variable to plot in order to make initial assessments of differential expression results.
 
 Visualizations of differential expression (logFC) across baseline logCPM can be produced by the plotMD() (short for "mean-difference") function in edgeR. To do so, plotMD() is input with the results of glmQLFTest, which we used above to test for differential expression attributable to the parameters leachate/leachate and leachate/leachate\^2. Let's produce two such plots for both parameters where "leachate/leachate_2" represents the leachate/leachate\^2 parameter:
 
@@ -438,6 +496,10 @@ plotMD(nl_leachate)
 plotMD(nl_leachate_2)
 ```
 
+::: callout-caution
+The non-linear term appears to be a perfect flip of the linear term. Is this expected? Or does this indicate the non-linear term doesn't describe the data any better than the linear term?
+:::
+
 In the two mean-difference plots above, red and blue colored points represent genes exhibiting significant differential expression attributed to `leachate` or `leachate_2` . As you can see, there is a lot of differential expression in this experiment resulting from both of these parameters. **Part of the reason for this large number of significant differentially expressed genes (DEGs) is that we have not applied a cutoff value for logFC.** For example, a logFC cutoff of 2.0 value would not designate any genes with an absolute logFC value less than 0.05 as a significant DEG. However, deciding on a logFC cutoff is very tricky! Since we used a continuous predictor for `leachate` during model fitting, the values in the y-axis of this plot are slopes representing the rate of change in expression per unit `leachate` (mg/L). Determining what slope represents a significant change in expression requires informed reasoning and a strong body of prior data. For that reason, we are not applying a logFC cutoff in this walkthrough.
 
 Next, we will use glmQLFTest() to test for differential expression attributed to interactions between `hpf` and `leachate` or `hpf` and `leachate_2` before producing mean-difference plots visualizing DEGs derived from these two interactions.
@@ -445,41 +507,62 @@ Next, we will use glmQLFTest() to test for differential expression attributed to
 `glmQLFTest()` is an `edgeR` function for a Generalized Linear Model Quasi-Likelihood F-test, which tests for **differential expression** between conditions using **quasi-likelihood F-tests** in a **negative binomial generalized linear model (GLM)** framework.
 
 ```{r}
-## Test for interactions between time and leachate or leachate^2
-nl_leachate_int <-
+colnames(nl_fit$design)
+```
+
+```{r}
+## Test for interaction terms
+nl_hpf9_leachate_2_int <-
   glmQLFTest(nl_fit,
-  coef = 4,
+  coef = 6,
   contrast = NULL,
   poisson.bound = FALSE) # Estimate significant DEGs
-nl_leachate_2_int <-
+nl_hpf14_leachate_2_int <-
   glmQLFTest(nl_fit,
-  coef = 5,
+  coef = 7,
+  contrast = NULL,
+  poisson.bound = FALSE) # Estimate significant DEGs
+nl_hpf9_leachate_int <-
+  glmQLFTest(nl_fit,
+  coef = 8,
+  contrast = NULL,
+  poisson.bound = FALSE) # Estimate significant DEGs
+nl_hpf14_leachate_int <-
+  glmQLFTest(nl_fit,
+  coef = 9,
   contrast = NULL,
   poisson.bound = FALSE) # Estimate significant DEGs
   
 # Make contrasts
-is.de_nl_leachate_int <-
-  decideTestsDGE(nl_leachate_int, adjust.method = "fdr", p.value = 0.05) # Make contrasts
-is.de_nl_leachate_2_int <-
-  decideTestsDGE(nl_leachate_2_int, adjust.method = "fdr", p.value = 0.05)
+is.de_nl_hpf9_leachate_2_int <-
+  decideTestsDGE(nl_hpf9_leachate_2_int, adjust.method = "fdr", p.value = 0.05)
+is.de_nl_hpf14_leachate_2_int <-
+  decideTestsDGE(nl_hpf14_leachate_2_int, adjust.method = "fdr", p.value = 0.05)
+is.de_nl_hpf9_leachate_int <-
+  decideTestsDGE(nl_hpf9_leachate_int, adjust.method = "fdr", p.value = 0.05) 
+is.de_nl_hpf14_leachate_int <-
+  decideTestsDGE(nl_hpf14_leachate_int, adjust.method = "fdr", p.value = 0.05)
+```
+
+### Summarize DEGs
+
+```{r}
+# Summarize differential expression attributed to interaction term
+summary(is.de_nl_hpf9_leachate_2_int)
+
+summary(is.de_nl_hpf14_leachate_2_int)
+
+summary(is.de_nl_hpf9_leachate_int)
+
+summary(is.de_nl_hpf14_leachate_int)
 ```
 
 ```{r}
-# Summarize differential expression attributed to leachate 
-summary(is.de_nl_leachate_int)
+plotMD(nl_hpf9_leachate_2_int)
 ```
 
 ```{r}
-# Summarize differential expression attributed to leachate_2 
-summary(is.de_nl_leachate_2_int)
-```
-
-```{r}
-plotMD(nl_leachate_int)
-```
-
-```{r}
-plotMD(nl_leachate_2_int)
+plotMD(is.de_nl_hpf14_leachate_2_int)
 ```
 
 > Taking a detour from tests for DEGs attributed to non-linear interactions, we can now output the residuals of our GLMs in order to better test for whether our data fit the assumptions of negative binomial distribution families. If the distribution of residuals from our GLMs are normal, this indicates that our data meet the assumption of the negative binomial distribution. We will use the equation for estimating Pearson residuals:
@@ -516,7 +599,7 @@ ggplot(data = melt(as.data.frame(resid.pearson)), aes(x = value)) +
 ```
 
 ::: callout-note
-Our residuals appear to be normally distributed, indicating that our data fit the negative binomial distribution assumed by the GLM.
+Our residuals (model values minus actual values) appear to be normally distributed, indicating that our data fit the negative binomial distribution assumed by the GLM.
 :::
 
 Now let's get back to analyzing non-linear effects on gene expression!
@@ -706,8 +789,7 @@ ggplot(data = LRT_filt_df,
 `LRT_filt_df` is a dataframe gene id's with significant likelihood of nl effect in LRT
 
 ```{r}
-write_csv(lrt_filt, "../output/09_multifactorial/lrt_filt.csv")
-LRT_filt_df
+write_csv(lrt_filt, "../output/09_deg_multifactorial/lrt_filt.csv")
 ```
 
 # Interaction
@@ -901,7 +983,7 @@ table(keep_g)
 ```
 
 ```{r}
-head(metadata_or)
+head(metadata_filt)
 ```
 
 ```{r}
@@ -967,7 +1049,7 @@ ggplot(deg_df, aes(x = log2FoldChange, y = neg_log10_padj, color = sig)) +
   geom_hline(yintercept = -log10(0.05), linetype = "dashed", color = "black")
 
 # Save the last plot that was displayed
-ggsave("../output/09_multifactorial/volcano_plot.png", width = 8, height = 6, dpi = 300)
+ggsave("../output/09_deg_multifactorial/volcano_plot.png", width = 8, height = 6, dpi = 300)
 
 ```
 
@@ -978,7 +1060,7 @@ deg_gene_list <- DESeq2_int_results %>%
   select(gene, log2FoldChange, pvalue, padj)     # select desired columns
 
 # Save to CSV
-write_csv(deg_gene_list, "../output/09_multifactorial/deg_gene_list.csv")
+write_csv(deg_gene_list, "../output/09_deg_multifactorial/deg_gene_list.csv")
 ```
 
 ## Comparing test statistics: interactive effects

@@ -1,5 +1,5 @@
 ---
-title: "Step 8: Multivariate Differential Gene Expression"
+title: "Multivariate Differential Gene Expression"
 subtitle: "Following MarineOmics Functional Genomics Tutorial`"
 author: "Sarah Tanja"
 date: 2024-12-02
@@ -133,13 +133,7 @@ Therefore, we will accept genes that are present in 5 of the samples because we 
 
 Visualize Data for Negative Binomial Distribution
 
-Data must be rounded to nearest integer in order to be fit for negative binomial distribution
-
-```{r}
-str(gcm)
-```
-
-We can see that our gene count matrix is already made of whole integers
+Data must be rounded to nearest integer in order to be fit for negative binomial distribution. Our gene count matrix is already made of whole integers (raw unfiltered, un-normalized reads)
 
 ## Plot distribution of unfiltered read counts across all samples
 
@@ -179,7 +173,7 @@ table(keep)
 
 ```{r}
 # Make a DGEList object for edgeR
-y <- DGEList(counts = gcm_filt_or, remove.zeros = TRUE)
+y <- DGEList(counts = gcm_filt, remove.zeros = TRUE)
 
 # Let's remove samples with less than 0.5 cpm (this is ~10 counts in the count file) in fewer then 3/60 samples
 keep <- rowSums(cpm(y) > .5) >= 3
