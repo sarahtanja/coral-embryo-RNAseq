@@ -143,6 +143,7 @@ In this count matrix, each row represents a gene, each column a sequenced RNA li
 
 ```{r}
 gcm <- read.csv("../output/05_count/gene_count_matrix.csv", row.names="gene_id", check.names = FALSE)
+head(gcm)
 ```
 
 ::: callout-note
@@ -155,11 +156,13 @@ gcm <- read.csv("../output/05_count/gene_count_matrix.csv", row.names="gene_id",
 -   A sample id describes parental crosses (the first string of numbers), the pollution exposure (C, L, M, H), and the embryonic stage (4, 9, 14)
 
 ```{r}
-gcm_filt <- read_csv("../output/06_tidyup/gcm_filt.csv")
+gcm_filt <- gcm %>% 
+  dplyr::select(-`131415L4`, -`789C4`)
+head(gcm_filt)
 ```
 
 ::: callout-note
-`gcm_filt` is the gene count matrix that has been filtered to remove low gene counts, and 2 outlier samples ( `131415L4` and `789C4` ) that had poor HISAT alignment and did not group in the exploratory PCA
+`gcm_filt` is the gene count matrix that has been filtered to remove 2 outlier samples ( `131415L4` and `789C4` ) that had poor HISAT alignment and did not group in the exploratory PCA
 :::
 
 ## Import metadata
@@ -181,8 +184,8 @@ metadata_filt$embryonic_stage <- as.factor(metadata_filt$embryonic_stage) %>% fc
 metadata_filt$pvc_leachate_level <- as.factor(metadata_filt$pvc_leachate_level) %>% fct_relevel("control", "low", "mid", "high")
 
 metadata_filt$hpf <- as.factor(metadata_filt$hpf) %>%  fct_relevel("4", "9", "14")
-```
-```{r}
+
+# Show group balances
 table(metadata_filt$group)
 table(metadata_filt$hpf)
 table(metadata_filt$leachate)
@@ -209,7 +212,7 @@ nrow(y$counts)
 
 ## Filter 
 
-### Plot distribution of unfiltered read counts 
+### Plot distribution of unfiltered reads
 
 ```{r distr_unfiltered_reads}
 
@@ -366,7 +369,7 @@ table(keep)
 7055 genes were retained after manual filtering for low gene counts
 :::
 
-
+### Plot distribution of filtered, normalized reads
 ```{r}
 # Set keep.lib.sizes = F and recalculate library sizes after filtering
 y <- y[keep, keep.lib.sizes = FALSE]
@@ -592,100 +595,145 @@ plotMD(nl_leachate2_hpf9)
 summary(is.de_nl_leachate2_hpf14)
 plotMD(nl_leachate2_hpf14)
 ```
-## Extreme gene?
-
-```{r}
-# Find the gene with maximum absolute logFC
-extreme_gene_index <- which.max(abs(nl_leachate$table$logFC))
-extreme_gene <- rownames(nl_leachate$table)[extreme_gene_index]
-
-# View its details
-nl_leachate$table[extreme_gene_index, ]
-```
-
-```{r}
-counts <- y1$counts  # assuming y1 is your DGEList
-counts[extreme_gene, ]
-```
-```{r}
-head(nl_leachate$table)
-```
-
-
-
-```{r}
-# Export diff expression data for transcripts with significant DE associated with leachate parameter
-nl_leachate_sig <-
-  topTags(
-  nl_leachate,
-  n = Inf, 
-  adjust.method = "BH",
-  p.value = 0.05
-  )
-
-nl_leachate_sig_geneids <- row.names(nl_leachate_sig) #Output a list of geneids associated with sig leachate effect
-
-
-
-```
-
-
-```{r}
-writeLines(extreme_gene, "../output/09_deg_multifactorial/filtered_outlier_gene.txt")
-```
-
 
 ::: callout-caution
-The non-linear term appears to be a perfect flip of the linear term. Is this expected? Or does this indicate the non-linear term doesn't describe the data any better than the linear term? The pattern is expected to be a mirror, but we'd expect the scale of the y axis to change. In our data, it does not.
+The non-linear term appears to be a perfect flip of the linear term. Is this expected? Or does this indicate the non-linear term doesn't describe the data any better than the linear term? The pattern is expected to be a mirror, but we'd expect the scale of the y axis to change. In our data, it does not. Note also the log fold change scales in each plot! Log fold changes of 60, 40, 30... they are red flags! These scales are huge, indicating some imbalance... Even if genes are filtered for expression, edgeR can still return huge logFCs when a gene is high in one group and absent in the rest. Zeros or low counts can produce huge logFCs if the gene is only present in one small group. 
 :::
 
-In the two mean-difference plots above, red and blue colored points represent genes exhibiting significant differential expression attributed to `leachate` or `leachate_2` . As you can see, there is a lot of differential expression in this experiment resulting from both of these parameters. **Part of the reason for this large number of significant differentially expressed genes (DEGs) is that we have not applied a cutoff value for logFC.** For example, a logFC cutoff of 2.0 value would not designate any genes with an absolute logFC value less than 0.05 as a significant DEG. However, deciding on a logFC cutoff is very tricky! Since we used a continuous predictor for `leachate` during model fitting, the values in the y-axis of this plot are slopes representing the rate of change in expression per unit `leachate` (mg/L). Determining what slope represents a significant change in expression requires informed reasoning and a strong body of prior data. For that reason, we are not applying a logFC cutoff in this walkthrough.
+| Step                       | Verdict                                                 |
+| -------------------------- | ------------------------------------------------------- |
+| **Filtering**              | ✅ Already stringent                                      |
+| **prior.count = 2**        | ✅ Reasonable, no need to increase further                                                
+| **Extreme logFCs remain?** | 🔍 Due to real group differences, not low counts                        |
+| **Action**                 | Try limma-Voom, Visualize gene, check group sizes, possibly flag/remove |
 
-Next, we will use glmQLFTest() to test for differential expression attributed to interactions between `hpf` and `leachate` or `hpf` and `leachate_2` before producing mean-difference plots visualizing DEGs derived from these two interactions.
 
 # limma-Voom
 
 
 # DESeq2
 
+
+
 ### Filter
 ```{r}
 # Filter rows where at least 30% of the columns have a count of ~200
-gcm_filt <- gcm_filt %>%
-  filter(rowSums(across(everything(), ~ . > 200)) >= 0.33 * ncol(gcm))
+gcm_filt_des <- gcm_filt %>%
+  filter(rowSums(across(everything(), ~ . > 15)) >= 0.75 * ncol(gcm_filt))
 
-nrow(gcm)
-nrow(gcm_filt)
+nrow(gcm_filt_des)
 ```
-
-### 
+## Make DESeq2 object
 ```{r}
 ### WALD TEST - FULL MODEL ###
 
-dds <- DESeqDataSetFromMatrix(gcm_filt,
+dds <- DESeqDataSetFromMatrix(countData = gcm_filt_des,
                               colData = metadata_filt,
                               design = formula( ~ 1 + hpf + leachate + hpf:leachate))
 
-vst <- vst(dds)
-vst.df <- assay(vst)
-
-
-# Wald test for leachate:hpf
-dds <- DESeq(dds, minReplicatesForReplace = Inf)
-
-design <- design(dds)
-
-DESeq2_result_names <- resultsNames(dds)
-
-# Count DEGs due to interaction
-DESeq2_results <- results(dds, lfcThreshold = 0, alpha = 0.05)
-
-summary(DESeq2_results)
+# Transform count (variance stabilized) 
+vsd <- vst(dds)
 ```
 
+### plot distribution of filtered, normalized reads
+```{r}
+
+# Extract VST-transformed expression matrix
+vsd_mat <- assay(vsd)
+
+# Flatten it into a vector
+vsd_vals <- as.vector(vsd_mat)
+
+# Create a dataframe for ggplot
+df_vsd <- data.frame(vsd_count = vsd_vals)
+
+# Plot
+ggplot(df_vsd, aes(x = vsd_count)) +
+  geom_histogram(fill = "grey") +
+  theme_classic() +
+  labs(
+    title = "Histogram of Variance-Stabilized Counts",
+    x = "VST-transformed read count",
+    y = "Frequency"
+  )
+
+```
+VST compresses the high-end of the count distribution and expands the low-end, making the variance roughly constant across the range.
+
+The resulting values are on an approximate log2 scale but not exact log2(count + 1) — VST is more nuanced, especially for low counts.
+
+A range of 5 to 15 corresponds roughly to raw counts ranging from 2³² to 2¹⁵ ≈ 32 to 32,000, so it’s realistic for RNA-seq gene expression data.
+
+### Run DESeq Test
+```{r}
+dds <- DESeq(dds, test="LRT", reduced=~hpf+leachate)
+resultsNames(dds)  # see what contrast names are available
+```
+```{r}
+# Main effect of leachate (baseline hpf level)
+res_leachate <- results(dds, name = "leachate")
+summary(res_leachate)
+
+sig_leachate <- as.data.frame(subset(res_leachate, padj<0.05))
+sig_leachate$gene <- rownames(sig_leachate)
+rownames(sig_leachate) <- NULL
+write_csv(sig_leachate, file = "../output/09_deg_multifactorial/sig_leachate.csv")
+
+plotMA(res_leachate, alpha = 0.05, ylim = c(-5, 5), main = "MA Plot: Leachate Effect")
+
+```
+
+```{r}
+# Main effect of hpf levels (because hpf is a factor with levels  4, 9, 14)
+res_hpf9 <- results(dds, name = "hpf_9_vs_4")  # if reference is hpf4
+summary(res_hpf9)
+
+sig_hpf9 <- as.data.frame(subset(res_hpf9, padj<0.05))
+sig_hpf9$gene <- rownames(sig_hpf9)
+rownames(sig_hpf9) <- NULL
+write_csv(sig_hpf9, file = "../output/09_deg_multifactorial/sig_hpf9.csv")
+
+plotMA(res_hpf9, ylim = c(-5, 5), main = "MA Plot: hpf 9 vs 4")
+```
+
+```{r}
+# Main effect of hpf levels (becuase hpf is a factor with levels 4, 9, 14)
+res_hpf14 <- results(dds, name = "hpf_14_vs_4")
+summary(res_hpf14)
+
+sig_hpf14 <- as.data.frame(subset(res_hpf14, padj<0.05))
+sig_hpf14$gene <- rownames(sig_hpf14)
+rownames(sig_hpf14) <- NULL
+write_csv(sig_hpf14, file = "../output/09_deg_multifactorial/sig_hpf14.csv")
+
+plotMA(res_hpf14, ylim = c(-5, 5), main = "MA Plot: hpf 14 vs 4")
+```
+
+```{r}
+# Interaction effects
+res_interaction_9 <- results(dds, name = "hpf9.leachate")
+summary(res_interaction_9)
+
+sig_interaction_9 <- as.data.frame(subset(res_interaction_9, padj<0.05))
+sig_interaction_9$gene <- rownames(sig_interaction_9)
+rownames(sig_interaction_9) <- NULL
+write_csv(sig_interaction_9, file = "../output/09_deg_multifactorial/sig_interaction_9.csv")
+
+plotMA(res_interaction_9, ylim = c(-5, 5), main = "MA Plot: hpf9 x leachate interaction")
+```
+
+```{r}
+res_interaction_14 <- results(dds, name = "hpf14.leachate")
+summary(res_interaction_14)
+
+sig_interaction_14 <- as.data.frame(subset(res_interaction_14, padj<0.05))
+sig_interaction_14$gene <- rownames(sig_interaction_14)
+rownames(sig_interaction_14) <- NULL
+write_csv(sig_interaction_14, file = "../output/09_deg_multifactorial/sig_interaction_14.csv")
 
 
-
+plotMA(res_interaction_14, ylim = c(-5, 5), main = "MA Plot: hpf14 x leachate interaction")
+```
 
 
 
