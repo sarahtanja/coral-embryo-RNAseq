@@ -158,6 +158,101 @@ y1 <- estimateDisp(y, robust = TRUE) # Estimate mean dispersal
 plotBCV(y1) 
 ```
 
+# MDS plot visualizing experimental factors
+
+> Before analyzing our data, it is essential that we look at the multivariate relationships between our samples based on transcriptome-wide expression levels. Below is example code and output for a principal coordinates analysis (PCOA) plot that visualizes multifactorial RNA-seq replicates according to two predictor variables across major and minor latent variables or PCOA axes. - [MarineOmics](https://marineomics.github.io/DGE_comparison_v2.html#Filter_and_visualize_read_counts:~:text=negative%20binomial%20GLMs.-,MDS%20plot%20visualizing%20experimental%20factors,-Before%20analyzing%20our)
+
+```{r}
+# Export pcoa loadings
+dds.pcoa = pcoa(vegdist(t(df_log <- cpm(y, log = TRUE, prior.count = 2)),
+                          method = "euclidean") / 1000)
+
+# Create df of MDS vector loading
+scores <- dds.pcoa$vectors
+
+## Plot pcoa loadings of each sample, grouped by hpf and pvc_leachate_level
+
+# Calculate % variation explained by each eigenvector
+percent <- dds.pcoa$values$Eigenvalues
+cumulative_percent_variance <- (percent / sum( percent)) * 100
+
+# Prepare information for pcoa plot, then plot
+color <- c("steelblue1", "tomato1", "goldenrod1")
+par(mfrow = c(1, 1))
+plot(
+  scores[, 1],
+  scores[, 2],
+  cex = .5,
+  cex.axis = 1,
+  cex.lab = 1.25,
+  xlab = paste("PC1, ", round(cumulative_percent_variance[1], 2), "%"),
+  ylab = paste("PC2, ", round(cumulative_percent_variance[2], 2), "%")
+  )
+
+# Add visual groupings to pcoa plot
+ordihull(
+  scores,
+  as.factor(metadata_filt$hpf),
+  border = NULL,
+  lty = 2,
+  lwd = .5,
+  label = F,
+  col = color,
+  draw = "polygon",
+  alpha = 100,
+  cex = .5
+  )
+
+ordispider(scores, as.factor(metadata_filt$group), label = F) # Vectors connecting samples in same hpf x leachate group
+
+ordilabel(scores, cex = 0.5) # Label sample IDs
+```
+
+::: callout-note
+Our data groups largely by hours post fertilization (hpf), the blue group is 4 hpf, red is 9 hpf, and yellow is 14 hpf.
+:::
+
+```{r}
+logCPM.pca <- prcomp(t (df_log))
+logCPM.pca.proportionvariances <-
+((logCPM.pca$sdev ^ 2) / (sum(logCPM.pca$sdev ^ 2))) * 100
+
+## Do treatment groups fully segregate? Wrap samples by hpf x leachate, not just hpf
+# Replot using logCPM.pca
+plot(
+  logCPM.pca$x,
+  type = "n",
+  main = NA,
+  xlab = paste("PC1, ", round(logCPM.pca.proportionvariances[1], 2), "%"),
+  ylab = paste("PC2, ", round(logCPM.pca.proportionvariances[2], 2), "%")
+  )
+
+points(logCPM.pca$x,
+       col = "black",
+       pch = 16,
+       cex = 1)
+       colors2 <-
+       c("steelblue1",
+         "dodgerblue2",
+         "tomato1",
+         "coral",
+         "goldenrod1",
+         "goldenrod3")
+       
+       ordihull(
+       logCPM.pca$x,
+       metadata_filt$group,
+       border = NULL,
+       lty = 2,
+       lwd = .5,
+       col = colors2,
+       draw = "polygon",
+       alpha = 75,
+       cex = .5,
+       label = T
+       )
+```
+
 > The above figure is an output of the plotBCV() function in edgeR, which visualises the biological coefficient of variation (otherwise known as dispersion) parameter fitted to individual genes (black circles), fitted across gene expression level (blue trendline), and averaged across the entire transcriptome (red horizontal line).
 >
 > The BCV/dispersion parameter is a necessary parameter, symbolized as θ in model specification, that must be estimated in negative binomial GLMs. θ represents the 'overdispersion' or the shape of a negative binomial distribution and is thus important for defining the distribution of read count data for a given gene during model fitting. Dispersion or θ can be input during model fitting in edgeR using the three estimates visualized in the above regression.

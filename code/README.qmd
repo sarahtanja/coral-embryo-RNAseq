@@ -160,8 +160,20 @@ Great example of previous HISAT2 RNA-seq alignment in Sam White's notebook [here
 
 -   `Trinity`
 
-## 6. Identify differentially expressed genes (DEGs)
+## 6. Conduct initial data exploration
+
+-   Visualize exploratory PCAs
+
+-   Identify and remove outlier samples
+
+-   Filter gene count matrix to remove low read count genes
+
+-   Reformat metadata to match filtered gene count matrix
+
+## 
 
 -   `DESeq-2`
 
-## 7.
+## 7. Identify differentially expressed genes (DEGs)
+
+-   model comparisons

@@ -660,7 +660,7 @@ deg_gene_list <- DESeq2_int_results %>%
 # Save to CSV
 write_csv(deg_gene_list, "../output/09_multifactorial/linear_deg_gene_list.csv")
 ```
-
+ 
 ## Comparing test statistics
 
 Differential expression packages can make dramatically different predictions for both the fold-change and probability of differential expression. If you find yourself deciding between different packages or wanting to compare how conservative different approaches are, it helps to run regressions of model predictions by different packages. Below we apply the ggpairs() function from GGAlly (Schloerke et al. 2018) to plot a correlation matrix of logFC values and negative log-transformed p-values attributed to interactive effects between time and *p*CO22 predicted by edgeR, DESeq2, and Voom:

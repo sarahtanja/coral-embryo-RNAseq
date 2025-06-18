@@ -1,6 +1,6 @@
 ---
-title: "Step 6: Tidy up Count Matrix"
-subtitle: "Conduct prefiltering & identify outliers"
+title: "Step 6: Data exploration"
+subtitle: "Conduct prefiltering, visualize exploratory PCAs, identify outliers, & format metadata"
 author: "Sarah Tanja"
 date: 2024-11-18
 date-modified: today
@@ -152,7 +152,35 @@ gcm_filt <- gcm %>%
 
 nrow(gcm)
 nrow(gcm_filt)
+
+ncol(gcm)
+ncol(gcm_filt)
 ```
+
+
+# Plot distribution of unfiltered read counts across all samples
+
+```{r distr_unfiltered_reads}
+
+ggplot(data = data.frame(rowMeans(gcm)),
+  aes(x = rowMeans.gcm.)) +
+  geom_histogram(fill = "grey", binwidth = 5) +
+  xlim(0, 500) +
+  ylim(0, 5000) +
+  theme_classic() +
+  labs(title = "Distribution of unfiltered reads") +
+  labs(y = "Density", x = "Raw read counts",
+  title = "Read count distribution: untransformed, unnormalized, unfiltered")
+  
+```
+
+
+
+
+
+
+
+
 
 # Prefiltering
 
@@ -175,7 +203,9 @@ gcm_filt <- gcm_filt %>%
 
 nrow(gcm)
 nrow(gcm_filt)
+```
 
+```{r}
 write_csv(gcm_filt, file = "../output/06_tidyup/gcm_filt.csv")
 ```
 
