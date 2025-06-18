@@ -1,16 +1,54 @@
-# Functional enrichment of genes identified in clusters
+---
+title: "Functional Enrichment of Differentially Expressed Genes"
+subtitle: "working on the pipeline"
+author: "Sarah Tanja"
+date: 2025-06-17
+date-modified: today
+format:
+  gfm: default 
+  html:
+    theme: journal
+    highlight-style: github
+    page-layout: full
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    reference-location: margin
+    citation-location: margin
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,         # Display code chunks
+  eval = TRUE,        # Evaluate code chunks
+  warning = FALSE,     # Hide warnings
+  message = FALSE,     # Hide messages
+  comment = ""         # Prevents appending '##' to beginning of lines in code output
+)
+```
+
+# Goals
+Functional enrichment of genes identified as differentially expressed
 
 ## Prepare functional enrichment dataframes 
 
 Read in files 
 
 ```{r}
-all_genes<-read.csv("Mcap2020/Output/TagSeq/DESeq/all_genes.csv")
+all_genes<-read.csv("../output/09_deg_multifactorial/all_genes.csv")
 ```
 
 Read in file of DEG's 
 ```{r}
-DEG_list<-read.csv("Mcap2020/Output/TagSeq/DESeq/deg_list.csv")
+DEG_list<-read.csv("../output/09_deg_multifactorial/sig_leachate.csv")
 DEG_counts<-read.csv("Mcap2020/Output/TagSeq/DESeq/deg_counts.csv")
 ```
 

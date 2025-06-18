@@ -1,5 +1,5 @@
 ---
-title: "Multivariate Differential Gene Expression"
+title: "Multifactorial Differential Gene Expression"
 subtitle: "Following MarineOmics Functional Genomics Tutorial step-by-step with a non-linear model and time as a factor"
 author: "Sarah Tanja"
 date: 2024-12-02
@@ -61,7 +61,10 @@ To follow the [MarineOmics Fitting Multifactorial Models of Differential Express
 
 ## Exploratory PCAs
 
-All 63 samples across 12 treatments grouped by hours post fertilization ![](images/vsdPCA-01.png) The outliers were removed reducing our dataset to 61 samples
+All 63 samples across 12 treatments grouped by hours post fertilization 
+![](images/vsdPCA-01.png) 
+
+The outliers were removed reducing our dataset to 61 samples
 
 
 ![](images/vsd_4_out_PCA-01.png)
@@ -608,12 +611,7 @@ The non-linear term appears to be a perfect flip of the linear term. Is this exp
 | **Action**                 | Try limma-Voom, Visualize gene, check group sizes, possibly flag/remove |
 
 
-# limma-Voom
-
-
 # DESeq2
-
-
 
 ### Filter
 ```{r}
@@ -679,6 +677,14 @@ sig_leachate$gene <- rownames(sig_leachate)
 rownames(sig_leachate) <- NULL
 write_csv(sig_leachate, file = "../output/09_deg_multifactorial/sig_leachate.csv")
 
+deg_counts<-t(assay(DEG_results_vst))
+deg_counts<-as.data.frame(deg_counts)
+dim(deg_counts)
+deg_counts$sample<-rownames(deg_counts)
+deg_counts<-deg_counts%>%
+  dplyr::select(sample, everything())
+write_csv(deg_counts, "Mcap2020/Output/TagSeq/DESeq/deg_counts.csv")
+
 plotMA(res_leachate, alpha = 0.05, ylim = c(-5, 5), main = "MA Plot: Leachate Effect")
 
 ```
@@ -735,194 +741,3 @@ write_csv(sig_interaction_14, file = "../output/09_deg_multifactorial/sig_intera
 plotMA(res_interaction_14, ylim = c(-5, 5), main = "MA Plot: hpf14 x leachate interaction")
 ```
 
-
-
-## Plotting non-linear effects
-
-```{r}
-## Bin transcripts based on (i) whether they have a significant positive or negative vertex and then (ii) whether they showed significant interactions between beta1 (vertex value) and time.
-
-# Export diff expression data for transcripts with significant DE associated with leachate^2 parameter
-nl_leachate_2_sig <-
-  topTags(
-  nl_leachate_2,
-  n = Inf, 
-  adjust.method = "BH",
-  p.value = 0.05
-  )
-
-nl_leachate_2_sig_geneids <- row.names(nl_leachate_2_sig) #Output a list of geneids associated with sig leachate^2 effect
-
-nl_leachate_sig <-
-  topTags(
-  nl_leachate,
-  n = Inf, 
-  adjust.method = "BH",
-  p.value = 0.05
-  )
-
-nl_leachate_sig_geneids <- row.names(nl_leachate_sig) #Output a list of geneids associated with sig leachate effect
-
-# Create tabulated dataframe of mean expression across each leachate level with metadata for transcript ID and timepoint
-logCPM_df <- as.data.frame(df_log)
-
-# Create tabularized df containing all replicates using 'melt' function in reshape2
-logCPM_df$geneid <- row.names(logCPM_df)
-
-tab_exp_df <- melt(logCPM_df,
-                   id = c("geneid"))
-
-# Add covariate information for hpf and leachate
-tab_exp_df <- tab_exp_df %>%
-  mutate(
-    leachate = str_extract(variable, "[CLMHN]"),      # extract treatment letter
-    hpf = as.numeric(str_extract(variable, "\\d+$"))  # extract trailing number (e.g. 4, 9, 14)
-  )
-
-# Correct leachates to exact values
-tab_exp_df <- tab_exp_df %>%
-  mutate(
-    leachate_code = leachate,  # preserve original letter
-    leachate = recode(leachate_code,
-      C = 0,
-      L = 0.01,
-      M = 0.1,
-      H = 1
-    )
-  )
-
-# Create binary variable in df_all_log for significant non-linear expression
-tab_exp_df$leachate_2_sig <-
-  ifelse(tab_exp_df$geneid %in% nl_leachate_2_sig_geneids, "Yes", "No")
-tab_exp_df$leachate_sig <-
-  ifelse(tab_exp_df$geneid %in% nl_leachate_sig_geneids, "Yes", "No")
-
-# Create a binary variable related to up or down-regulation
-up_genes <- filter(nl_leachate_sig$table, logFC > 0)
-
-tab_exp_df$logFC_dir <-
-  ifelse(tab_exp_df$geneid %in% row.names(up_genes), "Up", "Down")
-
-# Add geneid to nl_leachate_int$coefficients
-#nl_leachate_int$coefficients$geneid <- row.names(nl_leachate_int$coefficients)
-
-# Estimate average logCPM per gene per timepoint
-tab_exp_avg <- summarySE(
-  measurevar = "value",
-  groupvars = c("leachate",     "hpf",       "geneid", 
-                "leachate_sig", "leachate_2_sig", "logFC_dir"),
-  data = tab_exp_df
-  )
-
-# First exploratory plot of non-linear expression grouping by exposure time and direction of differential expression
-ggplot(data = filter(tab_exp_avg, leachate_2_sig == "Yes"), 
-       aes(x = leachate, y = value)) +
-  geom_path(
-    alpha = 0.2,
-    size = 0.25,
-    stat = "identity",
-    aes(group = as.factor(geneid))) +
-  facet_grid(logFC_dir ~ hpf) +
-  theme_classic() +
-  theme(strip.background = element_blank()) +
-  labs(y = "Avg logCPM", title = "Non-linear changes in GE output by edgeR")
-```
-
-![Example from MarineOmics for comparison](marine-omics-non-linear-ge.jpg)
-
-> Our plots of non-linear changes in gene expression appear to include many trends that appear... well, linear. This is a pervasive issue in modeling non-linear regressions, and one potential pitfall of using outputs from packages such as edgeR or DESeq2 alone in testing for non-linear effects. The FDR-adjusted p -values we have used determine significance of non-linear effects essentially tell us the probability that a parameter value equal to or greater to what we have fitted could be generated given a random distribution of read counts. The p -value is not a representation of the strength of a non-linear effect relative to a linear effect. Numerous genes that nominally show significant non-linear effects of leachate may be only weakly affected, and a linear effect may in fact be more probable than a non-linear one despite what our p-values tell us. Instead of asking "for what genes may there be significant, non-linear effects of leachate ?", we should ask "for what genes should we test for significant, non-linear effects?".
-
-# Is non-linear model term appropriate?
-
-> One of the best ways to determine whether a non-linear model is appropriate for a transcript is to determine whether it is more probable that its expression is linear or non-linear relative to a continuous predictor. We can calculate this relative probability using a likelihood ratio test (LRT). In the code chunk below, we will fit linear and 2nd order non-linear models to the expression of each gene before applying LRTs to each transcript. We will then further filter our edgeR dataset based on (i) significant differential expression attributed to non-linear effects and (ii) a significant LRT ratio supporting non-linear effects. Then, we will replot the expression levels of this re-filtered set. The code below fits gaussian linear models to log2-transformed CPM values, but can be adjusted to fit negative binomial GLMs to untransformed CPM similar to edgeR and DESeq2 by setting using the MASS package to set 'family = negative_binomial(theta = θ)' where θ = the dispersion estimate or biological coefficient of variation for a given transcript.
-
-```{r}
-## Using dlply, fit linear and non-linear models to each gene
-# Create leachate^2 variable in df_all_log
-tab_exp_df$leachate_2 <- tab_exp_df$leachate^2
-
-# Fit linear models - should take about 4 minutes
-lms <- dlply(tab_exp_df, c("geneid"), function(df) 
-lm(value ~ hpf + leachate + hpf:leachate, data = df))
-
-# Fit non-linear models - should take about 2 minutes
-nlms <- dlply(tab_exp_df, c("geneid"), function(df) 
-lm(value ~ hpf + leachate + leachate_2 + hpf:leachate + hpf:leachate_2 , data = df))
-
-# Output nlm coefficients into dataframe
-nlms_coeff <- ldply(nlms, coef)
-head(nlms_coeff)
-```
-
-## LRT
-
-```{r}
-## Apply LRTs to lm's and nlm's for each transcript - should take about 2 minutes
-lrts <- list() # Create list to add LRT results to
-
-for (i in 1:length(lms)) {
-  lrts[[i]] <- lrtest(lms[[i]], nlms[[i]]) # Apply LRTs with for loop
-}
-
-## Filter lrt results for transcripts with significantly higher likelihoods of nl model
-lrt_dfs <- list()
-
-# Turn list of LRT outputs into list of dataframes containing output info
-for (i in 1:length(lrts)) {
-  lrt_dfs[[i]] <- data.frame(lrts[i])
-}
-
-# Create singular dataframe with geneids and model outputs for chi-squared and LRT p-value
-lrt_coeff_df  <- na.omit(bind_rows(lrt_dfs, .id = "column_label")) # na.omit removes first row of each df, which lacks these data
-
-# Add geneid based on element number from original list of LRT outputs
-lrt_coeff_df <- merge(lrt_coeff_df,
-                      data.frame(geneid = names(nlms),
-                      column_label = as.character(seq(length(
-                      nlms
-                      )))),
-                      by = "column_label")
-                      
-# Apply FDR adjustment to LRT p-values before filtering for sig non-linear effects
-lrt_coeff_df$FDR <- p.adjust(lrt_coeff_df$Pr..Chisq., method = "fdr")
-
-# Filter LRT results for sig FDR coeff... produces only 3 genes for pval 0.1!
-lrt_filt <- filter(lrt_coeff_df, FDR < 0.1)
-
-## Plot sig nl genes according to LRT, grouped by timepoint and direction of beta 1 coefficient
-# Add beta coefficients to logCPM df
-leachate_pos <- filter(nlms_coeff, leachate > 0)
-leachate_2_pos <- filter(nlms_coeff, leachate_2 > 0)
-
-# Bin genes based on positive or negative leachate and leachate^2 betas
-tab_exp_avg$leachate_binom <- ifelse(tab_exp_avg$geneid %in% leachate_pos$geneid, "Positive", "Negative")
-tab_exp_avg$leachate_2_binom <- ifelse(tab_exp_avg$geneid %in% leachate_2_pos$geneid, "Concave", "Convex")
-
-# Filter for how many gene id's with significant likelihood of nl effect in LRT
-LRT_filt_df <- filter(tab_exp_avg, geneid %in% lrt_filt$geneid)
-
-# Plot
-ggplot(data = LRT_filt_df,
-       aes(x = leachate, y = value)) +
-  geom_path(
-    alpha = .25,
-    size = 0.25,
-    stat = "identity",
-    aes(group = as.factor(geneid))
-    ) +
-  facet_grid(leachate_2_binom ~ hpf) +
-  geom_smooth(method = "loess", se = TRUE, span = 1) +
-  theme_classic() +
-  theme(strip.background = element_blank()) +
-  labs(y = "Avg logCPM", title = "Non-linear changes in GE output by LRTs")
-```
-
-::: callout-important
-o genes had likelihood of non-linear effect (p \< 0.05)
-
-And only 3 genes had likelihood of non-linear effect (p \< 0.1)
-
-This was the same when hpf was an integer, not a factor!
-:::
-
-> ... the most robust estimate we have for non-linear effects of environmental conditions on gene expression over time comes from filtering for significant DEGs in edgeR *and* significant LRTs.
