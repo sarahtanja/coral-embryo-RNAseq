@@ -77,6 +77,15 @@ metadata$hpf <- as.factor(metadata$hours_post_fertilization)
 metadata$hpf <- fct_relevel(metadata$hpf, "4", "9", "14")
 ```
 
+Add metadata
+```{r}
+metadata <- metadata %>%
+  mutate(extraction = if_else(sample_name %in% c("6C14", "7C14", "67C9"), 1, 0)))
+```
+
+
+
+
 ## Filter metadata
 
 ```{r}

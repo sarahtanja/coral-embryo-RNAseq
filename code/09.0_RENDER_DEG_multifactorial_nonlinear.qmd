@@ -61,17 +61,16 @@ To follow the [MarineOmics Fitting Multifactorial Models of Differential Express
 
 ## Exploratory PCAs
 
-All 63 samples across 12 treatments grouped by hours post fertilization 
-![](images/vsdPCA-01.png) 
+All 63 samples across 12 treatments grouped by hours post fertilization ![](images/vsdPCA-01.png)
 
 The outliers were removed reducing our dataset to 61 samples
-
 
 ![](images/vsd_4_out_PCA-01.png)
 
 I ran a pairwise DESeq2 analysis between our control and highest leachate exposure for each time point (4, 9, & 14). There were 0 DEGs across all timepoints between control and high treatments. ![](images/PCA_4_control_vs_high.png)
 
 # Setup
+
 ## Install packages
 
 ```{r}
@@ -194,26 +193,26 @@ table(metadata_filt$hpf)
 table(metadata_filt$leachate)
 ```
 
-
-
 ::: callout-note
 `metadata_filt` is prefiltered to remove low gene counts and has 2 outlier samples removed, containing info for 61 samples
 :::
 
 # edgeR
+
 ## Make DGEList object
+
 ```{r}
 # Make a DGEList object for edgeR
 y <- DGEList(counts = gcm_filt, remove.zeros = TRUE)
 nrow(gcm)
 nrow(y$counts)
 ```
-- the argument `remove.zeros = TRUE` tells `edgeR` to automatically remove any genes (rows) that have zero counts in *all* samples.
-- There are 54,384 genes in the *Montipora capitata* genome (shown by `nrow(gcm)`)
-- Here we have 22,631 genes with some level of expression in at least 1 sample. 
 
+-   the argument `remove.zeros = TRUE` tells `edgeR` to automatically remove any genes (rows) that have zero counts in *all* samples.
+-   There are 54,384 genes in the *Montipora capitata* genome (shown by `nrow(gcm)`)
+-   Here we have 22,631 genes with some level of expression in at least 1 sample.
 
-## Filter 
+## Filter
 
 ### Plot distribution of unfiltered reads
 
@@ -238,7 +237,6 @@ As you can see in the above plot, the raw distribution of all read counts takes 
 > Most DE packages assume that read counts possess a negative binomial distribution. The negative binomial distribution is an extension of distributions for binary variables such as the Poisson distribution, allowing for estimations of "equidispersion" and "overdispersion", equal and greater-than-expected variation in expression attributed to biological variability. - [MarineOmics](https://marineomics.github.io/DGE_comparison_v2.html#:~:text=library(lmerTest)-,Filter%20and%20visualize%20read%20counts,-Before%20model%20fitting)
 
 > While looking at the distribution of your raw reads is useful, these are not in fact the data you will be inputting to tests of differential expression. Let's plot the distribution of filtered reads normalized by library size, expressed as log2 counts per million reads (logCPM). These are the reads we will use in our test, and after we plot their distribution, we will conduct one more, slightly more robust, test of our data's fit to the negative binomial distribution using residuals from fitted models. - [MarineOmics](https://marineomics.github.io/DGE_comparison_v2.html#:~:text=While%20looking%20at,from%20fitted%20models.)
-
 
 ### Filter by CPM
 
@@ -291,7 +289,6 @@ ggplot(params_df, aes(x = min_samples, y = genes_retained, color = factor(cpm_cu
 
 ```
 
-
 ### Minimize BCV
 
 ```{r}
@@ -331,19 +328,16 @@ ggplot(bcv_results, aes(x = min_samples)) +
   ) +
   theme_minimal(base_size = 14)
 ```
-Reasonable Average BCV Values....
-| Dataset Type                                                  | Expected Average BCV |
-| ------------------------------------------------------------- | -------------------- |
-| Well-controlled inbred lab samples (e.g., cell lines, mice)   | **0.1 – 0.2**        |
-| Typical human/marine/fish/field samples                       | **0.3 – 0.5**        |
-| Highly heterogeneous samples (e.g., tumors, wild populations) | **0.5 – 1.0+**       |
 
+Reasonable Average BCV Values.... \| Dataset Type \| Expected Average BCV \| \| ------------------------------------------------------------- \| -------------------- \| \| Well-controlled inbred lab samples (e.g., cell lines, mice) \| **0.1 -- 0.2** \| \| Typical human/marine/fish/field samples \| **0.3 -- 0.5** \| \| Highly heterogeneous samples (e.g., tumors, wild populations) \| **0.5 -- 1.0+** \|
 
-What is the average library size (in millions) ? 
+What is the average library size (in millions) ?
+
 ```{r}
 lib_sizes <- colSums(y$counts) / 1e6  # y is your DGEList
 summary(lib_sizes)
 ```
+
 ```{r}
 hist(lib_sizes,
      breaks = 61,
@@ -351,17 +345,17 @@ hist(lib_sizes,
      xlab = "Library size (millions of reads)",
      col = "steelblue")
 ```
+
 | Library Size (M) | Raw Count for 10 CPM                                         |
-| ---------------- | ------------------------------------------------------------ |
+|-----------------|-------------------------------------------------------|
 | 5.46             | $\frac{10 \times 5.46 \times 10^6}{10^6} =$ **54.6 reads**   |
 | 17.44            | $\frac{10 \times 17.44 \times 10^6}{10^6} =$ **174.4 reads** |
 | 29.21            | $\frac{10 \times 29.21 \times 10^6}{10^6} =$ **292.1 reads** |
 
-A CPM of 10 corresponds to ~55–290 raw reads, depending on the sample.
+A CPM of 10 corresponds to \~55--290 raw reads, depending on the sample.
 
-Let's remove samples with less than 10 cpm (this is ~54-292 raw counts) in fewer than 20/61 samples
-There are ~20 samples in each embryonic stage, since our exploratory PCA grouped strongly by embryonic stage, we choose to keep any genes strongly expressed in at least 20/60 samples.
-Our data is showing a lot of zeros... 
+Let's remove samples with less than 10 cpm (this is \~54-292 raw counts) in fewer than 20/61 samples There are \~20 samples in each embryonic stage, since our exploratory PCA grouped strongly by embryonic stage, we choose to keep any genes strongly expressed in at least 20/60 samples. Our data is showing a lot of zeros...
+
 ```{r}
 keep <- rowSums(cpm(y) > 12) >= 46
 
@@ -373,6 +367,7 @@ table(keep)
 :::
 
 ### Plot distribution of filtered, normalized reads
+
 ```{r}
 # Set keep.lib.sizes = F and recalculate library sizes after filtering
 y <- y[keep, keep.lib.sizes = FALSE]
@@ -391,6 +386,7 @@ ggplot(data = data.frame(rowMeans(df_log)),
        title = "Distribution of normalized, filtered read counts")
 
 ```
+
 ::: callout-note
 | Region of Plot             | Interpretation                                        |
 |-------------------------|-----------------------------------------------|
@@ -402,6 +398,7 @@ ggplot(data = data.frame(rowMeans(df_log)),
 [![Example of filtered read counts from MarineOmics tutorial](marine-omics-filt-counts-dist.jpg)](https://marineomics.github.io/FUN_01_DGE_comparison_v2_files/figure-html/unnamed-chunk-5-1.png)
 
 ## Non-linear effects: example in edgeR
+
 > One of the simplest non-linear relationships that can be fitted to the expression of a transcript across an continuous variable is a **second-order polynomial, otherwise known as a quadratic function, which can be expressed as yi=μ+β1x2+β2xyi=μ+β1x2+β2x where yy is the abundance of a given transcript (ii), μμ is the intercept, and yy is the continuous variable.** For the parabola generated by fitting a second-order polynomial, β1β1 \> 0 opens the parabola upwards while β1β1 \< 0 opens the parabola downwards. The vertex of the parabola is controlled by β2β2 such that when β1β1 is negative, greater β2β2 values result in the vertex falling at higher values of xx.
 >
 > Quadratic polynomials applied to phenotypic performance curves commonly possess negative β1β1 values with positive β2β2 values: a downard-opening parabola with a positive vertex. However, **quadtratic curves fitted to gene expression data can take on a variety of postiive or negative forms similar to exponential curves, saturating curves, and parabolas.** For instance, the expression of a gene may peak an intermediate level of an environmental level before crashing or it may exponentially decline across that variable. Such trends may better model changes in the transcription of a gene compared to a linear model. To get started, we will fit non-linear second order polynomials before testing for whether model predictions for a given gene are significantly improved by a non-linear linear model. - [MarineOmics](https://marineomics.github.io/DGE_comparison_v2.html#Filter_and_visualize_read_counts:~:text=for%20differential%20expression.-,Non%2Dlinear%20effects,-Gene%20expression%20traits)
@@ -410,7 +407,7 @@ ggplot(data = data.frame(rowMeans(df_log)),
 
 ### Estimate dispersion
 
-> Let's fit a second-order polynomial for the effect of leachate using edgeR. Using differential expression tests, we will then determine whether leachate affected a gene's rate of change in expression and expression maximum by applying differential expression tests to β1 and β2 parameters. By testing for differential expression attributed to intereactions between time and β1 or β2 , we will then test for whether these parameters were significantly different across exposure times of 4, 9 and 14 hours acclimation to leachate altered the rate of change in expression across leachate (β1 ) or the maximum of expression (β2 ).- >[MarineOmics](https://marineomics.github.io/DGE_comparison_v2.html#Non-linear_effects:~:text=linear%20linear%20model.-,Non%2Dlinear%20effects%3A%20example%20in%20edgeR,-Let%E2%80%99s%20fit%20a)
+> Let's fit a second-order polynomial for the effect of leachate using edgeR. Using differential expression tests, we will then determine whether leachate affected a gene's rate of change in expression and expression maximum by applying differential expression tests to β1 and β2 parameters. By testing for differential expression attributed to intereactions between time and β1 or β2 , we will then test for whether these parameters were significantly different across exposure times of 4, 9 and 14 hours acclimation to leachate altered the rate of change in expression across leachate (β1 ) or the maximum of expression (β2 ).- \>[MarineOmics](https://marineomics.github.io/DGE_comparison_v2.html#Non-linear_effects:~:text=linear%20linear%20model.-,Non%2Dlinear%20effects%3A%20example%20in%20edgeR,-Let%E2%80%99s%20fit%20a)
 
 ```{r estimate-dispersion}
 # Estimate dispersion coefficients
@@ -428,8 +425,7 @@ plotBCV(y1)
 \- The blue line slopes down --- dispersion tends to decrease with increasing expression, then flattens out.
 :::
 
-![MarineOmics biological coefficient of variation plot for comparison](marine-omics-plotBCV.jpg)
-### Fit multifactorial design matrix
+![MarineOmics biological coefficient of variation plot for comparison](marine-omics-plotBCV.jpg) \### Fit multifactorial design matrix
 
 ```{r}
 # Make leachate^2
@@ -487,8 +483,9 @@ Our residuals appear to be normally distributed, indicating that our data fit th
 ```{r}
 colnames(fit_nl$design)
 ```
+
 | Coefficient      | What it Represents                                                                             |
-|----------------|--------------------------------------------------------|
+|------------------|------------------------------------------------------|
 | **(Intercept)**  | The baseline expression: at `hpf = 4` and `leachate = 0`                                       |
 | **hpf9**         | The difference in expression at `9 hpf` vs `4 hpf` (when leachate = 0)                         |
 | **hpf14**        | The difference in expression at `14 hpf` vs `4 hpf` (when leachate = 0)                        |
@@ -589,6 +586,7 @@ plotMD(nl_leachate_hpf9)
 summary(is.de_nl_leachate_hpf14)
 plotMD(nl_leachate_hpf14)
 ```
+
 ```{r}
 summary(is.de_nl_leachate2_hpf9)
 plotMD(nl_leachate2_hpf9)
@@ -600,30 +598,31 @@ plotMD(nl_leachate2_hpf14)
 ```
 
 ::: callout-caution
-The non-linear term appears to be a perfect flip of the linear term. Is this expected? Or does this indicate the non-linear term doesn't describe the data any better than the linear term? The pattern is expected to be a mirror, but we'd expect the scale of the y axis to change. In our data, it does not. Note also the log fold change scales in each plot! Log fold changes of 60, 40, 30... they are red flags! These scales are huge, indicating some imbalance... Even if genes are filtered for expression, edgeR can still return huge logFCs when a gene is high in one group and absent in the rest. Zeros or low counts can produce huge logFCs if the gene is only present in one small group. 
+The non-linear term appears to be a perfect flip of the linear term. Is this expected? Or does this indicate the non-linear term doesn't describe the data any better than the linear term? The pattern is expected to be a mirror, but we'd expect the scale of the y axis to change. In our data, it does not. Note also the log fold change scales in each plot! Log fold changes of 60, 40, 30... they are red flags! These scales are huge, indicating some imbalance... Even if genes are filtered for expression, edgeR can still return huge logFCs when a gene is high in one group and absent in the rest. Zeros or low counts can produce huge logFCs if the gene is only present in one small group.
 :::
 
-| Step                       | Verdict                                                 |
-| -------------------------- | ------------------------------------------------------- |
-| **Filtering**              | ✅ Already stringent                                      |
-| **prior.count = 2**        | ✅ Reasonable, no need to increase further                                                
+| Step                       | Verdict                                                                 |
+|------------------------|------------------------------------------------|
+| **Filtering**              | ✅ Already stringent                                                    |
+| **prior.count = 2**        | ✅ Reasonable, no need to increase further                              |
 | **Extreme logFCs remain?** | 🔍 Due to real group differences, not low counts                        |
 | **Action**                 | Try limma-Voom, Visualize gene, check group sizes, possibly flag/remove |
-
 
 # DESeq2
 
 ### Filter
+
 ```{r}
-# Filter rows where at least 30% of the columns have a count of ~200
+# Filter rows where at least 75% of the columns have a raw count of ~15
 gcm_filt_des <- gcm_filt %>%
-  filter(rowSums(across(everything(), ~ . > 15)) >= 0.75 * ncol(gcm_filt))
+  filter(rowSums(across(everything(), ~ . > 15)) >= 0.8 * ncol(gcm_filt))
 
 nrow(gcm_filt_des)
 ```
+
 ## Make DESeq2 object
+
 ```{r}
-### WALD TEST - FULL MODEL ###
 
 dds <- DESeqDataSetFromMatrix(countData = gcm_filt_des,
                               colData = metadata_filt,
@@ -634,6 +633,7 @@ vsd <- vst(dds)
 ```
 
 ### plot distribution of filtered, normalized reads
+
 ```{r}
 
 # Extract VST-transformed expression matrix
@@ -656,27 +656,40 @@ ggplot(df_vsd, aes(x = vsd_count)) +
   )
 
 ```
+
 VST compresses the high-end of the count distribution and expands the low-end, making the variance roughly constant across the range.
 
-The resulting values are on an approximate log2 scale but not exact log2(count + 1) — VST is more nuanced, especially for low counts.
+The resulting values are on an approximate log2 scale but not exact log2(count + 1) --- VST is more nuanced, especially for low counts.
 
-A range of 5 to 15 corresponds roughly to raw counts ranging from 2³² to 2¹⁵ ≈ 32 to 32,000, so it’s realistic for RNA-seq gene expression data.
+A range of 5 to 15 corresponds roughly to raw counts ranging from 2³² to 2¹⁵ ≈ 32 to 32,000, so it's realistic for RNA-seq gene expression data.
 
 ### Run DESeq Test
+
 ```{r}
 dds <- DESeq(dds, test="LRT", reduced=~hpf+leachate)
 resultsNames(dds)  # see what contrast names are available
 ```
+
 ```{r}
-# Main effect of leachate (baseline hpf level)
-res_leachate <- results(dds, name = "leachate")
-summary(res_leachate)
+res <- results(dds)
 
-sig_leachate <- as.data.frame(subset(res_leachate, padj<0.05))
-sig_leachate$gene <- rownames(sig_leachate)
-rownames(sig_leachate) <- NULL
-write_csv(sig_leachate, file = "../output/09_deg_multifactorial/sig_leachate.csv")
+DEG_results_vst <- dds[unique(res$gene)]
+dim(DEG_results_vst)
 
+DEG_results_vst <- varianceStabilizingTransformation(DEG_results_vst)
+```
+
+```{r}
+plotDispEsts(dds)
+```
+
+```{r}
+dds <- estimateDispersionsGeneEst(dds)
+dispersions(dds) <- mcols(dds)$dispGeneEst
+dds <- nbinomLRT(dds, reduced=~hpf+leachate) 
+```
+
+```{r}
 deg_counts<-t(assay(DEG_results_vst))
 deg_counts<-as.data.frame(deg_counts)
 dim(deg_counts)
@@ -684,9 +697,42 @@ deg_counts$sample<-rownames(deg_counts)
 deg_counts<-deg_counts%>%
   dplyr::select(sample, everything())
 write_csv(deg_counts, "Mcap2020/Output/TagSeq/DESeq/deg_counts.csv")
+```
 
+```{r}
+# Main effect of leachate (baseline hpf level) result & summary
+res_leachate <- results(dds, name = "leachate")
+summary(res_leachate)
+
+# Extract significant genes (alpha < 0.05)
+sig_leachate <- as.data.frame(subset(res_leachate, padj<0.05))
+sig_leachate$gene <- rownames(sig_leachate)
+rownames(sig_leachate) <- NULL
+# Save the gene list (and test statistics!)
+write_csv(sig_leachate, file = "../output/09_deg_multifactorial/sig_leachate_list.csv")
+
+
+## Make and save a corresponding gene count matrix of only significant genes
+
+# Extract normalized gene count matrix from dds object
+dds_counts <- counts(dds, normalized = TRUE)
+# Subset to significant genes only
+sig_leachate_counts <- dds_counts[rownames(dds_counts) %in% sig_leachate$gene, ]
+
+sum(sig_leachate$gene %in% rownames(dds_counts))
+dput(sig_leachate$gene)
+```
+
+```{r}
+dput(head(rownames(dds_counts), 10))
+```
+
+```{r}
+sig_leachate$gene %in% rownames(dds_counts)
+```
+
+```{r}
 plotMA(res_leachate, alpha = 0.05, ylim = c(-5, 5), main = "MA Plot: Leachate Effect")
-
 ```
 
 ```{r}
@@ -740,4 +786,3 @@ write_csv(sig_interaction_14, file = "../output/09_deg_multifactorial/sig_intera
 
 plotMA(res_interaction_14, ylim = c(-5, 5), main = "MA Plot: hpf14 x leachate interaction")
 ```
-

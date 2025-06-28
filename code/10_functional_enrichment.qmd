@@ -48,8 +48,8 @@ all_genes<-read.csv("../output/09_deg_multifactorial/all_genes.csv")
 
 Read in file of DEG's 
 ```{r}
-DEG_list<-read.csv("../output/09_deg_multifactorial/sig_leachate.csv")
-DEG_counts<-read.csv("Mcap2020/Output/TagSeq/DESeq/deg_counts.csv")
+DEG_list<-read.csv("../output/09_deg_multifactorial/sig_leachate_list.csv")
+DEG_counts<-read.csv("../output/09_deg_multifactorial/sig_leachate_counts.csv")
 ```
 
 Get gene length information.  

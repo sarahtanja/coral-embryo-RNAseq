@@ -170,10 +170,8 @@ Great example of previous HISAT2 RNA-seq alignment in Sam White's notebook [here
 
 -   Reformat metadata to match filtered gene count matrix
 
-## 
-
--   `DESeq-2`
-
 ## 7. Identify differentially expressed genes (DEGs)
 
--   model comparisons
+-   [DESeq-2](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html)
+-   MarineOmics [Fitting Multifactorial Models of Differential Expression](https://marineomics.github.io/DGE_comparison_v2.html#Non-linear_effects:_example_in_edgeR)
+-   AIC model comparisons

@@ -1,0 +1,330 @@
+---
+title: "Multifactorial Differential Gene Expression"
+subtitle: "using DESeq2 contrasts"
+author: "Sarah Tanja"
+date: 2024-12-02
+date-modified: today
+format:
+  gfm: default 
+  html:
+    theme: journal
+    highlight-style: github
+    page-layout: full
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    reference-location: margin
+    citation-location: margin
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,         # Display code chunks
+  eval = TRUE,        # Evaluate code chunks
+  warning = FALSE,     # Hide warnings
+  message = FALSE,     # Hide messages
+  comment = ""         # Prevents appending '##' to beginning of lines in code output
+)
+```
+
+# Goals
+
+
+
+# Setup
+
+
+## Install packages
+
+```{r}
+if ("tidyverse" %in% rownames(installed.packages()) == 'FALSE') 
+  install.packages('tidyverse')
+if ("DESeq2" %in% rownames(installed.packages()) == 'FALSE')
+  install.packages('DESeq2')
+if ("apeglm" %in% rownames(installed.packages()) == 'FALSE')
+  install.packages('apeglm')
+```
+
+```{r}
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("apeglm")
+```
+
+## Load packages
+
+```{r}
+# Load packages
+library(DESeq2)
+library(tidyverse)
+library(apeglm)
+```
+
+## Import gene counts
+
+In this count matrix, each row represents a gene, each column a sequenced RNA library, and the values give the estimated counts of fragments that were assigned to the respective gene in each library by `HISAT2`
+
+-   `check.names = FALSE` removed the 'X' from in front of sample id's in the column headers
+
+```{r}
+gcm <- read.csv("../output/05_count/gene_count_matrix.csv", row.names="gene_id", check.names = FALSE)
+head(gcm)
+```
+
+::: callout-note
+`gcm` is the unfiltered gene count matrix of all 63 samples
+:::
+
+-   The raw unfiltered, untransformed, count matrix shows counts of whole numbers (integers)
+-   Each column is a sample
+-   Each row is a gene
+-   A sample id describes parental crosses (the first string of numbers), the pollution exposure (C, L, M, H), and the embryonic stage (4, 9, 14)
+
+```{r}
+gcm_filt <- gcm %>% 
+  dplyr::select(-`131415L4`, -`789C4`)
+head(gcm_filt)
+```
+
+::: callout-note
+`gcm_filt` is the gene count matrix that has been filtered to remove 2 outlier samples ( `131415L4` and `789C4` ) that had poor HISAT alignment and did not group in the exploratory PCA
+:::
+
+## Import metadata
+
+```{r}
+metadata_filt <- read_csv("../metadata/metadata_filt.csv")
+str(metadata_filt)
+```
+```{r}
+# Reorder factors
+metadata_filt$embryonic_stage <- as.factor(metadata_filt$embryonic_stage)
+metadata_filt$embryonic_stage <- fct_relevel(metadata_filt$embryonic_stage, "cleavage", "prawnchip", "earlygastrula")
+ 
+metadata_filt$pvc_leachate_level <- as.factor(metadata_filt$pvc_leachate_level)
+metadata_filt$pvc_leachate_level <- fct_relevel(metadata_filt$pvc_leachate_level, "control", "low", "mid", "high")
+
+metadata_filt$hpf <- as.factor(metadata_filt$hours_post_fertilization)
+metadata_filt$hpf <- fct_relevel(metadata_filt$hpf, "4", "9", "14")
+str(metadata_filt)
+```
+
+::: callout-note
+`metadata_filt` contains metadata for 61 samples where explanatory variables `hpf` is a factor with 3 levels (4, 9, 14) and `leachate` is a continuous numerical variable representing leachate concentrations with values 0 mg/L, 0.01 mg/L, 0.1 mg/L, and 1 mg/L 
+:::
+
+
+# DESeq2
+
+### Filter
+```{r}
+# Filter rows where at least 33% of the columns have a raw count of ~15
+gcm_filt_dseq <- gcm_filt %>%
+  filter(rowSums(across(everything(), ~ . > 50)) >= 0.60 * ncol(gcm_filt))
+
+nrow(gcm_filt_dseq)
+```
+## Make DESeq2 object
+```{r}
+
+dds <- DESeqDataSetFromMatrix(countData = gcm_filt_dseq,
+                              colData = metadata_filt,
+                              design = formula( ~ 1 + hpf + leachate + hpf:leachate))
+
+# Transform count (variance stabilized) 
+vsd <- vst(dds)
+```
+
+```{r}
+dim(vsd)
+all_genes<-t(assay(vsd))
+all_genes<-as.data.frame(all_genes)
+dim(all_genes)
+all_genes$sample<-rownames(all_genes)
+all_genes<-all_genes%>%
+  dplyr::select(sample, everything())
+
+write_csv(file="../output/09_deg_multifactorial/all_genes.csv", all_genes)
+```
+
+
+### plot distribution of filtered, normalized reads
+```{r}
+
+# Extract VST-transformed expression matrix
+vsd_mat <- assay(vsd)
+
+# Flatten it into a vector
+vsd_vals <- as.vector(vsd_mat)
+
+# Create a dataframe for ggplot
+df_vsd <- data.frame(vsd_count = vsd_vals)
+
+# Plot
+ggplot(df_vsd, aes(x = vsd_count)) +
+  geom_histogram(fill = "grey") +
+  theme_classic() +
+  labs(
+    title = "Histogram of Variance-Stabilized Counts",
+    x = "VST-transformed read count",
+    y = "Frequency"
+  )
+
+```
+VST compresses the high-end of the count distribution and expands the low-end, making the variance roughly constant across the range.
+
+The resulting values are on an approximate log2 scale but not exact log2(count + 1) — VST is more nuanced, especially for low counts.
+
+A range of 5 to 15 corresponds roughly to raw counts ranging from 2³² to 2¹⁵ ≈ 32 to 32,000, so it’s realistic for RNA-seq gene expression data.
+
+### Run DESeq Test
+```{r}
+dds <- DESeq(dds)
+resultsNames(dds)  # see what contrast names are available
+```
+```{r}
+plotDispEsts(dds)
+```
+
+```{r}
+# Main effect of leachate (baseline hpf level) result & summary
+res_leachate <- results(dds, name = "leachate", alpha=0.05)
+summary(res_leachate)
+```
+```{r}
+plotMA(res_leachate)
+```
+In DESeq2, the function plotMA shows the log2 fold changes attributable to a given variable over the mean of normalized counts for all the samples in the DESeqDataSet. Points will be colored blue if the adjusted p value is less than 0.1. Points which fall out of the window are plotted as open triangles pointing either up or down. It is more useful to visualize the MA-plot for the shrunken log2 fold changes, which remove the noise associated with log2 fold changes from low count genes without requiring arbitrary filtering thresholds.
+```{r}
+citation("apeglm")
+```
+
+
+```{r}
+res_leachate_shrunk <- lfcShrink(dds, coef="leachate", type="apeglm")
+res_leachate_shrunk
+```
+
+
+```{r}
+# Extract significant genes (alpha < 0.05)
+sig_leachate <- as.data.frame(subset(res_leachate, padj<0.05))
+sig_leachate$gene <- rownames(sig_leachate)
+rownames(sig_leachate) <- NULL
+# Save the gene list (and test statistics!)
+write_csv(sig_leachate, file = "../output/09_deg_multifactorial/sig_leachate_list.csv")
+
+
+## Make and save a corresponding gene count matrix of only significant genes
+
+# Extract normalized gene count matrix from dds object
+dds_counts <- counts(dds, normalized = TRUE)
+# Subset to significant genes only
+sig_leachate_counts <- as.data.frame(dds_counts[rownames(dds_counts) %in% sig_leachate$gene, ])
+# Save gene counts 
+write_csv(sig_leachate_counts, file = "../output/09_deg_multifactorial/sig_leachate_counts.csv")
+```
+
+```{r}
+res <- results(dds)
+
+DEG_results_vst <- dds[unique(res$gene)]
+dim(DEG_results_vst)
+
+DEG_results_vst <- varianceStabilizingTransformation(DEG_results_vst)
+```
+
+
+
+
+```{r}
+dds <- estimateDispersionsGeneEst(dds)
+dispersions(dds) <- mcols(dds)$dispGeneEst
+dds <- nbinomLRT(dds, reduced=~hpf+leachate) 
+```
+
+
+```{r}
+deg_counts<-t(assay(DEG_results_vst))
+deg_counts<-as.data.frame(deg_counts)
+dim(deg_counts)
+deg_counts$sample<-rownames(deg_counts)
+deg_counts<-deg_counts%>%
+  dplyr::select(sample, everything())
+write_csv(deg_counts, "Mcap2020/Output/TagSeq/DESeq/deg_counts.csv")
+```
+
+```{r}
+dput(head(rownames(dds_counts), 10))
+```
+
+```{r}
+sig_leachate$gene %in% rownames(dds_counts)
+```
+
+
+```{r}
+plotMA(res_leachate, alpha = 0.05, ylim = c(-5, 5), main = "MA Plot: Leachate Effect")
+```
+
+```{r}
+# Main effect of hpf levels (because hpf is a factor with levels  4, 9, 14)
+res_hpf9 <- results(dds, name = "hpf_9_vs_4")  # if reference is hpf4
+summary(res_hpf9)
+
+sig_hpf9 <- as.data.frame(subset(res_hpf9, padj<0.05))
+sig_hpf9$gene <- rownames(sig_hpf9)
+rownames(sig_hpf9) <- NULL
+write_csv(sig_hpf9, file = "../output/09_deg_multifactorial/sig_hpf9.csv")
+
+plotMA(res_hpf9, ylim = c(-5, 5), main = "MA Plot: hpf 9 vs 4")
+```
+
+```{r}
+# Main effect of hpf levels (becuase hpf is a factor with levels 4, 9, 14)
+res_hpf14 <- results(dds, name = "hpf_14_vs_4")
+summary(res_hpf14)
+
+sig_hpf14 <- as.data.frame(subset(res_hpf14, padj<0.05))
+sig_hpf14$gene <- rownames(sig_hpf14)
+rownames(sig_hpf14) <- NULL
+write_csv(sig_hpf14, file = "../output/09_deg_multifactorial/sig_hpf14.csv")
+
+plotMA(res_hpf14, ylim = c(-5, 5), main = "MA Plot: hpf 14 vs 4")
+```
+
+```{r}
+# Interaction effects
+res_interaction_9 <- results(dds, name = "hpf9.leachate")
+summary(res_interaction_9)
+
+sig_interaction_9 <- as.data.frame(subset(res_interaction_9, padj<0.05))
+sig_interaction_9$gene <- rownames(sig_interaction_9)
+rownames(sig_interaction_9) <- NULL
+write_csv(sig_interaction_9, file = "../output/09_deg_multifactorial/sig_interaction_9.csv")
+
+plotMA(res_interaction_9, ylim = c(-5, 5), main = "MA Plot: hpf9 x leachate interaction")
+```
+
+```{r}
+res_interaction_14 <- results(dds, name = "hpf14.leachate")
+summary(res_interaction_14)
+
+sig_interaction_14 <- as.data.frame(subset(res_interaction_14, padj<0.05))
+sig_interaction_14$gene <- rownames(sig_interaction_14)
+rownames(sig_interaction_14) <- NULL
+write_csv(sig_interaction_14, file = "../output/09_deg_multifactorial/sig_interaction_14.csv")
+
+
+plotMA(res_interaction_14, ylim = c(-5, 5), main = "MA Plot: hpf14 x leachate interaction")
+```
+
