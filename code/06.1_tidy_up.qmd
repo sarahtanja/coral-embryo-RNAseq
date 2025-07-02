@@ -49,19 +49,15 @@ str(metadata)
 ```{r}
 
 metadata$embryonic_stage <- gsub(" ", "", metadata$development_stage) # Remove space in development_stage condition column and rename to embryonic_stage
-metadata$leachate <- metadata$pvc_leachate_concentration_mg.L # Rename to leachate to simplify
-
-# Make a new column that represents the 12 distinct treatment groups (embryonic_phase x pvc_leachate_level) in the experiment
-metadata <- metadata %>% 
-  mutate(treatment_group = paste(embryonic_stage, pvc_leachate_level, sep="_")) %>% 
-  relocate(treatment_group, .after = collection_date)
+metadata$leachate_mgL <- metadata$pvc_leachate_concentration_mg.L # Rename to leachate_mgL to simplify
+metadata$leachate <- metadata$pvc_leachate_level # Rename to leachate_lvl to simplify
 
 # Make a new column that represents the parent crosses
 metadata <- metadata %>% 
   mutate(parents = sub("^(.*?)[CLMH].*", "\\1", sample_name)) %>% 
   relocate(parents, .after = sample_name)
 
-# Make a new column that simplifies the treatment group name
+# Make a new column that simplifies the treatment group
 metadata <- metadata %>% 
   mutate(group = sub(".*?([CLMH].*)", "\\1", sample_name)) %>% 
   relocate(group, .after = parents)
@@ -70,74 +66,22 @@ metadata <- metadata %>%
 metadata$embryonic_stage <- as.factor(metadata$embryonic_stage)
 metadata$embryonic_stage <- fct_relevel(metadata$embryonic_stage, "cleavage", "prawnchip", "earlygastrula")
  
-metadata$pvc_leachate_level <- as.factor(metadata$pvc_leachate_level)
-metadata$pvc_leachate_level <- fct_relevel(metadata$pvc_leachate_level, "control", "low", "mid", "high")
+metadata$leachate <- as.factor(metadata$leachate_lvl)
+metadata$leachate <- fct_relevel(metadata$leachate_lvl, "control", "low", "mid", "high")
 
 metadata$hpf <- as.factor(metadata$hours_post_fertilization)
 metadata$hpf <- fct_relevel(metadata$hpf, "4", "9", "14")
 ```
 
-Add metadata
-```{r}
-metadata <- metadata %>%
-  mutate(extraction = if_else(sample_name %in% c("6C14", "7C14", "67C9"), 1, 0)))
-```
-
-
-
-
 ## Filter metadata
 
 ```{r}
-metadata <- metadata %>% dplyr::select(sample_no, sample_name, parents, group, treatment_group, hpf, embryonic_stage, leachate, hours_post_fertilization, pvc_leachate_level)
+metadata_sel <- metadata %>% dplyr::select(sample_name, parents, group, hpf, embryonic_stage, leachate, leachate_mgL)
 
-metadata_filt <- metadata %>% 
+metadata_filt <- metadata_sel %>% 
   filter(!sample_name %in% c("131415L4", "789C4"))
-
-str(metadata)
 ```
 
-## Write `metadata_filt.csv`
-```{r}
-#output metadata for other analyses 
-write_csv(metadata_filt, "../metadata/metadata_filt.csv")
-```
-
-# Understanding experimental treatments
-
-We have 63 samples that span three embryonic phases (20 cleavage, 21 prawn chip, 22 early gastrula)
-
-```{r}
-ephases <- table(metadata$embryonic_phase)
-
-kable(ephases, caption = "Number of samples binned by embryonic phase", booktabs = TRUE) %>%
-  kable_styling(full_width = FALSE, position = "center")
-```
-
-And 4 pollution exposure levels (18 control, 15 low, 15 mid, 15 high)
-
-```{r}
-pexposure <- table(metadata$pvc_leachate_level)
-
-kable(pexposure, caption = "Number of samples binned by pollution exposure levels", booktabs = TRUE) %>%
-  kable_styling(full_width = FALSE, position = "center")
-```
-
-Giving us 12 distinct treatment groups
-
-```{r}
-tgroup <- table(metadata$treatment)
-
-# Use kable to print the table in a cleaner format
-kable(tgroup, caption = "Number of samples binned by treatment", format = "markdown", booktabs = TRUE) %>%
-  kable_styling(full_width = FALSE, position = "center")
-```
-
-We expect there to be different genes present in the early embryonic development phases... and we hypothesize that there will be differential expression in response the pollution exposure at each of these developmental checkpoints.
-
-Our minimum number of samples that have a unique treatment is 5...
-
-Therefore, we will accept genes that are present in 5 of the samples because we are hypothesizing different expression by *embryonic_phase \* pvc_leachate_level*.
 
 # Import gene count matrix (gcm)
 
@@ -152,19 +96,112 @@ head(gcm)
 
 The count matrix should show counts of whole numbers (integers) ... since each column shows <int> as the data type we know that the counts are already integers
 
-# Remove outliers 
+# Exclude outliers 
 Two samples had poor hisat alignment and should be removed from the dataset: 131415L4 and 789C4
 
 ```{r}
-gcm_filt <- gcm %>% 
+gcm_eo <- gcm %>% 
   dplyr::select(-`131415L4`, -`789C4`)
-
-nrow(gcm)
-nrow(gcm_filt)
-
-ncol(gcm)
-ncol(gcm_filt)
 ```
+
+::: callout-note
+`gcm_eo` is the unfiltered gene count matrix that has excluded outliers.
+:::
+
+> It is absolutely critical that the columns of the count matrix and the rows of the column data (information about samples) are in the same order. DESeq2 will not make guesses as to which column of the count matrix belongs to which row of the column data, these must be provided to DESeq2 already in consistent order.
+
+The following code checks that all the sample names in the metadata dataframe match the column names in the gene count matrix. It should return 'TRUE'
+```{r}
+print(paste("There are", nrow(metadata_filt), "samples in total"))
+
+# Check if all matched names are equal (should return TRUE)
+all(metadata_filt$sample_name == colnames(gcm_eo))
+```
+
+Save gcm & metadata 
+```{r}
+write_csv(metadata_filt, "../metadata/metadata_filt.csv")
+write_csv(gcm_eo, "../output/06_tidyup/gcm_eo.csv")
+```
+
+
+# Subset gene count matrix by hpf
+
+## 4hpf
+
+```{r}
+# Subset metadata
+# Filter rows where 'sample_name' matches the pattern [CLMH]4
+metadata_4 <- metadata_filt %>% 
+  filter(str_detect(sample_name, "[CLMH]4"))
+
+# Subset gene count matrix
+# Select only samples that are 4hpf out of gene count matrix
+gcm_4 <- gcm_eo %>% 
+  dplyr::select(matches("[CLMH]4"))
+
+print(paste("There are", nrow(metadata_4), "samples at 4hpf"))
+
+# Check if all matched names are equal (should return TRUE)
+all(metadata_4$sample_name == colnames(gcm_4))
+```
+- There should be 18 cleavage (4hpf) samples
+
+Save gcm & metadata 
+```{r}
+write_csv(metadata_4, "../metadata/metadata_4.csv")
+write_csv(gcm_4, "../output/06_tidyup/gcm_4.csv")
+```
+
+
+## 9hpf
+```{r}
+# Subset metadata
+# Filter rows where 'sample_name' matches the pattern [CLMH]9
+metadata_9 <- metadata_filt %>% 
+  filter(str_detect(sample_name, "[CLMH]9"))
+
+# Subset gene count matrix
+# Select only samples that are 9hpf out of gene count matrix
+gcm_9 <- gcm_eo %>% 
+  dplyr::select(matches("[CLMH]9"))
+
+print(paste("There are", nrow(metadata_9), "samples at 9hpf"))
+
+# Check if all matched names are equal (should return TRUE)
+all(metadata_9$sample_name == colnames(gcm_9))
+```
+- There should be 21 prawn chip (9hpf) samples
+
+Save gcm & metadata 
+```{r}
+write_csv(metadata_9, "../metadata/metadata_9.csv")
+write_csv(gcm_9, "../output/06_tidyup/gcm_9.csv")
+```
+
+## 14hpf
+
+```{r}
+# Filter rows where 'sample_name' matches the pattern [CLMH]14
+metadata_14 <- metadata_filt %>% 
+  filter(str_detect(sample_name, "[CLMH]14"))
+
+# Check if all matched names are equal
+all(metadata_14$sample_name == colnames(gcm_filt_14))
+```
+
+```{r}
+length(metadata_14$sample_name)
+length(colnames(gcm_filt_14))
+```
+There should be 22 early gastrula (14hpf) samples
+
+save metadata_14
+```{r}
+#output metadata for other analyses 
+write_csv(metadata_14, "../metadata/metadata_14.csv")
+```
+
 
 # Prefiltering
 
@@ -172,21 +209,22 @@ ncol(gcm_filt)
 
 Pre-filtering our dataset reduces the memory size of the dataframe, increases the speed of the transformation and testing functions, and improves quality of statistical analysis by removing low-coverage counts. Removed counts could represent outliers in the data and removing these improves sensitivity of statistical tests.
 
--   **`across(everything(), ~ . > 10)`**: This applies the condition `> 10` to all columns of the data frame. For each cell, it returns `TRUE` if the value is greater than 10 and `FALSE` otherwise.
+-   **`across(everything(), ~ . > n)`**: This applies the condition `> n` to all columns of the data frame. For each cell, it returns `TRUE` if the value is greater than n and `FALSE` otherwise.
 
 -   **`rowSums()`**: This counts the number of `TRUE` values for each row. It adds up how many columns in each row have values greater than 10.
 
--   **`>= 0.08 * ncol(df)`**: This checks if the count of `TRUE` values in each row is greater than or equal to 8% of the total number of columns (`ncol(df)`).
+-   **`>= n * ncol(df)`**: This checks if the count of `TRUE` values in each row is greater than or equal to n% of the total number of columns (`ncol(df)`).
 
 ### All
 
 ```{r}
 # Filter rows where at least 8% of the columns have a value greater than 10
-gcm_filt <- gcm_filt %>%
+gcm_filt <- gcm_eo %>%
   filter(rowSums(across(everything(), ~ . > 10)) >= 0.08 * ncol(gcm))
 
-nrow(gcm)
-head(gcm_filt)
+nrow(gcm_eo)
+nrow(gcm_filt)
+
 ```
 
 ```{r}
@@ -201,10 +239,7 @@ We are going to run DGE analysis on each hpf separately (as well as together) so
 
 ### 4hpf
 
-```{r}
-gcm_4 <- gcm_filt %>% 
-  dplyr::select(matches("[CLMH]4"))
-```
+
 
 ```{r}
 # Filter rows where at least (5/20) 25% of the columns have a value greater than 10
@@ -214,7 +249,6 @@ gcm_filt_4 <- gcm_4 %>%
 nrow(gcm_4)
 nrow(gcm_filt_4)
 
-save(gcm_filt_4, file = "../output/06_tidyup/gcm_filt_4.RData")
 write_csv(gcm_filt_4, file = "../output/06_tidyup/gcm_filt_4.csv")
 ```
 
@@ -279,102 +313,25 @@ More gene transcripts are present as embryonic development progresses!
 :::
 
 
-
-# Prep metadata for DESeq
-
-> It is absolutely critical that the columns of the count matrix and the rows of the column data (information about samples) are in the same order. DESeq2 will not make guesses as to which column of the count matrix belongs to which row of the column data, these must be provided to DESeq2 already in consistent order.
-
-### All
-The following code checks that all the sample names in the metadata dataframe match the column names in the gene count matrix. It should return 'TRUE'
+# Sample summary
 ```{r}
-meta <- (metadata_filt$sample_name)
-gene_matrix <- (colnames(gcm_filt))
-meta_check <- data.frame(meta, gene_matrix)
-
-all(meta == gene_matrix)
+# Create a summary table
+metadata_filt %>%
+  count(hpf, leachate_lvl) %>%
+  ggplot(aes(x = leachate_lvl, y = hpf, fill = n)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label = n), color = "black", size = 5) +
+  scale_fill_gradient(low = "lightblue", high = "steelblue") +
+  labs(
+    title = "Sample distribution by embryonic phase and pollution exposure",
+    x = "Pollution Exposure Level",
+    y = "Embryonic Phase",
+    fill = "Sample Count"
+  ) +
+  theme_minimal(base_size = 14)
 ```
 
-There should be 61 total samples (14hpf, 9hpf, & 4hpf)
+::: callout-note
+We have 61 samples spanning three embryonic phases and four pollution exposure levels, yielding 12 distinct treatment combinations. The heatmap above shows how samples are distributed across treatments. Our minimum group size is 4, which guides our gene filtering threshold. We hypothesize that both developmental stage and pollution exposure independently and interactively influence gene expression.
+:::
 
-```{r}
-nrow(metadata_filt)
-```
-
-### 4hpf
-
-```{r}
-
-# Filter rows where 'sample_name' matches the pattern [CLMH]4
-metadata_4 <- metadata_filt %>% 
-  filter(str_detect(sample_name, "[CLMH]4"))
-
-# Check if all matched names are equal
-all(metadata_4$sample_name == colnames(gcm_filt_4))
-```
-
-```{r}
-length(metadata_4$sample_name)
-length(colnames(gcm_filt_4))
-```
-
-There should be 18 cleavage (4hpf) samples
-
-`pvc_leachate_level` should be a factor with 4 levels increasing from `control`, `low`, `mid`, `high`
-
-```{r}
-levels(metadata_4$leachate)
-```
-save metadata_4 
-```{r}
-#output metadata for other analyses 
-write_csv(metadata_4, "../metadata/metadata_4.csv")
-```
-
-
-### 9hpf
-
-```{r}
-
-# Filter rows where 'sample_name' matches the pattern [CLMH]9
-metadata_9 <- metadata_filt %>% 
-  filter(str_detect(sample_name, "[CLMH]9"))
-
-# Check if all matched names are equal
-all(metadata_9$sample_name == colnames(gcm_filt_9))
-```
-
-```{r}
-length(metadata_9$sample_name)
-length(colnames(gcm_filt_9))
-```
-There should be 21 prawn chip (9hpf) samples
-
-save metadata_9 
-```{r}
-#output metadata for other analyses 
-write_csv(metadata_9, "../metadata/metadata_9.csv")
-```
-
-### 14hpf
-
-```{r}
-
-# Filter rows where 'sample_name' matches the pattern [CLMH]14
-metadata_14 <- metadata_filt %>% 
-  filter(str_detect(sample_name, "[CLMH]14"))
-
-# Check if all matched names are equal
-all(metadata_14$sample_name == colnames(gcm_filt_14))
-```
-
-```{r}
-length(metadata_14$sample_name)
-length(colnames(gcm_filt_14))
-```
-There should be 22 early gastrula (14hpf) samples
-
-save metadata_14
-```{r}
-#output metadata for other analyses 
-write_csv(metadata_14, "../metadata/metadata_14.csv")
-```
