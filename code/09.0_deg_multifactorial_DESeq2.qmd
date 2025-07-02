@@ -5,7 +5,9 @@ author: "Sarah Tanja"
 date: 2024-12-02
 date-modified: today
 format:
-  gfm: default 
+  gfm: 
+    toc: true
+    number-sections: true
   html:
     theme: journal
     highlight-style: github
@@ -36,10 +38,12 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Goals
-
-
-
+# Background
+## Inputs
+- `gcm.csv` is the unfiltered gene count matrix for all 63 samples.
+- `metadata_filt.csv` is the metadata for 61 samples (two outliers were already removed).
+## Outputs
+- `volcano_facet.png`
 # Setup
 
 ## Install packages
@@ -224,7 +228,6 @@ PCA_500 <- ggplot(pca_500, aes(PC1, PC2, color = hpf, label = name, alpha = alph
 ggplotly(PCA_500, tooltip = "label")
 ```
 
-
 ## Plot distribution
 
 ```{r}
@@ -277,7 +280,7 @@ resultsNames(dds)  # see what contrast names are available
 ```
 
 | Coef | Name                         | Meaning                                                              |
-|-----------------|-----------------|--------------------------------------|
+|------|------------------------------|----------------------------------------------------------------------|
 | 1    | `"Intercept"`                | Baseline expression: `hpf = 4` and `leachate = control`              |
 | 2    | `"hpf_9_vs_4"`               | Change from 4 hpf → 9 hpf, at **control** exposure                   |
 | 3    | `"hpf_14_vs_4"`              | Change from 4 hpf → 14 hpf, at **control** exposure                  |
@@ -291,7 +294,14 @@ resultsNames(dds)  # see what contrast names are available
 | 11   | `"hpf9.leachatehigh"`        | ... for high                                                         |
 | 12   | `"hpf14.leachatehigh"`       | ... for high at 14 hpf                                               |
 
-To get the effect of leachate at a specific time: \| What you want \| Use this contrast \| \| ------------------------ \| ---------------------------------------------------- \| \| Low vs Control at 4 hpf \| `"leachate_low_vs_control"` \| \| Low vs Control at 9 hpf \| `c("leachate_low_vs_control", "hpf9.leachatelow")` \| \| Mid vs Control at 14 hpf \| `c("leachate_mid_vs_control", "hpf14.leachatemid")` \| \| High vs Control at 9 hpf \| `c("leachate_high_vs_control", "hpf9.leachatehigh")` \|
+To get the effect of leachate at a specific time: 
+
+| What you want            | Use this contrast                                    | 
+| -------------------------|------------------------------------------------------| 
+| Low vs Control at 4 hpf  | `"leachate_low_vs_control"`                          | 
+| Low vs Control at 9 hpf  | `c("leachate_low_vs_control", "hpf9.leachatelow")`   | 
+| Mid vs Control at 14 hpf | `c("leachate_mid_vs_control", "hpf14.leachatemid")`  | 
+| High vs Control at 9 hpf | `c("leachate_high_vs_control", "hpf9.leachatehigh")` |
 
 ## Effect of high exposure at 14 hpf
 
@@ -307,6 +317,7 @@ res_14hpf_high <- (results(dds, contrast = list(
 
 summary(res_14hpf_high)
 ```
+
 ### Extract significant genes
 
 ```{r}
@@ -397,7 +408,6 @@ v14high <-
 v14high
 ```
 
-
 ## Effect of mid exposure at 14 hpf
 
 ```{r}
@@ -410,6 +420,7 @@ summary(res_14hpf_mid)
 ```
 
 ### Extract significant genes
+
 ```{r}
 # Convert results table into tibble
 res_14hpf_mid_tb <- res_14hpf_mid %>%
@@ -464,6 +475,7 @@ EnhancedVolcano(res_14hpf_mid,
 )
 
 ```
+
 ```{r}
 v14mid <- 
   ggplot(res_14hpf_mid) +
@@ -492,6 +504,7 @@ v14mid <-
 
 v14mid
 ```
+
 ## Effect of low exposure at 14 hpf
 
 ```{r}
@@ -502,7 +515,9 @@ res_14hpf_low <- (results(dds, contrast = list(
 
 summary(res_14hpf_low)
 ```
+
 ### Extract significant genes
+
 ```{r}
 # Convert results table into tibble
 res_14hpf_low_tb <- res_14hpf_low %>%
@@ -532,6 +547,7 @@ write_csv(sig_14hpf_low_noLFCcutoff, "../output/09_deg_multifactorial/sig_14hpf_
 ```
 
 ### Volcano plots
+
 ```{r}
 # shrink lfc for visualizations
 res_14hpf_low_ashr <- lfcShrink(dds, contrast = list(c("leachate_low_vs_control", "hpf14.leachatelow")), type = "ashr")
@@ -555,6 +571,7 @@ EnhancedVolcano(res_14hpf_low,
 )
 
 ```
+
 ```{r}
 v14low <- 
   ggplot(res_14hpf_low) +
@@ -583,6 +600,7 @@ v14low <-
 
 v14low
 ```
+
 ## Effect of high exposure at 9 hpf
 
 ```{r}
@@ -595,6 +613,7 @@ summary(res_9hpf_high)
 ```
 
 ### Extract significant genes
+
 ```{r}
 # Convert results table into tibble
 res_9hpf_high_tb <- res_9hpf_high %>%
@@ -624,6 +643,7 @@ write_csv(sig_9hpf_high_noLFCcutoff, "../output/09_deg_multifactorial/sig_9hpf_h
 ```
 
 ### Volcano plots
+
 ```{r}
 # shrink lfc for visualizations
 res_9hpf_high_ashr <- lfcShrink(dds, contrast = list(c("leachate_high_vs_control", "hpf9.leachatehigh")), type = "ashr")
@@ -647,6 +667,7 @@ EnhancedVolcano(res_9hpf_high,
 )
 
 ```
+
 ```{r}
 v9high <- 
   ggplot(res_9hpf_high) +
@@ -675,6 +696,7 @@ v9high <-
 
 v9high
 ```
+
 ## Effect of mid exposure at 9 hpf
 
 ```{r}
@@ -781,7 +803,9 @@ res_9hpf_low <- (results(dds, contrast = list(
 
 summary(res_9hpf_low)
 ```
+
 ### Extract significant genes
+
 ```{r}
 # Convert results table into tibble
 res_9hpf_low_tb <- res_9hpf_low %>%
@@ -811,6 +835,7 @@ write_csv(sig_9hpf_low_noLFCcutoff, "../output/09_deg_multifactorial/sig_9hpf_lo
 ```
 
 ### Volcano plots
+
 ```{r}
 # shrink lfc for visualizations
 res_9hpf_low_ashr <- lfcShrink(dds, contrast = list(c("leachate_low_vs_control", "hpf9.leachatelow")), type = "ashr")
@@ -834,6 +859,7 @@ EnhancedVolcano(res_9hpf_low,
 )
 
 ```
+
 ```{r}
 v9low <- 
   ggplot(res_9hpf_low) +
@@ -862,6 +888,7 @@ v9low <-
 
 v9low
 ```
+
 ## Effect of high exposure at 4 hpf
 
 ```{r}
@@ -871,7 +898,9 @@ res_4hpf_high <- (results(dds, name = "leachate_high_vs_control")
 
 summary(res_4hpf_high)
 ```
+
 ### Extract significant genes
+
 ```{r}
 # Convert results table into tibble
 res_4hpf_high_tb <- res_4hpf_high %>%
@@ -901,6 +930,7 @@ write_csv(sig_4hpf_high_noLFCcutoff, "../output/09_deg_multifactorial/sig_4hpf_h
 ```
 
 ### Volcano plots
+
 ```{r}
 # shrink lfc for visualizations
 res_4hpf_high_ashr <- lfcShrink(dds, coef = 6 , type = "ashr")
@@ -924,6 +954,7 @@ EnhancedVolcano(res_4hpf_high,
 )
 
 ```
+
 ```{r}
 v4high <- 
   ggplot(res_4hpf_high) +
@@ -962,7 +993,9 @@ res_4hpf_mid <- (results(dds, name = "leachate_mid_vs_control")
 
 summary(res_4hpf_mid)
 ```
+
 ### Extract significant genes
+
 ```{r}
 # Convert results table into tibble
 res_4hpf_mid_tb <- res_4hpf_mid %>%
@@ -990,7 +1023,9 @@ paste("Number of significant DEGs 4 hpf at mid exposure level:", nrow(sig_4hpf_m
 write_csv(sig_4hpf_mid, "../output/09_deg_multifactorial/sig_4hpf_mid.csv")
 write_csv(sig_4hpf_mid_noLFCcutoff, "../output/09_deg_multifactorial/sig_4hpf_mid_noLFCcutoff.csv")
 ```
+
 ### Volcano plots
+
 ```{r}
 # shrink lfc for visualizations
 res_4hpf_mid_ashr <- lfcShrink(dds, coef = 5 , type = "ashr")
@@ -1014,6 +1049,7 @@ EnhancedVolcano(res_4hpf_mid,
 )
 
 ```
+
 ```{r}
 v4mid <- 
   ggplot(res_4hpf_mid) +
@@ -1052,7 +1088,9 @@ res_4hpf_low <- (results(dds, name = "leachate_low_vs_control", alpha=0.05)
 
 summary(res_4hpf_low)
 ```
+
 ### Extract significant genes
+
 ```{r}
 # Convert results table into tibble
 res_4hpf_low_tb <- res_4hpf_low %>%
@@ -1080,7 +1118,9 @@ paste("Number of significant DEGs 4 hpf at low exposure level:", nrow(sig_4hpf_l
 write_csv(sig_4hpf_low, "../output/09_deg_multifactorial/sig_4hpf_low.csv")
 write_csv(sig_4hpf_low_noLFCcutoff, "../output/09_deg_multifactorial/sig_4hpf_low_noLFCcutoff.csv")
 ```
+
 ### Volcano plots
+
 ```{r}
 # shrink lfc for visualizations
 res_4hpf_low_ashr <- lfcShrink(dds, coef = 4 , type = "ashr")
@@ -1136,6 +1176,7 @@ v4low
 # Summary
 
 ## Facet volcano plot
+
 ```{r}
 # First, strip labels from all individual ggplot objects
 # (You can do this in a loop if the plots are in a list)
@@ -1176,18 +1217,10 @@ volcano_facet
 ggsave("../output/09_deg_multifactorial/volcano_facet.png", volcano_facet, width = 16, height = 12, dpi = 300)
 ```
 
-
 ::: callout-warning
-
 Why do volcano plots not look like volcanos!?
 
-Batch Effects or Low Biological Signal
-If your experimental design has confounding factors (e.g., batch effects), or the leachate treatment has low impact, then few genes will show strong changes.
+Batch Effects or Low Biological Signal If your experimental design has confounding factors (e.g., batch effects), or the leachate treatment has low impact, then few genes will show strong changes.
 
-
-Extreme p-values
-Your plot shows points with -log10(padj) values above 20–30. That means padj is very close to 0, which could indicate:
-- Very large sample size
-- Very consistent effect
-- Or something off with the dispersion estimate or p-value adjustment (e.g., if some genes had zero variance across groups)
+Extreme p-values Your plot shows points with -log10(padj) values above 20--30. That means padj is very close to 0, which could indicate: - Very large sample size - Very consistent effect - Or something off with the dispersion estimate or p-value adjustment (e.g., if some genes had zero variance across groups)
 :::
