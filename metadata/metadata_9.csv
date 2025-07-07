@@ -1,4 +1,4 @@
-sample_name,parents,group,hpf,embryonic_stage,leachate_lvl,leachate_mgL
+sample_name,parents,group,hpf,embryonic_stage,leachate,leachate_mgL
 101112C9,101112,C9,9,prawnchip,control,0
 101112H9,101112,H9,9,prawnchip,high,1
 101112L9,101112,L9,9,prawnchip,low,0.01

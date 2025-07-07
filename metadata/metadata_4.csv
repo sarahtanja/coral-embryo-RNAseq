@@ -1,4 +1,4 @@
-sample_name,parents,group,hpf,embryonic_stage,leachate_lvl,leachate_mgL
+sample_name,parents,group,hpf,embryonic_stage,leachate,leachate_mgL
 101112C4,101112,C4,4,cleavage,control,0
 101112H4,101112,H4,4,cleavage,high,1
 101112L4,101112,L4,4,cleavage,low,0.01

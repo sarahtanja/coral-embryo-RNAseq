@@ -5,13 +5,27 @@ author: "Sarah Tanja"
 date: 2025-05-08
 date-modified: today
 format:
-  gfm: default
-toc: true
-toc-depth: 3
-link-external-icon: true
-link-external-newwindow: true
-reference-location: margin
-citation-location: margin
+  gfm: 
+    toc: true
+    number-sections: true
+  html:
+    theme: journal
+    highlight-style: github
+    page-layout: full
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    number-sections: true
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    reference-location: margin
+    citation-location: margin
 ---
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
@@ -23,160 +37,245 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Goals
-This quick analysis pairs down the complexity of multiple embryonic stages and multiple levels of leachate to a direct comparison of our control group to our highest exposure group. We did not find any significantly differently expressed genes across all embryonic stages, we believe, due to the gene expression in our dataset is clustered by stage, and the effect of leachate was 'drowned out' by the much larger patterns of embryonic stage. This code breaks it down to look at control vs high within each stage of embryonic development. This reduces our n to 5 for each group and we have less power with this analysis, but it will help us get a fuller picture of our data and what it's telling us.  
+# Background
+We did not find any significantly differently expressed genes across all embryonic stages, we believe, due to the gene expression in our dataset is clustered by stage, and the effect of leachate was 'drowned out' by the much larger patterns of embryonic stage. This code breaks it down to look at DGEs within each stage of embryonic development. This reduces our n to 5 for each group and we have less power with this analysis, but it will help us get a fuller picture of our data and what it's telling us.  
+## Inputs
+- `gcm_4.csv` is the unfiltered gene count matrix for all 4hpf samples.
+- `gcm_9.csv`
+- `gcm_14.csv`
+- `metadata_4.csv` is the metadata for 61 samples (two outliers were already removed).
+- `metadata_9.csv`
+- `metadata_14.csv`
+## Outputs
+- `volcano_facet_pairwise.png`
 
-# Load libraries
+# Setup
+## Install packages
+```{r}
+BiocManager::install("RUVSeq")
+```
 
+## Load packages
 ```{r}
 library(tidyverse)
 library(DESeq2)
-library(vsn)
+library(RUVSeq)
 library(pheatmap)
 library(RColorBrewer)
+library(ashr)
+library(flexoki)
+library(plotly)
+library(cowplot)
 ```
 
-# Filter count matrix
+## Import gene counts
+```{r}
+gcm_4 <- read.csv("../output/06_tidyup/gcm_4.csv", row.names="gene_id", check.names = FALSE)
+gcm_9 <- read.csv("../output/06_tidyup/gcm_9.csv", row.names="gene_id", check.names = FALSE)
+gcm_14 <- read.csv("../output/06_tidyup/gcm_14.csv", row.names="gene_id", check.names = FALSE)
+```
 
-We want to look at the `control` group (embryos developed in 0.22 um filtered seawater) vs. the `high` group in each embryonic stage. To do this let's start by filtering the count matrix to only the samples of interest.
+## Import metadata 
+```{r}
+metadata_4 <- read.csv("../metadata/metadata_4.csv")
+metadata_9 <- read.csv("../metadata/metadata_9.csv")
+metadata_14 <- read.csv("../metadata/metadata_14.csv")
+```
+
+# 4 hpf
+```{r}
+str(metadata_4)
+```
 
 ```{r}
-gcm <- read.csv("../output/05_count/gene_count_matrix.csv", row.names="gene_id", check.names = FALSE)
+# Reorder leachate factor
+metadata_4$leachate <- as.factor(metadata_4$leachate)
+metadata_4$leachate <- fct_relevel(metadata_4$leachate, "control", "low", "mid", "high")
+
+# Make parents a character string
+metadata_4$parents <- as.character(metadata_4$parents)
+str(metadata_4)
 ```
-::: callout-note
-`gcm` is the unfiltered gene count matrix of all 63 samples
-:::
 
--   The raw unfiltered, untransformed, count matrix shows counts of whole numbers (integers)
--   Each column is a sample
--   Each row is a gene
--   A sample id describes parental crosses (the first string of numbers), the pollution exposure (C, L, M, H), and the embryonic stage (4, 9, 14)
-
+## Filter low reads
 ```{r}
-gcm_filt <- gcm %>% 
-  dplyr::select(-`131415L4`, -`789C4`)
+# Filter rows where at least 75% of the columns have a raw count of at least 15
+gcm_4_filt <- gcm_4 %>%
+  filter(rowSums(across(everything(), ~ . > 50)) >= 0.75 * ncol(gcm_4))
+nrow(gcm_4_filt)
 ```
 
-The genes are the rows. The samples are the columns.
-
-remove low & mid
-
-```{r}
-gcm_controlvshigh <- gcm_filt_or %>% 
-  dplyr::select(-matches("L|M"))
-```
-
-# Setup metadata
-
-> It is absolutely critical that the columns of the count matrix and the rows of the column data (information about samples) are in the same order. DESeq2 will not make guesses as to which column of the count matrix belongs to which row of the column data, these must be provided to DESeq2 already in consistent order.
-
-```{r}
-metadata_or <- read_csv("../metadata/metadata_or.csv")
-```
-
-The samples are rows
-
-remove low & mid
-
-```{r}
-metadata_controlvshigh <- metadata_or %>% 
-  filter(grepl("C|H", sample_name))
-```
-
-confirm metadata sample_name matches gene count matrix columns. The following code checks that all the sample names in the metadata dataframe match the column names in the gene count matrix. It should return 'TRUE'
-
-```{r}
-meta <- (metadata_controlvshigh$sample_name)
-gene_matrix <- (colnames(gcm_controlvshigh))
-meta_check <- data.frame(meta, gene_matrix)
-
-all(meta == gene_matrix)
-```
-
-# Make DESeq Object
+## Make DESeq Object
 
 Make [DESeq Dataset Object from Count Matrix](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#count-matrix-input) Create a DESeqDataSet design from gene count matrix and treatment conditions.
 
 ```{r}
-#Set DESeq2 design for 1 factor with 2 levels
-dds_cvh <- DESeqDataSetFromMatrix(countData = gcm_controlvshigh,
-                              colData = metadata_controlvshigh, 
-                              design = ~ pvc_leachate_level)
+dds_4 <- DESeqDataSetFromMatrix(countData = gcm_4_filt,
+                              colData = metadata_4, 
+                              design = ~leachate)
+
+dds_4 <- estimateSizeFactors(dds_4)
+```
+
+Are all size factors less than 4?
+```{r}
+all(sizeFactors(dds_4))<4
+```
+Make count transformations (for use in visualizations & clustering)
+```{r}
+rld_4 <- rlog(dds_4, blind = FALSE) 
+vsd_4 <- vst(dds_4, blind = FALSE)
+log2_4 <- as.data.frame(log2(counts(dds_4, normalized = TRUE) + 1), check.names = FALSE)
+```
+
+Clusters
+```{r}
+rdists <- dist(t(assay(rld_4)))
+plot(hclust(rdists))
+```
+
+```{r}
+vdists <- dist(t(assay(vsd_4)))
+plot(hclust(vdists))
 ```
 
 
-# Visualizations
-
-> In order to test for differential expression, we operate on raw counts and use discrete distributions... However for visualization or clustering -- it might be useful to work with transformed versions of the count data.
-
-## Count transformations
+### Count transformations
+The distribution should shift via the transformation from a negative binomial to a approximately normal distribution.
 
 ```{r}
-# This is now the variance stabilized transformed DESeq Data
-vsd_cvh <- vst(dds_cvh, blind=FALSE)
+# Combine all transformations into one long-format dataframe
+df_4 <- bind_rows(
+  as.data.frame(log2(counts(dds_4, normalized = TRUE) + 1)) %>%
+    mutate(transformation = "log2(x + 1)"),
+  as.data.frame(assay(vsd_4)) %>%
+    mutate(transformation = "vst"),
+  as.data.frame(assay(rld_4)) %>%
+    mutate(transformation = "rlog")
+)
 
-# This is the r-log transformed DESeq Data
-rld_cvh <- rlog(dds_cvh, blind=FALSE)
+# Pivot to long format: one row per expression value
+df_long <- df_4 %>%
+  pivot_longer(
+    cols = -transformation,
+    names_to = "sample",
+    values_to = "expression"
+  )
+
+# Plot
+ggplot(df_long, aes(x = expression)) +
+  geom_histogram(bins = 100, fill = "steelblue") +
+  facet_wrap(~ transformation) +
+  theme_classic() +
+  labs(
+    title = "Distribution of Transformed Counts Across All Samples (4 hpf)",
+    x = "Transformed counts",
+    y = "Frequency"
+  )
+
+```
+```{r}
+# VST-transformed matrix
+vst_mat <- assay(vst(dds_4, blind = TRUE))
+
+# Convert to long format
+df_vst <- as.data.frame(vst_mat)
+df_vst$gene <- rownames(df_vst)
+df_vst_long <- pivot_longer(df_vst, cols = -gene, names_to = "sample", values_to = "expression")
+
+# Plot
+ggplot(df_vst_long, aes(x = expression, group = sample)) +
+  geom_density(alpha = 0.2) +
+  labs(title = "VST Transformed Counts (Density by Sample)")
+
+```
+```{r}
+# Regularized log-transformed matrix
+rld_mat <- assay(rld_4)
+
+# Convert to long format
+df_rld <- as.data.frame(rld_mat)
+df_rld$gene <- rownames(df_rld)
+df_rld_long <- pivot_longer(df_rld, cols = -gene, names_to = "sample", values_to = "expression")
+
+# Plot
+ggplot(df_rld_long, aes(x = expression, group = sample)) +
+  geom_density(alpha = 0.2) +
+  labs(title = "RLOG Transformed Counts (Density by Sample)")
 ```
 
+
+### PCA
+
 ```{r}
-dds_cvh <- estimateSizeFactors(dds_cvh)
+# Get PCA data (top 500 DEGs by default)
+pca_4 <- plotPCA(rld_4, intgroup = "group", returnData = TRUE)
+percentVar_4 <- round(100*attr(pca_4, "percentVar"))
 
-df <- bind_rows(
-  as_data_frame(log2(counts(dds_cvh, normalized=TRUE)[, 1:2]+1)) %>%
-         mutate(transformation = "log2(x + 1)"),
-  as_data_frame(assay(vsd_cvh)[, 1:2]) %>% mutate(transformation = "vst"),
-  as_data_frame(assay(rld_cvh)[, 1:2]) %>% mutate(transformation = "rlog"))
-  
-colnames(df)[1:2] <- c("x", "y")  
+# Merge with metadata
+pca_4 <- merge(pca_4, metadata_4, by.x = "name", by.y = "sample_name", all.x = TRUE)
 
-lvls <- c("log2(x + 1)", "vst", "rlog")
-df$transformation <- factor(df$transformation, levels=lvls)
+# Assign specific colors to each leachate
+leachate_colors <- c(
+  "control" = flex("blue", sat = 200),
+  "low" = flex("magenta", sat = 300),
+  "mid" = flex("magenta", sat = 600),
+  "high" = flex("magenta", sat = 900)
+)
 
-ggplot(df, aes(x = x, y = y)) +
-  geom_hex(bins = 80) +
+# Plot PCA
+PCA_4 <- ggplot(pca_4, aes(PC1, PC2, color=leachate)) + 
+  geom_point(size=2, alpha = 0.8) +
+  ggtitle("M.cap embryos at 4 hpf exposed to pvc leachate, top 500 most variable genes") +
+  xlab(paste0("PC1: ",percentVar_4[1],"% variance")) +
+  ylab(paste0("PC2: ",percentVar_4[2],"% variance")) + 
   coord_fixed() +
-  facet_grid(. ~ transformation) +
-  ggtitle("Control vs. High across development Count Transformation Comparisons")
+  scale_color_manual(values=leachate_colors)+
+  stat_ellipse()+
+  theme_minimal()
+
+PCA_4
 ```
 
 ```{r}
-meanSdPlot(assay(vsd_cvh))
+pca_4$label <- paste0("Sample: ", pca_4$sample_name,
+                        "\nLeachate: ", pca_4$leachate)
+
+# Original ggplot with an interactive tooltip aesthetic
+PCA_4 <- ggplot(pca_4, aes(PC1, PC2, color = leachate, label = name)) + 
+  geom_point(shape = 21, size = 2) +
+  ggtitle("M.cap embryos at 4 hpf exposed to pvc leachate, top 500 most variable genes") +
+  xlab(paste0("PC1: ", percentVar_4[1], "% variance")) +
+  ylab(paste0("PC2: ", percentVar_4[2], "% variance")) + 
+  coord_fixed() +
+  scale_color_manual(values = leachate_colors) +
+  stat_ellipse() + 
+  guides(alpha = "none") +  # hide alpha legend (optional)
+  theme_minimal()
+
+# Convert to interactive plot
+ggplotly(PCA_4, tooltip = "label")
+```
+```{r}
+# Plot PCA
+PCA_4 <- ggplot(pca_4, aes(PC1, PC2, color=parents)) + 
+  geom_point(size=2, alpha = 0.8) +
+  ggtitle("M.cap embryos at 4 hpf exposed to pvc leachate, top 500 most variable genes") +
+  xlab(paste0("PC1: ",percentVar_4[1],"% variance")) +
+  ylab(paste0("PC2: ",percentVar_4[2],"% variance")) + 
+  coord_fixed() +
+  stat_ellipse()+
+  theme_minimal()
+
+PCA_4
 ```
 
 ```{r}
-meanSdPlot(assay(rld_cvh))
-```
-
-## PCA
-
-```{r}
-# Perform PCA on rlog transformed count data
-pca_cvh <- prcomp(t(assay(rld_cvh)), scale = TRUE)
-
-pca_cvh_plot <- plotPCA(rld_cvh, intgroup=c("pvc_leachate_level"), returnData=TRUE)
-
-percentVar <- round(100 * attr(pca_cvh_plot, "percentVar"))
-
-# Make the plot
-PCA_CvH_plot <- ggplot(pca_cvh_plot, aes(PC1, PC2, 
-                              color=pvc_leachate_level)) +
-                              #geom_text(aes(label = name), size = 3) +  # Add labels from the 'name' column
-                              geom_point(size=3) +
-                              xlab(paste0("PC1: ",percentVar[1],"% variance")) +
-                              ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
-                              coord_fixed() + 
-                              geom_text(aes(label = name), size = 3) +  # Add labels from the 'name' column
-                              theme_minimal()
-
-# Display the plot
-PCA_CvH_plot
-
 # Save the plot as a png
 ggsave("../output/08_deg/PCA_control_vs_high.png", plot = PCA_CvH_plot, width = 8, height = 6, dpi = 600)
 ```
 
-## Heatmap
+### Heatmap
 
 ```{r}
 
@@ -214,7 +313,18 @@ pheatmap(
 
 ```
 
-# Run DESeq2
+### RUVSeq
+
+```{r}
+set <- newSeqExpressionSet(as.matrix(filtered),
+                           phenoData = data.frame(x, row.names=colnames(filtered)))
+set
+```
+
+
+https://bioconductor.org/packages/release/bioc/vignettes/RUVSeq/inst/doc/RUVSeq.html
+
+## Run DESeq2
 
 ```{r}
 dds_cvh_deseq <- DESeq(dds_cvh)

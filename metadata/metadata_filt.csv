@@ -1,4 +1,4 @@
-sample_name,parents,group,hpf,embryonic_stage,leachate_lvl,leachate_mgL
+sample_name,parents,group,hpf,embryonic_stage,leachate,leachate_mgL
 101112C14,101112,C14,14,earlygastrula,control,0
 101112C4,101112,C4,4,cleavage,control,0
 101112C9,101112,C9,9,prawnchip,control,0

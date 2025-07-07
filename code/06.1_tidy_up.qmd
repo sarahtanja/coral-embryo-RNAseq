@@ -34,7 +34,6 @@ Resources:
 
 ```{r}
 library(tidyverse)
-library(kableExtra)
 ```
 
 # Import metadata
@@ -66,8 +65,8 @@ metadata <- metadata %>%
 metadata$embryonic_stage <- as.factor(metadata$embryonic_stage)
 metadata$embryonic_stage <- fct_relevel(metadata$embryonic_stage, "cleavage", "prawnchip", "earlygastrula")
  
-metadata$leachate <- as.factor(metadata$leachate_lvl)
-metadata$leachate <- fct_relevel(metadata$leachate_lvl, "control", "low", "mid", "high")
+metadata$leachate <- as.factor(metadata$leachate)
+metadata$leachate <- fct_relevel(metadata$leachate, "control", "low", "mid", "high")
 
 metadata$hpf <- as.factor(metadata$hours_post_fertilization)
 metadata$hpf <- fct_relevel(metadata$hpf, "4", "9", "14")
@@ -76,9 +75,9 @@ metadata$hpf <- fct_relevel(metadata$hpf, "4", "9", "14")
 ## Filter metadata
 
 ```{r}
-metadata_sel <- metadata %>% dplyr::select(sample_name, parents, group, hpf, embryonic_stage, leachate, leachate_mgL)
+metadata_filt <- metadata %>% dplyr::select(sample_name, parents, group, hpf, embryonic_stage, leachate, leachate_mgL)
 
-metadata_filt <- metadata_sel %>% 
+metadata_filt <- metadata_filt %>% 
   filter(!sample_name %in% c("131415L4", "789C4"))
 ```
 
@@ -100,13 +99,9 @@ The count matrix should show counts of whole numbers (integers) ... since each c
 Two samples had poor hisat alignment and should be removed from the dataset: 131415L4 and 789C4
 
 ```{r}
-gcm_eo <- gcm %>% 
+gcm_filt <- gcm %>% 
   dplyr::select(-`131415L4`, -`789C4`)
 ```
-
-::: callout-note
-`gcm_eo` is the unfiltered gene count matrix that has excluded outliers.
-:::
 
 > It is absolutely critical that the columns of the count matrix and the rows of the column data (information about samples) are in the same order. DESeq2 will not make guesses as to which column of the count matrix belongs to which row of the column data, these must be provided to DESeq2 already in consistent order.
 
@@ -115,13 +110,13 @@ The following code checks that all the sample names in the metadata dataframe ma
 print(paste("There are", nrow(metadata_filt), "samples in total"))
 
 # Check if all matched names are equal (should return TRUE)
-all(metadata_filt$sample_name == colnames(gcm_eo))
+all(metadata_filt$sample_name == colnames(gcm_filt))
 ```
 
 Save gcm & metadata 
 ```{r}
 write_csv(metadata_filt, "../metadata/metadata_filt.csv")
-write_csv(gcm_eo, "../output/06_tidyup/gcm_eo.csv")
+write_csv(rownames_to_column(gcm_filt, var = "gene_id"), "../output/06_tidyup/gcm_filt.csv")
 ```
 
 
@@ -137,7 +132,7 @@ metadata_4 <- metadata_filt %>%
 
 # Subset gene count matrix
 # Select only samples that are 4hpf out of gene count matrix
-gcm_4 <- gcm_eo %>% 
+gcm_4 <- gcm_filt %>% 
   dplyr::select(matches("[CLMH]4"))
 
 print(paste("There are", nrow(metadata_4), "samples at 4hpf"))
@@ -150,7 +145,7 @@ all(metadata_4$sample_name == colnames(gcm_4))
 Save gcm & metadata 
 ```{r}
 write_csv(metadata_4, "../metadata/metadata_4.csv")
-write_csv(gcm_4, "../output/06_tidyup/gcm_4.csv")
+write_csv(rownames_to_column(gcm_4, var = "gene_id"), "../output/06_tidyup/gcm_4.csv")
 ```
 
 
@@ -163,7 +158,7 @@ metadata_9 <- metadata_filt %>%
 
 # Subset gene count matrix
 # Select only samples that are 9hpf out of gene count matrix
-gcm_9 <- gcm_eo %>% 
+gcm_9 <- gcm_filt %>% 
   dplyr::select(matches("[CLMH]9"))
 
 print(paste("There are", nrow(metadata_9), "samples at 9hpf"))
@@ -176,30 +171,34 @@ all(metadata_9$sample_name == colnames(gcm_9))
 Save gcm & metadata 
 ```{r}
 write_csv(metadata_9, "../metadata/metadata_9.csv")
-write_csv(gcm_9, "../output/06_tidyup/gcm_9.csv")
+write_csv(rownames_to_column(gcm_9, var = "gene_id"), "../output/06_tidyup/gcm_9.csv")
 ```
 
 ## 14hpf
 
 ```{r}
+# Subset metadata
 # Filter rows where 'sample_name' matches the pattern [CLMH]14
 metadata_14 <- metadata_filt %>% 
   filter(str_detect(sample_name, "[CLMH]14"))
 
-# Check if all matched names are equal
-all(metadata_14$sample_name == colnames(gcm_filt_14))
-```
+# Subset gene count matrix
+# Select only samples that are 9hpf out of gene count matrix
+gcm_14 <- gcm_filt %>% 
+  dplyr::select(matches("[CLMH]14"))
 
-```{r}
-length(metadata_14$sample_name)
-length(colnames(gcm_filt_14))
+print(paste("There are", nrow(metadata_14), "samples at 14hpf"))
+
+# Check if all matched names are equal
+all(metadata_14$sample_name == colnames(gcm_14))
 ```
-There should be 22 early gastrula (14hpf) samples
+- There should be 22 early gastrula (14hpf) samples
 
 save metadata_14
 ```{r}
 #output metadata for other analyses 
 write_csv(metadata_14, "../metadata/metadata_14.csv")
+write_csv(rownames_to_column(gcm_14, var = "gene_id"), "../output/06_tidyup/gcm_14.csv")
 ```
 
 
@@ -219,91 +218,119 @@ Pre-filtering our dataset reduces the memory size of the dataframe, increases th
 
 ```{r}
 # Filter rows where at least 8% of the columns have a value greater than 10
-gcm_filt <- gcm_eo %>%
-  filter(rowSums(across(everything(), ~ . > 10)) >= 0.08 * ncol(gcm))
+gcm_filt <- gcm_filt %>%
+  filter(rowSums(across(everything(), ~ . > 15)) >= 0.75 * ncol(gcm))
 
-nrow(gcm_eo)
+nrow(gcm)
 nrow(gcm_filt)
-
-```
-
-```{r}
-write_csv(gcm_filt, file = "../output/06_tidyup/gcm_filt.csv")
 ```
 
 ::: callout-note
-We reduced our gene count matrix from 54,384 to 22,634 genes by selecting genes present (in counts of at least 10!) in at least 8% of the samples
+We reduced our gene count matrix from 54,384 to 12,225 genes by selecting genes present (in counts of at least 15!) in at least 75% of the samples
 :::
+
+```{r}
+
+ggplot(data.frame(log_counts = log2(rowSums(gcm_filt) + 1)), aes(x = log_counts)) +
+  geom_histogram(bins = 100, fill = "steelblue") +
+  labs(
+    title = "Distribution of Log2-Transformed Total Counts per Gene",
+    x = "log2(Total Read Counts + 1)",
+    y = "Number of Genes"
+  ) +
+  theme_minimal()
+
+```
+
 
 We are going to run DGE analysis on each hpf separately (as well as together) so let's setup gene count matrices for each of 4, 9, and 14 hours post fertilization
 
 ### 4hpf
-
-
-
 ```{r}
-# Filter rows where at least (5/20) 25% of the columns have a value greater than 10
+# Filter rows where at least 75% of the columns have a value greater than 15
 gcm_filt_4 <- gcm_4 %>%
-  filter(rowSums(across(everything(), ~ . > 10)) >= 0.25 * ncol(gcm_4))
+  filter(rowSums(across(everything(), ~ . > 15)) >= 0.75 * ncol(gcm_4))
 
 nrow(gcm_4)
 nrow(gcm_filt_4)
 
-write_csv(gcm_filt_4, file = "../output/06_tidyup/gcm_filt_4.csv")
+write_csv(rownames_to_column(gcm_filt_4, var = "gene_id"), file = "../output/06_tidyup/gcm_filt_4.csv")
 ```
 
 ::: callout-note
-54384 genes were filtered down to 14,191 genes that have at least 10 copies in at least 25% of the 4hpf samples (25% is representing one of the four treatment groups)
+54384 genes were filtered down to 10,936 genes that have at least 15 copies in at least 75% of the 4hpf samples
 :::
-
-### 9hpf
-
 ```{r}
-gcm_9 <- gcm_filt %>% 
-  dplyr::select(matches("[CLMH]9"))
+
+ggplot(data.frame(log_counts = log2(rowSums(gcm_filt_4) + 1)), aes(x = log_counts)) +
+  geom_histogram(bins = 100, fill = "steelblue") +
+  labs(
+    title = "4 hpf : Distribution of Log2-Transformed Total Counts per Gene",
+    x = "log2(Total Read Counts + 1)",
+    y = "Number of Genes"
+  ) +
+  theme_minimal()
 ```
 
+### 9hpf
 ```{r}
-# Filter rows where at least (5/20) 25% of the columns have a value greater than 10
+# Filter rows where at least 75% of the columns have a value greater than 15
 gcm_filt_9 <- gcm_9 %>%
-  filter(rowSums(across(everything(), ~ . > 10)) >= 0.25 * ncol(gcm_9))
+  filter(rowSums(across(everything(), ~ . > 15)) >= 0.75 * ncol(gcm_9))
 
 nrow(gcm_9)
 nrow(gcm_filt_9)
 
-save(gcm_filt_9, file = "../output/06_tidyup/gcm_filt_9.RData")
-write_csv(gcm_filt_9, file = "../output/06_tidyup/gcm_filt_9.csv")
+write_csv(rownames_to_column(gcm_filt_9, var = "gene_id"), file = "../output/06_tidyup/gcm_filt_9.csv")
 ```
 
 ::: callout-note
-54384 genes were filtered down to 17,368 genes that have at least 10 copies in at least 25% of the 9hpf samples (25% is representing one of the four treatment groups)
+54384 genes were filtered down to 13,781 genes that have at least 15 copies in at least 75% of the 9hpf samples
 :::
 
-### 14hpf
-
 ```{r}
-gcm_14 <- gcm_filt %>% 
-  dplyr::select(matches("[CLMH]14"))
+
+ggplot(data.frame(log_counts = log2(rowSums(gcm_filt_9) + 1)), aes(x = log_counts)) +
+  geom_histogram(bins = 100, fill = "steelblue") +
+  labs(
+    title = "9 hpf : Distribution of Log2-Transformed Total Counts per Gene",
+    x = "log2(Total Read Counts + 1)",
+    y = "Number of Genes"
+  ) +
+  theme_minimal()
 ```
 
+### 14hpf
 ```{r}
-# Filter rows where at least (5/20) 25% of the columns have a value greater than 10
+# Filter rows where at least 75% of the columns have a value greater than 15
 gcm_filt_14 <- gcm_14 %>%
-  filter(rowSums(across(everything(), ~ . > 10)) >= 0.25 * ncol(gcm_14))
+  filter(rowSums(across(everything(), ~ . > 15)) >= 0.75 * ncol(gcm_14))
 
 nrow(gcm_14)
 nrow(gcm_filt_14)
 
-save(gcm_filt_14, file = "../output/06_tidyup/gcm_filt_14.RData")
-write_csv(gcm_filt_14, file = "../output/06_tidyup/gcm_filt_14.csv")
+write_csv(rownames_to_column(gcm_filt_14, var = "gene_id"), file = "../output/06_tidyup/gcm_filt_14.csv")
 ```
 
 ::: callout-note
-54384 genes were filtered down to 21,447 genes that have at least 10 copies in at least 25% of the 14hpf samples (25% is representing one of the four treatment groups)
+54384 genes were filtered down to 15,501 genes that have at least 15 copies in at least 75% of the 14hpf samples
 :::
 
+```{r}
+
+ggplot(data.frame(log_counts = log2(rowSums(gcm_filt_14) + 1)), aes(x = log_counts)) +
+  geom_histogram(bins = 100, fill = "steelblue") +
+  labs(
+    title = "14 hpf: Distribution of Log2-Transformed Total Counts per Gene",
+    x = "log2(Total Read Counts + 1)",
+    y = "Number of Genes"
+  ) +
+  theme_minimal()
+```
+
+
 ::: callout-important
-More gene transcripts are present as embryonic development progresses!
+More gene transcripts are active as embryonic development progresses!
 
 4hpf : 14,191
 
@@ -317,8 +344,8 @@ More gene transcripts are present as embryonic development progresses!
 ```{r}
 # Create a summary table
 metadata_filt %>%
-  count(hpf, leachate_lvl) %>%
-  ggplot(aes(x = leachate_lvl, y = hpf, fill = n)) +
+  count(hpf, leachate) %>%
+  ggplot(aes(x = leachate, y = hpf, fill = n)) +
   geom_tile(color = "white") +
   geom_text(aes(label = n), color = "black", size = 5) +
   scale_fill_gradient(low = "lightblue", high = "steelblue") +
@@ -334,4 +361,20 @@ metadata_filt %>%
 ::: callout-note
 We have 61 samples spanning three embryonic phases and four pollution exposure levels, yielding 12 distinct treatment combinations. The heatmap above shows how samples are distributed across treatments. Our minimum group size is 4, which guides our gene filtering threshold. We hypothesize that both developmental stage and pollution exposure independently and interactively influence gene expression.
 :::
+
+## Common genes
+
+```{r}
+# Convert rownames to a column
+gcm_4_df <- rownames_to_column(gcm_filt_4, var = "gene_id")
+gcm_9_df <- rownames_to_column(gcm_filt_9, var = "gene_id")
+gcm_14_df <- rownames_to_column(gcm_filt_14, var = "gene_id")
+
+# Join by gene_id
+gcm_common <- gcm_4_df %>%
+  inner_join(gcm_9_df, by = "gene_id") %>%
+  inner_join(gcm_14_df, by = "gene_id")
+
+nrow(gcm_common)
+```
 

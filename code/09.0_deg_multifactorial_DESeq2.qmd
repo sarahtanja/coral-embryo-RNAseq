@@ -125,8 +125,8 @@ str(metadata_filt)
 metadata_filt$embryonic_stage <- as.factor(metadata_filt$embryonic_stage)
 metadata_filt$embryonic_stage <- fct_relevel(metadata_filt$embryonic_stage, "cleavage", "prawnchip", "earlygastrula")
  
-metadata_filt$leachate <- as.factor(metadata_filt$leachate_lvl)
-metadata_filt$leachate <- fct_relevel(metadata_filt$leachate_lvl, "control", "low", "mid", "high")
+metadata_filt$leachate <- as.factor(metadata_filt$leachate)
+metadata_filt$leachate <- fct_relevel(metadata_filt$leachate, "control", "low", "mid", "high")
 
 metadata_filt$hpf <- as.factor(metadata_filt$hpf)
 metadata_filt$hpf <- fct_relevel(metadata_filt$hpf, "4", "9", "14")
