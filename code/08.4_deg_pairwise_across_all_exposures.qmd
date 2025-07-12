@@ -53,6 +53,7 @@ We did not find any significantly differently expressed genes across all embryon
 ## Install packages
 ```{r}
 BiocManager::install("RUVSeq")
+BiocManager::install("EDASeq")
 ```
 
 ## Load packages
@@ -60,6 +61,7 @@ BiocManager::install("RUVSeq")
 library(tidyverse)
 library(DESeq2)
 library(RUVSeq)
+library(EDASeq)
 library(pheatmap)
 library(RColorBrewer)
 library(ashr)
@@ -83,6 +85,7 @@ metadata_14 <- read.csv("../metadata/metadata_14.csv")
 ```
 
 # 4 hpf
+## Format metadata
 ```{r}
 str(metadata_4)
 ```
@@ -121,6 +124,7 @@ Are all size factors less than 4?
 ```{r}
 all(sizeFactors(dds_4))<4
 ```
+### Count transformations
 Make count transformations (for use in visualizations & clustering)
 ```{r}
 rld_4 <- rlog(dds_4, blind = FALSE) 
@@ -128,19 +132,6 @@ vsd_4 <- vst(dds_4, blind = FALSE)
 log2_4 <- as.data.frame(log2(counts(dds_4, normalized = TRUE) + 1), check.names = FALSE)
 ```
 
-Clusters
-```{r}
-rdists <- dist(t(assay(rld_4)))
-plot(hclust(rdists))
-```
-
-```{r}
-vdists <- dist(t(assay(vsd_4)))
-plot(hclust(vdists))
-```
-
-
-### Count transformations
 The distribution should shift via the transformation from a negative binomial to a approximately normal distribution.
 
 ```{r}
@@ -207,6 +198,7 @@ ggplot(df_rld_long, aes(x = expression, group = sample)) +
 
 ### PCA
 
+#### static
 ```{r}
 # Get PCA data (top 500 DEGs by default)
 pca_4 <- plotPCA(rld_4, intgroup = "group", returnData = TRUE)
@@ -217,7 +209,7 @@ pca_4 <- merge(pca_4, metadata_4, by.x = "name", by.y = "sample_name", all.x = T
 
 # Assign specific colors to each leachate
 leachate_colors <- c(
-  "control" = flex("blue", sat = 200),
+  "control" = flex("green", sat = 200),
   "low" = flex("magenta", sat = 300),
   "mid" = flex("magenta", sat = 600),
   "high" = flex("magenta", sat = 900)
@@ -236,7 +228,7 @@ PCA_4 <- ggplot(pca_4, aes(PC1, PC2, color=leachate)) +
 
 PCA_4
 ```
-
+#### tooltip
 ```{r}
 pca_4$label <- paste0("Sample: ", pca_4$sample_name,
                         "\nLeachate: ", pca_4$leachate)
@@ -256,6 +248,7 @@ PCA_4 <- ggplot(pca_4, aes(PC1, PC2, color = leachate, label = name)) +
 # Convert to interactive plot
 ggplotly(PCA_4, tooltip = "label")
 ```
+#### parent
 ```{r}
 # Plot PCA
 PCA_4 <- ggplot(pca_4, aes(PC1, PC2, color=parents)) + 
@@ -270,36 +263,38 @@ PCA_4 <- ggplot(pca_4, aes(PC1, PC2, color=parents)) +
 PCA_4
 ```
 
+### Clusters
 ```{r}
-# Save the plot as a png
-ggsave("../output/08_deg/PCA_control_vs_high.png", plot = PCA_CvH_plot, width = 8, height = 6, dpi = 600)
+rdists <- dist(t(assay(rld_4)))
+plot(hclust(rdists))
 ```
+
 
 ### Heatmap
 
 ```{r}
 
 # 1. Select the top 50 genes by mean expression
-top_genes <- order(rowMeans(counts(dds_cvh, normalized = TRUE)), decreasing = TRUE)[1:50]
+top_genes <- order(rowMeans(counts(dds_4, normalized = TRUE)), decreasing = TRUE)[1:50]
 
 # 2. Extract rlog-transformed matrix
-rlog_matrix <- assay(rld_cvh)[top_genes, ]
+rlog_matrix <- assay(rld_4)[top_genes, ]
 
-# 3. Extract only pvc_leachate_level annotation
-annotation_df <- as.data.frame(colData(dds_cvh)[, "pvc_leachate_level", drop = FALSE])
+# 3. Extract only leachate annotation
+annotation_df <- as.data.frame(colData(dds_4)[, "leachate", drop = FALSE])
 
 # Ensure it's a factor in correct order: control, high
-annotation_df$pvc_leachate_level <- factor(annotation_df$pvc_leachate_level, levels = c("control", "high"))
+annotation_df$leachate <- factor(annotation_df$leachate, levels = c("control", "low", "mid", "high"))
 
-# 4. Order samples by pvc_leachate_level
-ordered_cols <- order(annotation_df$pvc_leachate_level)
+# 4. Order samples by leachate
+ordered_cols <- order(annotation_df$leachate)
 
 # Reorder matrix and annotation
 rlog_matrix_ordered <- rlog_matrix[, ordered_cols]
 annotation_ordered <- annotation_df[ordered_cols, , drop = FALSE]
 
 # 5. Plot heatmap
-heatmap_colors <- colorRampPalette(rev(brewer.pal(n = 9, "RdBu")))(100)
+heatmap_colors <- colorRampPalette(rev(brewer.pal(n = 9, "RdYlBu")))(100)
 
 pheatmap(
   rlog_matrix_ordered,
@@ -307,33 +302,586 @@ pheatmap(
   cluster_cols = FALSE,
   show_rownames = FALSE,
   annotation_col = annotation_ordered,
+  annotation_colors = list(
+    leachate = leachate_colors
+  ),
   color = heatmap_colors,
-  main = "Top 50 Most Expressed Genes (Control vs High)"
+  main = "4hpf: Top 50 Most Expressed Genes"
 )
 
 ```
 
-### RUVSeq
-
-```{r}
-set <- newSeqExpressionSet(as.matrix(filtered),
-                           phenoData = data.frame(x, row.names=colnames(filtered)))
-set
-```
-
+### RUVSeq? 
 
 https://bioconductor.org/packages/release/bioc/vignettes/RUVSeq/inst/doc/RUVSeq.html
 
 ## Run DESeq2
 
 ```{r}
-dds_cvh_deseq <- DESeq(dds_cvh)
+dds_4 <- DESeq(dds_4)
 ```
 
 ```{r}
-summary(results(dds_cvh_deseq))
+resultsNames(dds_4)
+```
+### Effect of low vs control
+```{r}
+# output results of contrast
+res_4_low_v_control <- (results(dds_4, name = "leachate_low_vs_control", alpha=0.05)
+)
+
+summary(res_4_low_v_control)
+```
+### Effect of mid vs control
+```{r}
+# output results of contrast
+res_4_mid_v_control <- (results(dds_4, name = "leachate_mid_vs_control", alpha=0.05)
+)
+
+summary(res_4_mid_v_control)
+```
+### Effect of high vs control
+```{r}
+# output results of contrast
+res_4_high_v_control <- (results(dds_4, name = "leachate_high_vs_control", alpha=0.05)
+)
+
+summary(res_4_high_v_control)
+```
+### Effect of low vs mid
+```{r}
+# output results of contrast
+res_4_low_v_mid <- (results(dds_4, contrast = 
+                              list(c("leachate_low_vs_control", "leachate_mid_vs_control"))
+                            )
+                    )
+
+summary(res_4_low_v_mid)
+```
+### Effect of low vs high
+```{r}
+# output results of contrast
+res_4_low_v_high <- (results(dds_4, contrast = 
+                              list(c("leachate_low_vs_control", "leachate_high_vs_control"))
+                            )
+                    )
+
+summary(res_4_low_v_high)
+```
+### Effect of mid vs high
+```{r}
+# output results of contrast
+res_4_mid_v_high <- (results(dds_4, contrast = 
+                              list(c("leachate_mid_vs_control", "leachate_high_vs_control"))
+                            )
+                    )
+
+summary(res_4_mid_v_high)
 ```
 
-::: callout-important
-There are zero differentially expressed genes between the control and high treatment groups across all developmental stages.
-:::
+# 9 hpf
+## Format metadata
+```{r}
+str(metadata_9)
+```
+
+```{r}
+# Reorder leachate factor
+metadata_9$leachate <- as.factor(metadata_9$leachate)
+metadata_9$leachate <- fct_relevel(metadata_9$leachate, "control", "low", "mid", "high")
+
+# Make parents a character string
+metadata_9$parents <- as.character(metadata_9$parents)
+str(metadata_9)
+```
+## Filter low read
+```{r}
+# Filter rows where at least 75% of the columns have a raw count of at least 15
+gcm_9_filt <- gcm_9 %>%
+  filter(rowSums(across(everything(), ~ . > 50)) >= 0.75 * ncol(gcm_9))
+nrow(gcm_9_filt)
+```
+
+## Make DESeq Object
+
+Make [DESeq Dataset Object from Count Matrix](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#count-matrix-input) Create a DESeqDataSet design from gene count matrix and treatment conditions.
+
+```{r}
+dds_9 <- DESeqDataSetFromMatrix(countData = gcm_9_filt,
+                              colData = metadata_9, 
+                              design = ~leachate)
+
+dds_9 <- estimateSizeFactors(dds_9)
+```
+
+Are all size factors less than 4?
+```{r}
+all(sizeFactors(dds_9))<4
+```
+
+### Count transformations
+Make count transformations (for use in visualizations & clustering)
+```{r}
+rld_9 <- rlog(dds_9, blind = FALSE) 
+vsd_9 <- vst(dds_9, blind = FALSE)
+log2_9 <- as.data.frame(log2(counts(dds_9, normalized = TRUE) + 1), check.names = FALSE)
+```
+The distribution should shift via the transformation from a negative binomial to a approximately normal distribution.
+
+```{r}
+# Combine all transformations into one long-format dataframe
+df_9 <- bind_rows(
+  as.data.frame(log2(counts(dds_9, normalized = TRUE) + 1)) %>%
+    mutate(transformation = "log2(x + 1)"),
+  as.data.frame(assay(vsd_9)) %>%
+    mutate(transformation = "vst"),
+  as.data.frame(assay(rld_9)) %>%
+    mutate(transformation = "rlog")
+)
+
+# Pivot to long format: one row per expression value
+df_long <- df_9 %>%
+  pivot_longer(
+    cols = -transformation,
+    names_to = "sample",
+    values_to = "expression"
+  )
+
+# Plot
+ggplot(df_long, aes(x = expression)) +
+  geom_histogram(bins = 100, fill = "steelblue") +
+  facet_wrap(~ transformation) +
+  theme_classic() +
+  labs(
+    title = "Distribution of Transformed Counts Across All Samples (9 hpf)",
+    x = "Transformed counts",
+    y = "Frequency"
+  )
+
+```
+### PCA
+#### static
+```{r}
+# Get PCA data (top 500 DEGs by default)
+pca_9 <- plotPCA(rld_9, intgroup = "group", returnData = TRUE)
+percentVar_9 <- round(100*attr(pca_9, "percentVar"))
+
+# Merge with metadata
+pca_9 <- merge(pca_9, metadata_9, by.x = "name", by.y = "sample_name", all.x = TRUE)
+
+# Assign specific colors to each leachate
+leachate_colors <- c(
+  "control" = flex("green", sat = 200),
+  "low" = flex("magenta", sat = 300),
+  "mid" = flex("magenta", sat = 600),
+  "high" = flex("magenta", sat = 900)
+)
+
+# Plot PCA
+PCA_9 <- ggplot(pca_9, aes(PC1, PC2, color=leachate)) + 
+  geom_point(size=2, alpha = 0.8) +
+  ggtitle("M.cap embryos at 9 hpf exposed to pvc leachate, top 500 most variable genes") +
+  xlab(paste0("PC1: ",percentVar_9[1],"% variance")) +
+  ylab(paste0("PC2: ",percentVar_9[2],"% variance")) + 
+  coord_fixed() +
+  scale_color_manual(values=leachate_colors)+
+  stat_ellipse()+
+  theme_minimal()
+
+PCA_9
+```
+
+#### tooltip
+```{r}
+pca_9$label <- paste0("Sample: ", pca_9$sample_name,
+                        "\nLeachate: ", pca_9$leachate)
+
+# Original ggplot with an interactive tooltip aesthetic
+PCA_9 <- ggplot(pca_9, aes(PC1, PC2, color = leachate, label = name)) + 
+  geom_point(shape = 21, size = 2) +
+  ggtitle("M.cap embryos at 9 hpf exposed to pvc leachate, top 500 most variable genes") +
+  xlab(paste0("PC1: ", percentVar_9[1], "% variance")) +
+  ylab(paste0("PC2: ", percentVar_9[2], "% variance")) + 
+  coord_fixed() +
+  scale_color_manual(values = leachate_colors) +
+  stat_ellipse() + 
+  guides(alpha = "none") +  # hide alpha legend (optional)
+  theme_minimal()
+
+# Convert to interactive plot
+ggplotly(PCA_9, tooltip = "label")
+```
+
+#### parent
+```{r}
+# Plot PCA
+PCA_9 <- ggplot(pca_9, aes(PC1, PC2, color=parents)) + 
+  geom_point(size=2, alpha = 0.8) +
+  ggtitle("M.cap embryos at 9 hpf exposed to pvc leachate, top 500 most variable genes") +
+  xlab(paste0("PC1: ",percentVar_9[1],"% variance")) +
+  ylab(paste0("PC2: ",percentVar_9[2],"% variance")) + 
+  coord_fixed() +
+  stat_ellipse()+
+  theme_minimal()
+
+PCA_9
+```
+
+### Clusters
+```{r}
+rdists <- dist(t(assay(rld_9)))
+plot(hclust(rdists))
+```
+
+
+### Heatmap
+
+```{r}
+
+# 1. Select the top 50 genes by mean expression
+top_genes <- order(rowMeans(counts(dds_9, normalized = TRUE)), decreasing = TRUE)[1:50]
+
+# 2. Extract rlog-transformed matrix
+rlog_matrix <- assay(rld_9)[top_genes, ]
+
+# 3. Extract only leachate annotation
+annotation_df <- as.data.frame(colData(dds_9)[, "leachate", drop = FALSE])
+
+# Ensure it's a factor in correct order: control, high
+annotation_df$leachate <- factor(annotation_df$leachate, levels = c("control", "low", "mid", "high"))
+
+# 9. Order samples by leachate
+ordered_cols <- order(annotation_df$leachate)
+
+# Reorder matrix and annotation
+rlog_matrix_ordered <- rlog_matrix[, ordered_cols]
+annotation_ordered <- annotation_df[ordered_cols, , drop = FALSE]
+```
+
+```{r}
+# 5. Plot heatmap
+heatmap_colors <- colorRampPalette(rev(brewer.pal(n = 9, "RdYlBu")))(100)
+
+pheatmap(
+  rlog_matrix_ordered,
+  cluster_rows = FALSE,
+  cluster_cols = FALSE,
+  show_rownames = FALSE,
+  annotation_col = annotation_ordered,
+  annotation_colors = list(
+    leachate = leachate_colors
+  ),
+  color = heatmap_colors,
+  main = "9hpf: Top 50 Most Expressed Genes"
+)
+
+```
+
+### RUVSeq? 
+
+https://bioconductor.org/packages/release/bioc/vignettes/RUVSeq/inst/doc/RUVSeq.html
+
+## Run DESeq2
+
+```{r}
+dds_9 <- DESeq(dds_9)
+```
+
+```{r}
+resultsNames(dds_9)
+```
+### Effect of low vs control
+```{r}
+# output results of contrast
+res_9_low_v_control <- (results(dds_9, name = "leachate_low_vs_control", alpha=0.05)
+)
+
+summary(res_9_low_v_control)
+```
+### Effect of mid vs control
+```{r}
+# output results of contrast
+res_9_mid_v_control <- (results(dds_9, name = "leachate_mid_vs_control", alpha=0.05)
+)
+
+summary(res_9_mid_v_control)
+```
+### Effect of high vs control
+```{r}
+# output results of contrast
+res_9_high_v_control <- (results(dds_9, name = "leachate_high_vs_control", alpha=0.05)
+)
+
+summary(res_9_high_v_control)
+```
+### Effect of low vs mid
+```{r}
+# output results of contrast
+res_9_low_v_mid <- (results(dds_9, contrast = 
+                              list(c("leachate_low_vs_control", "leachate_mid_vs_control"))
+                            )
+                    )
+
+summary(res_9_low_v_mid)
+```
+### Effect of low vs high
+```{r}
+# output results of contrast
+res_9_low_v_high <- (results(dds_9, contrast = 
+                              list(c("leachate_low_vs_control", "leachate_high_vs_control"))
+                            )
+                    )
+
+summary(res_9_low_v_high)
+```
+### Effect of mid vs high
+```{r}
+# output results of contrast
+res_9_mid_v_high <- (results(dds_9, contrast = 
+                              list(c("leachate_mid_vs_control", "leachate_high_vs_control"))
+                            )
+                    )
+
+summary(res_9_mid_v_high)
+```
+# 14 hpf
+## Format metadata
+```{r}
+str(metadata_14)
+```
+
+```{r}
+# Reorder leachate factor
+metadata_14$leachate <- as.factor(metadata_14$leachate)
+metadata_14$leachate <- fct_relevel(metadata_14$leachate, "control", "low", "mid", "high")
+
+# Make parents a character string
+metadata_14$parents <- as.character(metadata_14$parents)
+str(metadata_14)
+```
+## Filter low read
+```{r}
+# Filter rows where at least 75% of the columns have a raw count of at least 15
+gcm_14_filt <- gcm_14 %>%
+  filter(rowSums(across(everything(), ~ . > 50)) >= 0.75 * ncol(gcm_14))
+nrow(gcm_14_filt)
+```
+
+## Make DESeq Object
+
+Make [DESeq Dataset Object from Count Matrix](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#count-matrix-input) Create a DESeqDataSet design from gene count matrix and treatment conditions.
+
+```{r}
+dds_14 <- DESeqDataSetFromMatrix(countData = gcm_14_filt,
+                              colData = metadata_14, 
+                              design = ~leachate)
+
+dds_14 <- estimateSizeFactors(dds_14)
+```
+
+Are all size factors less than 4?
+```{r}
+all(sizeFactors(dds_14))<4
+```
+
+### Count transformations
+Make count transformations (for use in visualizations & clustering)
+```{r}
+rld_14 <- rlog(dds_14, blind = FALSE) 
+vsd_14 <- vst(dds_14, blind = FALSE)
+log2_14 <- as.data.frame(log2(counts(dds_14, normalized = TRUE) + 1), check.names = FALSE)
+```
+
+### PCA
+#### static
+```{r}
+# Get PCA data (top 500 DEGs by default)
+pca_14 <- plotPCA(rld_14, intgroup = "group", returnData = TRUE)
+percentVar_14 <- round(100*attr(pca_14, "percentVar"))
+
+# Merge with metadata
+pca_14 <- merge(pca_14, metadata_14, by.x = "name", by.y = "sample_name", all.x = TRUE)
+
+# Assign specific colors to each leachate
+leachate_colors <- c(
+  "control" = flex("green", sat = 200),
+  "low" = flex("magenta", sat = 300),
+  "mid" = flex("magenta", sat = 600),
+  "high" = flex("magenta", sat = 900)
+)
+
+# Plot PCA
+PCA_14 <- ggplot(pca_14, aes(PC1, PC2, color=leachate)) + 
+  geom_point(size=2, alpha = 0.8) +
+  ggtitle("M.cap embryos at 14 hpf exposed to pvc leachate, top 500 most variable genes") +
+  xlab(paste0("PC1: ",percentVar_14[1],"% variance")) +
+  ylab(paste0("PC2: ",percentVar_14[2],"% variance")) + 
+  coord_fixed() +
+  scale_color_manual(values=leachate_colors)+
+  stat_ellipse()+
+  theme_minimal()
+
+PCA_14
+```
+
+#### tooltip
+```{r}
+pca_14$label <- paste0("Sample: ", pca_14$sample_name,
+                        "\nLeachate: ", pca_14$leachate)
+
+# Original ggplot with an interactive tooltip aesthetic
+PCA_14 <- ggplot(pca_14, aes(PC1, PC2, color = leachate, label = name)) + 
+  geom_point(shape = 21, size = 2) +
+  ggtitle("M.cap embryos at 14 hpf exposed to pvc leachate, top 500 most variable genes") +
+  xlab(paste0("PC1: ", percentVar_14[1], "% variance")) +
+  ylab(paste0("PC2: ", percentVar_14[2], "% variance")) + 
+  coord_fixed() +
+  scale_color_manual(values = leachate_colors) +
+  stat_ellipse() + 
+  guides(alpha = "none") +  # hide alpha legend (optional)
+  theme_minimal()
+
+# Convert to interactive plot
+ggplotly(PCA_14, tooltip = "label")
+```
+#### parent
+```{r}
+# Plot PCA
+PCA_14 <- ggplot(pca_14, aes(PC1, PC2, color=parents)) + 
+  geom_point(size=2, alpha = 0.8) +
+  ggtitle("M.cap embryos at 14 hpf exposed to pvc leachate, top 500 most variable genes") +
+  xlab(paste0("PC1: ",percentVar_14[1],"% variance")) +
+  ylab(paste0("PC2: ",percentVar_14[2],"% variance")) + 
+  coord_fixed() +
+  stat_ellipse()+
+  theme_minimal()
+
+PCA_14
+```
+
+### Clusters
+```{r}
+rdists <- dist(t(assay(rld_14)))
+plot(hclust(rdists))
+```
+
+### Heatmap
+
+```{r}
+
+# 1. Select the top 50 genes by mean expression
+top_genes <- order(rowMeans(counts(dds_14, normalized = TRUE)), decreasing = TRUE)[1:50]
+
+# 2. Extract rlog-transformed matrix
+rlog_matrix <- assay(rld_14)[top_genes, ]
+
+# 3. Extract only leachate annotation
+annotation_df <- as.data.frame(colData(dds_14)[, "leachate", drop = FALSE])
+
+# Ensure it's a factor in correct order: control, high
+annotation_df$leachate <- factor(annotation_df$leachate, levels = c("control", "low", "mid", "high"))
+
+# 14. Order samples by leachate
+ordered_cols <- order(annotation_df$leachate)
+
+# Reorder matrix and annotation
+rlog_matrix_ordered <- rlog_matrix[, ordered_cols]
+annotation_ordered <- annotation_df[ordered_cols, , drop = FALSE]
+```
+
+```{r}
+# 5. Plot heatmap
+heatmap_colors <- colorRampPalette(rev(brewer.pal(n = 14, "RdYlBu")))(100)
+
+pheatmap(
+  rlog_matrix_ordered,
+  cluster_rows = FALSE,
+  cluster_cols = FALSE,
+  show_rownames = FALSE,
+  annotation_col = annotation_ordered,
+  annotation_colors = list(
+    leachate = leachate_colors
+  ),
+  color = heatmap_colors,
+  main = "14hpf: Top 50 Most Expressed Genes"
+)
+
+```
+
+### RUVSeq? 
+
+https://bioconductor.org/packages/release/bioc/vignettes/RUVSeq/inst/doc/RUVSeq.html
+
+## Run DESeq2
+
+```{r}
+dds_14 <- DESeq(dds_14)
+```
+
+```{r}
+resultsNames(dds_14)
+```
+
+### Effect of low vs control
+```{r}
+# output results of contrast
+res_14_low_v_control <- (results(dds_14, name = "leachate_low_vs_control", alpha=0.05)
+)
+
+summary(res_14_low_v_control)
+```
+### Effect of mid vs control
+```{r}
+# output results of contrast
+res_14_mid_v_control <- (results(dds_14, name = "leachate_mid_vs_control", alpha=0.05)
+)
+
+summary(res_14_mid_v_control)
+```
+### Effect of high vs control
+```{r}
+# output results of contrast
+res_14_high_v_control <- (results(dds_14, name = "leachate_high_vs_control", alpha=0.05)
+)
+
+summary(res_14_high_v_control)
+```
+### Effect of low vs mid
+```{r}
+# output results of contrast
+res_14_low_v_mid <- (results(dds_14, contrast = 
+                              list(c("leachate_low_vs_control", "leachate_mid_vs_control"))
+                            )
+                    )
+
+summary(res_14_low_v_mid)
+```
+### Effect of low vs high
+```{r}
+# output results of contrast
+res_14_low_v_high <- (results(dds_14, contrast = 
+                              list(c("leachate_low_vs_control", "leachate_high_vs_control"))
+                            )
+                    )
+
+summary(res_14_low_v_high)
+```
+### Effect of mid vs high
+```{r}
+# output results of contrast
+res_14_mid_v_high <- (results(dds_14, contrast = 
+                              list(c("leachate_mid_vs_control", "leachate_high_vs_control"))
+                            )
+                    )
+
+summary(res_14_mid_v_high)
+```
+
+# Summary
+
+> 🤔 Why might you get zero significant genes?
+Here are common reasons:
+- Weak or no true signal: The effect size may be small, or there’s genuinely no strong differential expression.
+- Insufficient power: Not enough replicates or high within-group variability.
+- Wrong contrast or factor levels: If you’re not testing the right comparison, you might get no signal.
+- Batch effects / confounding: Noise can drown out signal if not modeled properly.

@@ -1,0 +1,643 @@
+---
+title: "Multifactorial Differential Gene Expression"
+subtitle: "using DESeq2 contrasts"
+author: "Sarah Tanja"
+date: 2024-12-02
+date-modified: today
+format:
+  gfm: 
+    toc: true
+    number-sections: true
+  html:
+    theme: journal
+    highlight-style: github
+    page-layout: full
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    number-sections: true
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    reference-location: margin
+    citation-location: margin
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  fig.width = 12,
+  fig.height = 8,
+  fig.align = "center",
+  dpi = 600,
+  echo = TRUE,         # Display code chunks
+  eval = TRUE,        # Evaluate code chunks
+  warning = FALSE,     # Hide warnings
+  message = FALSE,     # Hide messages
+  comment = ""         # Prevents appending '##' to beginning of lines in code output
+)
+```
+
+# Background
+
+Here we are looking at a multifactorial differential gene expression analysis for developing coral embryos at 3 developmental stages (4 hours post fertilization , 9 hours post fertilization, and 14 hours post fertiliation). Embryos at each stage were exposed to either a control, low, mid, or high concentration of PVC leachate. This work aims to understand sublethal effects of microplastic pollution on coral reefs.
+
+## Inputs
+
+-   `gcm_filt.csv` is the unfiltered gene count matrix for 61 samples (two outlier samples were already removed).
+-   `metadata_filt.csv` is the metadata for 61 samples
+
+## Outputs
+
+-   `volcano_facet.png`
+
+# Setup
+
+## Install packages
+
+```{r}
+if ("tidyverse" %in% rownames(installed.packages()) == 'FALSE') 
+  install.packages('tidyverse')
+if ("DESeq2" %in% rownames(installed.packages()) == 'FALSE')
+  install.packages('DESeq2')
+if ("ashr" %in% rownames(installed.packages()) == 'FALSE')
+  install.packages('ashr')
+if ("plotly" %in% rownames(installed.packages()) == 'FALSE')
+  install.packages('plotly')
+if ("cowplot" %in% rownames(installed.packages()) == 'FALSE')
+  install.packages('cowplot')
+if ("pak" %in% rownames(installed.packages()) == 'FALSE')
+  install.packages('pak')
+```
+
+```{r}
+#if (!require("BiocManager", quietly = TRUE))
+#    install.packages("BiocManager")
+#BiocManager::install("EnhancedVolcano")
+#pak::pak("mdscheuerell/flexoki")
+```
+
+## Load packages
+
+```{r}
+# Load packages
+library(DESeq2)
+library(tidyverse)
+library(EnhancedVolcano)
+library(ashr)
+library(flexoki)
+library(plotly)
+library(cowplot)
+```
+
+## Import gene counts
+
+In this count matrix, each row represents a gene, each column a sequenced RNA library, and the values give the estimated counts of fragments that were assigned to the respective gene in each library by `HISAT2`
+
+-   `check.names = FALSE` removed the 'X' from in front of sample id's in the column headers
+
+```{r}
+gcm_filt <- read.csv("../output/06_tidyup/gcm_filt.csv", row.names="gene_id", check.names = FALSE)
+head(gcm_filt)
+```
+
+-   The raw unfiltered, untransformed, count matrix shows counts of whole numbers (integers)
+-   Each column is a sample
+-   Each row is a gene
+-   A sample id describes parental crosses (the first string of numbers), the pollution exposure (C, L, M, H), and the embryonic stage (4, 9, 14)
+
+::: callout-note
+`gcm_filt` is the gene count matrix that has been filtered to remove 2 outlier samples ( `131415L4` and `789C4` ) that had poor HISAT alignment and did not group in the exploratory PCA
+:::
+
+## Import metadata
+
+```{r}
+metadata_filt <- read_csv("../metadata/metadata_filt.csv")
+str(metadata_filt)
+```
+Format metadata
+```{r}
+# Reorder factors
+metadata_filt$embryonic_stage <- as.factor(metadata_filt$embryonic_stage)
+metadata_filt$embryonic_stage <- fct_relevel(metadata_filt$embryonic_stage, "cleavage", "prawnchip", "earlygastrula")
+ 
+metadata_filt$leachate <- as.factor(metadata_filt$leachate)
+metadata_filt$leachate <- fct_relevel(metadata_filt$leachate, "control", "low", "mid", "high")
+
+metadata_filt$hpf <- as.factor(metadata_filt$hpf)
+metadata_filt$hpf <- fct_relevel(metadata_filt$hpf, "4", "9", "14")
+
+metadata_filt$parents <- as.factor(metadata_filt$parents)
+str(metadata_filt)
+```
+
+::: callout-note
+`metadata_filt` contains metadata for 61 samples where explanatory variables `hpf` is a factor with 3 levels (4, 9, 14) and `leachate` is a continuous numerical variable representing leachate concentrations with values 0 mg/L, 0.01 mg/L, 0.1 mg/L, and 1 mg/L
+:::
+
+# Filter read counts
+
+```{r}
+# Filter rows where at least 75% of the columns have a raw count of ~50
+gcm_filt <- gcm_filt %>%
+  filter(rowSums(across(everything(), ~ . > 50)) >= 0.75 * ncol(gcm_filt))
+
+nrow(gcm_filt)
+```
+
+::: callout-note
+This is an aggressive filter!
+:::
+
+# Make DESeq2 object
+
+```{r}
+
+dds <- DESeqDataSetFromMatrix(countData = gcm_filt,
+                              colData = metadata_filt,
+                              design = formula( ~ 1 + hpf + leachate))
+```
+
+## Explore PCAs
+```{r}
+# Get PCA data (top 500 DEGs by default)
+pca_500 <- plotPCA(vst(dds), intgroup = "group", returnData = TRUE)
+percentVar_500 <- round(100*attr(pca_500, "percentVar"))
+
+# Merge with metadata
+pca_500 <- merge(pca_500, metadata_filt, by.x = "name", by.y = "sample_name", all.x = TRUE)
+
+
+# Assign specific colors to each hpf
+hpf_colors <- c(
+  "4" = flex("cyan", sat=500),
+  "9" = flex("green", sat =500),
+  "14" = flex("yellow", sat=500)
+)
+
+# Plot PCAs
+PCA_500 <- ggplot(pca_500, aes(PC1, PC2, color=hpf, shape=leachate)) + 
+  geom_point(size=2, alpha = 0.8) +
+  ggtitle("M.cap embryos exposed to pvc leachate, top 500 most variable genes") +
+  xlab(paste0("PC1: ",percentVar_500[1],"% variance")) +
+  ylab(paste0("PC2: ",percentVar_500[2],"% variance")) + 
+  coord_fixed() +
+  scale_color_manual(values=hpf_colors)+
+  stat_ellipse()+
+  theme_minimal()
+
+PCA_500
+```
+
+```{r}
+pca_500$label <- paste0("Sample: ", pca_500$sample_name,
+                        "\nHPF: ", pca_500$hpf,
+                        "\nLeachate: ", pca_500$leachate)
+
+# Indicate leachate level by saturation (alpha)
+leachate_alpha_map <- c("control" = 0.3, "low" = 0.5, "mid" = 0.7, "high" = 1)
+pca_500$alpha_val <- leachate_alpha_map[pca_500$leachate]
+
+# Original ggplot with a tooltip aesthetic
+PCA_500 <- ggplot(pca_500, aes(PC1, PC2, color = hpf, label = name, alpha = alpha_val)) + 
+  geom_point(shape = 21, size = 2) +
+  ggtitle("M.cap embryos exposed to pvc leachate, top 500 most variable genes") +
+  xlab(paste0("PC1: ", percentVar_500[1], "% variance")) +
+  ylab(paste0("PC2: ", percentVar_500[2], "% variance")) + 
+  coord_fixed() +
+  scale_color_manual(values = hpf_colors) +
+  stat_ellipse() + 
+  guides(alpha = "none") +  # hide alpha legend (optional)
+  theme_minimal()
+
+# Convert to interactive plot
+ggplotly(PCA_500, tooltip = "label")
+```
+::: callout-note
+Data groups largely by embryonic stage (hours post fertilization = hpf)!
+:::
+
+## Plot distribution
+
+```{r}
+
+# Extract VST-transformed expression matrix
+vsd_mat <- assay(vst(dds))
+
+# Flatten it into a vector
+vsd_vals <- as.vector(vsd_mat)
+
+# Create a dataframe for ggplot
+df_vsd <- data.frame(vsd_count = vsd_vals)
+
+# Plot
+ggplot(df_vsd, aes(x = vsd_count)) +
+  geom_histogram(fill = "grey") +
+  theme_classic() +
+  labs(
+    title = "Histogram of Variance-Stabilized Counts",
+    x = "VST-transformed read count",
+    y = "Frequency"
+  )
+
+```
+
+VST compresses the high-end of the count distribution and expands the low-end, making the variance roughly constant across the range. The resulting values are on an approximate log2 scale but not exact log2(count + 1) --- VST is more nuanced, especially for low counts. A range of 5 to 15 corresponds roughly to raw counts ranging from 2³² to 2¹⁵ ≈ 32 to 32,000, so it's realistic for RNA-seq gene expression data.
+
+# DESeq LRT test
+The likelihood ratio test whether leachate significantly improves the model, after accounting for hpf.
+Full model: ~ hpf + leachate
+Reduced model: ~ hpf
+In other words: Are there any genes whose expression is significantly explained by leachate, beyond what hpf already explains? This is a global test — it evaluates whether any effect of leachate is present (e.g. multiple levels in a factor, or a continuous dose effect), but it doesn’t tell you which direction the effect goes (up/down), or which level of leachate is responsible.
+```{r}
+dds_lrt <- DESeq(dds, test = "LRT", reduced = ~ hpf)
+```
+### Plot dispersion estimates
+```{r}
+plotDispEsts(dds_lrt)
+```
+x-axis:
+Mean of normalized counts for each gene (on a log10 scale)
+y-axis:
+Estimated dispersion (how variable gene expression is across samples), also on a log scale
+
+### Summarize results
+```{r}
+summary(results(dds_lrt))
+```
+
+::: Callout-note
+This compares the full model `~ hpf + leachate` to the reduced model `~ hpf` and genes with significant p-values can be interpreted as ones that are responding to `leachate`, regardless of direction (up or down) or level (low, mid, high). Another way to view it is what does the `+ leachate` do that isn't explained by `hpf` alone? 
+
+This design is to detect any effect of `leachate` — even if small or complex — while controlling for `hpf`.
+
+In the results summary, 12 genes show significant evidence of being affected by `leachate` (FDR < 0.1), according to the LRT model.
+
+Half the genes (~5,111) were filtered out due to low mean counts.
+
+Many of our p-values are close to zero, but LFCs are small — which can happen when there are consistent but subtle differences with low variance.
+These 12 genes are significant across all leachate levels and across all developmental stages! 
+:::
+
+### Extract sig genes
+```{r}
+sig_lrt_genes <- rownames(subset(results(dds_lrt), padj < 0.1))
+```
+
+12 genes at alpha = 0.1 , 3 genes at alpha = 0.05!
+
+# DESeq Wald test
+In order to find out which genes are significant for each `leachate` level we have to use the Wald test. 
+```{r}
+dds_wald <- DESeq(dds, test = "Wald")
+```
+### Plot dispersion estimates
+
+```{r}
+plotDispEsts(dds_wald)
+```
+
+::: callout-note
+Dispersion trend line is hovering around 0.1, and bulk spread of tag-wise gene estimates is from 0.02 to 0.5
+:::
+
+### Understanding coefficients
+
+```{r}
+resultsNames(dds_wald)  # see what contrast names are available
+```
+| `resultsName()`              | Interpretation                                                                  |
+| ---------------------------- | --------------------------------------------------------------------------------|
+| `"Intercept"`                | 1. Baseline expression: samples with `hpf = 4` and `leachate = control`         |
+| `"hpf_9_vs_4"`               | 2. Main effect of `hpf = 9` vs `hpf = 4` (averaged acoss all `leachate` levels) |
+| `"hpf_14_vs_4"`              | 3. Main effect of `hpf = 14` vs `hpf = 4`(averaged across all `leachate` levels)|
+| `"leachate_low_vs_control"`  | 4. Main effect of `low` vs `control` (averaged across all `hpf` levels)         |
+| `"leachate_mid_vs_control"`  | 5. Main effect of `mid` vs `control` (averaged across all `hpf` levels)         |
+| `"leachate_high_vs_control"` | 6. Main effect of `high` vs `control` (averaged across all `hpf` levels)        |
+
+### Summarize leachate results
+LRT is a global test
+The LRT asks, "Is there any evidence that leachate (as a whole) explains expression differences?" It considers all levels together (low, mid, high), in one model comparison. Genes with subtle or non-monotonic effects — say, up in mid but down in high — might show up as significant in the LRT.
+
+Wald is a single, focused contrast
+The Wald test asks, "Is the log2 fold change between leachate_high and control significantly different from zero?" It’s much stricter; a gene must have enough separation in just that one contrast, and low enough variability, to pass the threshold. If the gene is mildly different in high vs control, but stronger in mid vs control, the wald_high contrast might not detect it.
+
+Multiple testing and power
+The LRT runs one test per gene, and shares power across all leachate levels. The Wald test runs one test per gene per contrast, and each test stands alone. So Wald is more prone to Type II error (false negatives) when changes are small or variance is high.
+
+Practical Example:
+Imagine a gene behaves like this:
+
+| hpf | control | low | mid | high |
+| --- | ------- | --- | --- | ---- |
+| 4   | 10      | 11  | 30  | 12   |
+| 9   | 10      | 9   | 29  | 10   |
+| 14  | 11      | 12  | 32  | 11   |
+
+
+LRT: 
+- sees a strong effect of leachate overall (mid is way up)
+
+Wald:
+- mid vs control: may be significant ✅
+- high vs control: likely not significant ❌
+- low vs control: also not significant ❌
+
+So you'd get:
+LRT: gene flagged
+Wald (high): gene not flagged
+
+✅ What You Should Do
+- Keep the 12 genes from the LRT — they are likely affected by leachate.
+- Use the Wald results to narrow down which leachate levels drive the change.
+
+Extract results
+```{r}
+res_high <- results(dds_wald, name = "leachate_high_vs_control")
+res_mid  <- results(dds_wald, name = "leachate_mid_vs_control")
+res_low  <- results(dds_wald, name = "leachate_low_vs_control")
+```
+
+Filter down to the 12 genes identified in the LRT 
+```{r}
+res_high_sig <- res_high[sig_lrt_genes, ]
+res_mid_sig  <- res_mid[sig_lrt_genes, ]
+res_low_sig  <- res_low[sig_lrt_genes, ]
+```
+
+Which exposure level is driving effect of leachate exposure across all hpf levels?
+```{r}
+# output results summaries
+summary(res_high_sig)
+summary(res_mid_sig)
+summary(res_low_sig)
+```
+
+Save the lists of genes for each leachate level and their Wald statistics
+```{r}
+# Add gene names
+res_high_sig_df <- as.data.frame(res_high_sig) %>%
+  tibble::rownames_to_column("gene_id")
+res_mid_sig_df <- as.data.frame(res_mid_sig) %>%
+  tibble::rownames_to_column("gene_id")
+res_low_sig_df <- as.data.frame(res_low_sig) %>%
+  tibble::rownames_to_column("gene_id")
+
+# Save to CSV
+write.csv(res_high_sig_df, "../output/09_deg_multifactorial/noint/wald_high_vs_control_LRTfiltered.csv", row.names = FALSE)
+write.csv(res_mid_sig_df, "../output/09_deg_multifactorial/noint/wald_mid_vs_control_LRTfiltered.csv", row.names = FALSE)
+write.csv(res_low_sig_df, "../output/09_deg_multifactorial/noint/wald_low_vs_control_LRTfiltered.csv", row.names = FALSE)
+```
+
+::: callout-note
+Only the mid exposure level popped 2 significant genes at alpha < 0.1
+:::
+
+#### Plots
+```{r}
+vsd <- vst(dds, blind = FALSE)
+```
+
+```{r}
+counts_long <- assay(vsd)[sig_lrt_genes, ] %>%
+  as.data.frame() %>%
+  rownames_to_column("gene_id") %>%
+  pivot_longer(-gene_id, names_to = "sample", values_to = "expression") %>%
+  left_join(
+    as.data.frame(colData(dds)) %>%
+      rownames_to_column("sample"),
+    by = "sample"
+  )
+```
+
+```{r fig.width=12, fig.height=8, fig.align='center'}
+# First, compute group means per gene × leachate × hpf
+summary_df <- counts_long %>%
+  group_by(gene_id, leachate, hpf) %>%
+  summarize(mean_expr = mean(expression, na.rm = TRUE), .groups = "drop")
+
+# Plot group means as lines
+ggplot(summary_df, aes(x = leachate, y = mean_expr, group = hpf, color = hpf)) +
+  geom_line(linewidth = 1.1) +
+  geom_point(size = 2) +
+  facet_wrap(~ gene_id, scales = "free_y", ncol = 4) +
+  theme_minimal(base_size = 13) +
+  labs(
+    title = "Mean expression of LRT-significant genes across leachate levels",
+    x = "Leachate level", y = "Mean expression (VST)", color = "hpf"
+  )
+
+```
+
+```{r fig.width=12, fig.height=8, fig.align='center'}
+# Start with your LRT results
+lrt_res <- results(dds_lrt)
+
+# Filter to significant genes and keep padj
+sig_lrt_df <- as.data.frame(lrt_res) %>%
+  rownames_to_column("gene_id") %>%
+  filter(gene_id %in% sig_lrt_genes) %>%
+  select(gene_id, padj)
+
+counts_long_annot <- counts_long %>%
+  left_join(sig_lrt_df, by = "gene_id")
+
+counts_long_annot$gene_id <- reorder(counts_long_annot$gene_id, counts_long_annot$padj)
+
+ggplot(counts_long_annot, aes(x = leachate, y = expression, fill = leachate)) +
+  geom_boxplot(outlier.shape = NA, alpha = 0.7) +
+  geom_jitter(aes(color = hpf), width = 0.2, size = 1, alpha = 0.6) +
+  facet_wrap(~ gene_id, scales = "free_y", ncol = 4) +
+  geom_text(
+    data = counts_long_annot %>% group_by(gene_id) %>% slice(1),  # one label per facet
+    aes(x = 1.5, y = Inf, label = paste0("padj = ", signif(padj, 3))),
+    inherit.aes = FALSE,
+    hjust = 0, vjust = 1.2, size = 3
+  ) +
+  scale_fill_brewer(palette = "Set2") +
+  scale_color_brewer(palette = "Dark2") +
+  theme_minimal(base_size = 13) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    strip.text = element_text(face = "bold")
+  ) +
+  labs(
+    title = "Expression of LRT-significant genes (ordered by padj)",
+    y = "VST-normalized expression", x = "Leachate level"
+  )
+
+```
+
+# Summary
+
+The main effects of leachate across stages (i.e., an overall leachate effect) using `~ hpf + leachate` shows 12 genes that leachate has an impact on expression using the LRT test. When the Wald test is applied, only 2 genes in the mid exposure level are shown to have significant differential expression. This indicates some non-monotonic (aka non-linear) relationships between expression level and leachate exposure over developmental stages. 
+
+
+# Next steps
+## Explore RUVSeq
+
+```{r developmental-results, include=FALSE, echo=FALSE, eval=FALSE}
+### Summarize developmental results
+
+#### 4 vs 9 hpf
+# output results of contrast
+res_9v4 <- (results(dds_wald, name = "hpf_9_vs_4"))
+
+summary(res_9v4)
+
+##### Extract significant genes
+padj.cutoff <- 0.05
+lfc.cutoff <- 0.5
+
+# Convert results table into tibble
+res_9v4_tb <- res_9v4 %>%
+  data.frame() %>%
+  rownames_to_column(var="gene") %>%
+  as_tibble()
+
+# subset that table to only keep the significant genes using our pre-defined thresholds:
+sig_9v4_noLFCcutoff <- res_9v4_tb %>%
+  filter(padj < padj.cutoff)
+
+sig_9v4 <- sig_9v4_noLFCcutoff %>% 
+  filter(abs(log2FoldChange) > lfc.cutoff)
+
+paste("Number of significant DEGs 9 hpf vs 4 hpf:", nrow(sig_9v4_noLFCcutoff), "(padj<", padj.cutoff, ")")
+
+paste("Number of significant DEGs 9 hpf vs 4 hpf:", nrow(sig_9v4), "(padj<", padj.cutoff, ", log-fold change >", lfc.cutoff, ")")
+
+write_csv(sig_9v4, "../output/09_deg_multifactorial/noint/sig_9v4.csv")
+write_csv(sig_9v4_noLFCcutoff, "../output/09_deg_multifactorial/noint/sig_9v4_noLFCcutoff.csv")
+
+##### Volcano plots
+resultsNames(dds_wald)
+#> Coef 2 is "hpf_9_vs_4"
+# shrink lfc for visualizations
+res_9v4_ashr <- lfcShrink(dds_wald, coef = 2, type = "ashr")
+
+plotMA(res_9v4_ashr)
+
+EnhancedVolcano(res_9v4_ashr,
+    lab = rownames(res_9v4_ashr),
+    x = 'log2FoldChange',
+    y = 'padj',  # or 'padj' for adjusted p-values
+    pCutoff = 0.05,
+    FCcutoff = 0.5,
+    title = 'Volcano plot',
+    subtitle = 'Change in gene expression between 4 and 9 hpf',
+    pointSize = 1.0,
+    labSize = 3.0,
+    col = c('grey30', 'forestgreen', 'royalblue', 'red2')
+)
+
+v9v4 <- 
+  ggplot(res_9v4_ashr) +
+  # Plot all
+  geom_point(aes(x=log2FoldChange, y=-log10(padj),color="unchanged"),
+             size=.5) +
+  # Overlay all significantly upregulated in red
+  geom_point(data = sig_9v4[sig_9v4$log2FoldChange > 0, ], 
+             aes(x=log2FoldChange, y=-log10(padj), color="upregulated"), 
+             size=.5) +
+  # Overlay all significantly downregulated in blue
+  geom_point(data = sig_9v4[sig_9v4$log2FoldChange < 0, ], 
+             aes(x=log2FoldChange, y=-log10(padj), color="downregulated"), 
+             size=.5) +
+  ggtitle("Change in *M. capitata* embryonic development gene expression from 4 hpf to 9 hpf") +
+  xlab("log2 fold change") + 
+  ylab("-log10 adjusted p-value") +
+  scale_x_continuous(limits = c(-4,4)) +
+  scale_y_continuous(limits = c(0,100)) +
+  scale_color_manual(values = c("unchanged" = "darkgrey", "upregulated" = "red", "downregulated" = "blue"),
+                     labels = c("unchanged" = "Unchanged", "upregulated" = "Upregulated", "downregulated" = "Downregulated"),
+                     name = NULL) +
+  theme(legend.position = "top",
+        plot.title = element_text(size = rel(1.5), hjust = 0.5),
+        axis.title = element_text(size = rel(1.25)))
+
+v9v4
+
+#### 4 vs 14 hpf
+
+# output results
+res_14v4 <- (results(dds_wald, name = "hpf_14_vs_4"))
+
+summary(res_14v4)
+
+##### Extract significant genes
+
+# Convert results table into tibble
+res_14v4_tb <- res_14v4 %>%
+  data.frame() %>%
+  rownames_to_column(var="gene") %>%
+  as_tibble()
+
+# subset that table to only keep the significant genes using our pre-defined thresholds:
+sig_14v4_noLFCcutoff <- res_14v4_tb %>%
+  filter(padj < padj.cutoff)
+
+sig_14v4 <- sig_14v4_noLFCcutoff %>% 
+  filter(abs(log2FoldChange) > lfc.cutoff)
+
+paste("Number of significant DEGs 14 hpf vs 4 hpf:", nrow(sig_14v4_noLFCcutoff), "(padj<", padj.cutoff, ")")
+
+paste("Number of significant DEGs 14 hpf vs 4 hpf:", nrow(sig_14v4), "(padj<", padj.cutoff, ", log-fold change >", lfc.cutoff, ")")
+
+write_csv(sig_14v4, "../output/09_deg_multifactorial/noint/sig_14v4.csv")
+write_csv(sig_14v4_noLFCcutoff, "../output/09_deg_multifactorial/noint/sig_14v4_noLFCcutoff.csv")
+
+
+##### Volcano plots
+
+#Which ceof is 14 v 4?
+
+resultsNames(dds_wald)
+
+#> Coef 3 is "hpf_14_vs_4"
+
+# shrink lfc for visualizations
+res_14v4_ashr <- lfcShrink(dds_wald, coef = 3, type = "ashr")
+
+plotMA(res_14v4_ashr)
+
+
+#### Faceted volcano plot for development
+# First, strip labels from all individual ggplot objects
+# (You can do this in a loop if the plots are in a list)
+
+remove_labels <- function(p) {
+  p +
+    theme(
+      axis.title.x = element_blank(),
+      axis.title.y = element_blank(),
+      legend.position = "none",
+      plot.title = element_text(size = 8)  # adjust title size here
+    )
+}
+
+# Example: if your plots are named v4control, v4low, etc.
+plots <- list(v9v4, v14v4)
+
+plots_clean <- lapply(plots, remove_labels)
+
+# Now plot in 1 rows × 2 columns
+volcano_facet <- plot_grid(
+  plotlist = plots_clean,
+  nrow = 1,
+  ncol = 2,
+  labels = NULL,
+  label_size = 0,
+  align = "hv"
+)
+
+volcano_facet_dev
+
+ggsave("../output/09_deg_multifactorial/noint/volcano_facet_dev.png", volcano_facet, width = 16, height = 12, dpi = 300)
+
+```
+

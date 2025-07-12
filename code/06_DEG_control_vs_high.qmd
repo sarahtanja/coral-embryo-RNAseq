@@ -3,17 +3,40 @@ title: "Control vs High"
 subtitle: "DESeq2 across all developmental stages"
 author: "Sarah Tanja"
 date: 05/08/2025
+date-modified: today
 format:
-  gfm: default  # or html if you want to render in HTML
-toc: true
-toc-depth: 3
-link-external-icon: true
-link-external-newwindow: true
-reference-location: margin
-citation-location: margin
+  gfm: 
+    toc: true
+    number-sections: true
+  html:
+    theme: journal
+    highlight-style: github
+    page-layout: full
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    number-sections: true
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    reference-location: margin
+    citation-location: margin
 ---
 
-# Load libraries
+# Background
+
+## Input
+
+## Output
+
+# Setup
+
+## Load libraries
 
 ```{r}
 library(tidyverse)
@@ -23,7 +46,7 @@ library(pheatmap)
 library(RColorBrewer)
 ```
 
-# Filter count matrix
+## Import count matrix
 
 We want to look at the `control` group (embryos developed in 0.22 um filtered seawater) vs. the `high` group across all embryonic stages. To do this let's start by filtering the count matrix to only the samples of interest.
 
@@ -47,7 +70,7 @@ gcm_controlvshigh <- gcm_filtout %>%
   select(-matches("L|M"))
 ```
 
-# Setup metadata
+## Import metadata
 
 > It is absolutely critical that the columns of the count matrix and the rows of the column data (information about samples) are in the same order. DESeq2 will not make guesses as to which column of the count matrix belongs to which row of the column data, these must be provided to DESeq2 already in consistent order.
 
@@ -89,7 +112,7 @@ Make [DESeq Dataset Object from Count Matrix](https://bioconductor.org/packages/
 #Set DESeq2 design for 1 factor with 2 levels
 dds_cvh <- DESeqDataSetFromMatrix(countData = gcm_controlvshigh,
                               colData = metadata_controlvshigh, 
-                              design = ~ pvc_leachate_level)
+                              design = ~ leachate)
 ```
 
 # Visualizations

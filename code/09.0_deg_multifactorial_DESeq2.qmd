@@ -39,11 +39,18 @@ knitr::opts_chunk$set(
 ```
 
 # Background
+
+Here we are looking at a multifactorial differential gene expression analysis for developing coral embryos at 3 developmental stages (4 hours post fertilization , 9 hours post fertilization, and 14 hours post fertiliation). Embryos at each stage were exposed to either a control, low, mid, or high concentration of PVC leachate. This work aims to understand sublethal effects of microplastic pollution on coral reefs.
+
 ## Inputs
-- `gcm.csv` is the unfiltered gene count matrix for all 63 samples.
-- `metadata_filt.csv` is the metadata for 61 samples (two outliers were already removed).
+
+-   `gcm_filt.csv` is the unfiltered gene count matrix for 61 samples (two outlier samples were already removed).
+-   `metadata_filt.csv` is the metadata for 61 samples
+
 ## Outputs
-- `volcano_facet.png`
+
+-   `volcano_facet.png`
+
 # Setup
 
 ## Install packages
@@ -90,24 +97,14 @@ In this count matrix, each row represents a gene, each column a sequenced RNA li
 -   `check.names = FALSE` removed the 'X' from in front of sample id's in the column headers
 
 ```{r}
-gcm <- read.csv("../output/05_count/gene_count_matrix.csv", row.names="gene_id", check.names = FALSE)
-head(gcm)
+gcm_filt <- read.csv("../output/06_tidyup/gcm_filt.csv", row.names="gene_id", check.names = FALSE)
+head(gcm_filt)
 ```
-
-::: callout-note
-`gcm` is the unfiltered gene count matrix of all 63 samples
-:::
 
 -   The raw unfiltered, untransformed, count matrix shows counts of whole numbers (integers)
 -   Each column is a sample
 -   Each row is a gene
 -   A sample id describes parental crosses (the first string of numbers), the pollution exposure (C, L, M, H), and the embryonic stage (4, 9, 14)
-
-```{r}
-gcm_filt <- gcm %>% 
-  dplyr::select(-`131415L4`, -`789C4`)
-head(gcm_filt)
-```
 
 ::: callout-note
 `gcm_filt` is the gene count matrix that has been filtered to remove 2 outlier samples ( `131415L4` and `789C4` ) that had poor HISAT alignment and did not group in the exploratory PCA
@@ -162,15 +159,9 @@ dds <- DESeqDataSetFromMatrix(countData = gcm_filt,
 
 ## Explore PCAs
 
-::: callout-note
-73% of variance explained by dim1 (0.57) and dim2 (0.16) in untransformed counts
-:::
-
 ```{r}
 plotPCA(vst(dds), intgroup = "group", returnData = TRUE)
 ```
-
-pca_all \<- plotPCA(vst(dds), intgroup = "group", returnData = TRUE, ntop=nrow(all))
 
 ```{r}
 # Get PCA data (top 500 DEGs by default)
@@ -260,8 +251,16 @@ VST compresses the high-end of the count distribution and expands the low-end, m
 This calculates the log2fold change between factors
 
 ```{r}
-dds <- DESeq(dds, test="LRT", reduced=~1)
+dds <- DESeq(dds, test = "LRT", reduced = ~ hpf + leachate)
 ```
+
+This compares:
+
+Full model: \~ hpf + leachate + hpf:leachate
+
+Reduced model: \~ hpf + leachate
+
+So it asks: Does including the interaction explain significantly more variation? If yes, then some genes respond to leachate differently at different hpf stages.
 
 ## Plot dispersion
 
@@ -279,31 +278,34 @@ Dispersion trend line is hovering around 0.1, and bulk spread of tag-wise gene e
 resultsNames(dds)  # see what contrast names are available
 ```
 
-| Coef | Name                         | Meaning                                                              |
-|------|------------------------------|----------------------------------------------------------------------|
-| 1    | `"Intercept"`                | Baseline expression: `hpf = 4` and `leachate = control`              |
-| 2    | `"hpf_9_vs_4"`               | Change from 4 hpf → 9 hpf, at **control** exposure                   |
-| 3    | `"hpf_14_vs_4"`              | Change from 4 hpf → 14 hpf, at **control** exposure                  |
-| 4    | `"leachate_low_vs_control"`  | Change from control → low exposure, at **4 hpf**                     |
-| 5    | `"leachate_mid_vs_control"`  | Change from control → mid exposure, at **4 hpf**                     |
-| 6    | `"leachate_high_vs_control"` | Change from control → high exposure, **4 hpf**                       |
-| 7    | `"hpf9.leachatelow"`         | **Interaction term**: extra effect of low exposure at 9 hpf vs 4 hpf |
-| 8    | `"hpf14.leachatelow"`        | Extra effect at 14 hpf vs 4 hpf                                      |
-| 9    | `"hpf9.leachatemid"`         | Extra effect of mid exposure at 9 hpf vs 4 hpf                       |
-| 10   | `"hpf14.leachatemid"`        | ... at 14 hpf                                                        |
-| 11   | `"hpf9.leachatehigh"`        | ... for high                                                         |
-| 12   | `"hpf14.leachatehigh"`       | ... for high at 14 hpf                                               |
+| Coef | Name                         | Meaning                                                               |
+|------|------------------------------|-----------------------------------------------------------------------|
+| 1    | `"Intercept"`                | Baseline expression: `hpf = 4` and `leachate = control`               |
+| 2    | `"hpf_9_vs_4"`               | Change from 4 hpf → 9 hpf, at **control** exposure                    |
+| 3    | `"hpf_14_vs_4"`              | Change from 4 hpf → 14 hpf, at **control** exposure                   |
+| 4    | `"leachate_low_vs_control"`  | Change from control → low exposure, at **4 hpf**                      |
+| 5    | `"leachate_mid_vs_control"`  | Change from control → mid exposure, at **4 hpf**                      |
+| 6    | `"leachate_high_vs_control"` | Change from control → high exposure, at **4 hpf**                     |
+| 7    | `"hpf9.leachatelow"`         | **Interaction term**: extra effect of low exposure at 9 hpf vs 4 hpf  |
+| 8    | `"hpf14.leachatelow"`        | **Interaction term**: extra effect of low exposure at 14 hpf vs 4 hpf |
+| 9    | `"hpf9.leachatemid"`         | **Interaction term**: extra effect of mid exposure at 9 hpf vs 4 hpf  |
+| 10   | `"hpf14.leachatemid"`        | **Interaction term**: extra effect of mid exposure at 14 hpf vs 4 hpf |
+| 11   | `"hpf9.leachatehigh"`        | **Interaction term**:... of high exposure at 9 hpf vs 4 hp            |
+| 12   | `"hpf14.leachatehigh"`       | **Interaction term**:... of high exposure at 14 hpf vs 4 hpf          |
 
-To get the effect of leachate at a specific time: 
+Contrast summary table \| What you want \| Contrast \| \| ------------------------- \| ----------------------------------------------------- \| \| High vs Control at 4 hpf \| `"leachate_high_vs_control"` \| \| Mid vs Control at 4 hpf \| `"leachate_mid_vs_control"` \| \| Low vs Control at 4 hpf \| `"leachate_low_vs_control"` \| \| High vs Control at 9 hpf \| `c("leachate_high_vs_control", "hpf9.leachatehigh")` \| \| Mid vs Control at 9 hpf \| `c("leachate_mid_vs_control", "hpf9.leachatemid")` \| \| Low vs Control at 9 hpf \| `c("leachate_low_vs_control", "hpf9.leachatelow")` \| \| High vs Control at 14 hpf \| `c("leachate_high_vs_control", "hpf14.leachatehigh")` \| \| Mid vs Control at 14 hpf \| `c("leachate_mid_vs_control", "hpf14.leachatemid")` \| \| Low vs Control at 14 hpf \| `c("leachate_low_vs_control", "hpf14.leachatelow")` \|
 
-| What you want            | Use this contrast                                    | 
-| -------------------------|------------------------------------------------------| 
-| Low vs Control at 4 hpf  | `"leachate_low_vs_control"`                          | 
-| Low vs Control at 9 hpf  | `c("leachate_low_vs_control", "hpf9.leachatelow")`   | 
-| Mid vs Control at 14 hpf | `c("leachate_mid_vs_control", "hpf14.leachatemid")`  | 
-| High vs Control at 9 hpf | `c("leachate_high_vs_control", "hpf9.leachatehigh")` |
+# 
 
-## Effect of high exposure at 14 hpf
+```{r}
+# output results of contrast
+res_14_high_int <- (results(dds_4, name = "hpf14.leachatehigh", alpha=0.05)
+)
+
+summary(res_4_high_int)
+```
+
+# Effect of high exposure at 14 hpf
 
 When you test for main effects of leachate (e.g., "leachate_high_vs_control"), it's at the reference timepoint (hpf = 4). The interaction terms model how the leachate effect changes relative to that baseline as development progresses.
 
@@ -1224,3 +1226,34 @@ Batch Effects or Low Biological Signal If your experimental design has confoundi
 
 Extreme p-values Your plot shows points with -log10(padj) values above 20--30. That means padj is very close to 0, which could indicate: - Very large sample size - Very consistent effect - Or something off with the dispersion estimate or p-value adjustment (e.g., if some genes had zero variance across groups)
 :::
+
+# Troubleshooting
+
+## Cooks distance
+
+> DESeq2 relies on the negative binomial distribution to make estimates and perform statistical inference on differences. While the negative binomial is versatile in having a mean and dispersion parameter, extreme counts in individual samples might not fit well to the negative binomial. For this reason, we perform automatic detection of count outliers. We use Cook's distance, which is a measure of how much the fitted coefficients would change if an individual sample were removed (Cook 1977). For more on the implementation of Cook's distance see the manual page for the *results* function. Below we plot the maximum value of Cook's distance for each row over the rank of the test statistic to justify its use as a filtering criterion.
+
+```{r}
+boxplot(log10(assays(dds)[["cooks"]]), range=0, las=2)
+```
+
+```{r}
+W <- res$stat
+maxCooks <- apply(assays(dds)[["cooks"]],1,max)
+idx <- !is.na(W)
+plot(rank(W[idx]), maxCooks[idx], xlab="rank of Wald statistic", 
+     ylab="maximum Cook's distance per gene",
+     ylim=c(0,5), cex=.4, col=rgb(0,0,0,.3))
+m <- ncol(dds)
+p <- 3
+abline(h=qf(.99, p, m - p))
+```
+
+```{r}
+# Automatically calculated by DESeq()
+mcols(dds)$maxCooks
+
+# Plot histogram of Cook's distances
+hist(mcols(dds)$maxCooks, breaks = 100, main = "Max Cook's Distance per Gene")
+
+```

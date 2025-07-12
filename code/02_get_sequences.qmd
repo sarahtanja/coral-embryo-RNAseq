@@ -1,5 +1,5 @@
 ---
-title: "Step 1: Get Sequence Data from Azenta through `sftp`"
+title: "Step 2: Get Sequence Data from Azenta through `sftp`"
 author: "Sarah Tanja"
 date: 10/09/2024
 date-format: long
