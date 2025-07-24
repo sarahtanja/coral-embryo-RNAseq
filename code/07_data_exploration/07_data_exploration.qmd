@@ -1,17 +1,48 @@
 ---
 title: "Step 6: Data Exploration of Count Matrix"
-subtitle: "Using `DESeq2`"
+subtitle: "Using `DESeq2` to perform exploratory PCAs and identify outliers"
 author: "Sarah Tanja"
 date: 11/18/2024
+date-modified: today
 format:
-  gfm: default  # or html if you want to render in HTML
-toc: true
-toc-depth: 3
-link-external-icon: true
-link-external-newwindow: true
-reference-location: margin
-citation-location: margin
+  gfm: 
+    toc: true
+    number-sections: true
+  html:
+    theme: journal
+    highlight-style: github
+    page-layout: full
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    number-sections: true
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    reference-location: margin
+    citation-location: margin
 ---
+
+# Background
+
+![](../../images/Experimental_Assay_Design.png)
+
+## Inputs
+
+-   unfiltered gene count matrix
+
+## Outputs
+
+-   exploratory principle component analysis (PCA)
+
+-   filtered metadata removing outlier samples
+
+# Setup
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
@@ -35,13 +66,11 @@ Resources:
 
 [DESeq2 Vignette](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html)
 
-# Install packages
+## Install packages
 
 ```{r}
 if ("tidyverse" %in% rownames(installed.packages()) == 'FALSE') install.packages('tidyverse') 
-if ("DESeq2" %in% rownames(installed.packages()) == 'FALSE') install.packages('DESeq2')
 if ("pheatmap" %in% rownames(installed.packages()) == 'FALSE') install.packages('pheatmap')
-if ("vsn" %in% rownames(installed.packages()) == 'FALSE') install.packages('vsn')
 if ("vegan" %in% rownames(installed.packages()) == 'FALSE') install.packages('vegan')
 if ("factoextra" %in% rownames(installed.packages()) == 'FALSE') install.packages('factoextra')
 ```
@@ -51,16 +80,10 @@ if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 
 BiocManager::install("DESeq2")
-```
-
-```{r}
-if (!require("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-
 BiocManager::install("vsn")
 ```
 
-# Load packages
+## Load packages
 
 ```{r}
 library(tidyverse)
@@ -71,7 +94,7 @@ library(vegan)
 library(factoextra)
 ```
 
-# Load metadata and filtered gene count matrices
+## Load metadata and gene count matrix
 
 ```{r}
 load("../metadata/metadata.RData")

@@ -1,6 +1,6 @@
 ---
-title: "Functional Enrichment of Differentially Expressed Genes"
-subtitle: "working on the pipeline"
+title: "BLAST"
+subtitle: "What are the 12 genes and what do they do?"
 author: "Sarah Tanja"
 date: 2025-06-17
 date-modified: today
@@ -25,8 +25,28 @@ format:
     citation-location: margin
 ---
 
+# Background
+
+We identified 12 genes that were broadly impacted by leachate. Here we want to know what those genes do!
+
+Why is goseq different from other enrichment tools? Typical enrichment methods (like Fisher's exact test or hypergeometric tests) assume that every gene has an equal probability of being selected as a DEG. But in RNA-Seq longer genes are more likely to be detected as DEGs just because they accumulate more reads. `goseq` corrects for this bias.
+
+## Inputs
+
+-   `LRT_significant_genes_combined_wald.csv` A dataframe of the 12 genes and their LRT and Wald test statistics
+-   functional annotation (version 3) from: http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.EggNog_results.txt.gz (EggNog)
+-   functional annotation http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.KEGG_results.txt.gz (KEGG)
+
+## Outputs
+
+# Setup
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
+  fig.width = 12,
+  fig.height = 8,
+  fig.align = "center",
+  dpi = 600,
   echo = TRUE,         # Display code chunks
   eval = TRUE,        # Evaluate code chunks
   warning = FALSE,     # Hide warnings
@@ -35,27 +55,106 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Goals
-Functional enrichment of genes identified as differentially expressed
-
-## Prepare functional enrichment dataframes 
-
-Read in files 
+## Install packages
 
 ```{r}
-all_genes<-read.csv("../output/09_deg_multifactorial/all_genes.csv")
+if ("Biostrings" %in% rownames(installed.packages()) == 'FALSE') install.packages('Biostrings')
+if ("tidyverse" %in% rownames(installed.packages()) == 'FALSE') install.packages('tidyverse')
+if ("goseq" %in% rownames(installed.packages()) == 'FALSE') install.packages('goseq')
 ```
 
-Read in file of DEG's 
 ```{r}
-DEG_list<-read.csv("../output/09_deg_multifactorial/sig_leachate_list.csv")
-DEG_counts<-read.csv("../output/09_deg_multifactorial/sig_leachate_counts.csv")
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("goseq")
+BiocManager::install("GO.db")
+BiocManager::install("rrvgo")
+BiocManager::install("org.Ce.eg.db") # for C. elegans
 ```
 
-Get gene length information.  
+## Load packages
+
+```{r}
+library(Biostrings)
+library(tidyverse)
+library(goseq)
+library(rrvgo)
+library(GO.db)
+library(org.Ce.eg.db)
+```
+
+## Import fasta
+
+```{r}
+# Load your transcriptome
+all_seqs <- readDNAStringSet("../input/genome/Montipora_capitata_HIv3.assembly.fasta")  
+
+# Filter for the 12 genes
+sig_seqs <- all_seqs[names(all_seqs) %in% sig_genes]
+
+# Save to new FASTA file
+writeXStringSet(sig_seqs, "../output/10_blast/significant_genes.fasta")
+```
+
+## Read in gene lists and counts
+
+```{r}
+all_genes <- read.csv("../output/09_deg_multifactorial/noint/all_genes.csv")
+sig_genes <- read.csv("../output/09_deg_multifactorial/noint/LRT_significant_genes_combined_wald.csv")
+sig_counts <- read.csv("../output/09_deg_multifactorial/noint/sig_counts.csv", row.names="gene_id", check.names = FALSE)
+```
+
+## Download annotation & enrichment files
+
+```{r, engine='bash'}
+cd ../input/annotations
+
+wget http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.EggNog_results.txt.gz
+wget http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.KEGG_results.txt.gz
+```
+
+Unzip
+
+```{r, engine='bash'}
+cd ../input/annotations
+gunzip *.gz
+```
+
+## Import to R environment
+
+```{r}
+# Read in the file (it will include "#query" as a column name)
+EggNog_anno <- read_tsv("../input/annotations/Montipora_capitata_HIv3.genes.EggNog_results.txt")
+```
+
+rename "#query" to `gene_id`
+
+```{r}
+
+EggNog_anno <- EggNog_anno %>%
+  rename(gene_id="#query")
+
+nrow(EggNog_anno)
+names(EggNog_anno)
+```
+
+> This functional annotation has 24,072 genes. This is 44% of total protein predicted genes described in the publication associated with this annotation. https://academic.oup.com/gigascience/article/doi/10.1093/gigascience/giac098/6815755
+
+# Annotate significant genes
+
+Match up genes in sig_genes dataframe to annotation dataframe
+
+```{r}
+sig_genes_anno <- inner_join(sig_genes, EggNog_anno, by = "gene_id")
+```
+
+8 of the 12 significant genes were annotated! The `annotation file`sig_genes_anno\` dataframe now only contains genes that were significant and that have annotation information.
+
+Get gene length information.
+
 ```{r}
 #import file
-gff <- rtracklayer::import("Mcap2020/Data/TagSeq/Montipora_capitata_HIv3.genes.gff3") #if this doesn't work, restart R and try again 
+gff <- rtracklayer::import("../input/genome/Montipora_capitata_HIv3.genes.gff3") #if this doesn't work, restart R and try again 
 
 transcripts <- subset(gff, type == "transcript") #keep only transcripts 
 
@@ -63,501 +162,162 @@ transcripts_gr <- makeGRangesFromDataFrame(transcripts, keep.extra.columns=TRUE)
 
 transcript_lengths <- width(transcripts_gr) #isolate length of each gene
 
-seqnames<-transcripts_gr$ID #extract list of gene id 
+gene_id<-transcripts_gr$ID #extract list of gene id 
 
-lengths<-cbind(seqnames, transcript_lengths)
+lengths<-cbind(gene_id, transcript_lengths)
 
 lengths<-as.data.frame(lengths) #convert to data frame
 ```
 
-Read in annotation file. 
-
-Downloaded functional annotation (version 3) from: http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.EggNog_results.txt.gz (EggNog) and http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.KEGG_results.txt.gz (KEGG). 
-Unzipped on desktop. I then removed the # in #query in the first column, otherwise it does not read in column names.  
+Add in length to the annotation file.
 
 ```{r}
-Mcap.annot <- read.table("Mcap2020/Data/TagSeq/Montipora_capitata_HIv3.genes.EggNog_results.txt",  quote="", sep="\t", header=TRUE)
-dim(Mcap.annot)
-
-# column names
-head(Mcap.annot)
-tail(Mcap.annot)
-
-Mcap.annot<-Mcap.annot%>%
-  rename(gene=query)
-
-names(Mcap.annot)
+sig_genes_anno$length<-lengths$transcript_lengths[match(sig_genes_anno$gene_id, lengths$seqnames)]
 ```
 
-This functional annotation has 24,072 genes. This is 44% of total protein predicted genes described in the publication associated with this annotation. https://academic.oup.com/gigascience/article/doi/10.1093/gigascience/giac098/6815755 
+Format GO terms to remove dashes and quotes.
 
-Match up genes in gene list file to annotation file
-```{r}
-names(Mcap.annot)
-
-#remove sample column name 
-probes = names(all_genes)
-#probes <- gsub("sample", "", probes)
-#probes <- probes[probes != ""]
-
-probes2annot = match(probes, Mcap.annot$gene) #match genes in datExpr to genes in annotation file, note I removed the # before query in this file before loading
-
-# The following is the number of probes without annotation 
-sum(is.na(probes2annot))
-
-row_nas<-which(is.na(probes2annot))
-
-#view the genes that do not have a match in the annotation file
-missing<-as.data.frame(probes[row_nas])
-#print(missing)
-```
-
-There are 3395 of our genes that were expressed that are not present in the annotation file.  
-
-Reduce annotation file to only contain genes detected in our dataset.  
-
-```{r}
-filtered_Mcap.annot <- Mcap.annot[Mcap.annot$gene %in% probes, ]
-dim(filtered_Mcap.annot)
-```
-
-The annotation file now only contains genes that were detected in our dataset that have annotation information. This is 8081 out of the 11475 genes in our dataset. 
-
-Add in length to the annotation file.    
-
-```{r}
-filtered_Mcap.annot$length<-lengths$transcript_lengths[match(filtered_Mcap.annot$gene, lengths$seqnames)]
-
-which(is.na(filtered_Mcap.annot$length)) #all genes have lengths 
-```
-
-All have length information.  
-
-Format GO terms to remove dashes and quotes.  
 ```{r}
 #remove dashes, remove quotes from columns and separate by semicolons (replace , with ;) in KEGG_ko, KEGG_pathway, and Annotation.GO.ID columns
-head(filtered_Mcap.annot$GOs)
-filtered_Mcap.annot$GOs <- gsub(",", ";", filtered_Mcap.annot$GOs)
-filtered_Mcap.annot$GOs <- gsub('"', "", filtered_Mcap.annot$GOs)
-filtered_Mcap.annot$GOs <- gsub("-", NA, filtered_Mcap.annot$GOs)
+head(sig_genes_anno$GOs)
+sig_genes_anno$GOs <- gsub(",", ";", sig_genes_anno$GOs)
+sig_genes_anno$GOs <- gsub('"', "", sig_genes_anno$GOs)
+sig_genes_anno$GOs <- gsub("-", NA, sig_genes_anno$GOs)
 ```
 
-## Conduct enrichment for individual clusters 
-
-Conduct enrichment for clusters 
-
-### Conduct enrichment for each cluster  
-
-Merge in relevant annotation information to the DEG list file.  
-
-Merge to only keep genes that were identified to belong to a cluster. 
-```{r}
-group_list<-left_join(group, filtered_Mcap.annot, by="gene")
-```
+# Conduct functional enrichment
 
 Conduct functional enrichment using goseq and rrvgo. Compare against all genes detected in the dataset that we have annotation information for.
 
-Conduct at biological process level. Filter for adjusted p-value <0.05.  
-```{r}
-cluster_list<-levels(as.factor(group_list$cluster))
+## Biological process
 
-for (cluster_id in cluster_list) {
-  
-    ### Generate vector with names of all genes detected in our dataset 
-    ALL.vector <- c(filtered_Mcap.annot$gene)
-  
-    ### Generate length vector for all genes 
-    LENGTH.vector <- as.integer(filtered_Mcap.annot$length)
-    
-    ### Generate vector with names in just the contrast we are analyzing
-    ID.vector <- group_list%>%
-      filter(cluster==cluster_id)%>%
-      pull(gene)
-    
-    ##Get a list of GO Terms for all genes detected in our dataset 
-    GO.terms <- filtered_Mcap.annot%>%
-      dplyr::select(gene, GOs)
-    
-    ##Format to have one goterm per row with gene ID repeated
-    split <- strsplit(as.character(GO.terms$GOs), ";") 
-    split2 <- data.frame(v1 = rep.int(GO.terms$gene, sapply(split, length)), v2 = unlist(split)) 
-    colnames(split2) <- c("gene", "GOs")
-    GO.terms<-split2
-
-    ##Construct list of genes with 1 for genes in contrast and 0 for genes not in the contrast
-    gene.vector=as.integer(ALL.vector %in% ID.vector) 
-    names(gene.vector)<-ALL.vector#set names
-
-    #weight gene vector by bias for length of gene: load in the gene.vector(a list of all genes with 1 indicating it is a DEG in the group of interest and 0 meaning it is not a DEG) and bias.data (list of lengths for all genes)
-    pwf<-nullp(gene.vector, bias.data=LENGTH.vector) 
-    
-    #run goseq using Wallenius method for all categories of GO terms: load in the pwf object (gene name, a 1 or 0 to indicate DEG, the length, and the pwf function; generated from pwf above), and the list of GO terms for all genes
-    GO.wall<-goseq(pwf, gene2cat=GO.terms, test.cats=c("GO:BP"), method="Wallenius", use_genes_without_cat=TRUE)
-
-    GO <- GO.wall[order(GO.wall$over_represented_pvalue),]
-    colnames(GO)[1] <- "GOterm"
-    
-    #adjust p-values 
-    GO$bh_adjust <- p.adjust(GO$over_represented_pvalue, method="BH") #add adjusted p-values
-  
-    #Filtering for p < 0.05
-    GO <- GO %>%
-        dplyr::filter(bh_adjust<0.05) %>%
-        dplyr::arrange(., ontology, bh_adjust)
-
-    #Write file of results 
-    write_csv(GO, file = paste0("Mcap2020/Output/TagSeq/DESeq/functional_enrichment/goseq_cluster", cluster_id, ".csv"))
-    
-}
-```
+Conduct at biological process level. Filter for adjusted p-value \<0.05.
 
 ```{r}
-length(ALL.vector)
-length(LENGTH.vector)
-dim(pwf)
-length(unique(GO.terms$gene))
-length(gene.vector)
-length(ID.vector)
-```
-All the dimensions of the input dataframes count to 8081, the expected number of genes. ID vector is your vector of DEGs, which is used to make the gene.vector. 
-
-Clusters 1, 2, 5, 11, 13, 14, 15, 18, 19, 21, 32, 40, 60, 62, 70 have at least one enriched term when analyzed alone. Proceed with conducting enrichment at the level of developmental pattern instead. 
-
-Check the number of genes in each cluster. 
-```{r}
-group_list%>%
-      group_by(cluster, pattern)%>%
-      summarise(n=length(unique(gene)))%>%
-      write_csv(file="Mcap2020/Output/TagSeq/DESeq/cluster_counts.csv")
-
-names(group_list)
-```
+# Define your DEG list — the 12 genes you're testing
+ID.vector <- sig_genes_anno$gene_id  # Replace with your actual gene vector
 
 
-## Conduct enrichment for cluster developmental patterns 
+# All genes detected in the dataset with annotation info
+ALL.vector <- colnames(all_genes) # gene_ids for all 10140 genes that we used to make our DESeq2 object
+ALL.vector <- ALL.vector[ALL.vector %in% EggNog_anno$gene_id] #filtered down to only genes that are annotated... 8018!
 
-Combine cluster gene lists for early, mid, and late developmental patterns and conduct enrichment on these three categories.  
+lengths_anno <- lengths %>% 
+  filter(gene_id %in% colnames(all_genes)) %>% 
+  filter(gene_id %in% EggNog_anno$gene_id)
 
-Conduct at biological process level. Filter for adjusted p-value <0.05.  
-```{r}
-pattern_list<-levels(as.factor(group_list$pattern))
+LENGTH.vector <- as.integer(lengths_anno$transcript_length)
+names(LENGTH.vector) <- ALL.vector  # Needed for bias correction
 
-for (pattern_id in pattern_list) {
-  
-    ### Generate vector with names of all genes detected in our dataset 
-    ALL.vector <- c(filtered_Mcap.annot$gene)
-    
-    ### Generate length vector for all genes 
-    LENGTH.vector <- as.integer(filtered_Mcap.annot$length)
-    
-    ### Generate vector with names in just the contrast we are analyzing
-    ID.vector <- group_list%>%
-      filter(pattern==pattern_id)%>%
-      pull(gene)
-    
-    ##Get a list of GO Terms for all genes detected in our dataset 
-    GO.terms <- filtered_Mcap.annot%>%
-      dplyr::select(gene, GOs)
-    
-    ##Format to have one goterm per row with gene ID repeated
-    split <- strsplit(as.character(GO.terms$GOs), ";") 
-    split2 <- data.frame(v1 = rep.int(GO.terms$gene, sapply(split, length)), v2 = unlist(split)) 
-    colnames(split2) <- c("gene", "GOs")
-    GO.terms<-split2
+# Gene to GO term mapping
+GO.terms <- sig_genes_anno %>%
+  dplyr::select(gene_id, GOs)
 
-    ##Construct list of genes with 1 for genes in contrast and 0 for genes not in the contrast
-    gene.vector=as.integer(ALL.vector %in% ID.vector) 
-    names(gene.vector)<-ALL.vector#set names
+# Format GO terms to one term per row
+split <- strsplit(as.character(GO.terms$GOs), ";")
+split2 <- data.frame(
+  gene = rep.int(GO.terms$gene, sapply(split, length)),
+  GOs = unlist(split)
+)
 
-    #weight gene vector by bias for length of gene 
-    pwf<-nullp(gene.vector, bias.data=LENGTH.vector) 
-    
-    #run goseq using Wallenius method for all categories of GO terms 
-    GO.wall<-goseq(pwf, gene2cat=GO.terms, test.cats=c("GO:BP"), method="Wallenius", use_genes_without_cat=TRUE)
+GO.terms <- split2
 
-    GO <- GO.wall[order(GO.wall$over_represented_pvalue),]
-    colnames(GO)[1] <- "GOterm"
-    
-    #adjust p-values 
-    GO$bh_adjust <-  p.adjust(GO$over_represented_pvalue, method="BH") #add adjusted p-values
-  
-    #Filtering for p < 0.05
-    GO <- GO %>%
-        dplyr::filter(bh_adjust<0.05) %>%
-        dplyr::arrange(., ontology, bh_adjust)
+# Construct named gene vector: 1 = DEG, 0 = not DEG
+gene.vector <- as.integer(ALL.vector %in% ID.vector)
+names(gene.vector) <- ALL.vector
 
-    #Write file of results 
-    write_csv(GO, file = paste0("Mcap2020/Output/TagSeq/DESeq/functional_enrichment/goseq_", pattern_id, ".csv"))
-    
-}
+# Null probability weighting function (bias for gene length)
+pwf <- nullp(gene.vector, bias.data = LENGTH.vector)
+
 ```
 
-Create an empty dataframe to populate (only do this once).  
+About goseq() command:
+
+| Argument                       | Meaning                                                                                                                                                      |
+|---------------------------|--------------------------------------------------------|
+| `pwf`                          | A **probability weighting function** object from `nullp()`. It contains the DEG status of all genes (1 = DEG, 0 = not DEG), plus gene length bias info.      |
+| `gene2cat`                     | A data frame or list mapping **genes to functional categories** (like GO terms). In your case, it's a long-format table of gene-GO pairs.                    |
+| `test.cats = "GO:BP"`          | This limits the enrichment to only **biological process** GO terms (you could also use `"GO:MF"` or `"GO:CC"` for molecular function or cellular component). |
+| `method = "Wallenius"`         | This uses the **Wallenius noncentral hypergeometric distribution**, which accounts for sampling bias (like gene length).                                     |
+| `use_genes_without_cat = TRUE` | Allows the method to consider genes that **do not have a GO annotation** (prevents them from being excluded by default).                                     |
+
+`goseq()` returns a data frame where each row is a GO term, with:
+
+-   The GO ID
+
+-   Category (BP, MF, or CC)
+
+-   Over-representation p-value (for DEGs)
+
+-   Under-representation p-value (less commonly used)
+
+-   Number of DEGs in that GO term
+
+-   Total number of genes in that GO term
+
+-   Other metadata (like GO term name)
 
 ```{r}
-pattern_go_results <- data.frame()
+# Run GO enrichment for biological process terms
+GO.bp <- goseq(
+  pwf,
+  gene2cat = GO.terms,
+  test.cats = c("GO:BP"),
+  method = "Wallenius",
+  use_genes_without_cat = TRUE
+)
+
+# Format and filter results
+GO_bp <- GO.bp[order(GO.bp$over_represented_pvalue), ]
+colnames(GO)[1] <- "GOterm"
+
+# Use the Benjamini-Hochberg method to control false discovery rate 
+GO_bp$bh_adjust <- p.adjust(GO_bp$over_represented_pvalue, method = "BH")
+
+GO_bp <- GO_bp %>%
+  filter(bh_adjust < 0.05) %>%
+  arrange(ontology, bh_adjust)
+
+# Optional: write to file
+write_csv(GO_bp, file = "../output/10_blast/functional_enrichment_biological_process_goseq.csv")
 ```
 
-Run a loop to filter enrichment for each temperature contrast using rrvgo. 
 
+## Reduce redundancy
 ```{r}
-pattern_list<-c("Early", "Mid", "Late")
+# Filter for biological process terms with valid p-values
+GO_BP <- GO %>%
+  filter(ontology == "BP") %>%
+  filter(!is.na(bh_adjust)) %>%
+  arrange(bh_adjust)
 
-for (pattern_id in pattern_list) {
+# Calculate semantic similarity matrix
+simMatrix <- calculateSimMatrix(
+  GO_BP$GOterm,
+  orgdb="org.Ce.eg.db", #c. elegans database
+  ont = "BP",
+  method = "Rel"
+)
 
-    #Read relevant file of results from goseq analysis  
-    go_results<-read_csv(file = paste0("Mcap2020/Output/TagSeq/DESeq/functional_enrichment/goseq_", pattern_id, ".csv"))
-    
-    go_results<-go_results%>%
-      filter(ontology=="BP")%>%
-      filter(bh_adjust != "NA") %>%
-      arrange(., bh_adjust)
-    
-    print(pattern_id)
-    print(length(unique(go_results$GOterm)))
-    
-    #Reduce/collapse GO term set with the rrvgo package 
-      simMatrix <- calculateSimMatrix(go_results$GOterm,
-                                orgdb="org.Ce.eg.db", #c. elegans database
-                                ont=c("BP"),
-                                method="Rel")
-    #calculate similarity 
-    scores <- setNames(-log10(go_results$bh_adjust), go_results$GOterm)
-    reducedTerms <- reduceSimMatrix(simMatrix,
-                                scores,
-                                threshold=0.7,
-                                orgdb="org.Ce.eg.db")
-    
-    #keep only the goterms from the reduced list
-    go_results<-go_results%>%
-      filter(GOterm %in% reducedTerms$go)
-    
-    #add in parent terms to list of go terms 
-    go_results$ParentTerm<-reducedTerms$parentTerm[match(go_results$GOterm, reducedTerms$go)]
-    
-    #add in contrast and regulation
-    go_results$pattern<-pattern_id
-    
-    print(length(unique(go_results$GOterm)))
-    
-    #add to data frame 
-    go_df <- go_results
-    pattern_go_results <- rbind(pattern_go_results, go_df) 
+# Create named scores vector: -log10 adjusted p-values
+scores <- setNames(-log10(go_results$bh_adjust), go_results$GOterm)
 
-}
+# Reduce GO terms
+reducedTerms <- reduceSimMatrix(
+  simMatrix,
+  scores = scores,
+  threshold = 0.7,
+  orgdb = "org.Ce.eg.db"
+)
+
+# Keep only the GO terms in reduced list
+go_results <- go_results %>%
+  filter(GOterm %in% reducedTerms$go)
+
+# Add parent term (representative term)
+go_results$ParentTerm <- reducedTerms$parentTerm[match(go_results$GOterm, reducedTerms$go)]
+
+# Done! You can now save or plot
+write_csv(go_results, "reduced_goseq_results.csv")
 ```
 
-Semantic similarity reduced GO terms for each cluster.    
-
-```{r}
-length(unique(pattern_go_results$GOterm))
-```
-There are 465 total enriched GO terms detected when analyzed by pattern groups. 
-
-## Plot enrichment for each developmental pattern
-
-Early development
-```{r}
-early_data<-pattern_go_results %>% 
-  filter(pattern=="Early")
-
-# First, let's find the unique ParentTerm values
-unique_early_terms <- unique(early_data$ParentTerm)
-
-# Determine the number of unique ParentTerm values
-num_unique <- length(unique_early_terms)
-
-# Determine the midpoint for splitting into two batches
-midpoint <- ceiling(num_unique / 2)
-midpoint <- 9
-
-early_data <- early_data %>%
-  mutate(batch = ifelse(match(ParentTerm, unique_early_terms) <= midpoint, 1, 2))
-
-early_data$ParentTerm <- factor(early_data$ParentTerm) 
-early_data$ParentTerm <- factor(early_data$ParentTerm, levels = rev(levels(early_data$ParentTerm)))
-
-go_plot_earlyA <- early_data %>% 
-  filter(batch=="1")%>%
-  dplyr::arrange(bh_adjust) %>%
-  mutate(percHits=(numDEInCat/numInCat)*100)%>%
-  
-  ggplot(aes(x=percHits, y=term, fill=bh_adjust, colour=bh_adjust, size=percHits)) +
-  facet_grid(ParentTerm ~ ., scales = "free", space='free', labeller = label_wrap_gen(width = 30, multi_line = TRUE))+
-  geom_point(aes(group=term))+
-  geom_segment(aes(x=0, xend=percHits, y=term, yend=term),linewidth=1) +
-  scale_colour_gradientn(name = "Adj. p-value", colours = colorspace::heat_hcl(7))+
-  scale_fill_gradientn(name = "Adj. p-value", colours = colorspace::heat_hcl(7))+
-  scale_size(name="Hits (%)", range = c(1, 5))+
-  theme_classic() +
-  ylab("GO Term")+
-  xlab("Hits (%)")+
-  ggtitle("Early Development (1-38 hpf); 2,679 genes")+
-  theme(legend.position = "none",
-        axis.text.y = element_text(size=18),
-        axis.text.x = element_text(size=18),
-        axis.title.y = element_text(size=24, face="bold"),
-        axis.title.x = element_text(size = 24, face = "bold"),
-        plot.title = element_text(size = 24, face = "bold"), 
-        strip.text.y.right=element_text(angle=0, size=18), 
-        legend.title=element_text(size=22),
-        legend.text=element_text(size=18)); go_plot_earlyA
-
-go_plot_earlyB <- early_data %>% 
-  filter(batch=="2")%>%
-  dplyr::arrange(bh_adjust) %>%
-  mutate(percHits=(numDEInCat/numInCat)*100)%>%
-  
-  ggplot(aes(x=percHits, y=term, fill=bh_adjust, colour=bh_adjust, size=percHits)) +
-  facet_grid(ParentTerm ~ ., scales = "free", space='free', labeller = label_wrap_gen(width = 30, multi_line = TRUE))+
-  geom_point(aes(group=term))+
-  geom_segment(aes(x=0, xend=percHits, y=term, yend=term),linewidth=1) +
-  scale_colour_gradientn(name = "Adj. p-value", colours = colorspace::heat_hcl(7))+
-  scale_fill_gradientn(name = "Adj. p-value", colours = colorspace::heat_hcl(7))+
-  scale_size(name="Hits (%)", range = c(1, 5))+
-  theme_classic() +
-  ylab("")+
-  xlab("Hits (%)")+
-  ggtitle("")+
-  theme(legend.position = "right",
-        axis.text.y = element_text(size=18),
-        axis.text.x = element_text(size=18),
-        axis.title.y = element_text(size=24, face="bold"),
-        axis.title.x = element_text(size = 24, face = "bold"),
-        plot.title = element_text(size = 24, face = "bold"), 
-        strip.text.y.right=element_text(angle=0, size=18), 
-        legend.title=element_text(size=22),
-        legend.text=element_text(size=18)); go_plot_earlyB
-
-go_plot_early<-plot_grid(go_plot_earlyA, go_plot_earlyB, ncol=2, rel_widths=c(0.85,1))
-
-ggsave(filename="Mcap2020/Figures/TagSeq/DESeq/functional_enrichment/go_early.pdf", go_plot_early, width=35, height=48)
-
-early_data<-pattern_go_results %>% 
-  filter(pattern=="Early")%>%
-  dplyr::arrange(bh_adjust) %>%
-  mutate(percHits=(numDEInCat/numInCat)*100)
-
-write_csv(early_data, file="Mcap2020/Output/TagSeq/DESeq/functional_enrichment/enrichment_results_early.csv")
-```
-
-Mid development
-```{r}
-go_plot_mid <- pattern_go_results %>% 
-  filter(pattern=="Mid")%>%
-  dplyr::arrange(bh_adjust) %>%
-  mutate(percHits=(numDEInCat/numInCat)*100)%>%
-  
-  ggplot(aes(x=percHits, y=term, fill=bh_adjust, colour=bh_adjust, size=percHits)) +
-  facet_grid(ParentTerm ~ ., scales = "free", space='free', labeller = label_wrap_gen(width = 22, multi_line = TRUE))+
-  geom_point(aes(group=term))+
-  geom_segment(aes(x=0, xend=percHits, y=term, yend=term),linewidth=1) +
-  scale_colour_gradientn(name = "Adj. p-value", colours = colorspace::heat_hcl(7))+
-  scale_fill_gradientn(name = "Adj. p-value", colours = colorspace::heat_hcl(7))+
-  scale_size(name="Hits (%)", range = c(1, 5))+
-  theme_classic() +
-  ylab("GO Term")+
-  xlab("Hits (%)")+
-  ggtitle("Mid-Development (65-163 hpf); 3,201 genes")+
-  theme(legend.position = "right",
-        axis.text.y = element_text(size=14),
-        axis.text.x = element_text(size=14),
-        axis.title.y = element_text(size=18, face="bold"),
-        axis.title.x = element_text(size = 14, face = "bold"),
-        plot.title = element_text(size = 18, face = "bold"), 
-        strip.text.y.right=element_text(angle=0, size=14)); go_plot_mid
-
-ggsave(filename="Mcap2020/Figures/TagSeq/DESeq/functional_enrichment/go_mid.pdf", go_plot_mid, width=12, height=15)
-
-mid_data<-pattern_go_results %>% 
-  filter(pattern=="Mid")%>%
-  dplyr::arrange(bh_adjust) %>%
-  mutate(percHits=(numDEInCat/numInCat)*100)
-
-write_csv(mid_data, file="Mcap2020/Output/TagSeq/DESeq/functional_enrichment/enrichment_results_mid.csv")
-```
-
-Late development 
-```{r}
-late_data<-pattern_go_results %>% 
-  filter(pattern=="Late")
-
-# First, let's find the unique ParentTerm values
-unique_late_terms <- unique(late_data$ParentTerm)
-
-# Determine the number of unique ParentTerm values
-num_unique <- length(unique_late_terms)
-
-# Determine the midpoint for splitting into two batches
-midpoint <- ceiling(num_unique / 2)
-midpoint <- 6
-
-late_data <- late_data %>%
-  mutate(batch = ifelse(match(ParentTerm, unique_late_terms) <= midpoint, 1, 2))
-
-late_data$ParentTerm <- factor(late_data$ParentTerm) 
-#late_data$ParentTerm <- factor(late_data$ParentTerm, levels = rev(levels(late_data$ParentTerm)))
-
-go_plot_lateA <- late_data %>% 
-  filter(batch=="1")%>%
-  dplyr::arrange(bh_adjust) %>%
-  mutate(percHits=(numDEInCat/numInCat)*100)%>%
-  
-  ggplot(aes(x=percHits, y=term, fill=bh_adjust, colour=bh_adjust, size=percHits)) +
-  facet_grid(ParentTerm ~ ., scales = "free", space='free', labeller = label_wrap_gen(width = 20, multi_line = TRUE))+
-  geom_point(aes(group=term))+
-  geom_segment(aes(x=0, xend=percHits, y=term, yend=term),linewidth=1) +
-  scale_colour_gradientn(name = "Adj. p-value", colours = colorspace::heat_hcl(7))+
-  scale_fill_gradientn(name = "Adj. p-value", colours = colorspace::heat_hcl(7))+
-  scale_size(name="Hits (%)", range = c(1, 5))+
-  theme_classic() +
-  ylab("GO Term")+
-  xlab("Hits (%)")+
-  ggtitle("Late Development (183-231 hpf); 3,192 genes")+
-  theme(legend.position = "none",
-        axis.text.y = element_text(size=14),
-        axis.text.x = element_text(size=16),
-        legend.text = element_text(size=16),
-        legend.title = element_text(size=18),
-        axis.title.y = element_text(size=18, face="bold"),
-        axis.title.x = element_text(size = 14, face = "bold"),
-        plot.title = element_text(size = 16, face = "bold"), 
-        strip.text.y.right=element_text(angle=0, size=14)); go_plot_lateA
-
-go_plot_lateB <- late_data %>% 
-  filter(batch=="2")%>%
-  dplyr::arrange(bh_adjust) %>%
-  mutate(percHits=(numDEInCat/numInCat)*100)%>%
-  
-  ggplot(aes(x=percHits, y=term, fill=bh_adjust, colour=bh_adjust, size=percHits)) +
-  facet_grid(ParentTerm ~ ., scales = "free", space='free', labeller = label_wrap_gen(width = 20, multi_line = TRUE))+
-  geom_point(aes(group=term))+
-  geom_segment(aes(x=0, xend=percHits, y=term, yend=term),linewidth=1) +
-  scale_colour_gradientn(name = "Adj. p-value", colours = colorspace::heat_hcl(7))+
-  scale_fill_gradientn(name = "Adj. p-value", colours = colorspace::heat_hcl(7))+
-  scale_size(name="Hits (%)", range = c(1, 5))+
-  theme_classic() +
-  ylab("")+
-  xlab("Hits (%)")+
-  ggtitle("")+
-  theme(legend.position = "right",
-        axis.text.y = element_text(size=14),
-        axis.text.x = element_text(size=16),
-        legend.text = element_text(size=16),
-        legend.title = element_text(size=18),
-        axis.title.y = element_text(size=18, face="bold"),
-        axis.title.x = element_text(size = 14, face = "bold"),
-        plot.title = element_text(size = 16, face = "bold"), 
-        strip.text.y.right=element_text(angle=0, size=14)); go_plot_lateB
-
-go_plot_late<-plot_grid(go_plot_lateA, go_plot_lateB, ncol=2, rel_widths=c(0.8,1))
- 
-ggsave(filename="Mcap2020/Figures/TagSeq/DESeq/functional_enrichment/go_late.pdf", go_plot_late, width=22, height=12)
-
-late_data<-pattern_go_results %>% 
-  filter(pattern=="Late")%>%
-  dplyr::arrange(bh_adjust) %>%
-  mutate(percHits=(numDEInCat/numInCat)*100)
-
-write_csv(late_data, file="Mcap2020/Output/TagSeq/DESeq/functional_enrichment/enrichment_results_late.csv")
-```

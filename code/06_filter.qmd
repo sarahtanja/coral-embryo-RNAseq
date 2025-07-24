@@ -1,21 +1,43 @@
 ---
-title: "Step 6: Data exploration"
+title: "Step 6: Filter"
 subtitle: "Conduct prefiltering, visualize exploratory PCAs, identify outliers, & format metadata"
 author: "Sarah Tanja"
 date: 2024-11-18
 date-modified: today
-format: gfm
-prefer-html: true
-toc: true
-toc-depth: 3
-link-external-icon: true
-link-external-newwindow: true
-reference-location: margin
-citation-location: margin
+format:
+  gfm: default 
+  html:
+    theme: journal
+    highlight-style: github
+    page-layout: full
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    reference-location: margin
+    citation-location: margin
 ---
-
+# Background
+## Inputs
+- `gene_count_matrix.csv`
+- `mcap_RNAseq_simplified_metadata.csv`
+## Outputs
+- `gcm_filt.csv`
+- `metadata_filt.csv`
+# Setup
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
+  fig.width = 12,
+  fig.height = 8,
+  fig.align = "center",
+  dpi = 600,
   echo = TRUE,         # Display code chunks
   eval = TRUE,        # Evaluate code chunks
   warning = FALSE,     # Hide warnings
@@ -24,14 +46,12 @@ knitr::opts_chunk$set(
 )
 ```
 
-Resources:
-
-[RNA-seq workflow](https://master.bioconductor.org/packages/release/workflows/vignettes/rnaseqGene/inst/doc/rnaseqGene.html)
-
-[DESeq2 Vignette](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html)
-
-# Load packages
-
+## Install packages
+```{r}
+if ("tidyverse" %in% rownames(installed.packages()) == 'FALSE') 
+  install.packages('tidyverse')
+```
+## Load packages
 ```{r}
 library(tidyverse)
 ```

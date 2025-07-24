@@ -279,7 +279,7 @@ resultsNames(dds)  # see what contrast names are available
 ```
 
 | Coef | Name                         | Meaning                                                               |
-|---------------|----------------|----------------------------------------|
+|------|------------------------------|-----------------------------------------------------------------------|
 | 1    | `"Intercept"`                | Baseline expression: `hpf = 4` and `leachate = control`               |
 | 2    | `"hpf_9_vs_4"`               | Change from 4 hpf → 9 hpf, at **control** exposure                    |
 | 3    | `"hpf_14_vs_4"`              | Change from 4 hpf → 14 hpf, at **control** exposure                   |
@@ -294,7 +294,6 @@ resultsNames(dds)  # see what contrast names are available
 | 12   | `"hpf14.leachatehigh"`       | **Interaction term**:... of high exposure at 14 hpf vs 4 hpf          |
 
 Contrast summary table \| What you want \| Contrast \| \| ------------------------- \| ----------------------------------------------------- \| \| High vs Control at 4 hpf \| `"leachate_high_vs_control"` \| \| Mid vs Control at 4 hpf \| `"leachate_mid_vs_control"` \| \| Low vs Control at 4 hpf \| `"leachate_low_vs_control"` \| \| High vs Control at 9 hpf \| `c("leachate_high_vs_control", "hpf9.leachatehigh")` \| \| Mid vs Control at 9 hpf \| `c("leachate_mid_vs_control", "hpf9.leachatemid")` \| \| Low vs Control at 9 hpf \| `c("leachate_low_vs_control", "hpf9.leachatelow")` \| \| High vs Control at 14 hpf \| `c("leachate_high_vs_control", "hpf14.leachatehigh")` \| \| Mid vs Control at 14 hpf \| `c("leachate_mid_vs_control", "hpf14.leachatemid")` \| \| Low vs Control at 14 hpf \| `c("leachate_low_vs_control", "hpf14.leachatelow")` \|
-
 
 # Effect of high exposure at 14 hpf
 
@@ -1166,7 +1165,7 @@ v4low <-
 v4low
 ```
 
-# Summary 
+# Summary
 
 ## Facet volcano plot
 
@@ -1220,9 +1219,7 @@ Extreme p-values Your plot shows points with -log10(padj) values above 20--30. T
 
 # Next steps
 
-Re-run the model without the interaction term.
-The likelihood ratio test (LRT) shows that the interaction (hpf:leachate) is not significant!
-We can now test main effects of leachate across stages (i.e., an overall leachate effect) using `~ hpf + leachate`
+Re-run the model without the interaction term. The likelihood ratio test (LRT) shows that the interaction (hpf:leachate) is not significant! We can now test main effects of leachate across stages (i.e., an overall leachate effect) using `~ hpf + leachate`
 
 ## Exlpore cooks distance
 
