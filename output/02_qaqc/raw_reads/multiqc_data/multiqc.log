@@ -1,0 +1,20 @@
+[2024-11-12 16:40:16,855] multiqc                                            [DEBUG  ]  This is MultiQC v1.14
+[2024-11-12 16:40:16,856] multiqc                                            [DEBUG  ]  Command used: /home/sam/programs/mambaforge/bin/multiqc ./
+[2024-11-12 16:40:17,637] multiqc                                            [WARNING]  MultiQC Version v1.25.1 now available!
+[2024-11-12 16:40:17,637] multiqc                                            [DEBUG  ]  Working dir : /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/raw_reads
+[2024-11-12 16:40:17,638] multiqc                                            [DEBUG  ]  Template    : default
+[2024-11-12 16:40:17,638] multiqc                                            [DEBUG  ]  Running Python 3.10.10 | packaged by conda-forge | (main, Mar 24 2023, 20:08:06) [GCC 11.3.0]
+[2024-11-12 16:40:17,638] multiqc                                            [DEBUG  ]  Analysing modules: custom_content, ccs, ngsderive, purple, conpair, lima, peddy, somalier, methylQA, mosdepth, phantompeakqualtools, qualimap, preseq, hifiasm, quast, qorts, rna_seqc, rockhopper, rsem, rseqc, busco, bustools, goleft_indexcov, gffcompare, disambiguate, supernova, deeptools, sargasso, verifybamid, mirtrace, happy, mirtop, sambamba, gopeaks, homer, hops, macs2, theta2, snpeff, gatk, htseq, bcftools, featureCounts, fgbio, dragen, dragen_fastqc, dedup, pbmarkdup, damageprofiler, biobambam2, jcvi, mtnucratio, picard, vep, sentieon, prokka, qc3C, nanostat, samblaster, samtools, sexdeterrmine, eigenstratdatabasetools, bamtools, jellyfish, vcftools, longranger, stacks, varscan2, snippy, umitools, bbmap, bismark, biscuit, diamond, hicexplorer, hicup, hicpro, salmon, kallisto, slamdunk, star, hisat2, tophat, bowtie2, bowtie1, cellranger, snpsplit, odgi, pangolin, nextclade, humid, kat, leehom, adapterRemoval, bbduk, clipandmerge, cutadapt, flexbar, kaiju, kraken, malt, motus, trimmomatic, sickle, skewer, sortmerna, biobloomtools, fastq_screen, afterqc, fastp, fastqc, filtlong, prinseqplusplus, pychopper, porechop, pycoqc, minionqc, anglerfish, multivcfanalyzer, clusterflow, checkqc, bcl2fastq, bclconvert, interop, ivar, flash, seqyclean, optitype, whatshap
+[2024-11-12 16:40:17,638] multiqc                                            [DEBUG  ]  Using temporary directory for creating report: /tmp/tmpn68q5ycg
+[2024-11-12 16:40:18,142] multiqc                                            [INFO   ]  Search path : /media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/raw_reads
+[2024-11-12 16:40:21,538] multiqc                                            [DEBUG  ]  Summary of files that were skipped by the search: [skipped_module_specific_max_filesize: 1386] // [skipped_no_match: 126]
+[2024-11-12 16:40:28,129] multiqc.plots.bargraph                             [DEBUG  ]  Using matplotlib version 3.7.1
+[2024-11-12 16:40:28,138] multiqc.plots.linegraph                            [DEBUG  ]  Using matplotlib version 3.7.1
+[2024-11-12 16:40:28,139] multiqc                                            [DEBUG  ]  No samples found: custom_content
+[2024-11-12 16:40:38,444] multiqc.modules.fastqc.fastqc                      [INFO   ]  Found 126 reports
+[2024-11-12 16:40:46,044] multiqc                                            [INFO   ]  Compressing plot data
+[2024-11-12 16:40:46,070] multiqc                                            [INFO   ]  Report      : multiqc_report.html
+[2024-11-12 16:40:46,071] multiqc                                            [INFO   ]  Data        : multiqc_data
+[2024-11-12 16:40:46,071] multiqc                                            [DEBUG  ]  Moving data file from '/tmp/tmpn68q5ycg/multiqc_data' to '/media/4TB_JPG_ext/stanja/gitprojects/coral-embryo-ecotox/output/03_qaqc/raw_reads/multiqc_data'
+[2024-11-12 16:40:46,197] multiqc                                            [INFO   ]  MultiQC complete
+[2024-11-12 16:40:46,197] multiqc                                            [WARNING]  8 flat-image plots used in the report due to large sample numbers

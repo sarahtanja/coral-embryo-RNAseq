@@ -1,0 +1,690 @@
+---
+title: "Step 6: Data Exploration of Count Matrix"
+subtitle: "Using `DESeq2` to perform exploratory PCAs and identify outliers"
+author: "Sarah Tanja"
+date: 11/18/2024
+date-modified: today
+format:
+  gfm: 
+    toc: true
+    number-sections: true
+  html:
+    theme: journal
+    highlight-style: github
+    page-layout: full
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    number-sections: true
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    reference-location: margin
+    citation-location: margin
+---
+
+# Background
+
+![](../../images/Experimental_Assay_Design.png)
+
+## Inputs
+
+-   unfiltered gene count matrix
+
+## Outputs
+
+-   exploratory principle component analysis (PCA)
+
+-   filtered metadata removing outlier samples
+
+# Goals
+
+-   Create initial DESeq Dataset Objects to use in exploratory data visualizations
+
+-   Identify & remove any outliers
+
+Resources:
+
+[RNA-seq workflow](https://master.bioconductor.org/packages/release/workflows/vignettes/rnaseqGene/inst/doc/rnaseqGene.html)
+
+[DESeq2 Vignette](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html)
+
+# Setup
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,         # Display code chunks
+  eval = TRUE,        # Evaluate code chunks
+  warning = FALSE,     # Hide warnings
+  message = FALSE,     # Hide messages
+  comment = ""         # Prevents appending '##' to beginning of lines in code output
+)
+```
+
+## Install packages
+
+```{r}
+if ("tidyverse" %in% rownames(installed.packages()) == 'FALSE') install.packages('tidyverse') 
+if ("pheatmap" %in% rownames(installed.packages()) == 'FALSE') install.packages('pheatmap')
+if ("vegan" %in% rownames(installed.packages()) == 'FALSE') install.packages('vegan')
+if ("vsn" %in% rownames(installed.packages()) == 'FALSE') install.packages('vsn')
+if ("factoextra" %in% rownames(installed.packages()) == 'FALSE') install.packages('factoextra')
+if ("pak" %in% rownames(installed.packages()) == 'FALSE') install.packages('pak')
+if ("plotly" %in% rownames(installed.packages()) == 'FALSE') install.packages('plotly')
+
+pak::pak("mdscheuerell/flexoki")
+
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("DESeq2")
+```
+
+## Load packages
+
+```{r}
+library(tidyverse)
+library(DESeq2)
+library(vsn)
+library(pheatmap)
+library(flexoki)
+library(plotly)
+```
+
+## Load metadata and gene count matrix
+
+```{r}
+metadata <- read.csv("../../metadata/metadata.csv")
+
+# Make leachate and hpf factors
+metadata$leachate <- as.factor(metadata$leachate)
+metadata$leachate <- fct_relevel(metadata$leachate, "control", "low", "mid", "high")
+
+metadata$hpf <- as.factor(metadata$hpf)
+metadata$hpf <- fct_relevel(metadata$hpf, "4", "9", "14")
+
+str(metadata)
+```
+
+```{r}
+gcm <- read.csv("../../output/05_count/gene_count_matrix.csv", row.names="gene_id", check.names = FALSE)
+```
+
+## Check order
+
+From DESeq2 vignette under [Count matrix input](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#pre-filtering:~:text=for%20full%20details.-,Count%20matrix%20input,-Alternatively%2C%20the%20function):
+
+> It is absolutely critical that the columns of the count matrix and the rows of the column data (information about samples) are in the same order. DESeq2 will not make guesses as to which column of the count matrix belongs to which row of the column data, these must be provided to DESeq2 already in consistent order.
+
+Examine the count matrix and column data to see if they are consistent in terms of sample order. For our data, `metadata` contains sample information and `gcm` is our unfiltered gene count matrix.
+
+```{r}
+all(metadata$sample_id == colnames(gcm))
+```
+
+::: callout-note
+Our samples are listed in the same order down our `metadata` rows and across our `gcm` columns
+:::
+
+# Filtering
+### Plot distribution of unfiltered reads
+
+```{r distr_unfiltered_reads}
+
+ggplot(data = data.frame(rowMeans(gcm)),
+  aes(x = rowMeans.gcm.)) +
+  geom_histogram(fill = "grey", binwidth = 5) +
+  xlim(0, 500) +
+  ylim(0, 5000) +
+  theme_classic() +
+  labs(title = "Distribution of unfiltered reads") +
+  labs(y = "Density", x = "Raw read counts",
+  title = "Read count distribution: untransformed, unnormalized, unfiltered")
+  
+```
+
+::: callout-note
+As you can see in the above plot, the raw distribution of all read counts takes on a left-skewed negative binomial distribution.
+:::
+
+## Pre-filtering
+
+From the `DESeq2` vignette on [Pre-filtering](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#pre-filtering:~:text=cell%20…%20Sample%20BioSample-,Pre%2Dfiltering,-While%20it%20is):
+
+> While it is not necessary to pre-filter low count genes before running the DESeq2 functions, there are two reasons which make pre-filtering useful: by removing rows in which there are very few reads, we reduce the memory size of the `dds` data object, and we increase the speed of count modeling within DESeq2. It can also improve visualizations, as features with no information for differential expression are not plotted in dispersion plots or MA-plots.
+>
+> Here we perform pre-filtering to keep only rows that have a count of at least 10 for a minimal number of samples. The count of 10 is a reasonable choice for bulk RNA-seq. A recommendation for the minimal number of samples is to specify the smallest group size, e.g. here there are 3 treated samples. If there are not discrete groups, one can use the minimal number of samples where non-zero counts would be considered interesting. One can also omit this step entirely and just rely on the independent filtering procedures available in `results()`, either *IHW* or *genefilter*. See [independent filtering](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#indfilt) section.
+
+```{r}
+# Filter rows where at least 33% of the columns have a raw count of ~15
+gcm_filt <- gcm %>%
+  filter(rowSums(across(everything(), ~ . > 15)) >= 0.75 * ncol(gcm))
+
+nrow(gcm_filt)
+```
+
+# Make DESeq Dataset Object
+
+Create a `DESeqDataSet` design from the gene count matrix and treatment conditions. Here we set the design to test gene expression responses to pollution exposure (C, L, M, H) across developmental stage (4, 9, or 14 hours post fertilization).
+
+From the `DESeq2` vignette on [The DESeqDataSet](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#pre-filtering:~:text=used%20as%20input.-,The%20DESeqDataSet,-The%20object%20class):
+
+> The object class used by the DESeq2 package to store the read counts and the intermediate estimated quantities during statistical analysis is the *DESeqDataSet*, which will usually be represented in the code here as an object `dds`.
+>
+> A technical detail is that the *DESeqDataSet* class extends the *RangedSummarizedExperiment* class of the [SummarizedExperiment](http://bioconductor.org/packages/SummarizedExperiment) package. The "Ranged" part refers to the fact that the rows of the assay data (here, the counts) can be associated with genomic ranges (the exons of genes). This association facilitates downstream exploration of results, making use of other Bioconductor packages' range-based functionality (e.g. find the closest ChIP-seq peaks to the differentially expressed genes).
+>
+> A *DESeqDataSet* object must have an associated *design formula*. The design formula expresses the variables which will be used in modeling. The formula should be a tilde (\~) followed by the variables with plus signs between them (it will be coerced into an *formula* if it is not already). The design can be changed later, however then all differential analysis steps should be repeated, as the design formula is used to estimate the dispersions and to estimate the log2 fold changes of the model.
+>
+> ::: callout-important
+> In order to benefit from the default settings of the package, you should put the variable of interest at the end of the formula and make sure the control level is the first level.
+> :::
+
+From the `RNA-seq-workflow`
+
+> The simplest design formula for differential expression would be `~ condition`, where `condition` is a column in `colData(dds)` that specifies which of two (or more groups) the samples belong to. For the airway experiment, we will specify `~ cell + dex` meaning that we want to test for the effect of dexamethasone (`dex`) controlling for the effect of different cell line (`cell`). For running *DESeq2* models, you can use R's formula notation to express any **fixed-effects** experimental design. Note that *DESeq2* uses the same formula notation as, for instance, the *lm* function of base R. If the research aim is to determine for which genes the effect of treatment is different across groups, then interaction terms can be included and tested using a design such as `~ group + treatment + group:treatment`. See the manual page for `?results` for more examples.
+
+```{r}
+#Set DESeq2 design for 2 factors and their interaction
+dds <- DESeqDataSetFromMatrix(countData = gcm_filt,
+                              colData = metadata,
+                              design = ~ hpf +  leachate + hpf:leachate)
+```
+
+## Plot distribution
+
+```{r}
+# Extract VST-transformed expression matrix
+vsd_mat <- assay(vst(dds))
+
+# Flatten it into a vector
+vsd_vals <- as.vector(vsd_mat)
+
+# Create a dataframe for ggplot
+df_vsd <- data.frame(vsd_count = vsd_vals)
+
+# Plot
+ggplot(df_vsd, aes(x = vsd_count)) +
+  geom_histogram(fill = "grey") +
+  theme_classic() +
+  labs(
+    title = "Histogram of Variance-Stabilized Counts",
+    x = "VST-transformed read count",
+    y = "Frequency"
+  )
+
+```
+:::callout-caution
+This should look broadly like a normal distribution! If it doesn't, make your filter stricter to remove more low reads. You can do this by increasing the percent of samples that have to have the minimum count, and/or increase the minimum count back in the pre-filtering step. 
+:::
+
+## Factor levels
+
+From the `DESeq2` vignette [Note on factor levels](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#note-on-factor-levels):
+
+> By default, R will choose a *reference level* for factors based on alphabetical order. Then, if you never tell the DESeq2 functions which level you want to compare against (e.g. which level represents the control group), the comparisons will be based on the alphabetical order of the levels. There are two solutions: you can either explicitly tell *results* which comparison to make using the `contrast` argument (this will be shown later), or you can explicitly set the factors levels. In order to see the change of reference levels reflected in the results names, you need to either run `DESeq` or `nbinomWaldTest`/`nbinomLRT` after the re-leveling operation.
+
+Set levels for both the `leachate` and `hpf` variables
+
+-   `pvc_leachate_level` (4 levels)
+    1.  `control`
+    2.  `low`
+    3.  `mid`
+    4.  `high`
+-   `hpf` (3 levels)
+    1.  `4`
+    2.  `9`
+    3.  `14`
+
+```{r}
+dds$leachate <- factor(dds$leachate, levels = c("control","low", "mid", "high"))
+dds$hpf <- factor(dds$hpf, levels = c(4, 9, 14))
+levels(dds$leachate)
+levels(dds$hpf)
+```
+
+# Differential expression analysis
+
+> **Likelihood ratio test**
+>
+> DESeq2 offers two kinds of hypothesis tests: the Wald test, where we use the estimated standard error of a log2 fold change to test if it is equal to zero, and the likelihood ratio test (LRT). The LRT examines two models for the counts, a *full* model with a certain number of terms and a *reduced* model, in which some of the terms of the *full* model are removed. The test determines if the increased likelihood of the data using the extra terms in the *full* model is more than expected if those extra terms are truly zero.
+>
+> The LRT is therefore useful for testing multiple terms at once, for example testing 3 or more levels of a factor at once, or all interactions between two variables. The LRT for count data is conceptually similar to an analysis of variance (ANOVA) calculation in linear regression, except that in the case of the Negative Binomial GLM, we use an analysis of deviance (ANODEV), where the *deviance* captures the difference in likelihood between a full and a reduced model.
+>
+> The likelihood ratio test can be performed by specifying `test="LRT"` when using the *DESeq* function, and providing a reduced design formula, e.g. one in which a number of terms from `design(dds)` are removed. The degrees of freedom for the test is obtained from the difference between the number of parameters in the two models.
+
+```{r}
+dds <- DESeq(dds, test="LRT", reduced= ~ hpf + leachate )
+```
+
+```{r}
+data.frame(resultsNames <- resultsNames(dds))
+```
+
+# Data transformations and visualization
+
+## Count transformations
+
+> In order to test for differential expression, we operate on raw counts and use discrete distributions... However for visualization or clustering -- it might be useful to work with transformed versions of the count data.
+>
+> **Which transformation to choose?** The VST is much faster to compute and is less sensitive to high count outliers than the rlog. The rlog tends to work well on small datasets (n \< 30), potentially outperforming the VST when there is a wide range of sequencing depth across samples (an order of magnitude difference). We therefore recommend the VST for medium-to-large datasets (n \> 30). You can perform both transformations and compare the `meanSdPlot` or PCA plots generated...
+
+> First we are going to log-transform the data using a variance stabilizing transforamtion (VST). This is only for visualization purposes. Essentially, this is roughly similar to putting the data on the log2 scale. It will deal with the sampling variability of low counts by calculating within-group variability (if blind=FALSE). Importantly, it does not use the design to remove variation in the data, and so can be used to examine if there may be any variability do to technical factors such as extraction batch effects.
+>
+> To do this we first need to calculate the size factors of our samples. This is a rough estimate of how many reads each sample contains compared to the others. In order to use VST (the faster log2 transforming process) to log-transform our data, the size factors need to be less than 4. - [A.Huffmyer Early Life History Energetics](https://github.com/AHuffmyer/EarlyLifeHistory_Energetics/blob/07ef97f446e4383b95bbcc78e5d0e8df1736d51e/Mcap2020/Scripts/TagSeq/DESeq2_Mcap_V3.Rmd#L206){style="font-size: 11.4pt;"}
+
+```{r}
+dds <- estimateSizeFactors(dds)
+hist(sizeFactors(dds))
+all(sizeFactors(dds))<4
+```
+
+::: callout-note
+**From DESeq vignette on [Blind dispersion estimation](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#contrasts:~:text=Anders%202014).-,Blind%20dispersion%20estimation,-The%20two%20functions) :**
+
+The two functions, *vst* and *rlog* have an argument `blind`, for whether the transformation should be blind to the sample information specified by the design formula. When `blind` equals `TRUE` (the default), the functions will re-estimate the dispersions using only an intercept. This setting should be used in order to compare samples in a manner wholly unbiased by the information about experimental groups, for example to perform sample QA (quality assurance) as demonstrated below.
+
+However, blind dispersion estimation is not the appropriate choice if one expects that many or the majority of genes (rows) will have large differences in counts which are explainable by the experimental design, and one wishes to transform the data for downstream analysis. In this case, using blind dispersion estimation will lead to large estimates of dispersion, as it attributes differences due to experimental design as unwanted *noise*, and will result in overly shrinking the transformed values towards each other. **By setting `blind` to `FALSE`, the dispersions already estimated will be used to perform transformations, or if not present, they will be estimated using the current design formula. Note that only the fitted dispersion estimates from mean-dispersion trend line are used in the transformation (the global dependence of dispersion on mean for the entire experiment). So setting `blind` to `FALSE` is still for the most part not using the information about which samples were in which experimental group in applying the transformation.**
+:::
+
+We chose to set `blind = FALSE` because we expect large differences between embryonic stages (hpf).
+
+```{r}
+vsd <- vst(dds, blind=FALSE)
+rld <- rlog(dds, blind=FALSE)
+```
+
+[Effects of transformations on the variance](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#effects-of-transformations-on-the-variance)
+
+> To show the effect of the transformation, in the figure below we plot the first sample against the second, first simply using the *log2* function (after adding 1, to avoid taking the log of zero), and then using the VST and rlog-transformed values. For the *log2* approach, we need to first estimate *size factors* to account for sequencing depth, and then specify `normalized=TRUE`. Sequencing depth correction is done automatically for the *vst* and *rlog*.
+
+> The figures below plot the standard deviation of the transformed data, across samples, against the mean, using the shifted logarithm transformation, the regularized log transformation and the variance stabilizing transformation. The shifted logarithm has elevated standard deviation in the lower count range, and the regularized log to a lesser extent, while for the variance stabilized data the standard deviation is roughly constant along the whole dynamic range.
+>
+> Note that the vertical axis in such plots is the square root of the variance over all samples, so including the variance due to the experimental conditions. While a flat curve of the square root of variance over the mean may seem like the goal of such transformations, this may be unreasonable in the case of datasets with many true differences due to the experimental conditions.
+
+```{r}
+dds <- estimateSizeFactors(dds)
+
+df <- bind_rows(
+  as.data.frame(log2(counts(dds, normalized=TRUE)[, 1:2]+1)) %>%
+         mutate(transformation = "log2(x + 1)"),
+  as.data.frame(assay(vsd)[, 1:2]) %>% mutate(transformation = "vst"),
+  as.data.frame(assay(rld)[, 1:2]) %>% mutate(transformation = "rlog"))
+  
+colnames(df)[1:2] <- c("x", "y")  
+
+lvls <- c("log2(x + 1)", "vst", "rlog")
+df$transformation <- factor(df$transformation, levels=lvls)
+
+ggplot(df, aes(x = x, y = y)) +
+  geom_hex(bins = 80) +
+  coord_fixed() +
+  facet_grid(. ~ transformation) +
+  ggtitle("All Samples Interaction design (4, 9 & 14 hpf) Count Transformation Comparisons")
+```
+
+```{r}
+meanSdPlot(assay(vsd))
+```
+
+```{r}
+meanSdPlot(assay(rld))
+```
+::: callout-note
+Regularized log transformation `rlog` seems to do a better job with keeping the standard deviation stable as mean count size increases... So we will use `rld` for downstream visualizations. 
+:::
+
+# Exploratory PCA
+
+> A principal components analysis (PCA) plot shows the samples in the 2D plane spanned by their first two principal components. This type of plot is useful for visualizing the overall effect of experimental covariates and batch effects.
+
+```{r}
+# Get PCA data (top 500 DEGs by default)
+pca_500 <- plotPCA(vst(dds), intgroup = "group", returnData = TRUE)
+percentVar_500 <- round(100*attr(pca_500, "percentVar"))
+
+# Merge with metadata
+pca_500 <- merge(pca_500, metadata, by.x = "name", by.y = "sample_id", all.x = TRUE)
+
+
+# Assign specific colors to each hpf
+hpf_colors <- c(
+  "4" = flex("cyan", sat=500),
+  "9" = flex("green", sat =500),
+  "14" = flex("yellow", sat=500)
+)
+
+pca_500$label <- paste0("Sample: ", pca_500$sample_id,
+                        "\nHPF: ", pca_500$hpf,
+                        "\nLeachate: ", pca_500$leachate)
+
+# Indicate leachate level by saturation (alpha)
+leachate_alpha_map <- c("control" = 0.5, "low" = 0.6, "mid" = 0.7, "high" = 0.9)
+pca_500$alpha_val <- leachate_alpha_map[pca_500$leachate]
+
+# Original ggplot with a tooltip aesthetic
+PCA_500 <- ggplot(pca_500, aes(PC1, PC2, color = hpf, label = name, alpha = alpha_val)) +
+  geom_point(size = 1,  stroke = 1) +
+  ggtitle("M.cap embryos exposed to pvc leachate, top 500 most variable genes") +
+  xlab(paste0("PC1: ", percentVar_500[1], "% variance")) +
+  ylab(paste0("PC2: ", percentVar_500[2], "% variance")) + 
+  coord_fixed() +
+  scale_color_manual(values = hpf_colors) +
+  stat_ellipse() + 
+  guides(alpha = "none") +  # hide alpha legend (optional)
+  theme_minimal()
+
+# Convert to interactive plot
+ggplotly(PCA_500, tooltip = "label")
+```
+## Identify outliers
+
+> ... we usually identify any sample that falls outside the main group of samples by a magnitude (along PC1) of greater than 3 standard deviations. Mathematically, all that you need to do is convert your PC1 values to Z-scores and then check for those >|3|. In R, get these by using prcomp() and then accessing the 'x' variable of the returned object, e.g., `pca <- prcomp(t(rna.data); pca$x`... --Kevin Blighe on [biostars forum](https://www.biostars.org/p/281767/)
+
+```{r}
+# Extract PC1 values
+pca_scores <- pca_500[ , c("PC1", "PC2", "name")]
+
+# Convert PC1 scores to Z-scores
+pca_scores$zpc1 <- scale(pca_scores$PC1)
+pca_scores$zpc2 <- scale(pca_scores$PC2)
+
+# Get samples with Z-score > |3|
+pc1_outliers <- pca_scores$zpc1[abs(pca_scores$zpc1) > 3]
+pc2_outliers <- pca_scores$zpc2[abs(pca_scores$zpc1) > 3]
+
+# Show them
+pc1_outliers
+pc2_outliers
+```
+::: callout-important
+Although their z-scores are not greater than 3 standard deviations from the group, visually samples `131415L4` and `789C4`may be outliers in the cleavage phase, as they have the greatest spread from the centroid of hpf 4, and also from the rest of the samples. The hpf 4 data is expected to be the least consistent because at 4 hpf, the eggs were just on the cusp of beginning initial cleavage, meaning many of the embryos still appeared as an undivided blastocyle, and we could therefore not determine if the egg was fertilized and about to initiate cleavage, or unfertilized and inviable. 
+:::
+
+## Remove the outliers
+
+### From metadata
+
+```{r}
+metadata_or <- metadata %>% 
+  filter(!(sample_id == "131415L4")) %>% 
+  filter(!(sample_id == "789C4"))
+```
+
+### From gene count matrix
+
+```{r}
+gcm_or <- gcm %>% 
+  dplyr::select(-`131415L4`, -`789C4`)
+
+nrow(gcm_or)
+```
+
+### Refilter
+
+```{r}
+# Filter rows where at least (3/60) = .05% of the columns have a value greater than 10
+gcm_filtor <- gcm_or %>%
+  filter(rowSums(across(everything(), ~ . > 15)) >= 0.75 * ncol(gcm_or))
+
+nrow(gcm_filtor)
+```
+
+22634 genes (same genes present with or without outlier samples)
+
+# Remake DESeq Object
+```{r}
+dds <- DESeqDataSetFromMatrix(countData = gcm_filtor,
+                              colData = metadata_or,
+                              design = ~ hpf +  leachate + hpf:leachate)
+```
+
+## Redo count transformations
+
+```{r}
+vsd <- vst(dds, blind=FALSE)
+rld <- rlog(dds, blind=FALSE)
+```
+
+```{r}
+dds <- estimateSizeFactors(dds)
+hist(sizeFactors(dds))
+all(sizeFactors(dds))<4
+```
+
+```{r}
+df <- bind_rows(
+  as_data_frame(log2(counts(dds, normalized=TRUE)[, 1:2]+1)) %>%
+         mutate(transformation = "log2(x + 1)"),
+  as_data_frame(assay(vsd)[, 1:2]) %>% mutate(transformation = "vst"),
+  as_data_frame(assay(rld)[, 1:2]) %>% mutate(transformation = "rlog"))
+  
+colnames(df)[1:2] <- c("x", "y")  
+
+lvls <- c("log2(x + 1)", "vst", "rlog")
+df$transformation <- factor(df$transformation, levels=lvls)
+
+ggplot(df, aes(x = x, y = y)) +
+  geom_hex(bins = 80) +
+  coord_fixed() +
+  facet_grid(. ~ transformation) +
+  ggtitle("All Samples Count Transformation Comparisons with Outliers Removed")
+
+```
+
+```{r}
+meanSdPlot(assay(vsd))
+```
+
+```{r}
+meanSdPlot(assay(rld))
+```
+
+# Exploratory PCA
+
+> A principal components analysis (PCA) plot shows the samples in the 2D plane spanned by their first two principal components. This type of plot is useful for visualizing the overall effect of experimental covariates and batch effects.
+
+```{r}
+# Get PCA data (top 500 DEGs by default)
+pca_500 <- plotPCA(vst(dds), intgroup = "group", returnData = TRUE)
+percentVar_500 <- round(100*attr(pca_500, "percentVar"))
+
+# Merge with metadata
+pca_500 <- merge(pca_500, metadata_or, by.x = "name", by.y = "sample_id", all.x = TRUE)
+
+
+# Assign specific colors to each hpf
+hpf_colors <- c(
+  "4" = flex("cyan", sat=500),
+  "9" = flex("green", sat =500),
+  "14" = flex("yellow", sat=500)
+)
+
+pca_500$label <- paste0("sample: ", pca_500$sample_id,
+                        "\nHpf: ", pca_500$hpf,
+                        "\nLeachate: ", pca_500$leachate)
+
+# Indicate leachate level by saturation (alpha)
+leachate_alpha_map <- c("control" = 0.5, "low" = 0.6, "mid" = 0.7, "high" = 0.9)
+pca_500$alpha_val <- leachate_alpha_map[pca_500$leachate]
+
+# Original ggplot with a tooltip aesthetic
+PCA_500 <- ggplot(pca_500, aes(PC1, PC2, color = hpf, label = name, alpha = alpha_val)) +
+  geom_point(size = 1,  stroke = 1) +
+  ggtitle("M.cap embryos exposed to pvc leachate, top 500 most variable genes") +
+  xlab(paste0("PC1: ", percentVar_500[1], "% variance")) +
+  ylab(paste0("PC2: ", percentVar_500[2], "% variance")) + 
+  coord_fixed() +
+  scale_color_manual(values = hpf_colors) +
+  stat_ellipse() + 
+  guides(alpha = "none") +  # hide alpha legend (optional)
+  theme_minimal()
+
+# Convert to interactive plot
+ggplotly(PCA_500, tooltip = "label")
+
+```
+```{r}
+PCA_500 <- ggplot(pca_500, aes(x = PC1, y = PC2,
+                               fill = hpf,
+                               shape = leachate,
+                               label = label)) +
+  geom_point(size = 1.5) +
+  ggtitle("M.cap embryos exposed to PVC leachate, top 500 most variable genes") +
+  xlab(paste0("PC1: ", percentVar_500[1], "% variance")) +
+  ylab(paste0("PC2: ", percentVar_500[2], "% variance")) +
+  coord_fixed() +
+  scale_fill_manual(values = hpf_colors) +
+  stat_ellipse(aes(group = hpf)) +
+  guides(alpha = "none", leachate = "none") +
+  theme_minimal()
+
+# Convert to interactive plot
+ggplotly(PCA_500, tooltip = "label")
+
+```
+# Heatmaps
+
+```{r}
+# Select the top 20 rows based on mean expression
+select <- order(rowMeans(counts(dds, normalized = TRUE)), decreasing = TRUE)[1:20]
+
+# Extract the annotation dataframe
+heat <- as.data.frame(colData(dds)[, c("leachate", "hpf")])
+
+# Ensure leachate is a factor with the desired order
+heat$leachate <- factor(heat$leachate, levels = c("control", "low", "mid", "high"))
+
+# Order columns byleachate
+ordered_columns <- order(heat$leachate)
+
+# Reorder the assay matrix and annotation dataframe
+rld_matrix <- assay(rld)[select, ][, ordered_columns]
+rld_heat <- heat[ordered_columns, ]
+
+# Plot the heatmap
+leachate_heatmap <- pheatmap(
+                            rld_matrix,
+                            cluster_rows = FALSE,          # Do not cluster rows
+                            show_rownames = FALSE,         # Do not show row names
+                            cluster_cols = FALSE,          # Disable column clustering
+                            annotation_col = rld_heat      # Add annotation
+                                  )
+# display the heatpmap
+leachate_heatmap
+
+# Save the heatmap as a png
+ggsave("../../output/06_exploration/leachate_heatmap.png", plot = leachate_heatmap, width = 8, height = 6, dpi = 600)
+```
+
+```{r}
+# Select the top 20 rows based on mean expression
+select <- order(rowMeans(counts(dds, normalized = TRUE)), decreasing = TRUE)[1:20]
+
+# Extract the annotation dataframe
+heat <- as.data.frame(colData(dds)[, c("leachate", "hpf")])
+
+# Ensure hpf is a factor with the desired order
+heat$hpf <- factor(heat$hpf, levels = c("4", "9", "14"))
+
+# Order columns by pvc_leachate_level
+ordered_columns <- order(heat$hpf)
+
+# Reorder the assay matrix and annotation dataframe
+rld_matrix <- assay(rld)[select, ][, ordered_columns]
+rld_heat <- heat[ordered_columns, ]
+
+# Plot the heatmap
+explore_ephase_heatmap <- pheatmap(
+                            rld_matrix,
+                            cluster_rows = FALSE,          # Do not cluster rows
+                            show_rownames = FALSE,         # Do not show row names
+                            cluster_cols = FALSE,          # Disable column clustering
+                            annotation_col = rld_heat      # Add annotation
+                                  )
+# display the heatpmap
+explore_ephase_heatmap
+
+# Save the heatmap as a png
+ggsave("../output/06_exploration/explore_ephase_heatmap.png", plot = explore_ephase_heatmap, width = 8, height = 6, dpi = 600)
+```
+
+## Heatmap of zscores
+
+Set themes and metadata.
+
+```{r}
+
+legend_names_col = colnames(assay(rld))
+
+# Extract the annotation dataframe
+df <- as.data.frame(colData(dds)[,c("leachate", "hpf")])
+
+names(df)<- c("leachate", "hpf")
+rownames(df) <- legend_names_col
+
+levels(df$leachate) 
+levels(df$hpf)
+```
+
+Plot heatmap of z-scores of differential expression.
+
+```{r}
+
+# Suppress heatmap messages
+ht_opt$message <- FALSE
+
+# Display heatmap (in RStudio or default plot device)
+pheatmap(
+  assay(rld),
+  cluster_rows = TRUE,
+  show_rownames = FALSE,  # Do not show row names
+  color = inferno(10),    # Inferno color palette
+  show_colnames = FALSE,  # Do not show column names
+  fontsize_row = 3,
+  scale = "row",
+  cluster_cols = TRUE,
+  annotation_col = df,
+  labels_col = legend_names_col,
+  clustering_distance_rows = "euclidean",
+  clustering_distance_cols = "euclidean",
+  cutree_rows = 3,
+  use_raster = TRUE  # Explicitly control rasterization
+)
+
+# Save heatmap as PNG
+png("../../output/05_explore/zscore_heatmap.png", width = 8, height = 6, units = "in", res = 600)
+pheatmap(
+  assay(DEG_results_rlog),
+  cluster_rows = TRUE,
+  show_rownames = FALSE,  # Do not show row names
+  color = inferno(10),    # Inferno color palette
+  show_colnames = FALSE,  # Do not show column names
+  fontsize_row = 3,
+  scale = "row",
+  cluster_cols = TRUE,
+  annotation_col = df,
+  labels_col = legend_names_col,
+  clustering_distance_rows = "euclidean",
+  clustering_distance_cols = "euclidean",
+  cutree_rows = 3,
+  use_raster = TRUE  # Explicitly control rasterization
+)
+dev.off()
+```
+
+# Summary & Next Steps
+
+We can see that our data groups largely by stage, or hours post fertilization (hpf). Any effects of leachate are going to be very subtle in comparison to the differential expression due to stage. 
+
+```{r}
+# save gene count matrix
+save(gcm_filtor, file = "../../output/07_exploration/gcm_filtor.csv")
+
+# output metadata for other analyses 
+write_csv(metadata_or, "../../metadata/metadata_or.csv")
+```
+
