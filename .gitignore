@@ -13,5 +13,4 @@
 *.fa
 *.gff3
 *.gz
-output/09_multifactorial/dds_i_wald.RData
 input/hisat/Montipora_capitata_HIv3-hisat2-indices.tar.gz

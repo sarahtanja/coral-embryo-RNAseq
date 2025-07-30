@@ -1,19 +1,34 @@
 ---
-title: "Step 4: Align sequence reads to annotated *M. capitata* genome"
+title: "Step 3: Align and assemble sequence reads to annotated *M. capitata* genome"
 subtitle: "Using `HISAT2` & `StringTie`"
 author: "Sarah Tanja"
 date: 10/21/2024
+date-modified: today
 format:
-  gfm: default  # or html if you want to render in HTML
-toc: true
-toc-depth: 3
-link-external-icon: true
-link-external-newwindow: true
-reference-location: margin
-citation-location: margin
+  gfm: 
+    toc: true
+    number-sections: true
+  html:
+    theme: journal
+    highlight-style: github
+    page-layout: full
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    number-sections: true
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    reference-location: margin
+    citation-location: margin
 ---
 
-This notebook will align trimmed M. capitata RNA-seq data to the M. capitata genome using hierarchical indexing for spliced alignment of transcripts HISAT2 [@zhang_rapid_2021]. Followed by StringTie (Pertea et al. 2016, 2015) for transcript assembly/identification and count matrices for downstream expression analysis with DESeq2.
+This notebook will align trimmed M. capitata RNA-seq data to the M. capitata genome using hierarchical indexing for spliced alignment of transcripts `HISAT2` [@zhang_rapid_2021]. Followed by assembly with `StringTie` (Pertea et al. 2016, 2015) for transcript identification. 
 
 #### Inputs
 
@@ -389,15 +404,7 @@ find ../output/04_align/bam/*[CLMH]4.sorted.bam \
 
 # Summary & Next Steps
 
-We generated alignment files in this step that we will assemble using `StringTie` in step 5, `05_assemble`
+ 
 
-::: callout-important
-###### Don't forget to always rsync backup!
 
-```         
-rsync -avz /media/4TB_JPG_ext/stanja/gitprojects\
-stanja\@gannet.fish.washington.edu:/volume2/web/stanja/ravenbackup
-```
-:::
 
-# 

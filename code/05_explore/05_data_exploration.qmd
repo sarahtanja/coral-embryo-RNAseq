@@ -32,6 +32,11 @@ format:
 
 ![](../../images/Experimental_Assay_Design.png)
 
+# Goals
+
+-   Create initial DESeq Dataset Objects to use in exploratory data visualizations
+
+-   Identify & remove any outliers
 ## Inputs
 
 -   unfiltered gene count matrix
@@ -42,11 +47,6 @@ format:
 
 -   filtered metadata removing outlier samples
 
-# Goals
-
--   Create initial DESeq Dataset Objects to use in exploratory data visualizations
-
--   Identify & remove any outliers
 
 Resources:
 
@@ -95,8 +95,9 @@ library(flexoki)
 library(plotly)
 ```
 
-## Load metadata and gene count matrix
+## Load inputs
 
+metadata and gene count matrix
 ```{r}
 metadata <- read.csv("../../metadata/metadata.csv")
 
@@ -114,7 +115,7 @@ str(metadata)
 gcm <- read.csv("../../output/05_count/gene_count_matrix.csv", row.names="gene_id", check.names = FALSE)
 ```
 
-## Check order
+# Check order
 
 From DESeq2 vignette under [Count matrix input](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#pre-filtering:~:text=for%20full%20details.-,Count%20matrix%20input,-Alternatively%2C%20the%20function):
 

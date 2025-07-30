@@ -50,11 +50,6 @@ This roadmap was built off the following resources and references from:
     -   [Bioinformatics FISH 546](https://sr320.github.io/course-fish546-2023/schedule.html) course at UW
     -   [Lab Handbook](https://robertslab.github.io/resources/)
 
--   Savanah Liedholt:
-
-    -   [Differentially Expressed Genes from a Reference Genome](https://notion.so/Differentially-Expressed-Genes-From-Reference-Genome-35267b46f51d4383b4b70bb3796d28c9)
-    -   [SmallRNA processing and pipeline for viral community Analysis](https://www.notion.so/SmallRNA-processing-and-pipeline-for-viral-community-Analysis-1f7f48c35d9e482597685354222c1852)
-
 -   Ariana Huffmyer:
 
     -   [EarlyLifeHistory_Energetics TagSeq](https://github.com/AHuffmyer/EarlyLifeHistory_Energetics/tree/master) github repository
@@ -111,7 +106,7 @@ git status
 
 # Pipeline birds-eye view
 
-## 1. Receive raw FASTA files
+## 1. Get raw FASTA files
 
 -   files are already `demultiplexed`
 
@@ -147,30 +142,30 @@ Great example of previous HISAT2 RNA-seq alignment in Sam White's notebook [here
 
 -   Obtain reference genome assembly & GFF annotation file
     -   Genome [Version 3](http://cyanophora.rutgers.edu/montipora/) from Rutgers [@stephens2022]
-    -   [GFF](http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.gff3.gz) from Rutgers (or [GFF fixed](https://github.com/AHuffmyer/EarlyLifeHistory_Energetics/raw/master/Mcap2020/Data/TagSeq/Montipora_capitata_HIv3.genes_fixed.gff3.gz) from AHuffmyer?)
+    -    [GFF fixed](https://github.com/AHuffmyer/EarlyLifeHistory_Energetics/raw/master/Mcap2020/Data/TagSeq/Montipora_capitata_HIv3.genes_fixed.gff3.gz) from AHuffmyer, modified from a [GFF](http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.gff3.gz){style="font-size: 11.4pt;"} file from Rutgers
     -   [genomes, indexes, & feature tracks](https://robertslab.github.io/resources/Genomic-Resources/#montipora-capitata) from Roberts Lab Handbook
 -   Align sequences to genome
     -   using [HISAT-2](https://daehwankimlab.github.io/hisat2/hisat-3n/) [@zhang_rapid_2021]
+-   Assemble
+    -   using `StringTie 2`
 
-## 4. Assemble
+## 4. Create gene expression count matrix
 
--   `StringTie 2`
+-   Using `prepDR.py3`
 
-## 5. Create gene expression count matrix
+## 5. Conduct initial data exploration
 
--   `Trinity`
+-   
 
-## 6. Conduct initial data exploration
+-   Filter gene count matrix to remove low read count genes
 
 -   Visualize exploratory PCAs
 
 -   Identify and remove outlier samples
 
--   Filter gene count matrix to remove low read count genes
-
 -   Reformat metadata to match filtered gene count matrix
 
-## 7. Identify differentially expressed genes (DEGs)
+## 6. Identify differentially expressed genes (DEGs)
 
 -   [DESeq-2](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html)
 -   MarineOmics [Fitting Multifactorial Models of Differential Expression](https://marineomics.github.io/DGE_comparison_v2.html#Non-linear_effects:_example_in_edgeR)
