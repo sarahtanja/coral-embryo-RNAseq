@@ -44,18 +44,18 @@ Here we are looking at a multifactorial differential gene expression analysis fo
 
 ## Inputs
 
--   `gcm_filt.csv` is the unfiltered gene count matrix for 61 samples (two outlier samples were already removed).
--   `metadata_filt.csv` is the metadata for 61 samples
+-   `gcm_filtor.csv` is the unfiltered gene count matrix for 61 samples (two outliers removed).
+-   `metadata_or.csv` is the metadata for 61 samples (two outliers removed)
 
 ## Outputs
 
--   `volcano_facet.png`
+-   `volcano_facet_interaction.png`
 
 # Setup
 
 ## Install packages
 
-```{r}
+```{r, eval=FALSE}
 if ("tidyverse" %in% rownames(installed.packages()) == 'FALSE') 
   install.packages('tidyverse')
 if ("DESeq2" %in% rownames(installed.packages()) == 'FALSE')
@@ -90,15 +90,15 @@ library(plotly)
 library(cowplot)
 ```
 
-## Import gene counts
+## Import filtered gene count matrix
 
 In this count matrix, each row represents a gene, each column a sequenced RNA library, and the values give the estimated counts of fragments that were assigned to the respective gene in each library by `HISAT2`
 
 -   `check.names = FALSE` removed the 'X' from in front of sample id's in the column headers
 
 ```{r}
-gcm_filt <- read.csv("../output/06_tidyup/gcm_filt.csv", row.names="gene_id", check.names = FALSE)
-head(gcm_filt)
+gcm_filtor <- read.csv("../../output/05_explore/gcm_filtor.csv", row.names="gene_id", check.names = FALSE)
+head(gcm_filtor)
 ```
 
 -   The raw unfiltered, untransformed, count matrix shows counts of whole numbers (integers)
@@ -134,19 +134,6 @@ str(metadata_filt)
 `metadata_filt` contains metadata for 61 samples where explanatory variables `hpf` is a factor with 3 levels (4, 9, 14) and `leachate` is a continuous numerical variable representing leachate concentrations with values 0 mg/L, 0.01 mg/L, 0.1 mg/L, and 1 mg/L
 :::
 
-# Filter
-
-```{r}
-# Filter rows where at least 75% of the columns have a raw count of ~50
-gcm_filt <- gcm_filt %>%
-  filter(rowSums(across(everything(), ~ . > 120)) >= 0.90 * ncol(gcm_filt))
-
-nrow(gcm_filt)
-```
-
-::: callout-note
-This is an aggressive filter!
-:::
 
 # Make DESeq2 object
 
@@ -157,95 +144,6 @@ dds <- DESeqDataSetFromMatrix(countData = gcm_filt,
                               design = formula( ~ 1 + hpf + leachate + hpf:leachate))
 ```
 
-## Explore PCAs
-
-```{r}
-plotPCA(vst(dds), intgroup = "group", returnData = TRUE)
-```
-
-```{r}
-# Get PCA data (top 500 DEGs by default)
-pca_500 <- plotPCA(vst(dds), intgroup = "group", returnData = TRUE)
-percentVar_500 <- round(100*attr(pca_500, "percentVar"))
-
-# Merge with metadata
-pca_500 <- merge(pca_500, metadata_filt, by.x = "name", by.y = "sample_name", all.x = TRUE)
-
-
-# Assign specific colors to each hpf
-hpf_colors <- c(
-  "4" = flex("cyan", sat=500),
-  "9" = flex("green", sat =500),
-  "14" = flex("yellow", sat=500)
-)
-
-# Plot PCAs
-PCA_500 <- ggplot(pca_500, aes(PC1, PC2, color=hpf, shape=leachate)) + 
-  geom_point(size=2, alpha = 0.8) +
-  ggtitle("M.cap embryos exposed to pvc leachate, top 500 most variable genes") +
-  xlab(paste0("PC1: ",percentVar_500[1],"% variance")) +
-  ylab(paste0("PC2: ",percentVar_500[2],"% variance")) + 
-  coord_fixed() +
-  scale_color_manual(values=hpf_colors)+
-  stat_ellipse()+
-  theme_minimal()
-
-PCA_500
-```
-
-```{r}
-pca_500$label <- paste0("Sample: ", pca_500$sample_name,
-                        "\nHPF: ", pca_500$hpf,
-                        "\nLeachate: ", pca_500$leachate)
-
-leachate_alpha_map <- c("control" = 0.3, "low" = 0.5, "mid" = 0.7, "high" = 1)
-pca_500$alpha_val <- leachate_alpha_map[pca_500$leachate]
-```
-
-```{r}
-# Original ggplot with a tooltip aesthetic
-PCA_500 <- ggplot(pca_500, aes(PC1, PC2, color = hpf, label = name, alpha = alpha_val)) + 
-  geom_point(shape = 21, size = 2) +
-  ggtitle("M.cap embryos exposed to pvc leachate, top 500 most variable genes") +
-  xlab(paste0("PC1: ", percentVar_500[1], "% variance")) +
-  ylab(paste0("PC2: ", percentVar_500[2], "% variance")) + 
-  coord_fixed() +
-  scale_color_manual(values = hpf_colors) +
-  stat_ellipse() + 
-  guides(alpha = "none") +  # hide alpha legend (optional)
-  theme_minimal()
-
-# Convert to interactive plot
-ggplotly(PCA_500, tooltip = "label")
-```
-
-## Plot distribution
-
-```{r}
-
-# Extract VST-transformed expression matrix
-vsd_mat <- assay(vst(dds))
-
-# Flatten it into a vector
-vsd_vals <- as.vector(vsd_mat)
-
-# Create a dataframe for ggplot
-df_vsd <- data.frame(vsd_count = vsd_vals)
-
-# Plot
-ggplot(df_vsd, aes(x = vsd_count)) +
-  geom_histogram(fill = "grey") +
-  theme_classic() +
-  labs(
-    title = "Histogram of Variance-Stabilized Counts",
-    x = "VST-transformed read count",
-    y = "Frequency"
-  )
-
-```
-
-VST compresses the high-end of the count distribution and expands the low-end, making the variance roughly constant across the range. The resulting values are on an approximate log2 scale but not exact log2(count + 1) --- VST is more nuanced, especially for low counts. A range of 5 to 15 corresponds roughly to raw counts ranging from 2³² to 2¹⁵ ≈ 32 to 32,000, so it's realistic for RNA-seq gene expression data.
-
 # Run DESeq Test
 
 This calculates the log2fold change between factors
@@ -254,6 +152,23 @@ This calculates the log2fold change between factors
 dds <- DESeq(dds, test = "LRT", reduced = ~ hpf + leachate)
 ```
 
+# Results
+
+> **Likelihood ratio test**
+>
+> DESeq2 offers two kinds of hypothesis tests: the Wald test, where we use the estimated standard error of a log2 fold change to test if it is equal to zero, and the likelihood ratio test (LRT). The LRT examines two models for the counts, a *full* model with a certain number of terms and a *reduced* model, in which some of the terms of the *full* model are removed. The test determines if the increased likelihood of the data using the extra terms in the *full* model is more than expected if those extra terms are truly zero.
+>
+> The LRT is therefore useful for testing multiple terms at once, for example testing 3 or more levels of a factor at once, or **all interactions between two variables**. The LRT for count data is conceptually similar to an analysis of variance (ANOVA) calculation in linear regression, except that in the case of the Negative Binomial GLM, we use an analysis of deviance (ANODEV), where the *deviance* captures the difference in likelihood between a full and a reduced model.
+>
+> The likelihood ratio test can be performed by specifying `test="LRT"` when using the *DESeq* function, and providing a reduced design formula, e.g. one in which a number of terms from `design(dds)` are removed. The degrees of freedom for the test is obtained from the difference between the number of parameters in the two models.
+
+```{r}
+dds_or <- DESeq(dds_or, test="LRT", reduced= ~ hpf + leachate)
+```
+
+```{r}
+data.frame(resultsNames <- resultsNames(dds_or))
+```
 This compares:
 
 Full model: \~ hpf + leachate + hpf:leachate
@@ -275,7 +190,7 @@ Dispersion trend line is hovering around 0.1, and bulk spread of tag-wise gene e
 # Build contrasts
 
 ```{r}
-resultsNames(dds)  # see what contrast names are available
+resultsNames(dds_or)  # see what contrast names are available
 ```
 
 | Coef | Name                         | Meaning                                                               |

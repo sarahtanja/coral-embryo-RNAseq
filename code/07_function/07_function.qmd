@@ -1,0 +1,3 @@
+- [Heatmap + Dot Plot](https://github.com/RobertsLab/resources/issues/2215)
+- [DEG figures](https://github.com/RobertsLab/resources/issues/2170)
+- [Clustering](https://github.com/RobertsLab/resources/issues/945)

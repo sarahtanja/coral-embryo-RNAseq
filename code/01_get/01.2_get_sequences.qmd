@@ -4,12 +4,40 @@ author: "Sarah Tanja"
 date: 10/09/2024
 date-format: long
 date-modified: today
-format: gfm
-toc: true
-toc-depth: 3
-link-external-icon: true
-link-external-newwindow: true
+format:
+  gfm: 
+    toc: true
+    number-sections: true
+  html:
+    theme: journal
+    highlight-style: github
+    page-layout: full
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    number-sections: true
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    bibliography: "../../references.bib"
+    reference-location: margin
+    citation-location: margin
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,         # Display code chunks
+  eval = FALSE,        # Evaluate code chunks
+  warning = FALSE,     # Hide warnings
+  message = FALSE,     # Hide messages
+  comment = ""         # Prevents appending '##' to beginning of lines in code output
+)
+```
 
 # Overview
 
@@ -51,7 +79,7 @@ What is an MD5 checksum? An MD5 checksum is a set of 32 hexadecimal letters and 
 `6C14_R1_001.fastq.gz.md5` is a MD5 checksum output file that Azenta generated, it looks like:
 
 ```{r, engine = 'bash'}
-cd ../rawfastq/
+cd ../../rawfastq/
 less -S 6C14_R1_001.fastq.gz.md5
 ```
 
@@ -60,7 +88,7 @@ less -S 6C14_R1_001.fastq.gz.md5
 The `md5sum` command will **generate a MD5 checksum** for the file I downloaded from the Azenta server:
 
 ```{r, engine='bash'}
-md5sum ../rawfastq/6C14_R1_001.fastq.gz
+md5sum ../../rawfastq/6C14_R1_001.fastq.gz
 ```
 
 Success! The checksums are the same.
@@ -80,7 +108,7 @@ The following command will:
 -   compare the MD5 checksum from the azenta provided `*md5` file to the generated MD5 checksums
 
 ```{bash}
-cd ../rawfastq # move to the directory that has both fastq.gz and md5 files
+cd ../../rawfastq # move to the directory that has both fastq.gz and md5 files
 md5sum -c 6C14_R1_001.fastq.gz.md5
 ```
 
@@ -93,7 +121,7 @@ Now lets do this for all the files transferred
 Use the `md5sum -c` command to compare the downloaded against all of Azenta's generated md5sums (the files ending in `.md5`) :
 
 ```{r, engine = 'bash'}
-cd ../rawfastq
+cd ../../rawfastq
 md5sum -c *.md5
 ```
 
@@ -150,7 +178,7 @@ print(63*4)
 There should be 252 files
 
 ```{r, engine = 'bash'}
-cd ../rawfastq
+cd ../../rawfastq
 ls | wc -l
 ```
 

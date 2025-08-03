@@ -24,9 +24,8 @@ format:
     smooth-scroll: true
     link-external-icon: true
     link-external-newwindow: true
-    reference-location: margin
     bibliography: "../../references.bib"
-    citation: true
+    reference-location: margin
     citation-location: margin
 ---
 
@@ -42,13 +41,13 @@ knitr::opts_chunk$set(
 
 # Background
 
-*Montipora capitata* Genome version V3, Rutgers University: <http://cyanophora.rutgers.edu/montipora/>
+*Montipora capitata* Genome version V3, Rutgers Univrsity: <http://cyanophora.rutgers.edu/montipora/>
 
 [`Montipora_capitata_HIv3.assembly.fasta`](https://owl.fish.washington.edu/halfshell/genomic-databank/Montipora_capitata_HIv3.assembly.fasta) (745MB)
 
 -   MD5 checksum: `99819eadba1b13ed569bb902eef8da08`
 
-Genome publication: <https://academic.oup.com/gigascience/article/doi/10.1093/gigascience/giac098/6815755>
+Genome publication @Stephens2022-sn
 
 ::: callout-note
 A compiled list of genomic resources for *Montipora capitata* can be found on the Robert's Lab handbook [here](https://robertslab.github.io/resources/Genomic-Resources/#montipora-capitata:~:text=mmag_pilon_scaffolds.fasta.fai-,Montipora%20capitata,-Genomes%3A)
