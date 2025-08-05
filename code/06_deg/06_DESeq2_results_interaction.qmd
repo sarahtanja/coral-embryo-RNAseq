@@ -31,7 +31,7 @@ format:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   echo = TRUE,         # Display code chunks
-  eval = TRUE,        # Evaluate code chunks
+  eval = FALSE,        # Evaluate code chunks
   warning = FALSE,     # Hide warnings
   message = FALSE,     # Hide messages
   comment = ""         # Prevents appending '##' to beginning of lines in code output
@@ -55,31 +55,29 @@ Here we are looking at a multifactorial differential gene expression analysis fo
 
 ## Install packages
 
-```{r, eval=FALSE}
-# Install pak itself if not already installed
-if (!"pak" %in% rownames(installed.packages())) {
-  install.packages("pak")
-}
+Copy and run this once in the console
 
-# Use pak to install CRAN packages
-pak::pak(c(
+```         
+# CRAN packages
+install.packages(c(
   "tidyverse",
   "viridis",
+  "plotly",
+  "cowplot",
   "pheatmap",
   "vsn",
-  "plotly",
-  "mdscheuerell/flexoki",
   "ashr",
-  "cowplot",
-  "UpSetR"
+  "remotes"  # required for GitHub installs
 ))
 
-# Install Bioconductor packages using pak (prefix with "bioc::")
-pak::pak(c(
-  "bioc::DESeq2",
-  "bioc::EnhancedVolcano"
-))
+# GitHub package
+remotes::install_github("mdscheuerell/flexoki")
 
+# Bioconductor
+if (!"BiocManager" %in% rownames(installed.packages())) {
+  install.packages("BiocManager")
+}
+BiocManager::install(c("DESeq2", "EnhancedVolcano"))
 ```
 
 ## Load packages
@@ -96,7 +94,6 @@ library(plotly)
 library(cowplot)
 library(vsn)
 library(pheatmap)
-library(UpSetR)
 ```
 
 ## Import filtered gene count matrix
@@ -105,7 +102,7 @@ In this count matrix, each row represents a gene, each column a sequenced RNA li
 
 -   `check.names = FALSE` removed the 'X' from in front of sample id's in the column headers
 
-```{r}
+```{r, eval=TRUE}
 gcm_filtor <- read.csv("../../output/05_explore/gcm_filtor.csv", row.names="gene_id", check.names=FALSE)
 head(gcm_filtor)
 ```
@@ -121,12 +118,12 @@ head(gcm_filtor)
 
 ## Import metadata
 
-```{r}
+```{r, eval=TRUE}
 metadata_or <- read_csv("../../metadata/metadata_or.csv")
 str(metadata_or)
 ```
 
-```{r}
+```{r, eval=TRUE}
 # Reorder factors
 metadata_or$stage <- as.factor(metadata_or$stage)
 metadata_or$stage <- fct_relevel(metadata_or$stage, "cleavage", "prawnchip", "earlygastrula")
@@ -144,9 +141,7 @@ str(metadata_or)
 -   `leachate_mgL` is a continuous numerical variable representing leachate concentrations in mg/L with values 0 , 0.01 , 0.1 , and 1 (corresponding to `leachate`)
 :::
 
-# Make DESeq2 object
-
-# Leachate: continuous vs categorical
+# Continuous vs categorical
 
 Embryonic stage should be treated as a categorical variable because DESeq2 will estimate expression differences between stages, rather than assuming a linear progression from 4 → 14 hpf. It will fit different intercepts for each stage (i.e., different baseline expression levels). If you encode stage as numeric, the model would assume a linear change in expression per hour of development, which is biologically risky unless you expect linearity (note: we do not).
 
@@ -154,7 +149,7 @@ Whether leachate is treated as a factor or a numeric (continuous) variable radic
 
 Coding `leachate` as a categorical factor allows each stage to have its own independent leachate effect. ✅ Use this if you expect nonlinear, stage-specific effects of exposure.
 
-```{r}
+```{r, eval=TRUE}
 
 dds_cat <- DESeqDataSetFromMatrix(countData = gcm_filtor,
                               colData = metadata_or,
@@ -163,7 +158,7 @@ dds_cat <- DESeqDataSetFromMatrix(countData = gcm_filtor,
 
 Coding `leachate_mgL` as a continuous numeric tests for a change in expression per unit increase in leachate, and the interaction term tests whether the slope of the dose-response differs depending on stage. ✅ Use this if you expect a linear or dose-dependent trend, and want to ask if the strength or direction of the trend varies by stage.
 
-```{r}
+```{r, eval=TRUE}
 dds_con <- DESeqDataSetFromMatrix(countData = gcm_filtor,
                               colData = metadata_or,
                               design = formula( ~ stage + leachate_mgL + stage:leachate_mgL))
@@ -173,71 +168,152 @@ dds_con <- DESeqDataSetFromMatrix(countData = gcm_filtor,
 
 > Does modeling leachate as a factor vs. a continuous dose better explain gene expression changes across stages?
 
-```{r}
+```{r, eval=TRUE}
 dds_cat <- DESeq(dds_cat, test = "LRT", reduced = ~ stage + leachate)
 dds_con <- DESeq(dds_con, test = "LRT", reduced = ~ stage + leachate_mgL)
 ```
 
-| Model     | Full model                                  | Reduced model          | LRT tests...                                               |
-|-----------|---------------------------------------------|------------------------|------------------------------------------------------------|
-| `dds_cat` | `stage + leachate + stage:leachate`         | `stage + leachate`     | Are there **stage-specific effects of leachate (factor)**? |
-| `dds_con` | `stage + leachate_mgL + stage:leachate_mgL` | `stage + leachate_mgL` | Are there **stage-specific trends** in dose response?      |
+| Model         | Full model                                  | Reduced model          | LRT tests...                                               |
+|----------------|-----------------|----------------|-----------------------|
+| `dds_cat_LRT` | `stage + leachate + stage:leachate`         | `stage + leachate`     | Are there **stage-specific effects of leachate (factor)**? |
+| `dds_con_LRT` | `stage + leachate_mgL + stage:leachate_mgL` | `stage + leachate_mgL` | Are there **stage-specific trends** in dose response?      |
 
 ## Results
 
-```{r}
+```{r, eval=TRUE}
+res_cat <- results(dds_cat, alpha = 0.05)
+summary(res_cat)
+```
+
+```{r, eval=TRUE}
+res_con <- results(dds_con, alpha = 0.05)
+summary(res_con)
+```
+
+```{r, eval=TRUE}
 sig_cat <- rownames(results(dds_cat, alpha = 0.05)[which(results(dds_cat)$padj < 0.05), ])
 sig_con <- rownames(results(dds_con, alpha = 0.05)[which(results(dds_con)$padj < 0.05), ])
 length(intersect(sig_cat, sig_con))
-
 ```
 
+::: callout-note
+2 out of 44 genes have a linear relationship (compared to a non-linear one!) as we look at the interactions between leachate and stage. All 44 of these genes respond to leachate differently depending on stage.
+
+44 genes show significant stage-by-leachate interaction when leachate is treated categorically → meaning the response to leachate varies by stage, but not necessarily in a linear/dose-dependent way.
+
+2 genes show significant stage-specific dose-response effects when leachate is treated as continuous → they show a linear or monotonic trend across leachate concentrations that varies by stage.
+
+The 2 overlapping genes are well-modeled by a linear trend in leachate (i.e., a slope, not just group differences). The 42 other genes show non-linear or non-monotonic behavior --- meaning their response does not follow a consistent increase/decrease with dose. Instead, they respond differently to each specific leachate level depending on the stage (e.g., they might increase at 0.1 mg/L but decrease at 1 mg/L, or vice versa).
+:::
+
+> Of the 44 genes showing significant stage-specific responses to leachate (based on the categorical model), only 2 also show a significant linear dose-response interaction with stage (based on the continuous model). This suggests that while stage modulates leachate response broadly, most genes (42/44) exhibit nonlinear or non-monotonic patterns, rather than a simple linear trend across leachate levels. keep.order = TRUE)
+
+```{r, eval=TRUE}
+vsd <- assay(vst(dds_cat))
+
+# make long expression dataframe of significant interaction genes
+sig_long <- vsd[sig_cat, ] %>% 
+  as.data.frame() %>% 
+  rownames_to_column("gene_id") %>%
+  pivot_longer(-gene_id, names_to = "sample_id", values_to = "expression")
+
+# add metadata
+sig_long <- sig_long %>% left_join(metadata_or, by = "sample_id")
+```
+
+### Loop plots of significant interaction genes
 
 ```{r}
-input_list <- list(
-  Categorical = sig_cat,
-  Continuous = sig_con
-)
+# create output directory
+dir.create("../../output/06_deg/gene_plots", recursive = TRUE, showWarnings = FALSE)
 
-upset(fromList(input_list), 
-      order.by = "freq", 
-      sets.bar.color = "steelblue", 
-      main.bar.color = "black",
-      keep.order = TRUE)
+for (gene in unique(sig_long$gene_id)) {
+
+  gene_df <- sig_long %>% filter(gene_id == gene)
+
+  p <- ggplot(gene_df, aes(x = leachate, y = expression, color = stage, group = stage)) +
+    geom_point(size = 2, alpha = 0.8) +
+    geom_smooth(method = "loess", se = FALSE) +
+    labs(
+      title = paste("Gene:", gene),
+      x = "Leachate (mg/L)",
+      y = "VST expression"
+    ) +
+    
+    theme_minimal(base_size = 12) +
+    theme(
+      legend.position = "right",
+      plot.title = element_text(hjust = 0.5)
+    )
+  
+  # Render as interactive plotly
+  print(plotly::ggplotly(p))
+
+  # Save to PNG
+  ggsave(
+    filename = paste0("../../output/06_deg/gene_plots/", gene, ".png"),
+    plot = p, width = 6, height = 4, dpi = 300
+  )
+}
 ```
 
-> **Likelihood ratio test**
->
-> DESeq2 offers two kinds of hypothesis tests: the Wald test, where we use the estimated standard error of a log2 fold change to test if it is equal to zero, and the likelihood ratio test (LRT). The LRT examines two models for the counts, a *full* model with a certain number of terms and a *reduced* model, in which some of the terms of the *full* model are removed. The test determines if the increased likelihood of the data using the extra terms in the *full* model is more than expected if those extra terms are truly zero.
->
-> The LRT is therefore useful for testing multiple terms at once, for example testing 3 or more levels of a factor at once, or **all interactions between two variables**. The LRT for count data is conceptually similar to an analysis of variance (ANOVA) calculation in linear regression, except that in the case of the Negative Binomial GLM, we use an analysis of deviance (ANODEV), where the *deviance* captures the difference in likelihood between a full and a reduced model.
->
-> The likelihood ratio test can be performed by specifying `test="LRT"` when using the *DESeq* function, and providing a reduced design formula, e.g. one in which a number of terms from `design(dds)` are removed. The degrees of freedom for the test is obtained from the difference between the number of parameters in the two models.
+::: panel-tabset
+```{r, eval=TRUE}
+for (gene in unique(sig_long$gene_id)) {
+
+  gene_df <- sig_long %>% filter(gene_id == gene)
+
+  cat("### ", gene, "\n\n")  # Quarto tab header
+
+  p <- ggplot(gene_df, aes(x = leachate, y = expression, color = stage, group = stage)) +
+    geom_point(size = 2, alpha = 0.8) +
+    geom_line(stat = "summary", fun = mean, linewidth = 0.8) +
+    labs(
+      x = "Leachate (mg/L)",
+      y = "Rlog expression"
+    ) +
+    theme_minimal(base_size = 12)
+
+  print(plotly::ggplotly(p))
+}
+```
+:::
 
 ```{r}
-dds_or <- DESeq(dds_or, test="LRT", reduced= ~ hpf + leachate)
+resultsNames(dds_cat)
+```
+
+# LRT vs Wald
+
+> Wald tests on interaction terms assess whether the interaction coefficient **differs significantly from 0** --- i.e., whether the combined effect of that `hpf` and `leachate` level deviates from what would be expected by the additive effects alone.
+
+```{r}
+dds <- DESeqDataSetFromMatrix(countData = gcm_filtor,
+                              colData = metadata_or,
+                              design = formula( ~ stage + leachate + stage:leachate))
 ```
 
 ```{r}
-data.frame(resultsNames <- resultsNames(dds_or))
+dds_wald <- DESeq(dds, test = "Wald")
 ```
 
-This compares:
+```{r}
+resultsNames(dds_wald)
+```
 
-Full model: \~ hpf + leachate + hpf:leachate
-
-Reduced model: \~ hpf + leachate
-
-So it asks: Does including the interaction explain significantly more variation? If yes, then some genes respond to leachate differently at different hpf stages.
+```{r}
+resultsNames(dds_cat)
+```
 
 ## Plot dispersion
 
 ```{r}
-plotDispEsts(dds)
+plotDispEsts(dds_cat)
+plotDispEsts(dds_wald)
 ```
 
 ::: callout-note
-Dispersion trend line is hovering around 0.1, and bulk spread of tag-wise gene estimates is from 0.02 to 0.5
+Dispersion trend line is hovering around 0.1, and bulk spread of tag-wise gene estimates is from 0.01 to 1.0
 :::
 
 # Build contrasts
@@ -247,7 +323,7 @@ resultsNames(dds_or)  # see what contrast names are available
 ```
 
 | Coef | Name                         | Meaning                                                               |
-|--------------|----------------|------------------------------------------|
+|------------------|------------------|-------------------------------------|
 | 1    | `"Intercept"`                | Baseline expression: `hpf = 4` and `leachate = control`               |
 | 2    | `"hpf_9_vs_4"`               | Change from 4 hpf → 9 hpf, at **control** exposure                    |
 | 3    | `"hpf_14_vs_4"`              | Change from 4 hpf → 14 hpf, at **control** exposure                   |

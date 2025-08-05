@@ -116,7 +116,7 @@ library(flexoki)
 metadata and gene count matrix
 
 ```{r}
-metadata <- read.csv("../../metadata/metadata.csv")
+metadata <- read_csv("../../metadata/metadata.csv")
 
 # Make leachate and hpf factors
 metadata$leachate <- as.factor(metadata$leachate)
