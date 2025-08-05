@@ -11,7 +11,7 @@ format:
   html:
     theme: journal
     highlight-style: github
-    page-layout: full
+    page-layout: article
     code-background: true
     code-tools: 
       source: true
@@ -44,7 +44,7 @@ Here we are looking at a multifactorial differential gene expression analysis fo
 
 ## Inputs
 
--   `gcm_filtor.csv` is the unfiltered gene count matrix for 61 samples (two outliers removed).
+-   `gcm_filtor.csv` is the filtered gene count matrix for 61 samples (two outliers removed).
 -   `metadata_or.csv` is the metadata for 61 samples (two outliers removed)
 
 ## Outputs
@@ -56,25 +56,30 @@ Here we are looking at a multifactorial differential gene expression analysis fo
 ## Install packages
 
 ```{r, eval=FALSE}
-if ("tidyverse" %in% rownames(installed.packages()) == 'FALSE') 
-  install.packages('tidyverse')
-if ("DESeq2" %in% rownames(installed.packages()) == 'FALSE')
-  install.packages('DESeq2')
-if ("ashr" %in% rownames(installed.packages()) == 'FALSE')
-  install.packages('ashr')
-if ("plotly" %in% rownames(installed.packages()) == 'FALSE')
-  install.packages('plotly')
-if ("cowplot" %in% rownames(installed.packages()) == 'FALSE')
-  install.packages('cowplot')
-if ("pak" %in% rownames(installed.packages()) == 'FALSE')
-  install.packages('pak')
-```
+# Install pak itself if not already installed
+if (!"pak" %in% rownames(installed.packages())) {
+  install.packages("pak")
+}
 
-```{r}
-#if (!require("BiocManager", quietly = TRUE))
-#    install.packages("BiocManager")
-#BiocManager::install("EnhancedVolcano")
-#pak::pak("mdscheuerell/flexoki")
+# Use pak to install CRAN packages
+pak::pak(c(
+  "tidyverse",
+  "viridis",
+  "pheatmap",
+  "vsn",
+  "plotly",
+  "mdscheuerell/flexoki",
+  "ashr",
+  "cowplot",
+  "UpSetR"
+))
+
+# Install Bioconductor packages using pak (prefix with "bioc::")
+pak::pak(c(
+  "bioc::DESeq2",
+  "bioc::EnhancedVolcano"
+))
+
 ```
 
 ## Load packages
@@ -82,12 +87,16 @@ if ("pak" %in% rownames(installed.packages()) == 'FALSE')
 ```{r}
 # Load packages
 library(DESeq2)
+library(viridis)
 library(tidyverse)
 library(EnhancedVolcano)
 library(ashr)
 library(flexoki)
 library(plotly)
 library(cowplot)
+library(vsn)
+library(pheatmap)
+library(UpSetR)
 ```
 
 ## Import filtered gene count matrix
@@ -97,7 +106,7 @@ In this count matrix, each row represents a gene, each column a sequenced RNA li
 -   `check.names = FALSE` removed the 'X' from in front of sample id's in the column headers
 
 ```{r}
-gcm_filtor <- read.csv("../../output/05_explore/gcm_filtor.csv", row.names="gene_id", check.names = FALSE)
+gcm_filtor <- read.csv("../../output/05_explore/gcm_filtor.csv", row.names="gene_id", check.names=FALSE)
 head(gcm_filtor)
 ```
 
@@ -107,52 +116,95 @@ head(gcm_filtor)
 -   A sample id describes parental crosses (the first string of numbers), the pollution exposure (C, L, M, H), and the embryonic stage (4, 9, 14)
 
 ::: callout-note
-`gcm_filt` is the gene count matrix that has been filtered to remove 2 outlier samples ( `131415L4` and `789C4` ) that had poor HISAT alignment and did not group in the exploratory PCA
+`gcm_filtor` is the gene count matrix that has been filtered down to only contain rows where counts are at least 15 in 75% of the samples and 2 outlier samples ( `131415L4` and `789C4` ) that had poor HISAT alignment and did not group in the exploratory PCA are already removed
 :::
 
 ## Import metadata
 
 ```{r}
-metadata_filt <- read_csv("../metadata/metadata_filt.csv")
-str(metadata_filt)
+metadata_or <- read_csv("../../metadata/metadata_or.csv")
+str(metadata_or)
 ```
 
 ```{r}
 # Reorder factors
-metadata_filt$embryonic_stage <- as.factor(metadata_filt$embryonic_stage)
-metadata_filt$embryonic_stage <- fct_relevel(metadata_filt$embryonic_stage, "cleavage", "prawnchip", "earlygastrula")
+metadata_or$stage <- as.factor(metadata_or$stage)
+metadata_or$stage <- fct_relevel(metadata_or$stage, "cleavage", "prawnchip", "earlygastrula")
  
-metadata_filt$leachate <- as.factor(metadata_filt$leachate)
-metadata_filt$leachate <- fct_relevel(metadata_filt$leachate, "control", "low", "mid", "high")
+metadata_or$leachate <- as.factor(metadata_or$leachate)
+metadata_or$leachate <- fct_relevel(metadata_or$leachate, "control", "low", "mid", "high")
 
-metadata_filt$hpf <- as.factor(metadata_filt$hpf)
-metadata_filt$hpf <- fct_relevel(metadata_filt$hpf, "4", "9", "14")
-str(metadata_filt)
+str(metadata_or)
 ```
 
 ::: callout-note
-`metadata_filt` contains metadata for 61 samples where explanatory variables `hpf` is a factor with 3 levels (4, 9, 14) and `leachate` is a continuous numerical variable representing leachate concentrations with values 0 mg/L, 0.01 mg/L, 0.1 mg/L, and 1 mg/L
-:::
+`metadata_filt` contains metadata for 61 samples with explanatory variables: - `stage` is a factor with 3 levels (cleavage, prawnchip, earlygastrula) - `hpf` is a discrete numerical variable representing the hours post fertilization 4, 9, and 14 (corresponding to `stage`)
 
+-   `leachate` is a factor with 4 levels (control, low, mid, high)
+-   `leachate_mgL` is a continuous numerical variable representing leachate concentrations in mg/L with values 0 , 0.01 , 0.1 , and 1 (corresponding to `leachate`)
+:::
 
 # Make DESeq2 object
 
-```{r}
+# Leachate: continuous vs categorical
 
-dds <- DESeqDataSetFromMatrix(countData = gcm_filt,
-                              colData = metadata_filt,
-                              design = formula( ~ 1 + hpf + leachate + hpf:leachate))
-```
+Embryonic stage should be treated as a categorical variable because DESeq2 will estimate expression differences between stages, rather than assuming a linear progression from 4 → 14 hpf. It will fit different intercepts for each stage (i.e., different baseline expression levels). If you encode stage as numeric, the model would assume a linear change in expression per hour of development, which is biologically risky unless you expect linearity (note: we do not).
 
-# Run DESeq Test
+Whether leachate is treated as a factor or a numeric (continuous) variable radically changes the interpretation of both the main effect and the interaction. If a variable is numeric, DESeq2 treats it as a continuous covariate. This fits a regression slope, estimating the change in gene expression per unit increase in the variable.
 
-This calculates the log2fold change between factors
+Coding `leachate` as a categorical factor allows each stage to have its own independent leachate effect. ✅ Use this if you expect nonlinear, stage-specific effects of exposure.
 
 ```{r}
-dds <- DESeq(dds, test = "LRT", reduced = ~ hpf + leachate)
+
+dds_cat <- DESeqDataSetFromMatrix(countData = gcm_filtor,
+                              colData = metadata_or,
+                              design = formula( ~ stage + leachate + stage:leachate))
 ```
 
-# Results
+Coding `leachate_mgL` as a continuous numeric tests for a change in expression per unit increase in leachate, and the interaction term tests whether the slope of the dose-response differs depending on stage. ✅ Use this if you expect a linear or dose-dependent trend, and want to ask if the strength or direction of the trend varies by stage.
+
+```{r}
+dds_con <- DESeqDataSetFromMatrix(countData = gcm_filtor,
+                              colData = metadata_or,
+                              design = formula( ~ stage + leachate_mgL + stage:leachate_mgL))
+```
+
+## Run DESeq LRT Tests
+
+> Does modeling leachate as a factor vs. a continuous dose better explain gene expression changes across stages?
+
+```{r}
+dds_cat <- DESeq(dds_cat, test = "LRT", reduced = ~ stage + leachate)
+dds_con <- DESeq(dds_con, test = "LRT", reduced = ~ stage + leachate_mgL)
+```
+
+| Model     | Full model                                  | Reduced model          | LRT tests...                                               |
+|-----------|---------------------------------------------|------------------------|------------------------------------------------------------|
+| `dds_cat` | `stage + leachate + stage:leachate`         | `stage + leachate`     | Are there **stage-specific effects of leachate (factor)**? |
+| `dds_con` | `stage + leachate_mgL + stage:leachate_mgL` | `stage + leachate_mgL` | Are there **stage-specific trends** in dose response?      |
+
+## Results
+
+```{r}
+sig_cat <- rownames(results(dds_cat, alpha = 0.05)[which(results(dds_cat)$padj < 0.05), ])
+sig_con <- rownames(results(dds_con, alpha = 0.05)[which(results(dds_con)$padj < 0.05), ])
+length(intersect(sig_cat, sig_con))
+
+```
+
+
+```{r}
+input_list <- list(
+  Categorical = sig_cat,
+  Continuous = sig_con
+)
+
+upset(fromList(input_list), 
+      order.by = "freq", 
+      sets.bar.color = "steelblue", 
+      main.bar.color = "black",
+      keep.order = TRUE)
+```
 
 > **Likelihood ratio test**
 >
@@ -169,6 +221,7 @@ dds_or <- DESeq(dds_or, test="LRT", reduced= ~ hpf + leachate)
 ```{r}
 data.frame(resultsNames <- resultsNames(dds_or))
 ```
+
 This compares:
 
 Full model: \~ hpf + leachate + hpf:leachate
@@ -194,7 +247,7 @@ resultsNames(dds_or)  # see what contrast names are available
 ```
 
 | Coef | Name                         | Meaning                                                               |
-|------|------------------------------|-----------------------------------------------------------------------|
+|--------------|----------------|------------------------------------------|
 | 1    | `"Intercept"`                | Baseline expression: `hpf = 4` and `leachate = control`               |
 | 2    | `"hpf_9_vs_4"`               | Change from 4 hpf → 9 hpf, at **control** exposure                    |
 | 3    | `"hpf_14_vs_4"`              | Change from 4 hpf → 14 hpf, at **control** exposure                   |
@@ -1121,7 +1174,7 @@ volcano_facet
 ```
 
 ```{r}
-ggsave("../output/09_deg_multifactorial/volcano_facet.png", volcano_facet, width = 16, height = 12, dpi = 300)
+ggsave("../output/09_deg_multifactorial/volcano_facet.png", volcano_facet, width = 16, height = 12, dpi = 600)
 ```
 
 ::: callout-warning
