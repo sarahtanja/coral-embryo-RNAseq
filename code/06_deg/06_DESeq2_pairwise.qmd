@@ -1,0 +1,1373 @@
+---
+title: "Multifactorial Differential Gene Expression"
+subtitle: "using DESeq2 contrasts"
+author: "Sarah Tanja"
+date: 2024-12-02
+date-modified: today
+format:
+  gfm: 
+    toc: true
+    number-sections: true
+  html:
+    theme: journal
+    highlight-style: github
+    page-layout: article
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    number-sections: true
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    reference-location: margin
+    citation-location: margin
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,         # Display code chunks
+  eval = FALSE,        # Evaluate code chunks
+  warning = FALSE,     # Hide warnings
+  message = FALSE,     # Hide messages
+  comment = ""         # Prevents appending '##' to beginning of lines in code output
+)
+```
+
+# Background
+
+Here we are looking at a multifactorial differential gene expression analysis for developing coral embryos at 3 developmental stages (4 hours post fertilization , 9 hours post fertilization, and 14 hours post fertiliation). Embryos at each stage were exposed to either a control, low, mid, or high concentration of PVC leachate. This work aims to understand sublethal effects of microplastic pollution on coral reefs.
+
+## Inputs
+
+-   `gcm_filtor.csv` is the filtered gene count matrix for 61 samples (two outliers removed).
+-   `metadata_or.csv` is the metadata for 61 samples (two outliers removed)
+
+## Outputs
+
+-   `volcano_facet_interaction.png`
+
+# Setup
+
+## Install packages
+
+Copy and run this once in the console
+
+```         
+# CRAN packages
+install.packages(c(
+  "tidyverse",
+  "viridis",
+  "plotly",
+  "cowplot",
+  "pheatmap",
+  "vsn",
+  "ashr",
+  "remotes"  # required for GitHub installs
+))
+
+# GitHub package
+remotes::install_github("mdscheuerell/flexoki")
+
+# Bioconductor
+if (!"BiocManager" %in% rownames(installed.packages())) {
+  install.packages("BiocManager")
+}
+BiocManager::install(c("DESeq2", "EnhancedVolcano"))
+```
+
+## Load packages
+
+```{r}
+# Load packages
+library(DESeq2)
+library(viridis)
+library(tidyverse)
+library(EnhancedVolcano)
+library(ashr)
+library(flexoki)
+library(plotly)
+library(cowplot)
+library(vsn)
+library(pheatmap)
+```
+
+## Import filtered gene count matrix
+
+In this count matrix, each row represents a gene, each column a sequenced RNA library, and the values give the estimated counts of fragments that were assigned to the respective gene in each library by `HISAT2`
+
+-   `check.names = FALSE` removed the 'X' from in front of sample id's in the column headers
+
+```{r, eval=TRUE}
+gcm_filtor <- read.csv("../../output/05_explore/gcm_filtor.csv", row.names="gene_id", check.names=FALSE)
+head(gcm_filtor)
+```
+
+-   The raw unfiltered, untransformed, count matrix shows counts of whole numbers (integers)
+-   Each column is a sample
+-   Each row is a gene
+-   A sample id describes parental crosses (the first string of numbers), the pollution exposure (C, L, M, H), and the embryonic stage (4, 9, 14)
+
+::: callout-note
+`gcm_filtor` is the gene count matrix that has been filtered down to only contain rows where counts are at least 15 in 75% of the samples and 2 outlier samples ( `131415L4` and `789C4` ) that had poor HISAT alignment and did not group in the exploratory PCA are already removed
+:::
+
+## Import metadata
+
+```{r, eval=TRUE}
+metadata_or <- read_csv("../../metadata/metadata_or.csv")
+str(metadata_or)
+```
+
+```{r, eval=TRUE}
+# Reorder factors
+metadata_or$stage <- as.factor(metadata_or$stage)
+metadata_or$stage <- fct_relevel(metadata_or$stage, "cleavage", "prawnchip", "earlygastrula")
+ 
+metadata_or$leachate <- as.factor(metadata_or$leachate)
+metadata_or$leachate <- fct_relevel(metadata_or$leachate, "control", "low", "mid", "high")
+
+str(metadata_or)
+```
+
+::: callout-note
+`metadata_filt` contains metadata for 61 samples with explanatory variables: - `stage` is a factor with 3 levels (cleavage, prawnchip, earlygastrula) - `hpf` is a discrete numerical variable representing the hours post fertilization 4, 9, and 14 (corresponding to `stage`)
+
+-   `leachate` is a factor with 4 levels (control, low, mid, high)
+-   `leachate_mgL` is a continuous numerical variable representing leachate concentrations in mg/L with values 0 , 0.01 , 0.1 , and 1 (corresponding to `leachate`)
+:::
+
+# LRT
+
+This compares:
+
+Full model: \~ stage + leachate + stage:leachate
+
+Reduced model: \~ stage + leachate
+
+This tells you: Is there any interaction effect between stage and leachate?
+
+But it won't tell you which interaction is significant, or in which direction --- you need Wald contrasts for that.
+
+## Continuous vs categorical
+
+Embryonic stage should be treated as a categorical variable because DESeq2 will estimate expression differences between stages, rather than assuming a linear progression from 4 → 14 hpf. It will fit different intercepts for each stage (i.e., different baseline expression levels). If you encode stage as numeric, the model would assume a linear change in expression per hour of development, which is biologically risky unless you expect linearity (note: we do not).
+
+Whether leachate is treated as a factor or a numeric (continuous) variable radically changes the interpretation of both the main effect and the interaction. If a variable is numeric, DESeq2 treats it as a continuous covariate. This fits a regression slope, estimating the change in gene expression per unit increase in the variable.
+
+Coding `leachate` as a categorical factor allows each stage to have its own independent leachate effect. ✅ Use this if you expect nonlinear, stage-specific effects of exposure.
+
+```{r, eval=TRUE}
+
+dds_cat <- DESeqDataSetFromMatrix(countData = gcm_filtor,
+                              colData = metadata_or,
+                              design = formula( ~ stage + leachate + stage:leachate))
+```
+
+Coding `leachate_mgL` as a continuous numeric tests for a change in expression per unit increase in leachate, and the interaction term tests whether the slope of the dose-response differs depending on stage. ✅ Use this if you expect a linear or dose-dependent trend, and want to ask if the strength or direction of the trend varies by stage.
+
+```{r, eval=TRUE}
+dds_con <- DESeqDataSetFromMatrix(countData = gcm_filtor,
+                              colData = metadata_or,
+                              design = formula( ~ stage + leachate_mgL + stage:leachate_mgL))
+```
+
+## Run DESeq LRT Tests
+
+> Does modeling leachate as a factor vs. a continuous dose better explain gene expression changes across stages?
+
+```{r, eval=TRUE}
+dds_cat <- DESeq(dds_cat, test = "LRT", reduced = ~ stage + leachate)
+dds_con <- DESeq(dds_con, test = "LRT", reduced = ~ stage + leachate_mgL)
+```
+
+| Model         | Full model                                  | Reduced model          | LRT tests...                                               |
+|-----------------|-----------------|-----------------|---------------------|
+| `dds_cat_LRT` | `stage + leachate + stage:leachate`         | `stage + leachate`     | Are there **stage-specific effects of leachate (factor)**? |
+| `dds_con_LRT` | `stage + leachate_mgL + stage:leachate_mgL` | `stage + leachate_mgL` | Are there **stage-specific trends** in dose response?      |
+
+## Results
+
+Plot dispersion
+
+```{r}
+plotDispEsts(dds_cat)
+plotDispEsts(dds_con)
+```
+
+::: callout-note
+Categorical model has less dispersion than the continuous model! Pay attention to the scale of the Y axis when comparing them.
+:::
+
+View summary
+
+```{r, eval=TRUE}
+res_cat <- results(dds_cat, alpha = 0.05)
+summary(res_cat)
+```
+
+```{r, eval=TRUE}
+res_con <- results(dds_con, alpha = 0.05)
+summary(res_con)
+```
+
+```{r, eval=TRUE}
+sig_cat <- rownames(results(dds_cat, alpha = 0.05)[which(results(dds_cat)$padj < 0.05), ])
+sig_con <- rownames(results(dds_con, alpha = 0.05)[which(results(dds_con)$padj < 0.05), ])
+length(intersect(sig_cat, sig_con))
+```
+
+::: callout-note
+2 out of 44 genes have a linear relationship (compared to a non-linear one!) as we look at the interactions between leachate and stage. All 44 of these genes respond to leachate differently depending on stage.
+
+44 genes show significant stage-by-leachate interaction when leachate is treated categorically → meaning the response to leachate varies by stage, but not necessarily in a linear/dose-dependent way.
+
+2 genes show significant stage-specific dose-response effects when leachate is treated as continuous → they show a linear or monotonic trend across leachate concentrations that varies by stage.
+
+The 2 overlapping genes are well-modeled by a linear trend in leachate (i.e., a slope, not just group differences). The 42 other genes show non-linear or non-monotonic behavior --- meaning their response does not follow a consistent increase/decrease with dose. Instead, they respond differently to each specific leachate level depending on the stage (e.g., they might increase at 0.1 mg/L but decrease at 1 mg/L, or vice versa).
+:::
+
+## Save significant genes
+
+```{r}
+sig_genes <- res_cat %>%
+  as.data.frame() %>%
+  filter(padj < 0.05) %>% 
+  rownames_to_column(var = "gene_id")
+
+write.csv(sig_genes, "../../output/06_deg/interactions/sig_genes.csv")
+```
+
+> Of the 44 genes showing significant stage-specific responses to leachate (based on the categorical model), only 2 also show a significant linear dose-response interaction with stage (based on the continuous model). This suggests that while stage modulates leachate response broadly, most genes (42/44) exhibit nonlinear or non-monotonic patterns, rather than a simple linear trend across leachate levels. keep.order = TRUE)
+
+```{r, eval=TRUE}
+vsd <- assay(vst(dds_cat))
+
+# make long expression dataframe of significant interaction genes
+sig_long <- vsd[sig_cat, ] %>% 
+  as.data.frame() %>% 
+  rownames_to_column("gene_id") %>%
+  pivot_longer(-gene_id, names_to = "sample_id", values_to = "expression")
+
+# add metadata
+sig_long <- sig_long %>% left_join(metadata_or, by = "sample_id")
+# add padj
+sig_long <- sig_long %>% left_join(sig_genes, by = "gene_id")
+```
+
+### Plot top 3 most significant interaction genes
+
+```{r}
+ p <- ggplot(gene_df, aes(x = leachate, y = expression, color = stage, group = stage)) +
+    geom_point(size = 2, alpha = 0.8) +
+    geom_smooth(method = "loess", se = FALSE) +
+    labs(
+      title = paste("Gene:", gene),
+      x = "Leachate (mg/L)",
+      y = "VST expression"
+    ) +
+    
+    theme_minimal(base_size = 12) +
+    theme(
+      legend.position = "right",
+      plot.title = element_text(hjust = 0.5)
+    )
+```
+
+### Loop plots of significant interaction genes
+
+```{r}
+# create output directory
+dir.create("../../output/06_deg/interaction/gene_plots", recursive = TRUE, showWarnings = FALSE)
+
+for (gene in unique(sig_long$gene_id)) {
+
+  gene_df <- sig_long %>% filter(gene_id == gene)
+
+  p <- ggplot(gene_df, aes(x = leachate, y = expression, color = stage, group = stage)) +
+    geom_point(size = 2, alpha = 0.8) +
+    geom_smooth(method = "loess", se = FALSE) +
+    labs(
+      title = paste("Gene:", gene),
+      x = "Leachate (mg/L)",
+      y = "VST expression"
+    ) +
+    
+    theme_minimal(base_size = 12) +
+    theme(
+      legend.position = "right",
+      plot.title = element_text(hjust = 0.5)
+    )
+  
+  # Render as interactive plotly
+  print(plotly::ggplotly(p))
+
+  # Save to PNG
+  ggsave(
+    filename = paste0("../../output/06_deg/gene_plots/", gene, ".png"),
+    plot = p, width = 6, height = 4, dpi = 300
+  )
+}
+```
+
+::: panel-tabset
+```{r, eval=TRUE}
+for (gene in unique(sig_long$gene_id)) {
+
+  gene_df <- sig_long %>% filter(gene_id == gene)
+
+  cat("### ", gene, "\n\n")  # Quarto tab header
+
+  p <- ggplot(gene_df, aes(x = leachate, y = expression, color = stage, group = stage)) +
+    geom_point(size = 2, alpha = 0.8) +
+    geom_line(stat = "summary", fun = mean, linewidth = 0.8) +
+    labs(
+      x = "Leachate (mg/L)",
+      y = "Rlog expression"
+    ) +
+    theme_minimal(base_size = 12)
+
+  print(plotly::ggplotly(p))
+}
+```
+:::
+
+::: callout-note
+We have 44 genes with significant interaction effects overall.
+
+Next step: 👉 Use Wald tests to dig into which interactions (e.g., stage × leachate level) are responsible --- gene by gene.
+:::
+
+# Wald
+
+> Wald tests on interaction terms assess whether the interaction coefficient **differs significantly from 0** --- i.e., whether the combined effect of that `hpf` and `leachate` level deviates from what would be expected by the additive effects alone.
+
+| What You Want to Know                                 | Use                           | Explanation                                     |
+|-----------------------------|------------------|--------------------------|
+| Any interaction overall?                              | LRT                           | `reduced = ~ stage + leachate`                  |
+| Specific interaction term significant?                | Wald                          | `results(dds, name = "stageX.leachateY")`       |
+| Total effect of leachate at specific stage vs control | Wald with combined contrast   | `c("leachateY_vs_control", "stageX.leachateY")` |
+| Difference in leachate effect between two stages      | Wald contrast of interactions | `list("stageX.leachateY", "stageZ.leachateY")`  |
+
+```{r}
+dds <- DESeqDataSetFromMatrix(countData = gcm_filtor,
+                              colData = metadata_or,
+                              design = formula( ~ stage + leachate + stage:leachate))
+```
+
+```{r}
+dds_wald <- DESeq(dds, test = "Wald")
+```
+
+## Interaction terms
+
+```{r}
+resultsNames(dds_wald)
+```
+
+-   "stageprawnchip.leachatelow"
+
+-   "stageearlygastrula.leachatelow"
+
+-   "stageprawnchip.leachatemid"
+
+-   "stageearlygastrula.leachatemid"
+
+-   "stageprawnchip.leachatehigh"
+
+-   "stageearlygastrula.leachatehigh"
+
+> Each of the above interaction terms tells us the extra effect of leachate at this stage (vs the additive sum of the stage and leachate effects).
+
+### Extract Wald results for all interaction terms
+
+```{r}
+# Get the interaction Wald results
+res_high_pc <- results(dds_wald, name = "stageprawnchip.leachatehigh")
+res_mid_pc  <- results(dds_wald, name = "stageprawnchip.leachatemid")
+res_low_pc  <- results(dds_wald, name = "stageprawnchip.leachatelow")
+res_high_eg <- results(dds_wald, name = "stageearlygastrula.leachatehigh")
+res_mid_eg  <- results(dds_wald, name = "stageearlygastrula.leachatemid")
+res_low_eg  <- results(dds_wald, name = "stageearlygastrula.leachatelow")
+
+# Combine into a summary
+int_wald_df <- data.frame(
+  gene_id = rownames(res_high_pc),
+  prawnchip_high_log2FC = res_high_pc$log2FoldChange,
+  prawnchip_high_padj = res_high_pc$padj,
+  prawnchip_mid_log2FC = res_mid_pc$log2FoldChange,
+  prawnchip_mid_padj = res_mid_pc$padj,
+  prawnchip_low_log2FC = res_low_pc$log2FoldChange,
+  prawnchip_low_padj = res_low_pc$padj,
+  earlygastrula_high_log2FC = res_high_eg$log2FoldChange,
+  earlygastrula_high_padj = res_high_eg$padj,
+  earlygastrula_mid_log2FC = res_mid_eg$log2FoldChange,
+  earlygastrula_mid_padj = res_mid_eg$padj,
+  earlygastrula_low_log2FC = res_low_eg$log2FoldChange,
+  earlygastrula_low_padj = res_low_eg$padj
+)
+
+# Focus on the 44 genes
+int_wald_df_sig <- int_wald_df[int_wald_df$gene_id %in% sig_genes$gene_id, ]
+```
+
+# Build contrasts
+
+Our design includes: - Main effects for stage and leachate - Interaction terms between stage and leachate
+
+The levels are: - stage: cleavage, prawnchip, earlygastrula - leachate: control, low, mid, high
+
+DESeq2 uses reference coding, so: - cleavage is the reference for stage - control is the reference for leachate - Therefore, interaction terms are the additional effects relative to cleavage + control
+
+| Coef | Name                         | Meaning                                                               |
+|--------------|----------------|------------------------------------------|
+| 1    | `"Intercept"`                | Baseline expression: `hpf = 4` and `leachate = control`               |
+| 2    | `"hpf_9_vs_4"`               | Change from 4 hpf → 9 hpf, at **control** exposure                    |
+| 3    | `"hpf_14_vs_4"`              | Change from 4 hpf → 14 hpf, at **control** exposure                   |
+| 4    | `"leachate_low_vs_control"`  | Change from control → low exposure, at **4 hpf**                      |
+| 5    | `"leachate_mid_vs_control"`  | Change from control → mid exposure, at **4 hpf**                      |
+| 6    | `"leachate_high_vs_control"` | Change from control → high exposure, at **4 hpf**                     |
+| 7    | `"hpf9.leachatelow"`         | **Interaction term**: extra effect of low exposure at 9 hpf vs 4 hpf  |
+| 8    | `"hpf14.leachatelow"`        | **Interaction term**: extra effect of low exposure at 14 hpf vs 4 hpf |
+| 9    | `"hpf9.leachatemid"`         | **Interaction term**: extra effect of mid exposure at 9 hpf vs 4 hpf  |
+| 10   | `"hpf14.leachatemid"`        | **Interaction term**: extra effect of mid exposure at 14 hpf vs 4 hpf |
+| 11   | `"hpf9.leachatehigh"`        | **Interaction term**:... of high exposure at 9 hpf vs 4 hp            |
+| 12   | `"hpf14.leachatehigh"`       | **Interaction term**:... of high exposure at 14 hpf vs 4 hpf          |
+
+Contrast summary table \| What you want \| Contrast \| \| ------------------------- \| ----------------------------------------------------- \| \| High vs Control at 4 hpf \| `"leachate_high_vs_control"` \| \| Mid vs Control at 4 hpf \| `"leachate_mid_vs_control"` \| \| Low vs Control at 4 hpf \| `"leachate_low_vs_control"` \| \| High vs Control at 9 hpf \| `c("leachate_high_vs_control", "hpf9.leachatehigh")` \| \| Mid vs Control at 9 hpf \| `c("leachate_mid_vs_control", "hpf9.leachatemid")` \| \| Low vs Control at 9 hpf \| `c("leachate_low_vs_control", "hpf9.leachatelow")` \| \| High vs Control at 14 hpf \| `c("leachate_high_vs_control", "hpf14.leachatehigh")` \| \| Mid vs Control at 14 hpf \| `c("leachate_mid_vs_control", "hpf14.leachatemid")` \| \| Low vs Control at 14 hpf \| `c("leachate_low_vs_control", "hpf14.leachatelow")` \|
+
+# Effect of high exposure at 14 hpf
+
+When you test for main effects of leachate (e.g., "leachate_high_vs_control"), it's at the reference timepoint (hpf = 4). The interaction terms model how the leachate effect changes relative to that baseline as development progresses.
+
+What's the effect of high exposure at 14 hpf? You must combine: - "leachate_high_vs_control": main leachate effect at 4 hpf - "hpf14.leachatehigh": additional effect at 14 hpf
+
+```{r}
+# output results of contrast
+res_14hpf_high <- (results(dds, contrast = list(
+  c("leachate_high_vs_control", "hpf14.leachatehigh")
+)))
+
+summary(res_14hpf_high)
+```
+
+### Extract significant genes
+
+```{r}
+padj.cutoff <- 0.05
+lfc.cutoff <- 0.5
+```
+
+```{r}
+# Convert results table into tibble
+res_14hpf_high_tb <- res_14hpf_high %>%
+  data.frame() %>%
+  rownames_to_column(var="gene") %>%
+  as_tibble()
+
+# subset that table to only keep the significant genes using our pre-defined thresholds:
+sig_14hpf_high_noLFCcutoff <- res_14hpf_high_tb %>%
+  filter(padj < padj.cutoff)
+
+sig_14hpf_high <- sig_14hpf_high_noLFCcutoff %>% 
+  filter(abs(log2FoldChange) > lfc.cutoff)
+```
+
+```{r}
+paste("Number of significant DEGs 14 hpf at high exposure level:", nrow(sig_14hpf_high_noLFCcutoff), "(padj<", padj.cutoff, ")")
+```
+
+```{r}
+paste("Number of significant DEGs 14 hpf at high exposure level:", nrow(sig_14hpf_high), "(padj<", padj.cutoff, ", log-fold change >", lfc.cutoff, ")")
+```
+
+```{r}
+write_csv(sig_14hpf_high, "../output/09_deg_multifactorial/sig_14hpf_high.csv")
+write_csv(sig_14hpf_high_noLFCcutoff, "../output/09_deg_multifactorial/sig_14hpf_high_noLFCcutoff.csv")
+```
+
+### Volcano plots
+
+```{r}
+# shrink lfc for visualizations
+res_14hpf_high_ashr <- lfcShrink(dds, contrast = list(c("leachate_high_vs_control", "hpf14.leachatehigh")), type = "ashr")
+
+plotMA(res_14hpf_high)
+plotMA(res_14hpf_high_ashr)
+```
+
+```{r}
+EnhancedVolcano(res_14hpf_high,
+    lab = rownames(res_14hpf_high),
+    x = 'log2FoldChange',
+    y = 'padj',  # or 'padj' for adjusted p-values
+    pCutoff = 0.05,
+    FCcutoff = 0.5,
+    title = 'Volcano plot',
+    subtitle = 'Effect of high exposure at 14 hpf',
+    pointSize = 1.0,
+    labSize = 3.0,
+    col = c('grey30', 'forestgreen', 'royalblue', 'red2')
+)
+
+```
+
+```{r}
+v14high <- 
+  ggplot(res_14hpf_high) +
+  # Plot all
+  geom_point(aes(x=log2FoldChange, y=-log10(padj),color="unchanged"),
+             size=.5) +
+  # Overlay all significantly upregulated in red
+  geom_point(data = sig_14hpf_high[sig_14hpf_high$log2FoldChange > 0, ], 
+             aes(x=log2FoldChange, y=-log10(padj), color="upregulated"), 
+             size=.5) +
+  # Overlay all significantly downregulated in blue
+  geom_point(data = sig_14hpf_high[sig_14hpf_high$log2FoldChange < 0, ], 
+             aes(x=log2FoldChange, y=-log10(padj), color="downregulated"), 
+             size=.5) +
+  ggtitle("Effect of high leachate exposure at 14 hpf") +
+  xlab("log2 fold change") + 
+  ylab("-log10 adjusted p-value") +
+  scale_x_continuous(limits = c(-2,2)) +
+  scale_y_continuous(limits = c(0,100)) +
+  scale_color_manual(values = c("unchanged" = "darkgrey", "upregulated" = "red", "downregulated" = "blue"),
+                     labels = c("unchanged" = "Unchanged", "upregulated" = "Upregulated", "downregulated" = "Downregulated"),
+                     name = NULL) +
+  theme(legend.position = "top",
+        plot.title = element_text(size = rel(1.5), hjust = 0.5),
+        axis.title = element_text(size = rel(1.25)))
+
+v14high
+```
+
+## Effect of mid exposure at 14 hpf
+
+```{r}
+# output results of contrast
+res_14hpf_mid <- (results(dds, contrast = list(
+  c("leachate_mid_vs_control", "hpf14.leachatemid")
+)))
+
+summary(res_14hpf_mid)
+```
+
+### Extract significant genes
+
+```{r}
+# Convert results table into tibble
+res_14hpf_mid_tb <- res_14hpf_mid %>%
+  data.frame() %>%
+  rownames_to_column(var="gene") %>%
+  as_tibble()
+
+# subset that table to only keep the significant genes using our pre-defined thresholds:
+sig_14hpf_mid_noLFCcutoff <- res_14hpf_mid_tb %>%
+  filter(padj < padj.cutoff)
+
+sig_14hpf_mid <- sig_14hpf_mid_noLFCcutoff %>% 
+  filter(abs(log2FoldChange) > lfc.cutoff)
+```
+
+```{r}
+paste("Number of significant DEGs 14 hpf at mid exposure level:", nrow(sig_14hpf_mid_noLFCcutoff), "(padj<", padj.cutoff, ")")
+```
+
+```{r}
+paste("Number of significant DEGs 14 hpf at mid exposure level:", nrow(sig_14hpf_mid), "(padj<", padj.cutoff, ", log-fold change >", lfc.cutoff, ")")
+```
+
+```{r}
+write_csv(sig_14hpf_mid, "../output/09_deg_multifactorial/sig_14hpf_mid.csv")
+write_csv(sig_14hpf_mid_noLFCcutoff, "../output/09_deg_multifactorial/sig_14hpf_mid_noLFCcutoff.csv")
+```
+
+### Volcano plots
+
+```{r}
+
+# shrink lfc for visualizations
+res_14hpf_mid_ashr <- lfcShrink(dds, contrast = list(c("leachate_mid_vs_control", "hpf14.leachatemid")), type = "ashr")
+
+plotMA(res_14hpf_mid)
+plotMA(res_14hpf_mid_ashr)
+```
+
+```{r}
+EnhancedVolcano(res_14hpf_mid,
+    lab = rownames(res_14hpf_mid),
+    x = 'log2FoldChange',
+    y = 'padj',  # or 'padj' for adjusted p-values
+    pCutoff = 0.05,
+    FCcutoff = 0.5,
+    title = 'Volcano plot',
+    subtitle = 'Effect of mid exposure at 14 hpf',
+    pointSize = 1.0,
+    labSize = 3.0,
+    col = c('grey30', 'forestgreen', 'royalblue', 'red2')
+)
+
+```
+
+```{r}
+v14mid <- 
+  ggplot(res_14hpf_mid) +
+  # Plot all
+  geom_point(aes(x=log2FoldChange, y=-log10(padj),color="unchanged"),
+             size=.5) +
+  # Overlay all significantly upregulated in red
+  geom_point(data = sig_14hpf_mid[sig_14hpf_mid$log2FoldChange > 0, ], 
+             aes(x=log2FoldChange, y=-log10(padj), color="upregulated"), 
+             size=.5) +
+  # Overlay all significantly downregulated in blue
+  geom_point(data = sig_14hpf_mid[sig_14hpf_mid$log2FoldChange < 0, ], 
+             aes(x=log2FoldChange, y=-log10(padj), color="downregulated"), 
+             size=.5) +
+  ggtitle("Effect of mid leachate exposure at 14 hpf") +
+  xlab("log2 fold change") + 
+  ylab("-log10 adjusted p-value") +
+  scale_x_continuous(limits = c(-2,2)) +
+  scale_y_continuous(limits = c(0,100)) +
+  scale_color_manual(values = c("unchanged" = "darkgrey", "upregulated" = "red", "downregulated" = "blue"),
+                     labels = c("unchanged" = "Unchanged", "upregulated" = "Upregulated", "downregulated" = "Downregulated"),
+                     name = NULL) +
+  theme(legend.position = "top",
+        plot.title = element_text(size = rel(1.5), hjust = 0.5),
+        axis.title = element_text(size = rel(1.25)))
+
+v14mid
+```
+
+## Effect of low exposure at 14 hpf
+
+```{r}
+# output results of contrast
+res_14hpf_low <- (results(dds, contrast = list(
+  c("leachate_low_vs_control", "hpf14.leachatelow")
+)))
+
+summary(res_14hpf_low)
+```
+
+### Extract significant genes
+
+```{r}
+# Convert results table into tibble
+res_14hpf_low_tb <- res_14hpf_low %>%
+  data.frame() %>%
+  rownames_to_column(var="gene") %>%
+  as_tibble()
+
+# subset that table to only keep the significant genes using our pre-defined thresholds:
+sig_14hpf_low_noLFCcutoff <- res_14hpf_low_tb %>%
+  filter(padj < padj.cutoff)
+
+sig_14hpf_low <- sig_14hpf_low_noLFCcutoff %>% 
+  filter(abs(log2FoldChange) > lfc.cutoff)
+```
+
+```{r}
+paste("Number of significant DEGs 14 hpf at low exposure level:", nrow(sig_14hpf_low_noLFCcutoff), "(padj<", padj.cutoff, ")")
+```
+
+```{r}
+paste("Number of significant DEGs 14 hpf at low exposure level:", nrow(sig_14hpf_low), "(padj<", padj.cutoff, ", log-fold change >", lfc.cutoff, ")")
+```
+
+```{r}
+write_csv(sig_14hpf_low, "../output/09_deg_multifactorial/sig_14hpf_low.csv")
+write_csv(sig_14hpf_low_noLFCcutoff, "../output/09_deg_multifactorial/sig_14hpf_low_noLFCcutoff.csv")
+```
+
+### Volcano plots
+
+```{r}
+# shrink lfc for visualizations
+res_14hpf_low_ashr <- lfcShrink(dds, contrast = list(c("leachate_low_vs_control", "hpf14.leachatelow")), type = "ashr")
+
+plotMA(res_14hpf_low)
+plotMA(res_14hpf_low_ashr)
+```
+
+```{r}
+EnhancedVolcano(res_14hpf_low,
+    lab = rownames(res_14hpf_low),
+    x = 'log2FoldChange',
+    y = 'padj',  # or 'padj' for adjusted p-values
+    pCutoff = 0.05,
+    FCcutoff = 0.5,
+    title = 'Volcano plot',
+    subtitle = 'Effect of low exposure at 14 hpf',
+    pointSize = 1.0,
+    labSize = 3.0,
+    col = c('grey30', 'forestgreen', 'royalblue', 'red2')
+)
+
+```
+
+```{r}
+v14low <- 
+  ggplot(res_14hpf_low) +
+  # Plot all
+  geom_point(aes(x=log2FoldChange, y=-log10(padj),color="unchanged"),
+             size=.5) +
+  # Overlay all significantly upregulated in red
+  geom_point(data = sig_14hpf_low[sig_14hpf_low$log2FoldChange > 0, ], 
+             aes(x=log2FoldChange, y=-log10(padj), color="upregulated"), 
+             size=.5) +
+  # Overlay all significantly downregulated in blue
+  geom_point(data = sig_14hpf_low[sig_14hpf_low$log2FoldChange < 0, ], 
+             aes(x=log2FoldChange, y=-log10(padj), color="downregulated"), 
+             size=.5) +
+  ggtitle("Effect of low leachate exposure at 14 hpf") +
+  xlab("log2 fold change") + 
+  ylab("-log10 adjusted p-value") +
+  scale_x_continuous(limits = c(-2,2)) +
+  scale_y_continuous(limits = c(0,100)) +
+  scale_color_manual(values = c("unchanged" = "darkgrey", "upregulated" = "red", "downregulated" = "blue"),
+                     labels = c("unchanged" = "Unchanged", "upregulated" = "Upregulated", "downregulated" = "Downregulated"),
+                     name = NULL) +
+  theme(legend.position = "top",
+        plot.title = element_text(size = rel(1.5), hjust = 0.5),
+        axis.title = element_text(size = rel(1.25)))
+
+v14low
+```
+
+## Effect of high exposure at 9 hpf
+
+```{r}
+# output results of contrast
+res_9hpf_high <- (results(dds, contrast = list(
+  c("leachate_high_vs_control", "hpf9.leachatehigh")
+)))
+
+summary(res_9hpf_high)
+```
+
+### Extract significant genes
+
+```{r}
+# Convert results table into tibble
+res_9hpf_high_tb <- res_9hpf_high %>%
+  data.frame() %>%
+  rownames_to_column(var="gene") %>%
+  as_tibble()
+
+# subset that table to only keep the significant genes using our pre-defined thresholds:
+sig_9hpf_high_noLFCcutoff <- res_9hpf_high_tb %>%
+  filter(padj < padj.cutoff)
+
+sig_9hpf_high <- sig_9hpf_high_noLFCcutoff %>% 
+  filter(abs(log2FoldChange) > lfc.cutoff)
+```
+
+```{r}
+paste("Number of significant DEGs 9 hpf at high exposure level:", nrow(sig_9hpf_high_noLFCcutoff), "(padj<", padj.cutoff, ")")
+```
+
+```{r}
+paste("Number of significant DEGs 9 hpf at high exposure level:", nrow(sig_9hpf_high), "(padj<", padj.cutoff, ", log-fold change >", lfc.cutoff, ")")
+```
+
+```{r}
+write_csv(sig_9hpf_high, "../output/09_deg_multifactorial/sig_9hpf_high.csv")
+write_csv(sig_9hpf_high_noLFCcutoff, "../output/09_deg_multifactorial/sig_9hpf_high_noLFCcutoff.csv")
+```
+
+### Volcano plots
+
+```{r}
+# shrink lfc for visualizations
+res_9hpf_high_ashr <- lfcShrink(dds, contrast = list(c("leachate_high_vs_control", "hpf9.leachatehigh")), type = "ashr")
+
+plotMA(res_9hpf_high)
+plotMA(res_9hpf_high_ashr)
+```
+
+```{r}
+EnhancedVolcano(res_9hpf_high,
+    lab = rownames(res_9hpf_high),
+    x = 'log2FoldChange',
+    y = 'padj',  # or 'padj' for adjusted p-values
+    pCutoff = 0.05,
+    FCcutoff = 0.5,
+    title = 'Volcano plot',
+    subtitle = 'Effect of high exposure at 9 hpf',
+    pointSize = 1.0,
+    labSize = 3.0,
+    col = c('grey30', 'forestgreen', 'royalblue', 'red2')
+)
+
+```
+
+```{r}
+v9high <- 
+  ggplot(res_9hpf_high) +
+  # Plot all
+  geom_point(aes(x=log2FoldChange, y=-log10(padj),color="unchanged"),
+             size=.5) +
+  # Overlay all significantly upregulated in red
+  geom_point(data = sig_9hpf_high[sig_9hpf_high$log2FoldChange > 0, ], 
+             aes(x=log2FoldChange, y=-log10(padj), color="upregulated"), 
+             size=.5) +
+  # Overlay all significantly downregulated in blue
+  geom_point(data = sig_9hpf_high[sig_9hpf_high$log2FoldChange < 0, ], 
+             aes(x=log2FoldChange, y=-log10(padj), color="downregulated"), 
+             size=.5) +
+  ggtitle("Effect of high leachate exposure at 9 hpf") +
+  xlab("log2 fold change") + 
+  ylab("-log10 adjusted p-value") +
+  scale_x_continuous(limits = c(-2,2)) +
+  scale_y_continuous(limits = c(0,100)) +
+  scale_color_manual(values = c("unchanged" = "darkgrey", "upregulated" = "red", "downregulated" = "blue"),
+                     labels = c("unchanged" = "Unchanged", "upregulated" = "Upregulated", "downregulated" = "Downregulated"),
+                     name = NULL) +
+  theme(legend.position = "top",
+        plot.title = element_text(size = rel(1.5), hjust = 0.5),
+        axis.title = element_text(size = rel(1.25)))
+
+v9high
+```
+
+## Effect of mid exposure at 9 hpf
+
+```{r}
+# output results of contrast
+res_9hpf_mid <- (results(dds, contrast = list(
+  c("leachate_mid_vs_control", "hpf9.leachatemid")
+)))
+
+summary(res_9hpf_mid)
+```
+
+### Extract significant genes
+
+```{r}
+# Convert results table into tibble
+res_9hpf_mid_tb <- res_9hpf_mid %>%
+  data.frame() %>%
+  rownames_to_column(var="gene") %>%
+  as_tibble()
+
+# subset that table to only keep the significant genes using our pre-defined thresholds:
+sig_9hpf_mid_noLFCcutoff <- res_9hpf_mid_tb %>%
+  filter(padj < padj.cutoff)
+
+sig_9hpf_mid <- sig_9hpf_mid_noLFCcutoff %>% 
+  filter(abs(log2FoldChange) > lfc.cutoff)
+```
+
+```{r}
+paste("Number of significant DEGs 9 hpf at mid exposure level:", nrow(sig_9hpf_mid_noLFCcutoff), "(padj<", padj.cutoff, ")")
+```
+
+```{r}
+paste("Number of significant DEGs 9 hpf at mid exposure level:", nrow(sig_9hpf_mid), "(padj<", padj.cutoff, ", log-fold change >", lfc.cutoff, ")")
+```
+
+```{r}
+write_csv(sig_9hpf_mid, "../output/09_deg_multifactorial/sig_9hpf_mid.csv")
+write_csv(sig_9hpf_mid_noLFCcutoff, "../output/09_deg_multifactorial/sig_9hpf_mid_noLFCcutoff.csv")
+```
+
+### Volcano plots
+
+```{r}
+# shrink lfc for visualizations
+res_9hpf_mid_ashr <- lfcShrink(dds, contrast = list(c("leachate_mid_vs_control", "hpf9.leachatemid")), type = "ashr")
+
+plotMA(res_9hpf_mid)
+plotMA(res_9hpf_mid_ashr)
+```
+
+```{r}
+EnhancedVolcano(res_9hpf_mid,
+    lab = rownames(res_9hpf_mid),
+    x = 'log2FoldChange',
+    y = 'padj',  # or 'padj' for adjusted p-values
+    pCutoff = 0.05,
+    FCcutoff = 0.5,
+    title = 'Volcano plot',
+    subtitle = 'Effect of mid exposure at 9 hpf',
+    pointSize = 1.0,
+    labSize = 3.0,
+    col = c('grey30', 'forestgreen', 'royalblue', 'red2')
+)
+
+```
+
+```{r}
+v9mid <- 
+  ggplot(res_9hpf_mid) +
+  # Plot all
+  geom_point(aes(x=log2FoldChange, y=-log10(padj),color="unchanged"),
+             size=.5) +
+  # Overlay all significantly upregulated in red
+  geom_point(data = sig_9hpf_mid[sig_9hpf_mid$log2FoldChange > 0, ], 
+             aes(x=log2FoldChange, y=-log10(padj), color="upregulated"), 
+             size=.5) +
+  # Overlay all significantly downregulated in blue
+  geom_point(data = sig_9hpf_mid[sig_9hpf_mid$log2FoldChange < 0, ], 
+             aes(x=log2FoldChange, y=-log10(padj), color="downregulated"), 
+             size=.5) +
+  ggtitle("Effect of mid leachate exposure at 9 hpf") +
+  xlab("log2 fold change") + 
+  ylab("-log10 adjusted p-value") +
+  scale_x_continuous(limits = c(-2,2)) +
+  scale_y_continuous(limits = c(0,100)) +
+  scale_color_manual(values = c("unchanged" = "darkgrey", "upregulated" = "red", "downregulated" = "blue"),
+                     labels = c("unchanged" = "Unchanged", "upregulated" = "Upregulated", "downregulated" = "Downregulated"),
+                     name = NULL) +
+  theme(legend.position = "top",
+        plot.title = element_text(size = rel(1.5), hjust = 0.5),
+        axis.title = element_text(size = rel(1.25)))
+
+v9mid
+```
+
+## Effect of low exposure at 9 hpf
+
+```{r}
+# output results of contrast
+res_9hpf_low <- (results(dds, contrast = list(
+  c("leachate_low_vs_control", "hpf9.leachatelow")
+)))
+
+summary(res_9hpf_low)
+```
+
+### Extract significant genes
+
+```{r}
+# Convert results table into tibble
+res_9hpf_low_tb <- res_9hpf_low %>%
+  data.frame() %>%
+  rownames_to_column(var="gene") %>%
+  as_tibble()
+
+# subset that table to only keep the significant genes using our pre-defined thresholds:
+sig_9hpf_low_noLFCcutoff <- res_9hpf_low_tb %>%
+  filter(padj < padj.cutoff)
+
+sig_9hpf_low <- sig_9hpf_low_noLFCcutoff %>% 
+  filter(abs(log2FoldChange) > lfc.cutoff)
+```
+
+```{r}
+paste("Number of significant DEGs 9 hpf at low exposure level:", nrow(sig_9hpf_low_noLFCcutoff), "(padj<", padj.cutoff, ")")
+```
+
+```{r}
+paste("Number of significant DEGs 9 hpf at low exposure level:", nrow(sig_9hpf_low), "(padj<", padj.cutoff, ", log-fold change >", lfc.cutoff, ")")
+```
+
+```{r}
+write_csv(sig_9hpf_low, "../output/09_deg_multifactorial/sig_9hpf_low.csv")
+write_csv(sig_9hpf_low_noLFCcutoff, "../output/09_deg_multifactorial/sig_9hpf_low_noLFCcutoff.csv")
+```
+
+### Volcano plots
+
+```{r}
+# shrink lfc for visualizations
+res_9hpf_low_ashr <- lfcShrink(dds, contrast = list(c("leachate_low_vs_control", "hpf9.leachatelow")), type = "ashr")
+
+plotMA(res_9hpf_low)
+plotMA(res_9hpf_low_ashr)
+```
+
+```{r}
+EnhancedVolcano(res_9hpf_low,
+    lab = rownames(res_9hpf_low),
+    x = 'log2FoldChange',
+    y = 'padj',  # or 'padj' for adjusted p-values
+    pCutoff = 0.05,
+    FCcutoff = 0.5,
+    title = 'Volcano plot',
+    subtitle = 'Effect of low exposure at 9 hpf',
+    pointSize = 1.0,
+    labSize = 3.0,
+    col = c('grey30', 'forestgreen', 'royalblue', 'red2')
+)
+
+```
+
+```{r}
+v9low <- 
+  ggplot(res_9hpf_low) +
+  # Plot all
+  geom_point(aes(x=log2FoldChange, y=-log10(padj),color="unchanged"),
+             size=.5) +
+  # Overlay all significantly upregulated in red
+  geom_point(data = sig_9hpf_low[sig_9hpf_low$log2FoldChange > 0, ], 
+             aes(x=log2FoldChange, y=-log10(padj), color="upregulated"), 
+             size=.5) +
+  # Overlay all significantly downregulated in blue
+  geom_point(data = sig_9hpf_low[sig_9hpf_low$log2FoldChange < 0, ], 
+             aes(x=log2FoldChange, y=-log10(padj), color="downregulated"), 
+             size=.5) +
+  ggtitle("Effect of low leachate exposure at 9 hpf") +
+  xlab("log2 fold change") + 
+  ylab("-log10 adjusted p-value") +
+  scale_x_continuous(limits = c(-2,2)) +
+  scale_y_continuous(limits = c(0,100)) +
+  scale_color_manual(values = c("unchanged" = "darkgrey", "upregulated" = "red", "downregulated" = "blue"),
+                     labels = c("unchanged" = "Unchanged", "upregulated" = "Upregulated", "downregulated" = "Downregulated"),
+                     name = NULL) +
+  theme(legend.position = "top",
+        plot.title = element_text(size = rel(1.5), hjust = 0.5),
+        axis.title = element_text(size = rel(1.25)))
+
+v9low
+```
+
+## Effect of high exposure at 4 hpf
+
+```{r}
+# output results of contrast
+res_4hpf_high <- (results(dds, name = "leachate_high_vs_control")
+)
+
+summary(res_4hpf_high)
+```
+
+### Extract significant genes
+
+```{r}
+# Convert results table into tibble
+res_4hpf_high_tb <- res_4hpf_high %>%
+  data.frame() %>%
+  rownames_to_column(var="gene") %>%
+  as_tibble()
+
+# subset that table to only keep the significant genes using our pre-defined thresholds:
+sig_4hpf_high_noLFCcutoff <- res_4hpf_high_tb %>%
+  filter(padj < padj.cutoff)
+
+sig_4hpf_high <- sig_4hpf_high_noLFCcutoff %>% 
+  filter(abs(log2FoldChange) > lfc.cutoff)
+```
+
+```{r}
+paste("Number of significant DEGs 4 hpf at high exposure level:", nrow(sig_4hpf_high_noLFCcutoff), "(padj<", padj.cutoff, ")")
+```
+
+```{r}
+paste("Number of significant DEGs 4 hpf at high exposure level:", nrow(sig_4hpf_high), "(padj<", padj.cutoff, ", log-fold change >", lfc.cutoff, ")")
+```
+
+```{r}
+write_csv(sig_4hpf_high, "../output/09_deg_multifactorial/sig_4hpf_high.csv")
+write_csv(sig_4hpf_high_noLFCcutoff, "../output/09_deg_multifactorial/sig_4hpf_high_noLFCcutoff.csv")
+```
+
+### Volcano plots
+
+```{r}
+# shrink lfc for visualizations
+res_4hpf_high_ashr <- lfcShrink(dds, coef = 6 , type = "ashr")
+
+plotMA(res_4hpf_high)
+plotMA(res_4hpf_high_ashr)
+```
+
+```{r}
+EnhancedVolcano(res_4hpf_high,
+    lab = rownames(res_4hpf_high),
+    x = 'log2FoldChange',
+    y = 'padj',  # or 'padj' for adjusted p-values
+    pCutoff = 0.05,
+    FCcutoff = 0.5,
+    title = 'Volcano plot',
+    subtitle = 'Effect of high exposure at 4 hpf',
+    pointSize = 1.0,
+    labSize = 3.0,
+    col = c('grey30', 'forestgreen', 'royalblue', 'red2')
+)
+
+```
+
+```{r}
+v4high <- 
+  ggplot(res_4hpf_high) +
+  # Plot all
+  geom_point(aes(x=log2FoldChange, y=-log10(padj),color="unchanged"),
+             size=.5) +
+  # Overlay all significantly upregulated in red
+  geom_point(data = sig_4hpf_high[sig_4hpf_high$log2FoldChange > 0, ], 
+             aes(x=log2FoldChange, y=-log10(padj), color="upregulated"), 
+             size=.5) +
+  # Overlay all significantly downregulated in blue
+  geom_point(data = sig_4hpf_high[sig_4hpf_high$log2FoldChange < 0, ], 
+             aes(x=log2FoldChange, y=-log10(padj), color="downregulated"), 
+             size=.5) +
+  ggtitle("Effect of high leachate exposure at 4 hpf") +
+  xlab("log2 fold change") + 
+  ylab("-log10 adjusted p-value") +
+  scale_x_continuous(limits = c(-2,2)) +
+  scale_y_continuous(limits = c(0,100)) +
+  scale_color_manual(values = c("unchanged" = "darkgrey", "upregulated" = "red", "downregulated" = "blue"),
+                     labels = c("unchanged" = "Unchanged", "upregulated" = "Upregulated", "downregulated" = "Downregulated"),
+                     name = NULL) +
+  theme(legend.position = "top",
+        plot.title = element_text(size = rel(1.5), hjust = 0.5),
+        axis.title = element_text(size = rel(1.25)))
+
+v4high
+```
+
+## Effect of mid exposure at 4 hpf
+
+```{r}
+# output results of contrast
+res_4hpf_mid <- (results(dds, name = "leachate_mid_vs_control")
+)
+
+summary(res_4hpf_mid)
+```
+
+### Extract significant genes
+
+```{r}
+# Convert results table into tibble
+res_4hpf_mid_tb <- res_4hpf_mid %>%
+  data.frame() %>%
+  rownames_to_column(var="gene") %>%
+  as_tibble()
+
+# subset that table to only keep the significant genes using our pre-defined thresholds:
+sig_4hpf_mid_noLFCcutoff <- res_4hpf_mid_tb %>%
+  filter(padj < padj.cutoff)
+
+sig_4hpf_mid <- sig_4hpf_mid_noLFCcutoff %>% 
+  filter(abs(log2FoldChange) > lfc.cutoff)
+```
+
+```{r}
+paste("Number of significant DEGs 4 hpf at mid exposure level:", nrow(sig_4hpf_mid_noLFCcutoff), "(padj<", padj.cutoff, ")")
+```
+
+```{r}
+paste("Number of significant DEGs 4 hpf at mid exposure level:", nrow(sig_4hpf_mid), "(padj<", padj.cutoff, ", log-fold change >", lfc.cutoff, ")")
+```
+
+```{r}
+write_csv(sig_4hpf_mid, "../output/09_deg_multifactorial/sig_4hpf_mid.csv")
+write_csv(sig_4hpf_mid_noLFCcutoff, "../output/09_deg_multifactorial/sig_4hpf_mid_noLFCcutoff.csv")
+```
+
+### Volcano plots
+
+```{r}
+# shrink lfc for visualizations
+res_4hpf_mid_ashr <- lfcShrink(dds, coef = 5 , type = "ashr")
+
+plotMA(res_4hpf_mid)
+plotMA(res_4hpf_mid_ashr)
+```
+
+```{r}
+EnhancedVolcano(res_4hpf_mid,
+    lab = rownames(res_4hpf_mid),
+    x = 'log2FoldChange',
+    y = 'padj',  # or 'padj' for adjusted p-values
+    pCutoff = 0.05,
+    FCcutoff = 0.5,
+    title = 'Volcano plot',
+    subtitle = 'Effect of mid exposure at 4 hpf',
+    pointSize = 1.0,
+    labSize = 3.0,
+    col = c('grey30', 'forestgreen', 'royalblue', 'red2')
+)
+
+```
+
+```{r}
+v4mid <- 
+  ggplot(res_4hpf_mid) +
+  # Plot all
+  geom_point(aes(x=log2FoldChange, y=-log10(padj),color="unchanged"),
+             size=.5) +
+  # Overlay all significantly upregulated in red
+  geom_point(data = sig_4hpf_mid[sig_4hpf_mid$log2FoldChange > 0, ], 
+             aes(x=log2FoldChange, y=-log10(padj), color="upregulated"), 
+             size=.5) +
+  # Overlay all significantly downregulated in blue
+  geom_point(data = sig_4hpf_mid[sig_4hpf_mid$log2FoldChange < 0, ], 
+             aes(x=log2FoldChange, y=-log10(padj), color="downregulated"), 
+             size=.5) +
+  ggtitle("Effect of mid leachate exposure at 4 hpf") +
+  xlab("log2 fold change") + 
+  ylab("-log10 adjusted p-value") +
+  scale_x_continuous(limits = c(-2,2)) +
+  scale_y_continuous(limits = c(0,100)) +
+  scale_color_manual(values = c("unchanged" = "darkgrey", "upregulated" = "red", "downregulated" = "blue"),
+                     labels = c("unchanged" = "Unchanged", "upregulated" = "Upregulated", "downregulated" = "Downregulated"),
+                     name = NULL) +
+  theme(legend.position = "top",
+        plot.title = element_text(size = rel(1.5), hjust = 0.5),
+        axis.title = element_text(size = rel(1.25)))
+
+v4mid
+```
+
+## Effect of low exposure at 4 hpf
+
+```{r}
+# output results of contrast
+res_4hpf_low <- (results(dds, name = "leachate_low_vs_control", alpha=0.05)
+)
+
+summary(res_4hpf_low)
+```
+
+### Extract significant genes
+
+```{r}
+# Convert results table into tibble
+res_4hpf_low_tb <- res_4hpf_low %>%
+  data.frame() %>%
+  rownames_to_column(var="gene") %>%
+  as_tibble()
+
+# subset that table to only keep the significant genes using our pre-defined thresholds:
+sig_4hpf_low_noLFCcutoff <- res_4hpf_low_tb %>%
+  filter(padj < padj.cutoff)
+
+sig_4hpf_low <- sig_4hpf_low_noLFCcutoff %>% 
+  filter(abs(log2FoldChange) > lfc.cutoff)
+```
+
+```{r}
+paste("Number of significant DEGs 4 hpf at low exposure level:", nrow(sig_4hpf_low_noLFCcutoff), "(padj<", padj.cutoff, ")")
+```
+
+```{r}
+paste("Number of significant DEGs 4 hpf at low exposure level:", nrow(sig_4hpf_low), "(padj<", padj.cutoff, ", log-fold change >", lfc.cutoff, ")")
+```
+
+```{r}
+write_csv(sig_4hpf_low, "../output/09_deg_multifactorial/sig_4hpf_low.csv")
+write_csv(sig_4hpf_low_noLFCcutoff, "../output/09_deg_multifactorial/sig_4hpf_low_noLFCcutoff.csv")
+```
+
+### Volcano plots
+
+```{r}
+# shrink lfc for visualizations
+res_4hpf_low_ashr <- lfcShrink(dds, coef = 4 , type = "ashr")
+plotMA(res_4hpf_low)
+plotMA(res_4hpf_low_ashr)
+```
+
+```{r}
+EnhancedVolcano(res_4hpf_low,
+    lab = rownames(res_4hpf_low),
+    x = 'log2FoldChange',
+    y = 'padj',  # or 'padj' for adjusted p-values
+    pCutoff = 0.05,
+    FCcutoff = 0.5,
+    title = 'Volcano plot',
+    subtitle = 'Effect of low exposure at 4 hpf',
+    pointSize = 1.0,
+    labSize = 3.0,
+    col = c('grey30', 'forestgreen', 'royalblue', 'red2')
+)
+
+```
+
+```{r}
+v4low <- 
+  ggplot(res_4hpf_low) +
+  # Plot all
+  geom_point(aes(x=log2FoldChange, y=-log10(padj),color="unchanged"),
+             size=.5) +
+  # Overlay all significantly upregulated in red
+  geom_point(data = sig_4hpf_low[sig_4hpf_low$log2FoldChange > 0, ], 
+             aes(x=log2FoldChange, y=-log10(padj), color="upregulated"), 
+             size=.5) +
+  # Overlay all significantly downregulated in blue
+  geom_point(data = sig_4hpf_low[sig_4hpf_low$log2FoldChange < 0, ], 
+             aes(x=log2FoldChange, y=-log10(padj), color="downregulated"), 
+             size=.5) +
+  ggtitle("Effect of low leachate exposure at 4 hpf") +
+  xlab("log2 fold change") + 
+  ylab("-log10 adjusted p-value") +
+  scale_x_continuous(limits = c(-2,2)) +
+  scale_y_continuous(limits = c(0,100)) +
+  scale_color_manual(values = c("unchanged" = "darkgrey", "upregulated" = "red", "downregulated" = "blue"),
+                     labels = c("unchanged" = "Unchanged", "upregulated" = "Upregulated", "downregulated" = "Downregulated"),
+                     name = NULL) +
+  theme(legend.position = "top",
+        plot.title = element_text(size = rel(1.5), hjust = 0.5),
+        axis.title = element_text(size = rel(1.25)))
+
+v4low
+```
+
+# Summary
+
+## Facet volcano plot
+
+```{r}
+# First, strip labels from all individual ggplot objects
+# (You can do this in a loop if the plots are in a list)
+
+remove_labels <- function(p) {
+  p +
+    theme(
+      axis.title.x = element_blank(),
+      axis.title.y = element_blank(),
+      legend.position = "none",
+      plot.title = element_text(size = 8)  # adjust title size here
+    )
+}
+
+# Example: if your plots are named v4control, v4low, etc.
+plots <- list( 
+   v4low, v9low, v14low,
+   v4mid, v9mid, v14mid,
+   v4high, v9high, v14high
+)
+
+plots_clean <- lapply(plots, remove_labels)
+
+# Now plot in 3 rows × 3 columns
+volcano_facet <- plot_grid(
+  plotlist = plots_clean,
+  nrow = 3,
+  ncol = 3,
+  labels = NULL,
+  label_size = 0,
+  align = "hv"
+)
+
+volcano_facet
+```
+
+```{r}
+ggsave("../output/09_deg_multifactorial/volcano_facet.png", volcano_facet, width = 16, height = 12, dpi = 600)
+```
+
+::: callout-warning
+Why do volcano plots not look like volcanos!?
+
+Batch Effects or Low Biological Signal If your experimental design has confounding factors (e.g., batch effects), or the leachate treatment has low impact, then few genes will show strong changes.
+
+Extreme p-values Your plot shows points with -log10(padj) values above 20--30. That means padj is very close to 0, which could indicate: - Very large sample size - Very consistent effect - Or something off with the dispersion estimate or p-value adjustment (e.g., if some genes had zero variance across groups)
+:::
+
+# Next steps
+
+Re-run the model without the interaction term. The likelihood ratio test (LRT) shows that the interaction (hpf:leachate) is not significant! We can now test main effects of leachate across stages (i.e., an overall leachate effect) using `~ hpf + leachate`
+
+## Exlpore cooks distance
+
+> DESeq2 relies on the negative binomial distribution to make estimates and perform statistical inference on differences. While the negative binomial is versatile in having a mean and dispersion parameter, extreme counts in individual samples might not fit well to the negative binomial. For this reason, we perform automatic detection of count outliers. We use Cook's distance, which is a measure of how much the fitted coefficients would change if an individual sample were removed (Cook 1977). For more on the implementation of Cook's distance see the manual page for the *results* function. Below we plot the maximum value of Cook's distance for each row over the rank of the test statistic to justify its use as a filtering criterion.
+
+## Explore RUVSeq
