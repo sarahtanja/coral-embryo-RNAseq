@@ -1,9 +1,3 @@
----
-editor_options: 
-  markdown: 
-    wrap: 72
----
-
 # Bioinformatics Pipeline Roadmap
 
 Sarah Tanja October 7, 2024
