@@ -27,7 +27,7 @@ format:
 
 # Background
 
-We identified 12 genes that were broadly impacted by leachate. Here we want to know what those genes do!
+We identified 44 genes that were broadly impacted by leachate. Here we want to know what those genes do!
 
 Why is goseq different from other enrichment tools? Typical enrichment methods (like Fisher's exact test or hypergeometric tests) assume that every gene has an equal probability of being selected as a DEG. But in RNA-Seq longer genes are more likely to be detected as DEGs just because they accumulate more reads. `goseq` corrects for this bias.
 

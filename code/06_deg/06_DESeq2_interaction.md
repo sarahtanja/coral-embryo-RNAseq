@@ -22,18 +22,22 @@ Sarah Tanja
   - [<span class="toc-section-number">3.3</span> Results](#results)
   - [<span class="toc-section-number">3.4</span> Save significant
     genes](#save-significant-genes)
-    - [<span class="toc-section-number">3.4.1</span> Plot top 3 most
+    - [<span class="toc-section-number">3.4.1</span> Plots](#plots)
+    - [<span class="toc-section-number">3.4.2</span> Loop plots of all
       significant interaction
-      genes](#plot-top-3-most-significant-interaction-genes)
-    - [<span class="toc-section-number">3.4.2</span> Loop plots of
-      significant interaction
-      genes](#loop-plots-of-significant-interaction-genes)
+      genes](#loop-plots-of-all-significant-interaction-genes)
+  - [<span class="toc-section-number">3.5</span> Gene Expression
+    Plots](#gene-expression-plots)
 - [<span class="toc-section-number">4</span> Wald](#wald)
   - [<span class="toc-section-number">4.1</span> Interaction
     terms](#interaction-terms)
     - [<span class="toc-section-number">4.1.1</span> Extract Wald
       results for all interaction
       terms](#extract-wald-results-for-all-interaction-terms)
+    - [<span class="toc-section-number">4.1.2</span> Plot
+      heatmap](#plot-heatmap)
+- [<span class="toc-section-number">5</span> Summary & Next
+  Steps](#summary--next-steps)
 
 # Background
 
@@ -477,47 +481,179 @@ sig_long <- vsd[sig_cat, ] %>%
 sig_long <- sig_long %>% left_join(metadata_or, by = "sample_id")
 # add padj
 sig_long <- sig_long %>% left_join(sig_genes, by = "gene_id")
+
+# Assign numbers to genes by min padj
+gene_order <- sig_long %>%
+  group_by(gene_id) %>%
+  summarise(min_padj = min(padj, na.rm = TRUE), .groups = "drop") %>%
+  arrange(min_padj) %>%
+  mutate(padj_rank = row_number())
+
+# Join back to sig_long
+sig_long <- sig_long %>%
+  left_join(gene_order %>% select(gene_id, padj_rank), by = "gene_id")
+
+sig_long %>% select(gene_id, padj, padj_rank) %>% distinct() %>% arrange(padj)
 ```
 
-### Plot top 3 most significant interaction genes
+    # A tibble: 44 × 3
+       gene_id                                             padj padj_rank
+       <chr>                                              <dbl>     <int>
+     1 Montipora_capitata_HIv3___TS.g26493.t2a    0.00000000749         1
+     2 Montipora_capitata_HIv3___RNAseq.g15087.t1 0.00000108            2
+     3 Montipora_capitata_HIv3___TS.g45793.t1b    0.00000108            3
+     4 Montipora_capitata_HIv3___RNAseq.g40764.t1 0.00000265            4
+     5 Montipora_capitata_HIv3___RNAseq.g7017.t1  0.0000247             5
+     6 Montipora_capitata_HIv3___RNAseq.g20279.t1 0.0000410             6
+     7 Montipora_capitata_HIv3___RNAseq.g21373.t1 0.000112              7
+     8 Montipora_capitata_HIv3___RNAseq.g33315.t1 0.000112              8
+     9 Montipora_capitata_HIv3___TS.g8038.t2      0.000211              9
+    10 Montipora_capitata_HIv3___TS.g48661.t1     0.000423             10
+    # ℹ 34 more rows
 
-### Loop plots of significant interaction genes
+How many samples are in each treatment for each significant gene?
 
 ``` r
-# create output directory
-dir.create("../../output/06_deg/interaction/gene_plots", recursive = TRUE, showWarnings = FALSE)
+sample_counts <- sig_long %>% 
+  count(gene_id, group) %>%   # count rows per gene_id + group
+  pivot_wider(names_from = group,              # make each group a column
+              values_from = n, 
+              values_fill = 0)                 # fill missing group-gene combos with 0
 
-for (gene in unique(sig_long$gene_id)) {
+any(as.matrix(sample_counts[, 2:13]) < 4)
+```
+
+    [1] FALSE
+
+> [!NOTE]
+>
+> At least 4 samples representing in each group per significant gene.
+
+``` r
+sig_long %>%
+  group_by(gene_id, leachate, stage) %>%
+  summarise(n = n_distinct(sample_id), .groups = "drop") %>%
+  filter(n < 4)
+```
+
+    # A tibble: 0 × 4
+    # ℹ 4 variables: gene_id <chr>, leachate <fct>, stage <fct>, n <int>
+
+Top 3 genes with significant interaction between `stage` x `leachate`
+
+``` r
+top_genes <- sig_long %>%
+  select(gene_id, padj, padj_rank) %>% 
+  distinct() %>%
+  arrange(padj) %>%
+  slice_head(n = 3) 
+  
+top_genes
+```
+
+    # A tibble: 3 × 3
+      gene_id                                             padj padj_rank
+      <chr>                                              <dbl>     <int>
+    1 Montipora_capitata_HIv3___TS.g26493.t2a    0.00000000749         1
+    2 Montipora_capitata_HIv3___RNAseq.g15087.t1 0.00000108            2
+    3 Montipora_capitata_HIv3___TS.g45793.t1b    0.00000108            3
+
+### Plots
+
+#### Top 3 Significant Genes
+
+``` r
+top_info <- sig_long %>%
+  group_by(gene_id) %>%
+  summarise(min_padj = min(padj, na.rm = TRUE)) %>%
+  arrange(min_padj) %>%
+  slice_head(n = 3)
+```
+
+``` r
+for (i in 1:nrow(top_info)) {
+  gene <- top_info$gene_id[i]
+  padj_val <- signif(top_info$min_padj[i], 3)
 
   gene_df <- sig_long %>% filter(gene_id == gene)
+  padj_rank <- unique(gene_df$padj_rank)
 
-  p <- ggplot(gene_df, aes(x = leachate, y = expression, color = stage, group = stage)) +
-    geom_point(size = 2, alpha = 0.8) +
-    geom_smooth(method = "loess", se = FALSE) +
-    labs(
-      title = paste("Gene:", gene),
-      x = "Leachate (mg/L)",
-      y = "VST expression"
+  p <- ggplot(gene_df, aes(x = leachate, y = expression, color = stage, label = sample_id)) +
+    geom_point(
+      size = 2, 
+      alpha = 0.9,
+      position = position_jitter(width = 0.05, height = 0),
+      show.legend = FALSE
+      ) +
+    geom_smooth(
+      aes(group = stage, color = stage, fill = stage),
+      method = "loess",
+      se = TRUE,
+      alpha = 0.5
     ) +
-    
-    theme_minimal(base_size = 12) +
-    theme(
-      legend.position = "right",
-      plot.title = element_text(hjust = 0.5)
-    )
-  
-  # Render as interactive plotly
-  print(plotly::ggplotly(p))
+    labs(title = paste0("Gene ", padj_rank, ":", gene, " (padj = ", padj_val, ")")) +
+    theme_minimal()
 
-  # Save to PNG
+  print(ggplotly(p))
+}
+```
+
+### Loop plots of all significant interaction genes
+
+``` r
+all_info <- sig_long %>%
+  group_by(gene_id) %>%
+  summarise(min_padj = min(padj, na.rm = TRUE)) %>%
+  arrange(min_padj)
+
+plots <- list()
+
+for (i in 1:nrow(all_info)) {
+  gene <- all_info$gene_id[i]
+  padj_val <- signif(all_info$min_padj[i], 3)
+
+  gene_df <- sig_long %>% filter(gene_id == gene)
+  padj_rank <- unique(gene_df$padj_rank)
+
+  p <- ggplot(gene_df, aes(x = leachate, y = expression, color = stage, label = sample_id)) +
+    geom_point(
+      size = 2, 
+      alpha = 0.9,
+      position = position_jitter(width = 0.05, height = 0),
+      show.legend = FALSE
+      ) +
+    geom_smooth(
+      aes(group = stage, color = stage, fill = stage),
+      method = "loess",
+      se = TRUE,
+      alpha = 0.5
+    ) +
+    labs(title = paste0("Gene ", padj_rank, ":", gene, " (padj = ", padj_val, ")")) +
+    theme_minimal()
+
+  # Save plotly plots to plot list
+  plots[[i]] <- ggplotly(p)
+  
+    # Save to PNG
   ggsave(
-    filename = paste0("../../output/06_deg/gene_plots/", gene, ".png"),
-    plot = p, width = 6, height = 4, dpi = 300
+    filename = paste0("../../output/06_deg/interactions/gene_plots/", padj_rank, ".png"),
+    plot = p, width = 8, height = 4, dpi = 600
   )
 }
 ```
 
-<div class="panel-tabset">
+Display all plots
+
+``` r
+# Now render them all
+for (p in plots) {
+  print(p)
+}
+```
+
+## Gene Expression Plots
+
+<div>
 
 </div>
 
@@ -613,6 +749,8 @@ int_wald_df <- data.frame(
 int_wald_df_sig <- int_wald_df[int_wald_df$gene_id %in% sig_genes$gene_id, ]
 ```
 
+### Plot heatmap
+
 ``` r
 library(pheatmap)
 
@@ -670,7 +808,7 @@ pheatmap(mat,
          border_color = NA)
 ```
 
-![](06_DESeq2_interaction_files/figure-commonmark/unnamed-chunk-20-1.png)
+![](06_DESeq2_interaction_files/figure-commonmark/unnamed-chunk-25-1.png)
 
 ``` r
 dev.off()
@@ -679,103 +817,32 @@ dev.off()
     png 
       3 
 
-``` r
-# Print the heatmap inline
-pheatmap(mat,
-         cluster_rows = TRUE,
-         cluster_cols = TRUE,
-         scale = "row",
-         show_rownames = FALSE,
-         annotation_col = annotation_col,
-         display_numbers = sig_labels,
-         number_color = "black",
-         fontsize = 10,
-         fontsize_number = 8,
-         angle_col = 45,
-         border_color = NA)
-```
-
-![](06_DESeq2_interaction_files/figure-commonmark/unnamed-chunk-21-1.png)
-
-> 🧬 What does the heatmap show? Each cell in the heatmap shows the
-> scaled log2 fold change for a gene in a specific interaction
-> condition.
->
-> ✅ Scaling Because you set scale = “row”, each gene’s values are
-> z-scored across the six interaction conditions
->
-> Blue = low relative expression change in that condition
->
-> Red = high relative expression change in that condition
->
-> The actual color scale is relative within each row, not across the
-> whole matrix.
->
-> This helps visualize patterns of expression changes across conditions
-> for each gene, regardless of absolute size.
->
-> 📊 What can you learn from this? Are there groups of genes responding
-> similarly? Row clustering may reveal gene modules with similar
-> interaction response profiles.
->
-> Which stage + leachate condition drives the interaction? Column
-> patterns (e.g., lots of red in prawnchip_high_log2FC) suggest strong
-> interaction effects in that condition.
->
-> Which genes have the strongest differential interactions? Genes with
-> high contrast (strong red/blue) have more dynamic interaction effects.
->
-> 🧠 Interpretation Reminder These log2 fold changes are interaction
-> effects — they reflect how gene expression at a specific `stage` &
-> `leachate` level deviates from the expected additive effect of `stage`
-> and `leachate` alone.
->
-> So, a large positive log2FC means:
->
-> “At this `stage` and `leachate` level, this gene is more highly
-> expressed than we would expect based on `stage` and `leachate` effects
-> individually.”
->
-> Likewise, a large negative value = stronger-than-expected suppression.
+Interpretation notes: \> 🧬 What does the heatmap show? Each cell in the
+heatmap shows the scaled log2 fold change for a gene in a specific
+interaction condition. \> \> ✅ Scaling Because you set scale = “row”,
+each gene’s values are z-scored across the six interaction conditions \>
+\> Blue = low relative expression change in that condition \> \> Red =
+high relative expression change in that condition \> \> The actual color
+scale is relative within each row, not across the whole matrix. \> \>
+This helps visualize patterns of expression changes across conditions
+for each gene, regardless of absolute size. \> \> 📊 What can you learn
+from this? Are there groups of genes responding similarly? Row
+clustering may reveal gene modules with similar interaction response
+profiles. \> \> Which stage + leachate condition drives the interaction?
+Column patterns (e.g., lots of red in prawnchip_high_log2FC) suggest
+strong interaction effects in that condition. \> \> Which genes have the
+strongest differential interactions? Genes with high contrast (strong
+red/blue) have more dynamic interaction effects. \> \> 🧠 Interpretation
+Reminder These log2 fold changes are interaction effects — they reflect
+how gene expression at a specific `stage` & `leachate` level deviates
+from the expected additive effect of `stage` and `leachate` alone. \> \>
+So, a large positive log2FC means: \> \> “At this `stage` and `leachate`
+level, this gene is more highly expressed than we would expect based on
+`stage` and `leachate` effects individually.” \> \> Likewise, a large
+negative value = stronger-than-expected suppression.
 
 ``` r
 int_wald_df_sig$any_sig <- apply(int_wald_df_sig[, grepl("padj", names(int_wald_df_sig))], 1, function(p) any(p < 0.05, na.rm = TRUE))
-
-head(int_wald_df_sig)
 ```
 
-                                           gene_id prawnchip_high_log2FC
-    107    Montipora_capitata_HIv3___TS.g26493.t2a            -3.4352875
-    283  Montipora_capitata_HIv3___RNAseq.g5198.t1             2.5792480
-    637    Montipora_capitata_HIv3___TS.g28558.t3a            -0.1389199
-    708  Montipora_capitata_HIv3___RNAseq.g6929.t1            -0.6082592
-    743  Montipora_capitata_HIv3___RNAseq.g7017.t1            -0.5085329
-    1331    Montipora_capitata_HIv3___TS.g42133.t1             5.2242553
-         prawnchip_high_padj prawnchip_mid_log2FC prawnchip_mid_padj
-    107            0.9996309           -7.6702970       6.465915e-06
-    283            0.7137751           -0.2798394       9.999932e-01
-    637            0.9996309            0.2108374       9.999932e-01
-    708            0.9996309           -0.8161493       1.231430e-01
-    743            0.9996309           -3.8941673       4.361305e-02
-    1331           0.4164127           -2.7507733       9.999932e-01
-         prawnchip_low_log2FC prawnchip_low_padj earlygastrula_high_log2FC
-    107            -6.2730496        0.003078051                -3.6967269
-    283             1.9381410        0.952758589                 2.7231003
-    637            -0.9268682        0.083951887                -0.2103804
-    708            -0.1300450        0.999711873                -0.8417494
-    743             2.6786771        0.999711873                -1.0299392
-    1331           -0.1094498        0.999711873                 5.5857714
-         earlygastrula_high_padj earlygastrula_mid_log2FC earlygastrula_mid_padj
-    107                0.8550472               -7.6017088           6.489515e-06
-    283                0.3467857               -0.4911435           9.996588e-01
-    637                0.9997162                0.1068071           9.996588e-01
-    708                0.1387174               -0.7883536           7.200040e-02
-    743                0.9997162               -3.6122698                     NA
-    1331               0.2085614               -2.7160060           8.725675e-01
-         earlygastrula_low_log2FC earlygastrula_low_padj any_sig
-    107                -5.9924098            0.004140861    TRUE
-    283                 1.7340973            0.736687995   FALSE
-    637                -0.9343461            0.058560669   FALSE
-    708                -0.4080484            0.805003269   FALSE
-    743                 2.0295263            0.823362152    TRUE
-    1331                0.6458589            0.947059673   FALSE
+# Summary & Next Steps
