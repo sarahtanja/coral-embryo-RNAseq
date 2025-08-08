@@ -28,6 +28,7 @@ format:
 # Background
 
 We identified 44 genes that were broadly impacted by leachate. Here we want to know what those genes do!
+Those 44 genes grouped in 
 
 Why is goseq different from other enrichment tools? Typical enrichment methods (like Fisher's exact test or hypergeometric tests) assume that every gene has an equal probability of being selected as a DEG. But in RNA-Seq longer genes are more likely to be detected as DEGs just because they accumulate more reads. `goseq` corrects for this bias.
 
@@ -40,7 +41,6 @@ Why is goseq different from other enrichment tools? Typical enrichment methods (
 ## Outputs
 
 # Setup
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   fig.width = 12,
@@ -56,7 +56,6 @@ knitr::opts_chunk$set(
 ```
 
 ## Install packages
-
 ```{r}
 if ("Biostrings" %in% rownames(installed.packages()) == 'FALSE') install.packages('Biostrings')
 if ("tidyverse" %in% rownames(installed.packages()) == 'FALSE') install.packages('tidyverse')
@@ -64,50 +63,79 @@ if ("goseq" %in% rownames(installed.packages()) == 'FALSE') install.packages('go
 ```
 
 ```{r}
-if (!requireNamespace("BiocManager", quietly = TRUE))
+if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
+BiocManager::install("GenomicRanges")
 BiocManager::install("goseq")
 BiocManager::install("GO.db")
 BiocManager::install("rrvgo")
-BiocManager::install("org.Ce.eg.db") # for C. elegans
 ```
 
 ## Load packages
-
 ```{r}
-library(Biostrings)
 library(tidyverse)
+library(GenomicRanges)
+library(Biostrings)
 library(goseq)
 library(rrvgo)
 library(GO.db)
-library(org.Ce.eg.db)
+```
+
+## Read in gene lists and counts
+```{r}
+all_genes <- read.csv("../../output/06_deg/interactions/all_genes.csv")
+sig_genes <- read.csv("../../output/06_deg/interactions/sig_genes.csv")
+sig_counts <- read.csv("../../output/06_deg/interactions/sig_counts.csv", row.names="gene_id", check.names = FALSE)
+```
+
+
+```{r}
+all_genes <- all_genes %>% 
+  select(gene_id)
+
+head(all_genes)
+
+write_csv(all_genes, "../../output/06_deg/interactions/all_genes.csv")
+```
+
+```{r}
+sig_genes <- sig_genes %>% 
+  select(!X)
+
+head(sig_genes) 
+
+write_csv(sig_genes, "../../output/06_deg/interactions/sig_genes.csv")
+```
+
+```{r}
+sig_counts <- sig_counts %>% 
+  select(!1)
+
+head(sig_counts)
+
+sig_counts_save <- sig_counts %>% 
+ rownames_to_column("gene_id")
+
+write_csv(sig_counts_save, "../../output/06_deg/interactions/sig_counts.csv")
 ```
 
 ## Import fasta
 
 ```{r}
 # Load your transcriptome
-all_seqs <- readDNAStringSet("../input/genome/Montipora_capitata_HIv3.assembly.fasta")  
+all_seqs <- readDNAStringSet("../../input/genome/Montipora_capitata_HIv3.assembly.fasta")  
 
-# Filter for the 12 genes
+# Filter for the 44 significant interaction genes
 sig_seqs <- all_seqs[names(all_seqs) %in% sig_genes]
 
 # Save to new FASTA file
-writeXStringSet(sig_seqs, "../output/10_blast/significant_genes.fasta")
-```
-
-## Read in gene lists and counts
-
-```{r}
-all_genes <- read.csv("../output/09_deg_multifactorial/noint/all_genes.csv")
-sig_genes <- read.csv("../output/09_deg_multifactorial/noint/LRT_significant_genes_combined_wald.csv")
-sig_counts <- read.csv("../output/09_deg_multifactorial/noint/sig_counts.csv", row.names="gene_id", check.names = FALSE)
+writeXStringSet(sig_seqs, "../../output/07_blast/significant_genes.fasta")
 ```
 
 ## Download annotation & enrichment files
 
 ```{r, engine='bash'}
-cd ../input/annotations
+cd ../../input/annotations
 
 wget http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.EggNog_results.txt.gz
 wget http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.KEGG_results.txt.gz
@@ -116,7 +144,7 @@ wget http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.KEGG_
 Unzip
 
 ```{r, engine='bash'}
-cd ../input/annotations
+cd ../../input/annotations
 gunzip *.gz
 ```
 
@@ -124,7 +152,7 @@ gunzip *.gz
 
 ```{r}
 # Read in the file (it will include "#query" as a column name)
-EggNog_anno <- read_tsv("../input/annotations/Montipora_capitata_HIv3.genes.EggNog_results.txt")
+EggNog_anno <- read_tsv("../../input/annotations/Montipora_capitata_HIv3.genes.EggNog_results.txt")
 ```
 
 rename "#query" to `gene_id`
@@ -146,15 +174,18 @@ Match up genes in sig_genes dataframe to annotation dataframe
 
 ```{r}
 sig_genes_anno <- inner_join(sig_genes, EggNog_anno, by = "gene_id")
-```
 
-8 of the 12 significant genes were annotated! The `annotation file`sig_genes_anno\` dataframe now only contains genes that were significant and that have annotation information.
+length(sig_genes_anno)
+```
+::: callout-note
+34 of the 44 significant genes were annotated! The annotation file `sig_genes_anno` dataframe now only contains genes that were significant and that have annotation information.
+:::
 
 Get gene length information.
 
 ```{r}
 #import file
-gff <- rtracklayer::import("../input/genome/Montipora_capitata_HIv3.genes.gff3") #if this doesn't work, restart R and try again 
+gff <- rtracklayer::import("../../input/genome/Montipora_capitata_HIv3.genes_fixed.gff3") #if this doesn't work, restart R and try again 
 
 transcripts <- subset(gff, type == "transcript") #keep only transcripts 
 
@@ -172,7 +203,9 @@ lengths<-as.data.frame(lengths) #convert to data frame
 Add in length to the annotation file.
 
 ```{r}
-sig_genes_anno$length<-lengths$transcript_lengths[match(sig_genes_anno$gene_id, lengths$seqnames)]
+sig_genes_anno <- sig_genes_anno %>% left_join(lengths, by = "gene_id")
+
+sig_genes_anno <- sig_genes_anno %>% select(!length)
 ```
 
 Format GO terms to remove dashes and quotes.
@@ -194,16 +227,23 @@ Conduct functional enrichment using goseq and rrvgo. Compare against all genes d
 Conduct at biological process level. Filter for adjusted p-value \<0.05.
 
 ```{r}
-# Define your DEG list — the 12 genes you're testing
+# Define your DEG list — the genes you're testing
 ID.vector <- sig_genes_anno$gene_id  # Replace with your actual gene vector
 
 
 # All genes detected in the dataset with annotation info
-ALL.vector <- colnames(all_genes) # gene_ids for all 10140 genes that we used to make our DESeq2 object
-ALL.vector <- ALL.vector[ALL.vector %in% EggNog_anno$gene_id] #filtered down to only genes that are annotated... 8018!
+ALL.vector <- all_genes$gene_id # gene_ids for all 12565 genes that we used to make our DESeq2 object
+ALL.vector <- ALL.vector[ALL.vector %in% EggNog_anno$gene_id] #filtered down to only genes that are annotated
 
+length(ALL.vector)
+```
+::: callout-note
+9563 out of the 12564 genes in our dataset are annotated
+:::
+
+```{r}
 lengths_anno <- lengths %>% 
-  filter(gene_id %in% colnames(all_genes)) %>% 
+  filter(gene_id %in% all_genes$gene_id) %>% 
   filter(gene_id %in% EggNog_anno$gene_id)
 
 LENGTH.vector <- as.integer(lengths_anno$transcript_length)
@@ -227,8 +267,8 @@ gene.vector <- as.integer(ALL.vector %in% ID.vector)
 names(gene.vector) <- ALL.vector
 
 # Null probability weighting function (bias for gene length)
+# nullp is a function from nadiadavidson/goseq
 pwf <- nullp(gene.vector, bias.data = LENGTH.vector)
-
 ```
 
 About goseq() command:
@@ -268,25 +308,25 @@ GO.bp <- goseq(
 )
 
 # Format and filter results
-GO_bp <- GO.bp[order(GO.bp$over_represented_pvalue), ]
-colnames(GO)[1] <- "GOterm"
+GO.bp <- GO.bp %>% 
+  arrange(over_represented_pvalue)
 
 # Use the Benjamini-Hochberg method to control false discovery rate 
-GO_bp$bh_adjust <- p.adjust(GO_bp$over_represented_pvalue, method = "BH")
+GO.bp$bh_adjust <- p.adjust(GO.bp$over_represented_pvalue, method = "BH")
 
-GO_bp <- GO_bp %>%
+GO.bp <- GO.bp %>%
   filter(bh_adjust < 0.05) %>%
   arrange(ontology, bh_adjust)
 
 # Optional: write to file
-write_csv(GO_bp, file = "../output/10_blast/functional_enrichment_biological_process_goseq.csv")
+write_csv(GO.bp, file = "../../output/07_blast/functional_enrichment_biological_process_goseq.csv")
 ```
 
 
 ## Reduce redundancy
 ```{r}
 # Filter for biological process terms with valid p-values
-GO_BP <- GO %>%
+GO_BP <- GO.bp %>%
   filter(ontology == "BP") %>%
   filter(!is.na(bh_adjust)) %>%
   arrange(bh_adjust)

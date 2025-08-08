@@ -58,7 +58,7 @@ Here we are looking at a multifactorial differential gene expression analysis fo
 
 Copy and run this once in the console
 
-```         
+```{r}         
 # CRAN packages
 install.packages(c(
   "tidyverse",
@@ -78,7 +78,7 @@ remotes::install_github("mdscheuerell/flexoki")
 if (!"BiocManager" %in% rownames(installed.packages())) {
   install.packages("BiocManager")
 }
-BiocManager::install(c("DESeq2", "EnhancedVolcano"))
+BiocManager::install(c("DESeq2", "DEGreport"))
 ```
 
 ## Load packages
@@ -88,7 +88,7 @@ BiocManager::install(c("DESeq2", "EnhancedVolcano"))
 library(DESeq2)
 library(viridis)
 library(tidyverse)
-library(EnhancedVolcano)
+library(DEGreport)
 library(ashr)
 library(flexoki)
 library(plotly)
@@ -265,7 +265,7 @@ sig_long <- vsd[sig_cat, ] %>%
 # add metadata
 sig_long <- sig_long %>% left_join(metadata_or, by = "sample_id")
 # add padj
-sig_long <- sig_long %>% left_join(sig_genes, by = "gene_id")
+sig_long <- sig_long %>% left_join(LRT_sig_genes, by = "gene_id")
 
 # Assign numbers to genes by min padj
 gene_order <- sig_long %>%
@@ -325,15 +325,15 @@ top_info <- sig_long %>%
   group_by(gene_id) %>%
   summarise(min_padj = min(padj, na.rm = TRUE)) %>%
   arrange(min_padj) %>%
-  slice_head(n = 3)
+  slice_head(n = 4)
 ```
 
 ```{r}
-plot_top3 <- list()
+plot_top4 <- list()
 
 for (i in 1:nrow(top_info)) {
   gene <- top_info$gene_id[i]
-  padj_val <- signif(top_info$min_padj[i], 3)
+  padj_val <- signif(top_info$min_padj[i], 4)
 
   gene_df <- sig_long %>% filter(gene_id == gene)
   padj_rank <- unique(gene_df$padj_rank)
@@ -359,17 +359,17 @@ for (i in 1:nrow(top_info)) {
   print(ggplotly(p))
   
   # Save plotly plots to plot list
-  plot_top3[[i]] <- ggplotly(p)
+  plot_top4[[i]] <- ggplotly(p)
 }
 ```
 
 ```{r}
-print(plot_top3[[1]])
+print(plot_top4[[1]])
 ```
 
 ```{r}
-plotly::subplot(plot_top3, nrows = 2, margin = 0.05) %>% 
-  layout(title = 'Top 3 genes', shareX = T, showlegend=FALSE)
+plotly::subplot(plot_top4, nrows = 2, margin = 0.05) %>% 
+  layout(title = 'Top 4 genes', shareX = T, showlegend=FALSE)
 ```
 
 ### Loop plots of all significant interaction genes
@@ -516,7 +516,7 @@ int_wald_df <- data.frame(
 )
 
 # Focus on the 44 genes
-int_wald_df_sig <- int_wald_df[int_wald_df$gene_id %in% sig_genes$gene_id, ]
+int_wald_df_sig <- int_wald_df[int_wald_df$gene_id %in% LRT_sig_genes$gene_id, ]
 ```
 
 ### Plot heatmap
@@ -633,15 +633,39 @@ PCA_sig <- ggplot(pca_sig, aes(PC1, PC2, color = stage, label = name, alpha = al
 ggplotly(PCA_sig, tooltip = "label")
 
 ```
+```{r}
+# Original ggplot with a tooltip aesthetic
+PCA_sig <- ggplot(pca_sig, aes(PC1, PC2, color = stage, shape = leachate, label = name, alpha = alpha_val)) +
+  geom_point(size = 1,  stroke = 1) +
+  ggtitle("M.cap embryos exposed to pvc leachate, 44 significant genes VST expression") +
+  xlab(paste0("PC1: ", percentVar_sig[1], "% variance")) +
+  ylab(paste0("PC2: ", percentVar_sig[2], "% variance")) + 
+  coord_fixed() +
+  scale_color_manual(values = hpf_colors) +
+  stat_ellipse() + 
+  guides(alpha = "none") +  # hide alpha legend (optional)
+  theme_minimal()
+
+# Convert to interactive plot
+ggplotly(PCA_sig, tooltip = "label")
+```
 
 # Save gene lists
 
-sig_cat : List of the 44 genes that show significant interactions between leachate and stage (saved above) LRT_sig_genes : List of LRT significant genes, LFC, & padj values (saved above) Wald_sig_genes : List of Wald test results, LFC & padj values for each interaction contrast vsd_sig : Variance stabilized count matrix of genes from significant list all_genes : List of all genes in the dataset (the filtered input to the DESeq object) which will serve as a reference for functional enrichment
+- `sig_cat` : List of the 44 genes that show significant interactions between leachate and stage (saved above) 
+
+- `LRT_sig_genes` : List of LRT significant genes, LFC, & padj values (saved above) 
+
+- `Wald_sig_genes` : List of Wald test results, LFC & padj values for each interaction contrast 
+
+- `vsd_sig` : Variance stabilized count matrix of genes from significant list 
+
+- `all_genes` : List of all genes in the dataset (the filtered input to the DESeq object) which will serve as a reference for functional enrichment
 
 ```{r}
 Wald_sig_genes <- int_wald_df_sig
 
-write.csv(Wald_sig_genes, "../../output/06_deg/interactions/Wald_sig_genes.csv")
+write_csv(Wald_sig_genes, "../../output/06_deg/interactions/Wald_sig_genes.csv")
 ```
 
 ```{r}
@@ -650,7 +674,7 @@ vsd_sig <-  vsd %>%
   rownames_to_column("gene_id") %>%
   filter(gene_id %in% sig_cat)
 
-write.csv(vsd_sig, "../../output/06_deg/interactions/vsd_sig.csv")
+write_csv(vsd_sig, "../../output/06_deg/interactions/vsd_sig.csv")
 ```
 
 ```{r}
@@ -659,7 +683,7 @@ all_genes <- vsd %>%
   rownames_to_column("gene_id") %>%
   select(gene_id)
 
-write.csv(all_genes, "../../output/06_deg/interactions/all_genes.csv")
+write_csv(all_genes, "../../output/06_deg/interactions/all_genes.csv")
 ```
 
 ::: callout-note
@@ -667,5 +691,72 @@ write.csv(all_genes, "../../output/06_deg/interactions/all_genes.csv")
 :::
 
 # Perform clustering
+see Roberts Lab Issue [#1916](https://github.com/RobertsLab/resources/issues/1916)
 
+Perform clustering. 
+
+```{r}
+clustering_sig_genes <- LRT_sig_genes %>%
+  arrange(padj) #genes in rows, stats in columns
+
+matrix <- vsd #genes in rows, sample ID in columns
+
+meta <- metadata_or %>%
+  dplyr::select(sample_id, stage, leachate) %>% #sample id and stage, and leachate columns
+  column_to_rownames(var = "sample_id")
+
+meta<-meta%>%
+  dplyr::select(stage, leachate) #sample ID in rows, one column of lifestage 
+
+# Obtain transformed values for those significant genes
+cluster_vst <- matrix[clustering_sig_genes$gene_id, ] #rows are DEGs and columns are sample ID
+```
+
+Run with minimum 3 genes per cluster to detect because we have few DEGs.  
+- DEGreport vignette, [degPatterns](https://www.bioconductor.org/packages/release/bioc/vignettes/DEGreport/inst/doc/DEGreport.html#:~:text=%22expression%22)-,Detect%20patterns%20of%20expression,-In%20this%20section)
+```{r}
+# Use the `degPatterns` function from the 'DEGreport' package to show gene clusters across sample groups
+stage_clusters <- degPatterns(cluster_vst, metadata = meta, time = "stage", col=NULL, plot=TRUE, minc = 3)
+```
+
+```{r}
+# Use the `degPatterns` function from the 'DEGreport' package to show gene clusters across sample groups
+clusters <- degPatterns(cluster_vst, metadata = meta, time = "leachate", col=NULL, plot=TRUE, minc = 3)
+```
+Extract the list of genes in each cluster for leachate (stage grouped all together in one big group, so we can focus in on leachate with the cluster analysis here). 
+```{r}
+# Rename and extract information 
+groups <- clusters$df %>%
+          rename(gene_id=genes) %>% 
+          rename(leachate_cluster=cluster)
+``` 
+
+Save the gene cluster annotation
+```{r}
+write.csv(groups, "../../output/06_deg/interactions/clusters.csv")
+```
+
+Plot is showing Z score of VST normalized gene counts  
+```{r, warning=FALSE}
+cluster_plot<-ggplot(clusters[["normalized"]],
+        aes(x=leachate, y=value)) +
+  facet_wrap(~ cluster)+
+   geom_point(colour="darkgray", size=1) +
+  ylab("Z-score expression")+
+  xlab("")+
+   # change the method to make it smoother
+   geom_smooth(aes(group=genes), method = "loess", colour="red", linewidth=0.1, se=FALSE)+
+   geom_smooth(aes(group=1), method = "loess", colour="black")+
+  geom_hline(yintercept=0, linetype="dashed")+
+  geom_vline(xintercept=3, linetype="dotted")+
+  geom_vline(xintercept=6, linetype="dotted")+
+  theme_classic()+
+  theme(
+    axis.text.x = element_text(angle=90, hjust=1, vjust=1)
+  );cluster_plot
+
+ggsave(cluster_plot, filename="../../output/06_deg/interactions/cluster_plot.png", width=12, height=10)
+```
 # Summary & Next Steps
+
+We can perform functional enrichment on these clusters now!
