@@ -1,6 +1,6 @@
 ---
-title: "BLAST"
-subtitle: "What are the 12 genes and what do they do?"
+title: "Gene ontology (GO) term analysis"
+subtitle: "Now that we've identified the DEGs, what do they do?"
 author: "Sarah Tanja"
 date: 2025-06-17
 date-modified: today
@@ -23,32 +23,19 @@ format:
     link-external-newwindow: true
     reference-location: margin
     citation-location: margin
-editor: 
-  markdown: 
-    wrap: 72
 ---
 
 # Background
 
-We identified 44 genes that were broadly impacted by leachate. Here we
-want to know what those genes do! Those 44 genes grouped in
+We identified 44 genes that were broadly impacted by leachate. Here we want to know what those genes do! Those 44 genes grouped in
 
-Why is goseq different from other enrichment tools? Typical enrichment
-methods (like Fisher's exact test or hypergeometric tests) assume that
-every gene has an equal probability of being selected as a DEG. But in
-RNA-Seq longer genes are more likely to be detected as DEGs just because
-they accumulate more reads. `goseq` corrects for this bias.
+Why is goseq different from other enrichment tools? Typical enrichment methods (like Fisher's exact test or hypergeometric tests) assume that every gene has an equal probability of being selected as a DEG. But in RNA-Seq longer genes are more likely to be detected as DEGs just because they accumulate more reads. `goseq` corrects for this bias.
 
 ## Inputs
 
--   `LRT_significant_genes_combined_wald.csv` A dataframe of the 12
-    genes and their LRT and Wald test statistics
--   functional annotation (version 3) from:
-    http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.EggNog_results.txt.gz
-    (EggNog)
--   functional annotation
-    http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.KEGG_results.txt.gz
-    (KEGG)
+-   `LRT_significant_genes_combined_wald.csv` A dataframe of the 12 genes and their LRT and Wald test statistics
+-   functional annotation (version 3) from: http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.EggNog_results.txt.gz (EggNog)
+-   functional annotation http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.KEGG_results.txt.gz (KEGG)
 
 ## Outputs
 
@@ -74,6 +61,7 @@ knitr::opts_chunk$set(
 if ("Biostrings" %in% rownames(installed.packages()) == 'FALSE') install.packages('Biostrings')
 if ("tidyverse" %in% rownames(installed.packages()) == 'FALSE') install.packages('tidyverse')
 if ("goseq" %in% rownames(installed.packages()) == 'FALSE') install.packages('goseq')
+install.packages("GOplot")
 ```
 
 ```{r, eval=FALSE}
@@ -95,6 +83,7 @@ library(goseq)
 library(rrvgo)
 library(org.Ce.eg.db)
 library(GO.db)
+library(GOplot)
 library(tidyverse)
 ```
 
@@ -153,10 +142,7 @@ nrow(EggNog_anno)
 names(EggNog_anno)
 ```
 
-> This functional annotation has 24,072 genes. This is 44% of total
-> protein predicted genes described in the publication associated with
-> this annotation.
-> https://academic.oup.com/gigascience/article/doi/10.1093/gigascience/giac098/6815755
+> This functional annotation has 24,072 genes. This is 44% of total protein predicted genes described in the publication associated with this annotation. https://academic.oup.com/gigascience/article/doi/10.1093/gigascience/giac098/6815755
 
 # Annotate significant genes
 
@@ -165,13 +151,11 @@ Match up genes in sig_genes dataframe to annotation dataframe
 ```{r}
 sig_genes_anno <- inner_join(sig_genes, EggNog_anno, by = "gene_id")
 
-length(sig_genes_anno)
+nrow(sig_genes_anno)
 ```
 
 ::: callout-note
-34 of the 44 significant genes were annotated! The annotation file
-`sig_genes_anno` dataframe now only contains genes that were significant
-and that have annotation information.
+37 of the 44 significant genes were annotated! The annotation file `sig_genes_anno` dataframe now only contains genes that were significant and that have annotation information.
 :::
 
 Get gene length information.
@@ -193,8 +177,7 @@ lengths <- cbind(gene_id, transcript_lengths)
 lengths <- as.data.frame(lengths) #convert to data frame
 ```
 
-Add in length to the annotation file
-(`sig_genes_anno$transcript_lengths`).
+Add in length to the annotation file (`sig_genes_anno$transcript_lengths`).
 
 ```{r}
 sig_genes_anno <- sig_genes_anno %>% left_join(lengths, by = "gene_id")
@@ -212,10 +195,7 @@ sig_genes_anno$GOs <- gsub("-", NA, sig_genes_anno$GOs)
 
 # Conduct functional enrichment
 
-Conduct functional enrichment using goseq and
-[rrvgo](https://www.bioconductor.org/packages/release/bioc/vignettes/rrvgo/inst/doc/rrvgo.html).
-Compare against all genes detected in the dataset that we have
-annotation information for.
+Conduct functional enrichment using goseq and [rrvgo](https://www.bioconductor.org/packages/release/bioc/vignettes/rrvgo/inst/doc/rrvgo.html). Compare against all genes detected in the dataset that we have annotation information for.
 
 Conduct at biological process level. Filter for adjusted p-value \<0.05.
 
@@ -268,7 +248,7 @@ pwf <- nullp(gene.vector, bias.data = LENGTH.vector)
 About goseq() command:
 
 | Argument                       | Meaning                                                                                                                                                      |
-|------------------------|-----------------------------------------------|
+|------------------|------------------------------------------------------|
 | `pwf`                          | A **probability weighting function** object from `nullp()`. It contains the DEG status of all genes (1 = DEG, 0 = not DEG), plus gene length bias info.      |
 | `gene2cat`                     | A data frame or list mapping **genes to functional categories** (like GO terms). In your case, it's a long-format table of gene-GO pairs.                    |
 | `test.cats = "GO:BP"`          | This limits the enrichment to only **biological process** GO terms (you could also use `"GO:MF"` or `"GO:CC"` for molecular function or cellular component). |
@@ -320,29 +300,13 @@ write_csv(GO.bp, file = "../../output/07_go/functional_enrichment_biological_pro
 
 ## Reduce redundancy
 
-What is a semantic similarity matrix? \>Calculating the similarity
-matrix and reducing GO terms First step is to get the similarity matrix
-between terms. The function calculateSimMatrix takes a list of GO terms
-for which the semantic simlarity is to be calculated, an OrgDb object
-for an organism, the ontology of interest and the method to calculate
-the similarity scores.
+What is a semantic similarity matrix? \>Calculating the similarity matrix and reducing GO terms First step is to get the similarity matrix between terms. The function calculateSimMatrix takes a list of GO terms for which the semantic simlarity is to be calculated, an OrgDb object for an organism, the ontology of interest and the method to calculate the similarity scores.
 
-> NOTE:rrvgo uses the similarity between pairs of terms to compute a
-> distance matrix, defined as (1-simMatrix). The terms are then
-> hierarchically clustered using complete linkage, and the tree is cut
-> at the desired threshold, picking the term with the highest score as
-> the representative of each group. Therefore, higher thresholds lead to
-> fewer groups, and the threshold should be read as the minimum
-> similarity between group representatives.
+> NOTE:rrvgo uses the similarity between pairs of terms to compute a distance matrix, defined as (1-simMatrix). The terms are then hierarchically clustered using complete linkage, and the tree is cut at the desired threshold, picking the term with the highest score as the representative of each group. Therefore, higher thresholds lead to fewer groups, and the threshold should be read as the minimum similarity between group representatives.
 
-> If the organism is not supported in Bioconductor, you can still build
-> your own OrgDb object usign the AnnotationForge package and rendering
-> the necessary data for semantic similarity using the GOSemSim package
-> with:
+> If the organism is not supported in Bioconductor, you can still build your own OrgDb object usign the AnnotationForge package and rendering the necessary data for semantic similarity using the GOSemSim package with:
 
-> `my_new_fancy_orgdb_object <- 'org.Zz.eg.db'`
-> `hsGO <- GOSemSim::godata(my_new_fancy_orgdb_object, ont="MF")` Create
-> named scores vector: -log10 adjusted p-values
+> `my_new_fancy_orgdb_object <- 'org.Zz.eg.db'` `hsGO <- GOSemSim::godata(my_new_fancy_orgdb_object, ont="MF")` Create named scores vector: -log10 adjusted p-values
 
 scores \<- setNames(-log10(GO_BP\$bh_adjust), GO_BP\$category)
 
@@ -365,13 +329,7 @@ simMatrix <- calculateSimMatrix(
 
 Create named scores vector.
 
-::: callout-caution The first time I ran this as:
-`scores <- setNames(-log10(GO_BP$bh_adjust), GO_BP$category)` but some
-of the bh_adjust values are \~0, and the -log10 of 0 is Inf. This messes
-with interpretation and visualization down the line, so instead we
-generate the scores using `.Machine$double.xmin`, which is
-`~2.225074e-308`, the smallest positive double in R. `pmax()` replaces
-any 0 with that minimum before transforming it with `-log10()`.
+::: callout-caution The first time I ran this as: `scores <- setNames(-log10(GO_BP$bh_adjust), GO_BP$category)` but some of the bh_adjust values are \~0, and the -log10 of 0 is Inf. This messes with interpretation and visualization down the line, so instead we generate the scores using `.Machine$double.xmin`, which is `~2.225074e-308`, the smallest positive double in R. `pmax()` replaces any 0 with that minimum before transforming it with `-log10()`.
 
 ```{r}
 # Create named scores vector
@@ -404,8 +362,7 @@ write_csv(simMatrix_save, "../../output/07_go/simMatrix.csv")
 
 ## Similarity matrix heatmap
 
-Plot similarity matrix as a heatmap, with clustering of columns of rows
-turned on by default (thus arranging together similar terms).
+Plot similarity matrix as a heatmap, with clustering of columns of rows turned on by default (thus arranging together similar terms).
 
 ```{r}
 heatmapPlot(simMatrix,
@@ -417,11 +374,7 @@ heatmapPlot(simMatrix,
 
 ## Scatter plot depicting groups and distance between terms
 
-Plot GO terms as scattered points. Distances between points represent
-the similarity between terms, and axes are the first 2 components of
-applying a PCoA to the (di)similarity matrix. Size of the point
-represents the provided scores or, in its absence, the number of genes
-the GO term contains.
+Plot GO terms as scattered points. Distances between points represent the similarity between terms, and axes are the first 2 components of applying a PCoA to the (di)similarity matrix. Size of the point represents the provided scores or, in its absence, the number of genes the GO term contains.
 
 ```{r}
 scatterPlot(simMatrix, reducedTerms)
@@ -429,11 +382,7 @@ scatterPlot(simMatrix, reducedTerms)
 
 ## Treemap plot
 
-Treemaps are space-filling visualization of hierarchical structures. The
-terms are grouped (colored) based on their parent, and the space used by
-the term is proportional to the score. Treemaps can help with the
-interpretation of the summarized results and also comparing different
-sets of GO terms.
+Treemaps are space-filling visualization of hierarchical structures. The terms are grouped (colored) based on their parent, and the space used by the term is proportional to the score. Treemaps can help with the interpretation of the summarized results and also comparing different sets of GO terms.
 
 ```{r}
 treemapPlot(reducedTerms)
@@ -441,10 +390,7 @@ treemapPlot(reducedTerms)
 
 ## Word cloud
 
-Word clouds are visualizations which reproduce a text putting emphasis
-to words which appear frequently in a text. They can help to identify
-processes and functions that happen more commonly in a set of enriched
-GO terms, as well as comparing between different sets.
+Word clouds are visualizations which reproduce a text putting emphasis to words which appear frequently in a text. They can help to identify processes and functions that happen more commonly in a set of enriched GO terms, as well as comparing between different sets.
 
 ```{r}
 wordcloudPlot(reducedTerms, min.freq=1, colors="black")
@@ -452,20 +398,13 @@ wordcloudPlot(reducedTerms, min.freq=1, colors="black")
 
 ## Chord diagram
 
-Using
-[GOplot](https://cran.r-project.org/web/packages/GOplot/vignettes/GOplot_vignette.html)
-
-```{r}
-install.packages("GOplot")
-library(GOplot)
-```
+Using [GOplot](https://cran.r-project.org/web/packages/GOplot/vignettes/GOplot_vignette.html)
 
 -   Format data for plotting
 -   Data object of plotting needs two dataframe inputs:
 
 1.  list of selected genes and log2FC (gene_id, log2FC)
-2.  result of functional analysis with (category, term, gene_id,
-    adj_pvalue)
+2.  result of functional analysis with (category, term, gene_id, adj_pvalue)
 
 category: GO term annotation type (e.g., "BP", "MF", "CC")
 
@@ -481,34 +420,23 @@ logFC: log2 fold change (use your prawnchip_high_log2FC column)
 
 adj_pval: adjusted p-value (use your prawnchip_high_padj)
 
-zscore: GO term z-score, typically calculated as (number of upregulated
-genes minus downregulated genes)/sqrt(count) for that term
+zscore: GO term z-score, typically calculated as (number of upregulated genes minus downregulated genes)/sqrt(count) for that term
 
-The p-value in your circ object is from the differential expression
-analysis (e.g., DESeq2), specifically the adjusted p-value from the
-DESeq2 results that shows the significance of each gene being
-differentially expressed. This p-value reflects how likely it is that
-the gene's expression difference is not due to chance.
+The p-value in your circ object is from the differential expression analysis (e.g., DESeq2), specifically the adjusted p-value from the DESeq2 results that shows the significance of each gene being differentially expressed. This p-value reflects how likely it is that the gene's expression difference is not due to chance.
 
-The GO term enrichment p-value (from tools like GOseq) is a different
-statistic that tests whether a set of genes in a GO category is
-significantly overrepresented among DE genes, accounting for biases such
-as gene length. The GOseq p-values are not directly used as the
-gene-level adj_pval in the circ object; instead, the adj_pval column
-references the gene-level adjusted p-value from DESeq2 or your DE
-method.
+The GO term enrichment p-value (from tools like GOseq) is a different statistic that tests whether a set of genes in a GO category is significantly overrepresented among DE genes, accounting for biases such as gene length. The GOseq p-values are not directly used as the gene-level adj_pval in the circ object; instead, the adj_pval column references the gene-level adjusted p-value from DESeq2 or your DE method.
+
+### Create circ object
 
 ```{r}
 genes_egl_circ <- sig_genes_anno %>% 
-  rename(gene = gene_id) %>% 
-  select(gene, earlygastrula_low_log2FC, earlygastrula_low_padj)
+  select(genes = gene_id, 
+         logFC = earlygastrula_low_log2FC, 
+         adj_pval = earlygastrula_low_padj)
 
-str(genes_egl_circ)
+head(genes_egl_circ)
 ```
 
-```{r}
-head(go_results)
-```
 
 ```{r}
 results_circ <- go_results %>% 
@@ -521,10 +449,9 @@ head(results_circ)
 ```
 
 ```{r}
-head(GO.terms)
-
 terms_circ <- GO.terms %>% 
-  rename(ID = GOs)
+  rename(ID = GOs,
+         genes = gene)
 
 head(terms_circ)
 ```
@@ -534,34 +461,133 @@ So we have to join results_circ to terms_circ
 ```{r}
 circ_df <- results_circ %>%  
   inner_join(terms_circ, by = "ID")
+```
 
+```{r}
+circ <- circle_dat(circ_df, genes_egl_circ)
+```
+
+
+```{r}
 circ_df <- circ_df %>% 
-  inner_join(genes_egl_circ, by = "gene") %>% 
+  inner_join(genes_egl_circ, by = "genes") %>% 
   rename(logFC = earlygastrula_low_log2FC,
          adj_pval = earlygastrula_low_padj) 
-
-head(circ_df)
+str(circ_df)
 ```
 
 Add zscore column
 
-> The last column contains the zscore, an easy to calculate value to
-> give you a hint if the biological process (/molecular
-> function/cellular components) is more likely to be decreased (negative
-> value) or increased (positive value). $$
+> The last column contains the zscore, an easy to calculate value to give you a hint if the biological process (/molecular function/cellular components) is more likely to be decreased (negative value) or increased (positive value). $$
 > zscore = \frac{(up - down)}{\sqrt(count)}
-> $$ Whereas up and down are the number of assigned genes up-regulated
-> (logFC\>0) in the data or down- regulated(logFC\<0), respectively.
+> $$ Whereas up and down are the number of assigned genes up-regulated (logFC\>0) in the data or down- regulated(logFC\<0), respectively.
 
 ```{r}
 circ_df <- circ_df %>%
   group_by(ID) %>%
   mutate(zscore = (sum(logFC > 0) - sum(logFC < 0)) / sqrt(count)) %>%
   ungroup()
-
-head(circ_df)
 ```
 
-The circ object has eight columns with the following names:
+```{r}
+# 4. Select and arrange columns to match GOplot 'circ' format
+circ <- circ_df %>%
+  select(category,
+         ID,
+         term,
+         count,
+         genes,
+         logFC,
+         adj_pval,
+         zscore) %>% 
+  as.data.frame()
 
-ID count category term gene logFC adj_pval zscore
+# circ is now ready for GOChord
+str(circ)
+```
+> Therefore, you want to include more than one logFC value per gene. To adjust to this situation you should use the nlfc argument. It is a numeric value and it defines the number of logFC columns within your binary membership matrix. The default is ‘1’ assuming that most of the time you just have one contrast and one logFC value per gene.
+
+```{r}
+circ_df <- circ %>% mutate(
+  genes = trimws(as.character(genes)),
+  ID   = trimws(as.character(ID))
+) %>% as.data.frame()
+
+genes_df <- circ_df %>%
+  select(genes, logFC) %>%
+  distinct() %>%
+  mutate(genes = trimws(as.character(genes))) %>%
+  as.data.frame()
+
+processes_df <- circ_df %>%
+  select(category, ID, term, count, zscore) %>%
+  distinct() %>%
+  mutate(ID = trimws(as.character(ID))) %>%
+  as.data.frame()
+```
+
+
+
+```{r}
+chord <- chord_dat(
+  data    = circ_df,
+  genes   = genes_df,
+  process = processes_df
+)
+
+# Plot
+GOChord(chord, gene.order = "logFC")
+```
+
+
+```{r}
+# Filter circ to keep GO terms with count >= 2 (or a threshold you choose)
+circ_filtered <- circ %>% 
+  filter(count >= 2)
+
+# Build the summarized 'processes' data frame for chord plotting
+processes_filtered <- circ_filtered %>%
+  select(category, ID, term, count, zscore) %>%
+  distinct()
+
+# Get unique genes and logFC values for the filtered dataset
+genes_filtered <- circ_filtered %>%
+  select(genes, logFC) %>%
+  distinct()
+
+# Convert to data.frame if needed
+circ_filtered_df <- as.data.frame(circ_filtered)
+processes_filtered_df <- as.data.frame(processes_filtered)
+genes_filtered_df <- as.data.frame(genes_filtered)
+
+# Now create chord input with filtered data
+chord_filtered <- chord_dat(
+  data = circ_filtered_df,
+  genes = genes_filtered_df,
+  process = processes_filtered_df
+)
+
+# Plot the chord diagram
+GOChord(chord_filtered, gene.order = "logFC")
+```
+
+> If the number of genes in your genes argument doesn’t exactly match the rows in data, or the number of processes in process doesn’t match the columns in data, you get subscript out of bounds.
+
+
+```{r}
+# Load the included dataset
+data(EC)
+
+# Building the circ object
+excirc <- circle_dat(EC$david, EC$genelist)
+
+# Building the binary matrix
+exchord <- chord_dat(excirc, EC$genes, EC$process)
+
+GOChord(exchord, gene.order = "logFC")
+```
+
+```{r}
+str(excirc)
+```
+
