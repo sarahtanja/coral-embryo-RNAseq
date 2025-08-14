@@ -248,7 +248,7 @@ pwf <- nullp(gene.vector, bias.data = LENGTH.vector)
 About goseq() command:
 
 | Argument                       | Meaning                                                                                                                                                      |
-|------------------|------------------------------------------------------|
+|-------------------|-----------------------------------------------------|
 | `pwf`                          | A **probability weighting function** object from `nullp()`. It contains the DEG status of all genes (1 = DEG, 0 = not DEG), plus gene length bias info.      |
 | `gene2cat`                     | A data frame or list mapping **genes to functional categories** (like GO terms). In your case, it's a long-format table of gene-GO pairs.                    |
 | `test.cats = "GO:BP"`          | This limits the enrichment to only **biological process** GO terms (you could also use `"GO:MF"` or `"GO:CC"` for molecular function or cellular component). |
@@ -297,6 +297,17 @@ GO.bp <- GO.bp %>%
 # Optional: write to file
 write_csv(GO.bp, file = "../../output/07_go/functional_enrichment_biological_process_goseq.csv")
 ```
+
+> The Benjamini-Hochberg procedure controls the proportion of false positives among all rejected hypotheses, which is especially important in high-throughput data like gene ontology enrichment. 
+
+> Why Controlling False Discovery Rate Matters in Enrichment Analysis
+Controlling the false discovery rate (FDR) is critical in enrichment analysis, especially when thousands of statistical tests are performed simultaneously (e.g., testing many gene sets, pathways, or terms for enrichment):
+  - Multiple Comparisons Increase False Positives: In enrichment analyses, each hypothesis test (such as whether a specific gene set is enriched) carries a risk of yielding a false positive—detecting significance where there is none. When testing hundreds or thousands of hypotheses, the probability of encountering several false positives increases dramatically.
+  - FDR Balances Discovery and Error: Unlike stricter corrections (e.g., Bonferroni), which often result in missing true findings because they are overly conservative, controlling FDR allows researchers to detect more significant results while maintaining a specified proportion of false positives among all significant findings.
+  - Improves Interpretability of Results: In practical biological applications, such as genomics and proteomics, FDR control means that of all reported significant gene sets or pathways, only a small, known proportion are expected to be false discoveries. This provides confidence in the reported biological findings and enhances reproducibility.
+
+> The adjusted p-values (bh_adjust) reflect the minimum FDR at which each test can be called significant.
+Use these values to determine significance by comparing them to your desired FDR threshold (e.g., 0.05).
 
 ## Reduce redundancy
 
@@ -400,53 +411,57 @@ wordcloudPlot(reducedTerms, min.freq=1, colors="black")
 
 Using [GOplot](https://cran.r-project.org/web/packages/GOplot/vignettes/GOplot_vignette.html)
 
--   Format data for plotting
--   Data object of plotting needs two dataframe inputs:
+### Create circ object using `circle_dat()`
 
-1.  list of selected genes and log2FC (gene_id, log2FC)
-2.  result of functional analysis with (category, term, gene_id, adj_pvalue)
+> `circle_dat()` takes two data frames as an input. The first one contains the results of the functional analysis and should have at least four columns (category, term, genes, adjusted p-value). Additionally, a data frame of the selected genes and their logFC is needed.
 
-category: GO term annotation type (e.g., "BP", "MF", "CC")
+Data object for plotting needs two data frame inputs:
 
-ID: GO term identifier (e.g., "GO:0008150")
 
-term: GO term description
+1.  **result** of functional analysis with
+    1. category: GO term annotation type (e.g., "BP", "MF", "CC")
+    2. ID: GO term identifier (e.g., "GO:0008150")
+    3. term: GO term description
+    4. adj_pval: the `bh_adjust` column from the GO enrichment analysis
 
-count: Number of genes per GO term
+> The significance of a term is indicated by the adjusted p-value (adj_pval). Terms with an adjusted p-value < 0.05 are considered as **significantly enriched** and are more likely to provide reliable information.
 
-gene: Your gene ID (use your long gene IDs directly)
+`GO_BP` is the result of our functional analysis...
+ 
+```{r}
+str(GO_BP)
+```
 
-logFC: log2 fold change (use your prawnchip_high_log2FC column)
-
-adj_pval: adjusted p-value (use your prawnchip_high_padj)
-
-zscore: GO term z-score, typically calculated as (number of upregulated genes minus downregulated genes)/sqrt(count) for that term
-
-The p-value in your circ object is from the differential expression analysis (e.g., DESeq2), specifically the adjusted p-value from the DESeq2 results that shows the significance of each gene being differentially expressed. This p-value reflects how likely it is that the gene's expression difference is not due to chance.
-
-The GO term enrichment p-value (from tools like GOseq) is a different statistic that tests whether a set of genes in a GO category is significantly overrepresented among DE genes, accounting for biases such as gene length. The GOseq p-values are not directly used as the gene-level adj_pval in the circ object; instead, the adj_pval column references the gene-level adjusted p-value from DESeq2 or your DE method.
-
-### Create circ object
 
 ```{r}
-genes_egl_circ <- sig_genes_anno %>% 
+results_circ <- GO_BP %>% 
+  rename(ID = category,
+         category = ontology,
+         adj_pval = bh_adjust) %>% 
+  select(category, ID, term, adj_pval)
+
+head(results_circ)
+```
+
+2.  list of selected **genes** and log2FC from a DESeq2 result
+    1. genes: (Your gene ID (use your long gene IDs directly))
+    2. log2FC: from one of the DESeq2 contrasts
+
+```{r}
+genes_circ <- sig_genes_anno %>% 
   select(genes = gene_id, 
          logFC = earlygastrula_low_log2FC, 
          adj_pval = earlygastrula_low_padj)
 
-head(genes_egl_circ)
+head(genes_circ)
 ```
 
+The circle_dat() fucntion will generate a count and a zscore column
+    - count: Number of genes per GO term
+    - zscore: GO term z-score, typically calculated as (number of upregulated genes minus downregulated genes)/sqrt(count) for that term
 
-```{r}
-results_circ <- go_results %>% 
-  rename(ID = category, 
-         count = numDEInCat,
-         category = ontology) %>% 
-  select(ID, count, category, term)
 
-head(results_circ)
-```
+
 
 ```{r}
 terms_circ <- GO.terms %>% 
@@ -464,9 +479,8 @@ circ_df <- results_circ %>%
 ```
 
 ```{r}
-circ <- circle_dat(circ_df, genes_egl_circ)
+circ <- circle_dat(circ_df, genes_circ)
 ```
-
 
 ```{r}
 circ_df <- circ_df %>% 
@@ -505,7 +519,8 @@ circ <- circ_df %>%
 # circ is now ready for GOChord
 str(circ)
 ```
-> Therefore, you want to include more than one logFC value per gene. To adjust to this situation you should use the nlfc argument. It is a numeric value and it defines the number of logFC columns within your binary membership matrix. The default is ‘1’ assuming that most of the time you just have one contrast and one logFC value per gene.
+
+> Therefore, you want to include more than one logFC value per gene. To adjust to this situation you should use the nlfc argument. It is a numeric value and it defines the number of logFC columns within your binary membership matrix. The default is '1' assuming that most of the time you just have one contrast and one logFC value per gene.
 
 ```{r}
 circ_df <- circ %>% mutate(
@@ -526,8 +541,7 @@ processes_df <- circ_df %>%
   as.data.frame()
 ```
 
-
-
+### Create binary matrix using `chord_dat()`
 ```{r}
 chord <- chord_dat(
   data    = circ_df,
@@ -538,7 +552,6 @@ chord <- chord_dat(
 # Plot
 GOChord(chord, gene.order = "logFC")
 ```
-
 
 ```{r}
 # Filter circ to keep GO terms with count >= 2 (or a threshold you choose)
@@ -571,8 +584,7 @@ chord_filtered <- chord_dat(
 GOChord(chord_filtered, gene.order = "logFC")
 ```
 
-> If the number of genes in your genes argument doesn’t exactly match the rows in data, or the number of processes in process doesn’t match the columns in data, you get subscript out of bounds.
-
+> If the number of genes in your genes argument doesn't exactly match the rows in data, or the number of processes in process doesn't match the columns in data, you get subscript out of bounds.
 
 ```{r}
 # Load the included dataset
@@ -590,4 +602,3 @@ GOChord(exchord, gene.order = "logFC")
 ```{r}
 str(excirc)
 ```
-
