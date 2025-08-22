@@ -62,6 +62,7 @@ if ("Biostrings" %in% rownames(installed.packages()) == 'FALSE') install.package
 if ("tidyverse" %in% rownames(installed.packages()) == 'FALSE') install.packages('tidyverse')
 if ("goseq" %in% rownames(installed.packages()) == 'FALSE') install.packages('goseq')
 install.packages("GOplot")
+remotes::install_github("mdscheuerell/flexoki")
 ```
 
 ```{r, eval=FALSE}
@@ -89,6 +90,7 @@ library(GOplot)
 library(AnnotationForge)
 library(GOSemSim)
 library(tidyverse)
+library(flexoki)
 ```
 
 ## Read in gene lists and counts
@@ -451,7 +453,7 @@ wordcloudPlot(reducedTerms, min.freq=1, colors="black")
 
 Using [GOplot](https://cran.r-project.org/web/packages/GOplot/vignettes/GOplot_vignette.html)
 
-### Create circ object using `circle_dat()`
+### Create `circ` object using `circle_dat()`
 
 > `circle_dat()` takes two data frames as an input. The first one contains the results of the functional analysis and should have at least four columns (category, term, genes, adjusted p-value). Additionally, a data frame of the selected genes and their logFC is needed.
 
@@ -553,19 +555,21 @@ summary(circ$count)
 Did not appear to calculate `count` correctly... it isn't counting the genes per term but rather the number of times a term is assigned to a gene... which is always 1, This also throws off the zscore calculation which depends on count.
 :::
 
-#### Or manually `circ_df`
+### JK Manually create `circ_df`
 
 ```{r}
 circ_df <- go_circ %>%  
-  full_join(genes_circ, by = c("genes" = "ID"))
+  full_join(genes_circ, by = c("genes" = "ID")) %>% 
+  drop_na(term)
 
-str(circ_df)
+circ_df_parent <- circ_df %>% 
+  left_join(reducedTerms, by = c("ID" = "go", "term" = "term"))
 ```
 
 Add zscore column
 
 ```{r}
-circ_df <- circ_df %>%
+circ_dfp <- circ_df_parent %>%
   group_by(ID) %>%
   mutate(zscore = (sum(logFC > 0) - sum(logFC < 0)) / sqrt(count)) %>%
   ungroup()
@@ -612,8 +616,10 @@ Thus, in your chord diagram or other visualizations, z-score can be used to colo
 :::
 
 ```{r}
-# 4. Select and arrange columns to match GOplot 'circ' format
-circ <- circ_df %>%
+# Select and arrange columns to match GOplot 'circ' format
+circ_dfp <- circ_dfp %>%
+  select(!term) %>% # remove term colunm
+  mutate(term = parentTerm) %>% # replace it with the parent term column
   select(category,
          ID,
          term,
@@ -625,91 +631,71 @@ circ <- circ_df %>%
   as.data.frame()
 ```
 
-### Select processes
-
-```{r}
-process <- circ_df %>%
-  group_by(term) %>% 
-  select(term, count, adj_pval, zscore) %>% 
-  distinct() %>% 
-  arrange(count)
-
-str(process)
-```
-
-
 
 ### Create binary matrix using `chord_dat()`
 
 ::: callout-caution
-`chord_dat()` expects the `genes =` to have genes in a column named `ID`
+`chord_dat()` expects the `genes =` to have genes in a column named `ID` with a `logFC` column
+The matrix should be: genes as rows, terms as columns (binary matrix), and one column named “logFC”.
 :::
 
-### Plot chord diagram
-```{r, fig.height=12}
+```{r}
+circ_genes <- circ_dfp %>% 
+  select(genes, logFC) %>% 
+  rename(ID = genes) %>% 
+  distinct()
+```
 
+
+```{r binary-matrix-chord_dat}
 chord <- chord_dat(
-  data = circ_df,
+  data = circ_dfp,
+  genes = circ_genes,
   process = c("regulation of RNA metabolic process", 
               "positive regulation of biological process", 
               "cellular metabolic process", 
               "response to stress", 
-              "response to chemical"))
+              "response to chemical",
+              "cell differentiation",
+              "regulation of signaling",
+              "organonitrogen compound metabolic process"))
+```
 
+
+### Plot chord diagram
+```{r}
+library(viridis)
+library(RColorBrewer)
+```
+
+```{r}
+display.brewer.all()
+```
+viridis
+magma
+plasma
+inferno
+cividis
+mako
+rocket
+turbo
+
+```{r}
+library(scales)
+show_col(turbo(5))
+```
+
+```{r}
+ribbons <- turbo(5)
+ribbons_viridis <- viridis(5)
+ribbons_pastel <- brewer.pal(5, "Pastel2")
+```
+
+```{r plot-chord, fig.height=12}
 # Plot
-GOChord(chord, gene.order = "logFC")
+GOChord(chord, gene.order = "logFC", gene.size = 0)
 ```
 
-::: callout-note
-- Why no LogFC plotted?
-- Make gene names readable
-:::
 
 
-```{r}
-# Filter circ to keep GO terms with count >= 2 (or a threshold you choose)
-circ_filtered <- circ %>% 
-  filter(count >= 2)
-
-# Build the summarized 'processes' data frame for chord plotting
-processes_filtered <- circ_filtered %>%
-  select(category, ID, term, count, zscore) %>%
-  distinct()
-
-# Get unique genes and logFC values for the filtered dataset
-genes_filtered <- circ_filtered %>%
-  select(genes, logFC) %>%
-  distinct()
-
-# Convert to data.frame if needed
-circ_filtered_df <- as.data.frame(circ_filtered)
-processes_filtered_df <- as.data.frame(processes_filtered)
-genes_filtered_df <- as.data.frame(genes_filtered)
-
-# Now create chord input with filtered data
-chord_filtered <- chord_dat(
-  data = circ_filtered_df,
-  genes = genes_filtered_df,
-  process = processes_filtered_df
-)
-
-# Plot the chord diagram
-GOChord(chord_filtered, gene.order = "logFC")
-```
-
-> If the number of genes in your genes argument doesn't exactly match the rows in data, or the number of processes in process doesn't match the columns in data, you get subscript out of bounds.
-
-```{r}
-# Load the included dataset
-data(EC)
-
-# Building the circ object
-excirc <- circle_dat(EC$david, EC$genelist)
-
-# Building the binary matrix
-exchord <- chord_dat(excirc, EC$genes, EC$process)
-
-GOChord(exchord, gene.order = "logFC")
-```
-
-> Therefore, you want to include more than one logFC value per gene. To adjust to this situation you should use the nlfc argument. It is a numeric value and it defines the number of logFC columns within your binary membership matrix. The default is '1' assuming that most of the time you just have one contrast and one logFC value per gene.
+> Therefore, if you want to include more than one logFC value per gene. To adjust to this situation you should use the nlfc argument. It is a numeric value and it defines the number of logFC columns within your binary membership matrix. The default is '1' assuming that most of the time you just have one contrast and one logFC value per gene.

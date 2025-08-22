@@ -1,0 +1,501 @@
+---
+title: "Multifactorial Differential Gene Expression"
+subtitle: "Exploring the differential transcript abundance between embryonic **stage** in *Montipora capitata* using a zero intercept DESeq2 design"
+author: "Sarah Tanja"
+date: 2025-21-08
+date-modified: today
+format:
+  gfm: 
+    toc: true
+    number-sections: true
+  html:
+    theme: journal
+    highlight-style: github
+    page-layout: article
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    number-sections: true
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    reference-location: margin
+    citation-location: margin
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,         # Display code chunks
+  eval = TRUE,        # Evaluate code chunks
+  warning = FALSE,     # Hide warnings
+  message = FALSE,     # Hide messages
+  comment = ""         # Prevents appending '##' to beginning of lines in code output
+)
+```
+
+# Background
+
+Here we are looking at a multifactorial (2 factors, multiple levels) differential gene expression analysis for *Montipora capitata* coral embryos at 3 developmental stages (4 hours post fertilization = cleavage , 9 hours post fertilization = prawnchip, and 14 hours post fertilization = early gastrula). Embryos at each stage were exposed to either a control, low, mid, or high concentration of PVC leachate. This work aims to understand sublethal effects of ubiquitous non-point source PVC leachate pollution on coral reefs.
+
+Testing zero-intercept design as discussed by Dr. Atakan Ekiz [here](https://www.atakanekiz.com/technical/a-guide-to-designs-and-contrasts-in-DESeq2/) 
+
+## Inputs
+
+-   `gcm_filtor.csv` is the filtered gene count matrix for 61 samples (two outliers removed).
+-   `metadata_or.csv` is the metadata for 61 samples (two outliers removed)
+
+## Outputs
+
+-   `output/06_deg/interactions/int_wald_heatmap.png`
+-   `volcano_facet_interaction.png`
+
+# Setup
+
+## Install packages
+```{r, eval=FALSE}         
+# CRAN packages
+install.packages(c(
+  "tidyverse",
+  "viridis",
+  "plotly",
+  "cowplot",
+  "pheatmap",
+  "vsn",
+  "ashr",
+  "remotes"  # required for GitHub installs
+))
+
+# GitHub package
+remotes::install_github("mdscheuerell/flexoki")
+
+# Bioconductor
+if (!"BiocManager" %in% rownames(installed.packages())) {
+  install.packages("BiocManager")
+}
+BiocManager::install(c("DESeq2", "DEGreport"))
+```
+
+## Load packages
+
+```{r}
+# Load packages
+library(DESeq2)
+library(viridis)
+library(tidyverse)
+library(DEGreport)
+library(ashr)
+library(flexoki)
+library(plotly)
+library(cowplot)
+library(vsn)
+library(pheatmap)
+```
+
+## Import filtered gene count matrix
+
+In this count matrix, each row represents a gene, each column a sequenced RNA library, and the values give the estimated counts of fragments that were assigned to the respective gene in each library by `HISAT2`
+
+-   `check.names = FALSE` removed the 'X' from in front of sample id's in the column headers
+
+```{r, eval=TRUE}
+gcm_filtor <- read.csv("../../output/05_explore/gcm_filtor.csv", row.names="gene_id", check.names=FALSE)
+head(gcm_filtor)
+```
+
+-   The raw unfiltered, untransformed, count matrix shows counts of whole numbers (integers)
+-   Each column is a sample
+-   Each row is a gene
+-   A sample id describes parental crosses (the first string of numbers), the pollution exposure (C, L, M, H), and the embryonic stage (4, 9, 14)
+
+::: callout-note
+`gcm_filtor` is the gene count matrix that has been filtered down to only contain rows where counts are at least 15 in 75% of the samples and 2 outlier samples ( `131415L4` and `789C4` ) that had poor HISAT alignment and did not group in the exploratory PCA are already removed
+:::
+
+## Import metadata
+
+```{r, eval=TRUE}
+metadata_or <- read_csv("../../metadata/metadata_or.csv")
+str(metadata_or)
+```
+
+```{r, eval=TRUE}
+# Reorder factors
+metadata_or$stage <- as.factor(metadata_or$stage)
+metadata_or$stage <- fct_relevel(metadata_or$stage, "cleavage", "prawnchip", "earlygastrula")
+ 
+metadata_or$leachate <- as.factor(metadata_or$leachate)
+metadata_or$leachate <- fct_relevel(metadata_or$leachate, "control", "low", "mid", "high")
+
+str(metadata_or)
+```
+
+::: callout-note
+`metadata_filt` contains metadata for 61 samples with explanatory variables: - `stage` is a factor with 3 levels (cleavage, prawnchip, earlygastrula) - `hpf` is a discrete numerical variable representing the hours post fertilization 4, 9, and 14 (corresponding to `stage`)
+
+-   `leachate` is a factor with 4 levels (control, low, mid, high)
+-   `leachate_mgL` is a continuous numerical variable representing leachate concentrations in mg/L with values 0 , 0.01 , 0.1 , and 1 (corresponding to `leachate`)
+:::
+
+# Make DESeq Data Set (dds)
+:::: column-margin
+::: callout-note
+Continuous vs categorical
+
+Embryonic stage should be treated as a categorical variable because DESeq2 will estimate expression differences between stages, rather than assuming a linear progression from 4 → 14 hpf. It will fit different intercepts for each stage (i.e., different baseline expression levels). If you encode stage as numeric, the model would assume a linear change in expression per hour of development, which is biologically risky unless you expect linearity (note: we do not).
+:::
+::::
+
+```{r, eval=TRUE}
+# design without intercept (no reference)
+dds <- DESeqDataSetFromMatrix(countData = gcm_filtor,
+                              colData = metadata_or,
+                              design = formula( ~0 + stage))
+```
+
+::: column-margin
+> "Contrasts from design without intercept:
+Sometimes it is easier to work with no-reference designs. You can tell the algorithm not to have an intercept (ie. control group) by using `~ 0 + condition` formula. Conceptually, the zero intercept model in DESeq2 does not compare conditions against each other, instead, each condition’s coefficient represents its own log2-fold expression estimate relative to zero." - *sourced from technical blog post by Dr. Atakin Ekiz*
+
+::: 
+
+## Run DESeq LRT Test
+
+> Does modeling leachate as a factor vs. a continuous dose better explain gene expression changes across stages?
+
+```{r, eval=TRUE}
+dds <- DESeq(dds, test = "Wald")
+```
+
+
+## Results
+
+Plot dispersion
+
+```{r}
+plotDispEsts(dds)
+```
+
+
+# Make contrasts
+
+```{r}
+resultsNames(dds)
+```
+
+```{r}
+# cleavage to prawnchip
+res_1 <- results(dds, contrast = list("stagecleavage", "stageprawnchip")) 
+summary(res_1, alpha = 0.05)
+```
+
+```{r}
+# prawnchip to early gastrula
+res_2 <- results(dds, contrast = list("stageprawnchip", "stageearlygastrula"))
+summary(res_2, alpha = 0.05)
+```
+
+```{r}
+# cleavage to early gastrula
+res_3 <- results(dds, contrast = list("stagecleavage", "stageearlygastrula"))
+summary(res_3, alpha = 0.05)
+```
+Save significant genes
+```{r}
+# From res 1, 2 & 3
+sig_1 <- res_1 %>%
+  as.data.frame() %>%
+  filter(padj < 0.05) %>% 
+  rownames_to_column(var = "gene_id") %>% 
+  mutate(contrast = 1)
+
+sig_2 <- res_2 %>%
+  as.data.frame() %>%
+  filter(padj < 0.05) %>% 
+  rownames_to_column(var = "gene_id") %>% 
+  mutate(contrast = 2)
+
+sig_3 <- res_3 %>%
+  as.data.frame() %>%
+  filter(padj < 0.05) %>% 
+  rownames_to_column(var = "gene_id") %>% 
+  mutate(contrast = 3)
+
+# merge all together
+sig_genes <- merge(sig_1, sig_2, by = "gene_id")
+```
+
+# Plot
+Variance stabilize
+```{r}
+vsd <- vst(dds, blind=FALSE)
+meanSdPlot(assay(vsd))
+```
+```{r}
+# Extract the transformed count matrix
+vsd_mat <- assay(vsd)
+# Make a quick heatmap of all genes across samples
+pheatmap(vsd_mat, 
+         cluster_rows = TRUE, 
+         cluster_cols = TRUE, 
+         show_rownames = FALSE, 
+         annotation_col = as.data.frame(colData(dds)[, "stage", drop=FALSE]))
+```
+
+### Extract results
+
+```{r}
+# Combine into a summary
+sig_genes <- data.frame(
+  gene_id = rownames(res_high_pc),
+  _log2FC = sig_1$log2FoldChange,
+  prawnchip_high_padj = sig_1$padj,
+  prawnchip_mid_log2FC = res_mid_pc$log2FoldChange)
+
+```
+
+### Plot heatmap
+
+```{r}
+library(pheatmap)
+
+# Step 1: Order and extract log2FC values
+log2fc_cols <- c(
+  "prawnchip_low_log2FC", "prawnchip_mid_log2FC", "prawnchip_high_log2FC",
+  "earlygastrula_low_log2FC", "earlygastrula_mid_log2FC", "earlygastrula_high_log2FC"
+)
+
+mat <- as.matrix(int_wald_df_sig[, log2fc_cols])
+rownames(mat) <- int_wald_df_sig$gene_id
+
+# Step 2: Rename columns for clarity
+colnames(mat) <- c(
+  "Prawnchip: Low", "Prawnchip: Mid", "Prawnchip: High",
+  "Early Gastrula: Low", "Early Gastrula: Mid", "Early Gastrula: High"
+)
+
+# Step 3: Create annotation for stage/leachate
+annotation_col <- data.frame(
+  Stage = rep(c("Prawnchip", "Early Gastrula"), each = 3),
+  Leachate = rep(c("Low", "Mid", "High"), times = 2)
+)
+rownames(annotation_col) <- colnames(mat)
+
+# Step 4: Prepare significance (padj < 0.05) annotation matrix
+padj_cols <- c(
+  "prawnchip_low_padj", "prawnchip_mid_padj", "prawnchip_high_padj",
+  "earlygastrula_low_padj", "earlygastrula_mid_padj", "earlygastrula_high_padj"
+)
+padj_mat <- as.matrix(int_wald_df_sig[, padj_cols])
+rownames(padj_mat) <- int_wald_df_sig$gene_id
+colnames(padj_mat) <- colnames(mat)
+
+# Significance stars with NA handling
+sig_labels <- ifelse(is.na(padj_mat), "",
+                      ifelse(padj_mat < 0.01, "**",
+                        ifelse(padj_mat < 0.05, "*",
+                          ifelse(padj_mat < 0.1, ".", ""))))
+
+# Step 5: Save heatmap with significance stars
+png("../../output/06_deg/interactions/int_wald_heatmap.png", width = 10, height = 12, units = "in", res = 600)
+
+pheatmap(mat,
+         cluster_rows = TRUE,
+         cluster_cols = TRUE,
+         scale = "row",
+         show_rownames = FALSE,
+         annotation_col = annotation_col,
+         display_numbers = sig_labels,
+         number_color = "black",
+         fontsize = 10,
+         fontsize_number = 8,
+         angle_col = 45,
+         border_color = NA)
+
+dev.off()
+```
+
+Interpretation notes: \> 🧬 What does the heatmap show? Each cell in the heatmap shows the scaled log2 fold change for a gene in a specific interaction condition. \> \> ✅ Scaling Because you set scale = "row", each gene's values are z-scored across the six interaction conditions \> \> Blue = low relative expression change in that condition \> \> Red = high relative expression change in that condition \> \> The actual color scale is relative within each row, not across the whole matrix. \> \> This helps visualize patterns of expression changes across conditions for each gene, regardless of absolute size. \> \> 📊 What can you learn from this? Are there groups of genes responding similarly? Row clustering may reveal gene modules with similar interaction response profiles. \> \> Which stage + leachate condition drives the interaction? Column patterns (e.g., lots of red in prawnchip_high_log2FC) suggest strong interaction effects in that condition. \> \> Which genes have the strongest differential interactions? Genes with high contrast (strong red/blue) have more dynamic interaction effects. \> \> 🧠 Interpretation Reminder These log2 fold changes are interaction effects --- they reflect how gene expression at a specific `stage` & `leachate` level deviates from the expected additive effect of `stage` and `leachate` alone. \> \> So, a large positive log2FC means: \> \> "At this `stage` and `leachate` level, this gene is more highly expressed than we would expect based on `stage` and `leachate` effects individually." \> \> Likewise, a large negative value = stronger-than-expected suppression.
+
+```{r}
+int_wald_df_sig$any_sig <- apply(int_wald_df_sig[, grepl("padj", names(int_wald_df_sig))], 1, function(p) any(p < 0.05, na.rm = TRUE))
+```
+
+### PCA of significant genes only
+
+```{r}
+# Subset DESeqDataSet to just significant genes
+dds_wald_sig <- dds_wald[rownames(dds_wald) %in% sig_cat, ]
+vsd_wald_sig <- varianceStabilizingTransformation(dds_wald_sig)
+
+# Get PCA data (only 44 sig DEGs)
+pca_sig <- plotPCA(vsd_wald_sig, intgroup = "group", returnData = TRUE)
+percentVar_sig <- round(100*attr(pca_sig, "percentVar"))
+
+# Merge with metadata
+pca_sig <- merge(pca_sig, metadata_or, by.x = "name", by.y = "sample_id", all.x = TRUE)
+
+# Assign specific colors to each hpf
+hpf_colors <- c(
+  "cleavage" = flex("cyan", sat=500),
+  "prawnchip" = flex("green", sat =500),
+  "earlygastrula" = flex("yellow", sat=500)
+)
+
+pca_sig$label <- paste0("sample: ", pca_sig$sample_id,
+                        "\nStage: ", pca_sig$stage,
+                        "\nLeachate: ", pca_sig$leachate)
+
+# Indicate leachate level by saturation (alpha)
+leachate_alpha_map <- c("control" = 0.5, "low" = 0.6, "mid" = 0.7, "high" = 0.9)
+pca_sig$alpha_val <- leachate_alpha_map[pca_sig$leachate]
+```
+
+```{r}
+# Original ggplot with a tooltip aesthetic
+PCA_sig <- ggplot(pca_sig, aes(PC1, PC2, color = stage, label = name, alpha = alpha_val)) +
+  geom_point(size = 1,  stroke = 1) +
+  ggtitle("M.cap embryos exposed to pvc leachate, 44 significant genes VST expression") +
+  xlab(paste0("PC1: ", percentVar_sig[1], "% variance")) +
+  ylab(paste0("PC2: ", percentVar_sig[2], "% variance")) + 
+  coord_fixed() +
+  scale_color_manual(values = hpf_colors) +
+  stat_ellipse() + 
+  guides(alpha = "none") +  # hide alpha legend (optional)
+  theme_minimal()
+
+# Convert to interactive plot
+ggplotly(PCA_sig, tooltip = "label")
+
+```
+```{r}
+# Original ggplot with a tooltip aesthetic
+PCA_sig <- ggplot(pca_sig, aes(PC1, PC2, color = stage, shape = leachate, label = name, alpha = alpha_val)) +
+  geom_point(size = 1,  stroke = 1) +
+  ggtitle("M.cap embryos exposed to pvc leachate, 44 significant genes VST expression") +
+  xlab(paste0("PC1: ", percentVar_sig[1], "% variance")) +
+  ylab(paste0("PC2: ", percentVar_sig[2], "% variance")) + 
+  coord_fixed() +
+  scale_color_manual(values = hpf_colors) +
+  stat_ellipse() + 
+  guides(alpha = "none") +  # hide alpha legend (optional)
+  theme_minimal()
+
+# Convert to interactive plot
+ggplotly(PCA_sig, tooltip = "label")
+```
+
+# Save gene lists
+
+- `sig_cat` : List of the 44 genes that show significant interactions between leachate and stage (saved above) 
+
+- `LRT_sig_genes` : List of LRT significant genes, LFC, & padj values (saved above) 
+
+- `Wald_sig_genes` : List of Wald test results, LFC & padj values for each interaction contrast 
+
+- `vsd_sig` : Variance stabilized count matrix of genes from significant list 
+
+- `all_genes` : List of all genes in the dataset (the filtered input to the DESeq object) which will serve as a reference for functional enrichment
+
+```{r}
+Wald_sig_genes <- int_wald_df_sig
+
+write_csv(Wald_sig_genes, "../../output/06_deg/interactions/Wald_sig_genes.csv")
+```
+
+```{r}
+vsd_sig <-  vsd %>%
+  as.data.frame() %>% 
+  rownames_to_column("gene_id") %>%
+  filter(gene_id %in% sig_cat)
+
+write_csv(vsd_sig, "../../output/06_deg/interactions/vsd_sig.csv")
+```
+
+```{r}
+all_genes <- vsd %>%
+  as.data.frame() %>% 
+  rownames_to_column("gene_id") %>%
+  select(gene_id)
+
+write_csv(all_genes, "../../output/06_deg/interactions/all_genes.csv")
+```
+
+::: callout-note
+12,565 genes listed in the `all_genes.csv`
+:::
+
+# Perform clustering
+see Roberts Lab Issue [#1916](https://github.com/RobertsLab/resources/issues/1916)
+
+Perform clustering. 
+
+```{r}
+clustering_sig_genes <- LRT_sig_genes %>%
+  arrange(padj) #genes in rows, stats in columns
+
+matrix <- vsd #genes in rows, sample ID in columns
+
+meta <- metadata_or %>%
+  dplyr::select(sample_id, stage, leachate) %>% #sample id and stage, and leachate columns
+  column_to_rownames(var = "sample_id")
+
+meta<-meta%>%
+  dplyr::select(stage, leachate) #sample ID in rows, one column of lifestage 
+
+# Obtain transformed values for those significant genes
+cluster_vst <- matrix[clustering_sig_genes$gene_id, ] #rows are DEGs and columns are sample ID
+```
+
+Run with minimum 3 genes per cluster to detect because we have few DEGs.  
+- DEGreport vignette, [degPatterns](https://www.bioconductor.org/packages/release/bioc/vignettes/DEGreport/inst/doc/DEGreport.html#:~:text=%22expression%22)-,Detect%20patterns%20of%20expression,-In%20this%20section)
+```{r}
+# Use the `degPatterns` function from the 'DEGreport' package to show gene clusters across sample groups
+stage_clusters <- degPatterns(cluster_vst, metadata = meta, time = "stage", col=NULL, plot=TRUE, minc = 3)
+```
+
+```{r}
+# Use the `degPatterns` function from the 'DEGreport' package to show gene clusters across sample groups
+clusters <- degPatterns(cluster_vst, metadata = meta, time = "leachate", col=NULL, plot=TRUE, minc = 3)
+```
+Extract the list of genes in each cluster for leachate (stage grouped all together in one big group, so we can focus in on leachate with the cluster analysis here). 
+```{r}
+# Rename and extract information 
+groups <- clusters$df %>%
+          rename(gene_id=genes) %>% 
+          rename(leachate_cluster=cluster)
+``` 
+
+Save the gene cluster annotation
+```{r}
+write.csv(groups, "../../output/06_deg/interactions/clusters.csv")
+```
+
+Plot is showing Z score of VST normalized gene counts  
+```{r, warning=FALSE}
+cluster_plot<-ggplot(clusters[["normalized"]],
+        aes(x=leachate, y=value)) +
+  facet_wrap(~ cluster)+
+   geom_point(colour="darkgray", size=1) +
+  ylab("Z-score expression")+
+  xlab("")+
+   # change the method to make it smoother
+   geom_smooth(aes(group=genes), method = "loess", colour="red", linewidth=0.1, se=FALSE)+
+   geom_smooth(aes(group=1), method = "loess", colour="black")+
+  geom_hline(yintercept=0, linetype="dashed")+
+  geom_vline(xintercept=3, linetype="dotted")+
+  geom_vline(xintercept=6, linetype="dotted")+
+  theme_classic()+
+  theme(
+    axis.text.x = element_text(angle=90, hjust=1, vjust=1)
+  );cluster_plot
+
+ggsave(cluster_plot, filename="../../output/06_deg/interactions/cluster_plot.png", width=12, height=10)
+```
+# Summary & Next Steps
+
+We can perform functional enrichment on these clusters now!

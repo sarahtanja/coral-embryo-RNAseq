@@ -56,9 +56,7 @@ Here we are looking at a multifactorial differential gene expression analysis fo
 
 ## Install packages
 
-Copy and run this once in the console
-
-```{r}
+```{r, eval=FALSE}         
 # CRAN packages
 install.packages(c(
   "tidyverse",
@@ -166,7 +164,7 @@ Coding `leachate` as a categorical factor allows each stage to have its own inde
 
 dds_cat <- DESeqDataSetFromMatrix(countData = gcm_filtor,
                               colData = metadata_or,
-                              design = formula( ~ stage + leachate + stage:leachate))
+                              design = formula( ~0 + stage + leachate + stage:leachate))
 ```
 
 Coding `leachate_mgL` as a continuous numeric tests for a change in expression per unit increase in leachate, and the interaction term tests whether the slope of the dose-response differs depending on stage. ✅ Use this if you expect a linear or dose-dependent trend, and want to ask if the strength or direction of the trend varies by stage.
@@ -174,7 +172,7 @@ Coding `leachate_mgL` as a continuous numeric tests for a change in expression p
 ```{r, eval=TRUE}
 dds_con <- DESeqDataSetFromMatrix(countData = gcm_filtor,
                               colData = metadata_or,
-                              design = formula( ~ stage + leachate_mgL + stage:leachate_mgL))
+                              design = formula( ~0 + stage + leachate_mgL + stage:leachate_mgL))
 ```
 
 ## Run DESeq LRT Tests
@@ -182,12 +180,12 @@ dds_con <- DESeqDataSetFromMatrix(countData = gcm_filtor,
 > Does modeling leachate as a factor vs. a continuous dose better explain gene expression changes across stages?
 
 ```{r, eval=TRUE}
-dds_cat <- DESeq(dds_cat, test = "LRT", reduced = ~ stage + leachate)
-dds_con <- DESeq(dds_con, test = "LRT", reduced = ~ stage + leachate_mgL)
+dds_cat <- DESeq(dds_cat, test = "LRT", reduced = ~0 + stage + leachate)
+dds_con <- DESeq(dds_con, test = "LRT", reduced = ~0 + stage + leachate_mgL)
 ```
 
 | Model         | Full model                                  | Reduced model          | LRT tests...                                               |
-|---------------|---------------------------------------------|------------------------|------------------------------------------------------------|
+|------------------|------------------|------------------|-------------------|
 | `dds_cat_LRT` | `stage + leachate + stage:leachate`         | `stage + leachate`     | Are there **stage-specific effects of leachate (factor)**? |
 | `dds_con_LRT` | `stage + leachate_mgL + stage:leachate_mgL` | `stage + leachate_mgL` | Are there **stage-specific trends** in dose response?      |
 
@@ -240,7 +238,7 @@ LRT_sig_genes <- res_cat %>%
   filter(padj < 0.05) %>% 
   rownames_to_column(var = "gene_id")
 
-write.csv(LRT_sig_genes, "../../output/06_deg/interactions/LRT_sig_genes.csv")
+write.csv(LRT_sig_genes, "../../output/06_deg/interactions_zerointercept/LRT_sig_genes.csv")
 ```
 
 ::: callout-note
@@ -248,7 +246,7 @@ write.csv(LRT_sig_genes, "../../output/06_deg/interactions/LRT_sig_genes.csv")
 :::
 
 ```{r}
-write.csv(sig_cat, "../../output/06_deg/interactions/sig_interaction_genes.csv")
+write.csv(sig_cat, "../../output/06_deg/interactions_zerointercept/sig_interaction_genes.csv")
 ```
 
 > Of the 44 genes showing significant stage-specific responses to leachate (based on the categorical model), only 2 also show a significant linear dose-response interaction with stage (based on the continuous model). This suggests that while stage modulates leachate response broadly, most genes (42/44) exhibit nonlinear or non-monotonic patterns, rather than a simple linear trend across leachate levels. keep.order = TRUE)
@@ -410,7 +408,7 @@ for (i in 1:nrow(all_info)) {
   
     # Save to PNG
   ggsave(
-    filename = paste0("../../output/06_deg/interactions/gene_plots/", padj_rank, ".png"),
+    filename = paste0("../../output/06_deg/interactions_zerointercept/gene_plots/", padj_rank, ".png"),
     plot = p, width = 8, height = 4, dpi = 600
   )
 }
@@ -434,12 +432,6 @@ plotly::subplot(plots, nrows = 2, margin = 0.05) %>%
          showlegend = FALSE)
 ```
 
-### Gene Expression Plots
-
-::: {.grid layout-ncol="4"}
-![](../../output/06_deg/interactions/gene_plots/1.png) ![](../../output/06_deg/interactions/gene_plots/2.png) ![](../../output/06_deg/interactions/gene_plots/3.png) ![](../../output/06_deg/interactions/gene_plots/4.png) ![](../../output/06_deg/interactions/gene_plots/5.png) ![](../../output/06_deg/interactions/gene_plots/6.png) ![](../../output/06_deg/interactions/gene_plots/7.png) ![](../../output/06_deg/interactions/gene_plots/8.png) ![](../../output/06_deg/interactions/gene_plots/9.png) ![](../../output/06_deg/interactions/gene_plots/10.png) ![](../../output/06_deg/interactions/gene_plots/11.png) ![](../../output/06_deg/interactions/gene_plots/12.png) ![](../../output/06_deg/interactions/gene_plots/13.png) ![](../../output/06_deg/interactions/gene_plots/14.png) ![](../../output/06_deg/interactions/gene_plots/15.png) ![](../../output/06_deg/interactions/gene_plots/16.png) ![](../../output/06_deg/interactions/gene_plots/17.png) ![](../../output/06_deg/interactions/gene_plots/18.png) ![](../../output/06_deg/interactions/gene_plots/19.png) ![](../../output/06_deg/interactions/gene_plots/20.png) ![](../../output/06_deg/interactions/gene_plots/21.png) ![](../../output/06_deg/interactions/gene_plots/22.png) ![](../../output/06_deg/interactions/gene_plots/23.png) ![](../../output/06_deg/interactions/gene_plots/24.png) ![](../../output/06_deg/interactions/gene_plots/25.png) ![](../../output/06_deg/interactions/gene_plots/26.png) ![](../../output/06_deg/interactions/gene_plots/27.png) ![](../../output/06_deg/interactions/gene_plots/28.png) ![](../../output/06_deg/interactions/gene_plots/29.png) ![](../../output/06_deg/interactions/gene_plots/30.png) ![](../../output/06_deg/interactions/gene_plots/31.png) ![](../../output/06_deg/interactions/gene_plots/32.png) ![](../../output/06_deg/interactions/gene_plots/33.png) ![](../../output/06_deg/interactions/gene_plots/34.png) ![](../../output/06_deg/interactions/gene_plots/35.png) ![](../../output/06_deg/interactions/gene_plots/36.png) ![](../../output/06_deg/interactions/gene_plots/37.png) ![](../../output/06_deg/interactions/gene_plots/38.png) ![](../../output/06_deg/interactions/gene_plots/39.png) ![](../../output/06_deg/interactions/gene_plots/40.png) ![](../../output/06_deg/interactions/gene_plots/41.png) ![](../../output/06_deg/interactions/gene_plots/42.png) ![](../../output/06_deg/interactions/gene_plots/43.png) ![](../../output/06_deg/interactions/gene_plots/44.png)
-:::
-
 ::: callout-note
 We have 44 genes with significant interaction effects overall.
 
@@ -451,7 +443,7 @@ Next step: 👉 Use Wald tests to dig into which interactions (e.g., stage × le
 > Wald tests on interaction terms assess whether the interaction coefficient **differs significantly from 0** --- i.e., whether the combined effect of that `hpf` and `leachate` level deviates from what would be expected by the additive effects alone.
 
 | What You Want to Know                                 | Use                           | Explanation                                     |
-|-------------------------------------------------------|-------------------------------|-------------------------------------------------|
+|----------------------------|------------------|--------------------------|
 | Any interaction overall?                              | LRT                           | `reduced = ~ stage + leachate`                  |
 | Specific interaction term significant?                | Wald                          | `results(dds, name = "stageX.leachateY")`       |
 | Total effect of leachate at specific stage vs control | Wald with combined contrast   | `c("leachateY_vs_control", "stageX.leachateY")` |
@@ -460,7 +452,7 @@ Next step: 👉 Use Wald tests to dig into which interactions (e.g., stage × le
 ```{r}
 dds <- DESeqDataSetFromMatrix(countData = gcm_filtor,
                               colData = metadata_or,
-                              design = formula( ~ stage + leachate + stage:leachate))
+                              design = formula( ~0 + stage + leachate + stage:leachate))
 ```
 
 ```{r}
@@ -562,7 +554,7 @@ sig_labels <- ifelse(is.na(padj_mat), "",
                           ifelse(padj_mat < 0.1, ".", ""))))
 
 # Step 5: Save heatmap with significance stars
-png("../../output/06_deg/interactions/int_wald_heatmap.png", width = 10, height = 12, units = "in", res = 600)
+png("../../output/06_deg/interactions_zerointercept/int_wald_heatmap.png", width = 10, height = 12, units = "in", res = 600)
 
 pheatmap(mat,
          cluster_rows = TRUE,
@@ -576,6 +568,7 @@ pheatmap(mat,
          fontsize_number = 8,
          angle_col = 45,
          border_color = NA)
+
 ```
 
 Interpretation notes: \> 🧬 What does the heatmap show? Each cell in the heatmap shows the scaled log2 fold change for a gene in a specific interaction condition. \> \> ✅ Scaling Because you set scale = "row", each gene's values are z-scored across the six interaction conditions \> \> Blue = low relative expression change in that condition \> \> Red = high relative expression change in that condition \> \> The actual color scale is relative within each row, not across the whole matrix. \> \> This helps visualize patterns of expression changes across conditions for each gene, regardless of absolute size. \> \> 📊 What can you learn from this? Are there groups of genes responding similarly? Row clustering may reveal gene modules with similar interaction response profiles. \> \> Which stage + leachate condition drives the interaction? Column patterns (e.g., lots of red in prawnchip_high_log2FC) suggest strong interaction effects in that condition. \> \> Which genes have the strongest differential interactions? Genes with high contrast (strong red/blue) have more dynamic interaction effects. \> \> 🧠 Interpretation Reminder These log2 fold changes are interaction effects --- they reflect how gene expression at a specific `stage` & `leachate` level deviates from the expected additive effect of `stage` and `leachate` alone. \> \> So, a large positive log2FC means: \> \> "At this `stage` and `leachate` level, this gene is more highly expressed than we would expect based on `stage` and `leachate` effects individually." \> \> Likewise, a large negative value = stronger-than-expected suppression.
@@ -631,7 +624,6 @@ PCA_sig <- ggplot(pca_sig, aes(PC1, PC2, color = stage, label = name, alpha = al
 ggplotly(PCA_sig, tooltip = "label")
 
 ```
-
 ```{r}
 # Original ggplot with a tooltip aesthetic
 PCA_sig <- ggplot(pca_sig, aes(PC1, PC2, color = stage, shape = leachate, label = name, alpha = alpha_val)) +
@@ -649,24 +641,22 @@ PCA_sig <- ggplot(pca_sig, aes(PC1, PC2, color = stage, shape = leachate, label 
 ggplotly(PCA_sig, tooltip = "label")
 ```
 
-# Contrasts
-
 # Save gene lists
 
--   `sig_cat` : List of the 44 genes that show significant interactions between leachate and stage (saved above)
+- `sig_cat` : List of the 44 genes that show significant interactions between leachate and stage (saved above) 
 
--   `LRT_sig_genes` : List of LRT significant genes, LFC, & padj values (saved above)
+- `LRT_sig_genes` : List of LRT significant genes, LFC, & padj values (saved above) 
 
--   `Wald_sig_genes` : List of Wald test results, LFC & padj values for each interaction contrast
+- `Wald_sig_genes` : List of Wald test results, LFC & padj values for each interaction contrast 
 
--   `vsd_sig` : Variance stabilized count matrix of genes from significant list
+- `vsd_sig` : Variance stabilized count matrix of genes from significant list 
 
--   `all_genes` : List of all genes in the dataset (the filtered input to the DESeq object) which will serve as a reference for functional enrichment
+- `all_genes` : List of all genes in the dataset (the filtered input to the DESeq object) which will serve as a reference for functional enrichment
 
 ```{r}
 Wald_sig_genes <- int_wald_df_sig
 
-write_csv(Wald_sig_genes, "../../output/06_deg/interactions/Wald_sig_genes.csv")
+write_csv(Wald_sig_genes, "../../output/06_deg/interactions_zerointercept/Wald_sig_genes.csv")
 ```
 
 ```{r}
@@ -675,7 +665,7 @@ vsd_sig <-  vsd %>%
   rownames_to_column("gene_id") %>%
   filter(gene_id %in% sig_cat)
 
-write_csv(vsd_sig, "../../output/06_deg/interactions/vsd_sig.csv")
+write_csv(vsd_sig, "../../output/06_deg/interactions_zerointercept/vsd_sig.csv")
 ```
 
 ```{r}
@@ -684,7 +674,7 @@ all_genes <- vsd %>%
   rownames_to_column("gene_id") %>%
   select(gene_id)
 
-write_csv(all_genes, "../../output/06_deg/interactions/all_genes.csv")
+write_csv(all_genes, "../../output/06_deg/interactions_zerointercept/all_genes.csv")
 ```
 
 ::: callout-note
@@ -692,10 +682,9 @@ write_csv(all_genes, "../../output/06_deg/interactions/all_genes.csv")
 :::
 
 # Perform clustering
-
 see Roberts Lab Issue [#1916](https://github.com/RobertsLab/resources/issues/1916)
 
-Perform clustering.
+Perform clustering. 
 
 ```{r}
 clustering_sig_genes <- LRT_sig_genes %>%
@@ -714,9 +703,8 @@ meta<-meta%>%
 cluster_vst <- matrix[clustering_sig_genes$gene_id, ] #rows are DEGs and columns are sample ID
 ```
 
-Run with minimum 3 genes per cluster to detect because we have few DEGs.\
+Run with minimum 3 genes per cluster to detect because we have few DEGs.  
 - DEGreport vignette, [degPatterns](https://www.bioconductor.org/packages/release/bioc/vignettes/DEGreport/inst/doc/DEGreport.html#:~:text=%22expression%22)-,Detect%20patterns%20of%20expression,-In%20this%20section)
-
 ```{r}
 # Use the `degPatterns` function from the 'DEGreport' package to show gene clusters across sample groups
 stage_clusters <- degPatterns(cluster_vst, metadata = meta, time = "stage", col=NULL, plot=TRUE, minc = 3)
@@ -726,24 +714,20 @@ stage_clusters <- degPatterns(cluster_vst, metadata = meta, time = "stage", col=
 # Use the `degPatterns` function from the 'DEGreport' package to show gene clusters across sample groups
 clusters <- degPatterns(cluster_vst, metadata = meta, time = "leachate", col=NULL, plot=TRUE, minc = 3)
 ```
-
-Extract the list of genes in each cluster for leachate (stage grouped all together in one big group, so we can focus in on leachate with the cluster analysis here).
-
+Extract the list of genes in each cluster for leachate (stage grouped all together in one big group, so we can focus in on leachate with the cluster analysis here). 
 ```{r}
 # Rename and extract information 
 groups <- clusters$df %>%
           rename(gene_id=genes) %>% 
           rename(leachate_cluster=cluster)
-```
+``` 
 
 Save the gene cluster annotation
-
 ```{r}
-write.csv(groups, "../../output/06_deg/interactions/clusters.csv")
+write.csv(groups, "../../output/06_deg/interactions_zerointercept/clusters.csv")
 ```
 
-Plot is showing Z score of VST normalized gene counts
-
+Plot is showing Z score of VST normalized gene counts  
 ```{r, warning=FALSE}
 cluster_plot<-ggplot(clusters[["normalized"]],
         aes(x=leachate, y=value)) +
@@ -762,9 +746,8 @@ cluster_plot<-ggplot(clusters[["normalized"]],
     axis.text.x = element_text(angle=90, hjust=1, vjust=1)
   );cluster_plot
 
-ggsave(cluster_plot, filename="../../output/06_deg/interactions/cluster_plot.png", width=12, height=10)
+ggsave(cluster_plot, filename="../../output/06_deg/interactions_zerointercept/cluster_plot.png", width=12, height=10)
 ```
-
 # Summary & Next Steps
 
 We can perform functional enrichment on these clusters now!
