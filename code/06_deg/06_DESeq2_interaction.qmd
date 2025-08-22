@@ -58,7 +58,7 @@ Here we are looking at a multifactorial differential gene expression analysis fo
 
 Copy and run this once in the console
 
-```{r}         
+```{r}
 # CRAN packages
 install.packages(c(
   "tidyverse",
@@ -576,8 +576,6 @@ pheatmap(mat,
          fontsize_number = 8,
          angle_col = 45,
          border_color = NA)
-
-dev.off()
 ```
 
 Interpretation notes: \> 🧬 What does the heatmap show? Each cell in the heatmap shows the scaled log2 fold change for a gene in a specific interaction condition. \> \> ✅ Scaling Because you set scale = "row", each gene's values are z-scored across the six interaction conditions \> \> Blue = low relative expression change in that condition \> \> Red = high relative expression change in that condition \> \> The actual color scale is relative within each row, not across the whole matrix. \> \> This helps visualize patterns of expression changes across conditions for each gene, regardless of absolute size. \> \> 📊 What can you learn from this? Are there groups of genes responding similarly? Row clustering may reveal gene modules with similar interaction response profiles. \> \> Which stage + leachate condition drives the interaction? Column patterns (e.g., lots of red in prawnchip_high_log2FC) suggest strong interaction effects in that condition. \> \> Which genes have the strongest differential interactions? Genes with high contrast (strong red/blue) have more dynamic interaction effects. \> \> 🧠 Interpretation Reminder These log2 fold changes are interaction effects --- they reflect how gene expression at a specific `stage` & `leachate` level deviates from the expected additive effect of `stage` and `leachate` alone. \> \> So, a large positive log2FC means: \> \> "At this `stage` and `leachate` level, this gene is more highly expressed than we would expect based on `stage` and `leachate` effects individually." \> \> Likewise, a large negative value = stronger-than-expected suppression.
@@ -633,6 +631,7 @@ PCA_sig <- ggplot(pca_sig, aes(PC1, PC2, color = stage, label = name, alpha = al
 ggplotly(PCA_sig, tooltip = "label")
 
 ```
+
 ```{r}
 # Original ggplot with a tooltip aesthetic
 PCA_sig <- ggplot(pca_sig, aes(PC1, PC2, color = stage, shape = leachate, label = name, alpha = alpha_val)) +
@@ -650,17 +649,19 @@ PCA_sig <- ggplot(pca_sig, aes(PC1, PC2, color = stage, shape = leachate, label 
 ggplotly(PCA_sig, tooltip = "label")
 ```
 
+# Contrasts
+
 # Save gene lists
 
-- `sig_cat` : List of the 44 genes that show significant interactions between leachate and stage (saved above) 
+-   `sig_cat` : List of the 44 genes that show significant interactions between leachate and stage (saved above)
 
-- `LRT_sig_genes` : List of LRT significant genes, LFC, & padj values (saved above) 
+-   `LRT_sig_genes` : List of LRT significant genes, LFC, & padj values (saved above)
 
-- `Wald_sig_genes` : List of Wald test results, LFC & padj values for each interaction contrast 
+-   `Wald_sig_genes` : List of Wald test results, LFC & padj values for each interaction contrast
 
-- `vsd_sig` : Variance stabilized count matrix of genes from significant list 
+-   `vsd_sig` : Variance stabilized count matrix of genes from significant list
 
-- `all_genes` : List of all genes in the dataset (the filtered input to the DESeq object) which will serve as a reference for functional enrichment
+-   `all_genes` : List of all genes in the dataset (the filtered input to the DESeq object) which will serve as a reference for functional enrichment
 
 ```{r}
 Wald_sig_genes <- int_wald_df_sig
@@ -691,9 +692,10 @@ write_csv(all_genes, "../../output/06_deg/interactions/all_genes.csv")
 :::
 
 # Perform clustering
+
 see Roberts Lab Issue [#1916](https://github.com/RobertsLab/resources/issues/1916)
 
-Perform clustering. 
+Perform clustering.
 
 ```{r}
 clustering_sig_genes <- LRT_sig_genes %>%
@@ -712,8 +714,9 @@ meta<-meta%>%
 cluster_vst <- matrix[clustering_sig_genes$gene_id, ] #rows are DEGs and columns are sample ID
 ```
 
-Run with minimum 3 genes per cluster to detect because we have few DEGs.  
+Run with minimum 3 genes per cluster to detect because we have few DEGs.\
 - DEGreport vignette, [degPatterns](https://www.bioconductor.org/packages/release/bioc/vignettes/DEGreport/inst/doc/DEGreport.html#:~:text=%22expression%22)-,Detect%20patterns%20of%20expression,-In%20this%20section)
+
 ```{r}
 # Use the `degPatterns` function from the 'DEGreport' package to show gene clusters across sample groups
 stage_clusters <- degPatterns(cluster_vst, metadata = meta, time = "stage", col=NULL, plot=TRUE, minc = 3)
@@ -723,20 +726,24 @@ stage_clusters <- degPatterns(cluster_vst, metadata = meta, time = "stage", col=
 # Use the `degPatterns` function from the 'DEGreport' package to show gene clusters across sample groups
 clusters <- degPatterns(cluster_vst, metadata = meta, time = "leachate", col=NULL, plot=TRUE, minc = 3)
 ```
-Extract the list of genes in each cluster for leachate (stage grouped all together in one big group, so we can focus in on leachate with the cluster analysis here). 
+
+Extract the list of genes in each cluster for leachate (stage grouped all together in one big group, so we can focus in on leachate with the cluster analysis here).
+
 ```{r}
 # Rename and extract information 
 groups <- clusters$df %>%
           rename(gene_id=genes) %>% 
           rename(leachate_cluster=cluster)
-``` 
+```
 
 Save the gene cluster annotation
+
 ```{r}
 write.csv(groups, "../../output/06_deg/interactions/clusters.csv")
 ```
 
-Plot is showing Z score of VST normalized gene counts  
+Plot is showing Z score of VST normalized gene counts
+
 ```{r, warning=FALSE}
 cluster_plot<-ggplot(clusters[["normalized"]],
         aes(x=leachate, y=value)) +
@@ -757,6 +764,7 @@ cluster_plot<-ggplot(clusters[["normalized"]],
 
 ggsave(cluster_plot, filename="../../output/06_deg/interactions/cluster_plot.png", width=12, height=10)
 ```
+
 # Summary & Next Steps
 
 We can perform functional enrichment on these clusters now!

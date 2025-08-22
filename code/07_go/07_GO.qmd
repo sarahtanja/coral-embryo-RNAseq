@@ -27,14 +27,14 @@ format:
 
 # Background
 
-We identified 44 genes that were broadly impacted by leachate. Here we want to know what those genes do! Those 44 genes grouped in
+We identified 44 genes that were broadly impacted by leachate across all stages (meaning transcript abundance of those genes were significantly different in at least one dose of leachate compared to the control in at least one stage). Here we want to know what those genes do!
 
-Why is goseq different from other enrichment tools? Typical enrichment methods (like Fisher's exact test or hypergeometric tests) assume that every gene has an equal probability of being selected as a DEG. But in RNA-Seq longer genes are more likely to be detected as DEGs just because they accumulate more reads. `goseq` corrects for this bias.
+We do this using the R package `goseq`. Why is `goseq` different from other enrichment tools? Typical enrichment methods (like Fisher's exact test or hypergeometric tests) assume that every gene has an equal probability of being selected as a DEG. But in RNA-Seq longer genes are more likely to be detected as DEGs just because they accumulate more reads. `goseq` corrects for this bias.
 
 ## Inputs
 
--   `LRT_significant_genes_combined_wald.csv` A dataframe of the 12 genes and their LRT and Wald test statistics
--   functional annotation (version 3) from: http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.EggNog_results.txt.gz (EggNog)
+-   `LRT_significant_genes_combined_wald.csv` A dataframe of the 44 genes and their LRT and Wald test statistics
+-   functional annotation: http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.EggNog_results.txt.gz (EggNog)
 -   functional annotation http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.KEGG_results.txt.gz (KEGG)
 
 ## Outputs
@@ -72,6 +72,8 @@ BiocManager::install("goseq")
 BiocManager::install("GO.db")
 BiocManager::install("rrvgo")
 BiocManager::install("org.Ce.eg.db") # c.elegens genome-wide annotation
+BiocManager::install("AnnotationForge")
+BiocManager::install("GOSemSim")
 ```
 
 ## Load packages
@@ -84,6 +86,8 @@ library(rrvgo)
 library(org.Ce.eg.db)
 library(GO.db)
 library(GOplot)
+library(AnnotationForge)
+library(GOSemSim)
 library(tidyverse)
 ```
 
@@ -248,7 +252,7 @@ pwf <- nullp(gene.vector, bias.data = LENGTH.vector)
 About goseq() command:
 
 | Argument                       | Meaning                                                                                                                                                      |
-|-------------------|-----------------------------------------------------|
+|--------------------|----------------------------------------------------|
 | `pwf`                          | A **probability weighting function** object from `nullp()`. It contains the DEG status of all genes (1 = DEG, 0 = not DEG), plus gene length bias info.      |
 | `gene2cat`                     | A data frame or list mapping **genes to functional categories** (like GO terms). In your case, it's a long-format table of gene-GO pairs.                    |
 | `test.cats = "GO:BP"`          | This limits the enrichment to only **biological process** GO terms (you could also use `"GO:MF"` or `"GO:CC"` for molecular function or cellular component). |
@@ -298,28 +302,25 @@ GO.bp <- GO.bp %>%
 write_csv(GO.bp, file = "../../output/07_go/functional_enrichment_biological_process_goseq.csv")
 ```
 
-> The Benjamini-Hochberg procedure controls the proportion of false positives among all rejected hypotheses, which is especially important in high-throughput data like gene ontology enrichment. 
+::: column-margin
+##### Why Does Controlling False Discovery Rate Matter in Enrichment Analysis?
 
-> Why Controlling False Discovery Rate Matters in Enrichment Analysis
-Controlling the false discovery rate (FDR) is critical in enrichment analysis, especially when thousands of statistical tests are performed simultaneously (e.g., testing many gene sets, pathways, or terms for enrichment):
-  - Multiple Comparisons Increase False Positives: In enrichment analyses, each hypothesis test (such as whether a specific gene set is enriched) carries a risk of yielding a false positive—detecting significance where there is none. When testing hundreds or thousands of hypotheses, the probability of encountering several false positives increases dramatically.
-  - FDR Balances Discovery and Error: Unlike stricter corrections (e.g., Bonferroni), which often result in missing true findings because they are overly conservative, controlling FDR allows researchers to detect more significant results while maintaining a specified proportion of false positives among all significant findings.
-  - Improves Interpretability of Results: In practical biological applications, such as genomics and proteomics, FDR control means that of all reported significant gene sets or pathways, only a small, known proportion are expected to be false discoveries. This provides confidence in the reported biological findings and enhances reproducibility.
+The Benjamini-Hochberg procedure controls the proportion of false positives among all rejected hypotheses, which is especially important in high-throughput data like gene ontology enrichment.
 
-> The adjusted p-values (bh_adjust) reflect the minimum FDR at which each test can be called significant.
-Use these values to determine significance by comparing them to your desired FDR threshold (e.g., 0.05).
+Controlling the false discovery rate (FDR) is critical in enrichment analysis, especially when thousands of statistical tests are performed simultaneously (e.g., testing many gene sets, pathways, or terms for enrichment): - Multiple Comparisons Increase False Positives: In enrichment analyses, each hypothesis test (such as whether a specific gene set is enriched) carries a risk of yielding a false positive---detecting significance where there is none. When testing hundreds or thousands of hypotheses, the probability of encountering several false positives increases dramatically. - FDR Balances Discovery and Error: Unlike stricter corrections (e.g., Bonferroni), which often result in missing true findings because they are overly conservative, controlling FDR allows researchers to detect more significant results while maintaining a specified proportion of false positives among all significant findings. - Improves Interpretability of Results: In practical biological applications, such as genomics and proteomics, FDR control means that of all reported significant gene sets or pathways, only a small, known proportion are expected to be false discoveries. This provides confidence in the reported biological findings and enhances reproducibility.
+
+The adjusted p-values (bh_adjust) reflect the minimum FDR at which each test can be called significant. Use these values to determine significance by comparing them to your desired FDR threshold (e.g., 0.05).
+
+*Generated from ChatGPT on 09AUG2025*
+:::
 
 ## Reduce redundancy
 
-What is a semantic similarity matrix? \>Calculating the similarity matrix and reducing GO terms First step is to get the similarity matrix between terms. The function calculateSimMatrix takes a list of GO terms for which the semantic simlarity is to be calculated, an OrgDb object for an organism, the ontology of interest and the method to calculate the similarity scores.
+What is a semantic similarity matrix?
+
+> Calculating the similarity matrix and reducing GO terms First step is to get the similarity matrix between terms. The function calculateSimMatrix takes a list of GO terms for which the semantic simlarity is to be calculated, an OrgDb object for an organism, the ontology of interest and the method to calculate the similarity scores.
 
 > NOTE:rrvgo uses the similarity between pairs of terms to compute a distance matrix, defined as (1-simMatrix). The terms are then hierarchically clustered using complete linkage, and the tree is cut at the desired threshold, picking the term with the highest score as the representative of each group. Therefore, higher thresholds lead to fewer groups, and the threshold should be read as the minimum similarity between group representatives.
-
-> If the organism is not supported in Bioconductor, you can still build your own OrgDb object usign the AnnotationForge package and rendering the necessary data for semantic similarity using the GOSemSim package with:
-
-> `my_new_fancy_orgdb_object <- 'org.Zz.eg.db'` `hsGO <- GOSemSim::godata(my_new_fancy_orgdb_object, ont="MF")` Create named scores vector: -log10 adjusted p-values
-
-scores \<- setNames(-log10(GO_BP\$bh_adjust), GO_BP\$category)
 
 ```{r}
 # Filter for biological process terms with valid p-values
@@ -331,7 +332,7 @@ GO_BP <- GO.bp %>%
 # Calculate semantic similarity matrix
 simMatrix <- calculateSimMatrix(
   GO_BP$category, # the column of go terms
-  orgdb="org.Ce.eg.db", #c. elegans database
+  orgdb="org.Ce.eg.db", #c. elegans database org.Ce.eg.db
   ont = "BP",
   method = "Rel"
 )
@@ -340,7 +341,9 @@ simMatrix <- calculateSimMatrix(
 
 Create named scores vector.
 
-::: callout-caution The first time I ran this as: `scores <- setNames(-log10(GO_BP$bh_adjust), GO_BP$category)` but some of the bh_adjust values are \~0, and the -log10 of 0 is Inf. This messes with interpretation and visualization down the line, so instead we generate the scores using `.Machine$double.xmin`, which is `~2.225074e-308`, the smallest positive double in R. `pmax()` replaces any 0 with that minimum before transforming it with `-log10()`.
+::: callout-caution
+The first time I ran this as: `scores <- setNames(-log10(GO_BP$bh_adjust), GO_BP$category)` but some of the bh_adjust values are \~0, and the -log10 of 0 is Inf. This messes with interpretation and visualization down the line, so instead we generate the scores using `.Machine$double.xmin`, which is `~2.225074e-308`, the smallest positive double in R. `pmax()` replaces any 0 with that minimum before transforming it with `-log10()`.
+:::
 
 ```{r}
 # Create named scores vector
@@ -353,11 +356,9 @@ scores <- setNames(
 reducedTerms <- reduceSimMatrix(
   simMatrix,
   scores = scores,
-  threshold = 0.7,
+  threshold = 0.8,
   orgdb = "org.Ce.eg.db"
 )
-
-
 
 # Done! You can now save and plot
 write_csv(reducedTerms, "../../output/07_go/reducedTerms.csv")
@@ -369,7 +370,10 @@ simMatrix_save <- simMatrix %>%
 write_csv(simMatrix_save, "../../output/07_go/simMatrix.csv")
 ```
 
+
 # Plotting & interpretation
+
+[Using the rrvgo package](https://bioconductor.org/packages/devel/bioc/vignettes/rrvgo/inst/doc/rrvgo.html)
 
 ## Similarity matrix heatmap
 
@@ -388,8 +392,44 @@ heatmapPlot(simMatrix,
 Plot GO terms as scattered points. Distances between points represent the similarity between terms, and axes are the first 2 components of applying a PCoA to the (di)similarity matrix. Size of the point represents the provided scores or, in its absence, the number of genes the GO term contains.
 
 ```{r}
-scatterPlot(simMatrix, reducedTerms)
+scatterPlot(simMatrix, reducedTerms,
+            onlyParents = FALSE,
+            addLabel = TRUE)
 ```
+
+I want a dataframe that groups my GO terms based on these 5 main clusters displayed in this PCA.
+The scatterPlot uses a dimensionality reduction (PCoA) approach to project GO terms into 2D space and then visually groups the points into a smaller number of major clusters. These visual clusters are typically broader groupings, which correspond to higher-level semantic similarity rather than the narrow clusters from the cut tree.A possible approach if you want to create a cluster assignment dataframe matching the 5 visual clusters is to:
+- Extract the 2D coordinates from the scatterPlot dimensionality reduction output,
+- Apply a clustering method on the 2D coordinates (e.g., k-means with k=5),
+- Create a new dataframe linking each GO term to its visual cluster.
+This approach aligns the clustering with the displayed scatterPlot clusters rather than the original fine-grained clusters.
+
+```{r}
+# Distance from similarity matrix
+dist <- as.dist(1 - simMatrix)
+
+# PCoA to 2 dimensions
+coord <- cmdscale(dist, k = 2)
+
+# Convert to dataframe with GO terms
+df_coords <- data.frame(go = rownames(simMatrix), Dim1 = coord[,1], Dim2 = coord[,2])
+
+```
+
+Cluster the terms visually in 2D space
+Use k-means clustering on the 2D coordinates with k = 5 (number of desired clusters).
+```{r}
+set.seed(123)  # for reproducibility
+clusters <- kmeans(df_coords[, c("Dim1", "Dim2")], centers = 5)
+df_coords$cluster <- as.factor(clusters$cluster)
+```
+
+Combine cluster info with other GO term data
+Merge this dataframe with your reducedTerms or other GO annotation information as needed.
+```{r}
+final_df <- merge(df_coords, reducedTerms, by.x = "go", by.y = "go")
+```
+This dataframe `final_df` will now include each GO term, its 2D coordinates used for visualization, and its assigned cluster corresponding to the 5 major groups in the scatterPlot.
 
 ## Treemap plot
 
@@ -417,84 +457,112 @@ Using [GOplot](https://cran.r-project.org/web/packages/GOplot/vignettes/GOplot_v
 
 Data object for plotting needs two data frame inputs:
 
-
 1.  **result** of functional analysis with
-    1. category: GO term annotation type (e.g., "BP", "MF", "CC")
-    2. ID: GO term identifier (e.g., "GO:0008150")
-    3. term: GO term description
-    4. adj_pval: the `bh_adjust` column from the GO enrichment analysis
+    1.  category: GO term annotation type (e.g., "BP", "MF", "CC")
+    2.  ID: GO term identifier (e.g., "GO:0008150")
+    3.  term: GO term description
+    4.  adj_pval: the `bh_adjust` column from the GO enrichment analysis
 
-> The significance of a term is indicated by the adjusted p-value (adj_pval). Terms with an adjusted p-value < 0.05 are considered as **significantly enriched** and are more likely to provide reliable information.
+> The significance of a term is indicated by the adjusted p-value (adj_pval). Terms with an adjusted p-value \< 0.05 are considered as **significantly enriched** and are more likely to provide reliable information.
 
 `GO_BP` is the result of our functional analysis...
- 
+
 ```{r}
 str(GO_BP)
 ```
-
 
 ```{r}
 results_circ <- GO_BP %>% 
   rename(ID = category,
          category = ontology,
-         adj_pval = bh_adjust) %>% 
-  select(category, ID, term, adj_pval)
-
-head(results_circ)
+         adj_pval = bh_adjust,
+         count = numInCat) %>% 
+  select(category, ID, term, adj_pval, count)
 ```
 
-2.  list of selected **genes** and log2FC from a DESeq2 result
-    1. genes: (Your gene ID (use your long gene IDs directly))
-    2. log2FC: from one of the DESeq2 contrasts
-
-```{r}
-genes_circ <- sig_genes_anno %>% 
-  select(genes = gene_id, 
-         logFC = earlygastrula_low_log2FC, 
-         adj_pval = earlygastrula_low_padj)
-
-head(genes_circ)
-```
-
-The circle_dat() fucntion will generate a count and a zscore column
-    - count: Number of genes per GO term
-    - zscore: GO term z-score, typically calculated as (number of upregulated genes minus downregulated genes)/sqrt(count) for that term
-
-
-
+And even though the vignette doesn't say you need it, you need a column of genes for each go term.
 
 ```{r}
 terms_circ <- GO.terms %>% 
   rename(ID = GOs,
          genes = gene)
 
-head(terms_circ)
+str(terms_circ)
+unique(terms_circ$genes)
 ```
 
 So we have to join results_circ to terms_circ
 
 ```{r}
-circ_df <- results_circ %>%  
-  inner_join(terms_circ, by = "ID")
+go_circ <- results_circ %>%  
+  full_join(terms_circ, by = "ID") %>% 
+  select(category, ID, term, genes, adj_pval, count)
+
+str(go_circ)
+unique(go_circ$genes)
+```
+
+2.  list of selected **genes** and log2FC from a DESeq2 result
+    1.  ID: (Your gene ID (use your long gene IDs directly))
+    2.  log2FC: from one of the DESeq2 contrasts
+
+::: callout-note
+The Log2FC will be displayed on the chord diagram, and you can add in additional values from other contrasts after the initial circ object is made. For the time being we're going to select the early gastrula low contrast because it had the most DEGs
+:::
+
+```{r}
+genes_circ <- sig_genes_anno %>% 
+  select(ID = gene_id, 
+         logFC = earlygastrula_low_log2FC)
+
+str(genes_circ)
+```
+
+The circle_dat() function will generate a count and a zscore column - count: Number of genes per GO term - zscore: GO term z-score, typically calculated as (number of upregulated genes minus downregulated genes)/sqrt(count) for that term
+
+::: callout-caution
+The `circle_dat()` function expects your gene ids to be named `genes` in your GO results dataframe and `ID` in your gene list dataframe... this is tricky, watch out!
+:::
+
+The following code checks that the gene id column names are the same in the two dataframes with differently named columns
+
+```{r}
+length(intersect(go_circ$genes, genes_circ$ID))
 ```
 
 ```{r}
-circ <- circle_dat(circ_df, genes_circ)
+circ <- circle_dat(go_circ, genes_circ)
 ```
 
+`circ` is the object that will now be used for plotting!
+
 ```{r}
-circ_df <- circ_df %>% 
-  inner_join(genes_egl_circ, by = "genes") %>% 
-  rename(logFC = earlygastrula_low_log2FC,
-         adj_pval = earlygastrula_low_padj) 
+# circ from circle_dat()
+str(circ)
+```
+
+::: callout-caution
+`circle_dat()` reformatted the gene ids to be all uppercase
+:::
+
+```{r}
+summary(circ$count)
+```
+
+::: callout-caution
+Did not appear to calculate `count` correctly... it isn't counting the genes per term but rather the number of times a term is assigned to a gene... which is always 1, This also throws off the zscore calculation which depends on count.
+:::
+
+#### Or manually `circ_df`
+
+```{r}
+circ_df <- go_circ %>%  
+  full_join(genes_circ, by = c("genes" = "ID"))
+
 str(circ_df)
 ```
 
 Add zscore column
-
-> The last column contains the zscore, an easy to calculate value to give you a hint if the biological process (/molecular function/cellular components) is more likely to be decreased (negative value) or increased (positive value). $$
-> zscore = \frac{(up - down)}{\sqrt(count)}
-> $$ Whereas up and down are the number of assigned genes up-regulated (logFC\>0) in the data or down- regulated(logFC\<0), respectively.
 
 ```{r}
 circ_df <- circ_df %>%
@@ -502,6 +570,46 @@ circ_df <- circ_df %>%
   mutate(zscore = (sum(logFC > 0) - sum(logFC < 0)) / sqrt(count)) %>%
   ungroup()
 ```
+
+::: column-margin
+::: callout-note
+### What does the zscore tell us?
+
+The z-score in your gene ontology (GO) analysis context is a statistical measure that helps indicate whether a GO term (biological process, molecular function, or cellular component) is more likely to be biologically increased or decreased based on the direction of gene expression changes.
+
+Specifically, your z-score formula $$
+zscore = \frac{(up - down)}{\sqrt(count)}
+$$ means:
+
+-   "up" is the number of genes assigned to that GO term that are up-regulated (logFC \> 0).
+
+-   "down" is the number of genes assigned to that GO term that are down-regulated (logFC \< 0).
+
+-   "count" is the total number of genes assigned to that GO term.
+
+Interpretation of z-scores:
+
+A positive z-score indicates that the GO term has more up-regulated genes than down-regulated genes relative to its size and is therefore more likely to be biologically increased or activated.
+
+A negative z-score indicates more down-regulated genes and suggests that the GO term is more likely to be biologically decreased or inhibited.
+
+The magnitude of the z-score tells you how strong this trend is, adjusted for the total number of genes in that GO term.
+
+In your data, z-scores ranging approximately from +2 to -1.73 mean:
+
+Values toward +2 imply that some GO terms show a notable prevalence of up-regulated genes, suggesting activation or up-regulation of those biological functions or processes.
+
+Values near -1.73 indicate other GO terms have a moderate dominance of down-regulated genes, implying suppression or down-regulation.
+
+Typically, a z-score greater than 2 or less than -2 is considered significant evidence of activation or inhibition, respectively, though borderline values like yours still provide useful directional hints.
+
+This z-score metric provides a simple, normalized way to capture the overall regulatory direction of each GO term based on the gene expression data from your DESeq2 contrast, giving you an intuitive measure to prioritize and visualize the biological processes likely impacted in your dataset.
+
+Thus, in your chord diagram or other visualizations, z-score can be used to color or weight GO terms and gene links to quickly highlight activated vs. repressed functions.
+
+*Generated via perplexity AI on 15AUG2025*
+:::
+:::
 
 ```{r}
 # 4. Select and arrange columns to match GOplot 'circ' format
@@ -515,43 +623,48 @@ circ <- circ_df %>%
          adj_pval,
          zscore) %>% 
   as.data.frame()
-
-# circ is now ready for GOChord
-str(circ)
 ```
 
-> Therefore, you want to include more than one logFC value per gene. To adjust to this situation you should use the nlfc argument. It is a numeric value and it defines the number of logFC columns within your binary membership matrix. The default is '1' assuming that most of the time you just have one contrast and one logFC value per gene.
+### Select processes
 
 ```{r}
-circ_df <- circ %>% mutate(
-  genes = trimws(as.character(genes)),
-  ID   = trimws(as.character(ID))
-) %>% as.data.frame()
+process <- circ_df %>%
+  group_by(term) %>% 
+  select(term, count, adj_pval, zscore) %>% 
+  distinct() %>% 
+  arrange(count)
 
-genes_df <- circ_df %>%
-  select(genes, logFC) %>%
-  distinct() %>%
-  mutate(genes = trimws(as.character(genes))) %>%
-  as.data.frame()
-
-processes_df <- circ_df %>%
-  select(category, ID, term, count, zscore) %>%
-  distinct() %>%
-  mutate(ID = trimws(as.character(ID))) %>%
-  as.data.frame()
+str(process)
 ```
+
+
 
 ### Create binary matrix using `chord_dat()`
-```{r}
+
+::: callout-caution
+`chord_dat()` expects the `genes =` to have genes in a column named `ID`
+:::
+
+### Plot chord diagram
+```{r, fig.height=12}
+
 chord <- chord_dat(
-  data    = circ_df,
-  genes   = genes_df,
-  process = processes_df
-)
+  data = circ_df,
+  process = c("regulation of RNA metabolic process", 
+              "positive regulation of biological process", 
+              "cellular metabolic process", 
+              "response to stress", 
+              "response to chemical"))
 
 # Plot
 GOChord(chord, gene.order = "logFC")
 ```
+
+::: callout-note
+- Why no LogFC plotted?
+- Make gene names readable
+:::
+
 
 ```{r}
 # Filter circ to keep GO terms with count >= 2 (or a threshold you choose)
@@ -599,6 +712,4 @@ exchord <- chord_dat(excirc, EC$genes, EC$process)
 GOChord(exchord, gene.order = "logFC")
 ```
 
-```{r}
-str(excirc)
-```
+> Therefore, you want to include more than one logFC value per gene. To adjust to this situation you should use the nlfc argument. It is a numeric value and it defines the number of logFC columns within your binary membership matrix. The default is '1' assuming that most of the time you just have one contrast and one logFC value per gene.
