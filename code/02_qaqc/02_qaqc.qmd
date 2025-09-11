@@ -1,20 +1,35 @@
 ---
-title: "Step 3: QAQC RNA sequences"
+title: "Step 2: QAQC RNA sequences"
 subtitle: "Use `FastQC`, `MultiQC`, and `Fastp` to clean up sequences"
 author: "Sarah Tanja"
 date: 10/10/2024
 date-format: long
 date-modified: today
-format: gfm
-toc: true
-toc-depth: 3
-link-external-icon: true
-link-external-newwindow: true
-reference-location: margin
-citation-location: margin
+format:
+  gfm: 
+    toc: true
+    number-sections: true
+  html:
+    theme: journal
+    highlight-style: github
+    page-layout: full
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    number-sections: true
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    reference-location: margin
+    citation-location: margin
 ---
 
-# Overview
+# Background
 
 In this script, we will generate FastQC/MultiQC for raw sequences, conduct trimming and cleaning, then generate reports for cleaned sequences.
 
@@ -22,9 +37,8 @@ In this script, we will generate FastQC/MultiQC for raw sequences, conduct trimm
 
 *FastQC generates sequence quality information of your reads*
 
-```{r, engine = 'bash'}
+```{r fastqc, engine = 'bash'}
 /home/shared/FastQC-0.12.1/fastqc -h
-
 ```
 
 ## [multiqc](https://anaconda.org/bioconda/multiqc)
@@ -43,13 +57,26 @@ How to do a [for loop in bash](https://stackoverflow.com/questions/9612090/how-t
 Instead of \``git add –all` execute `find . -type f -size -104M -exec git add {} +` in terminal before making a git commit to only track files that are under the git size limit of 10MB.
 :::
 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  fig.align = "center",
+  echo = TRUE,         # Display code chunks
+  eval = FALSE,        # Evaluate code chunks
+  warning = FALSE,     # Hide warnings
+  message = FALSE,     # Hide messages
+  comment = ""         # Prevents appending '##' to beginning of lines in code output
+)
+```
+
+
 # Create a Bash variables file
 
 This allows usage of Bash variables across R Markdown chunks.
 
 ## Name directory paths
 
-```{r, engine = bash}
+```{r, engine = 'bash'}
 {
 echo "#### Assign Variables ####"
 echo ""
@@ -178,7 +205,7 @@ ${fastqc_list}
 # Load bash variables into memory
 source .bashvars
 
-cd ../output/03_qaqc/raw_reads
+cd ../output/02_qaqc/raw_reads
 ${multiqc} ./
 ```
 
@@ -210,7 +237,7 @@ Watch a quick [6-min tutorial](https://www.youtube.com/watch?v=qPbIlO_KWN0) on h
 
 -   `--out2` \| Path to reverse read output
 
-```{bash}
+```{r, engine='bash'}
 # Load bash variables into memory
 source .bashvars
 
@@ -274,7 +301,7 @@ done
 
 Using a for loop to unzip and run fastqc sequentially... this uses less CPU. When I try to run them all at once the CPU usage gets bogged down. This takes longer, but completes in \~5hrs.
 
-```{r, engine = 'bash'}
+```{r, engine='bash'}
 # Load bash variables into memory
 source .bashvars
 
@@ -310,7 +337,7 @@ echo ""
 
 # Compile report of trimmed reads with `MultiQC`
 
-```{r, engine = 'bash'}
+```{r, engine='bash'}
 
 # Load bash variables into memory
 source .bashvars

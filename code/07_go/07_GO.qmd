@@ -43,8 +43,6 @@ We do this using the R package `goseq`. Why is `goseq` different from other enri
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
-  fig.width = 12,
-  fig.height = 8,
   fig.align = "center",
   dpi = 600,
   echo = TRUE,         # Display code chunks
@@ -91,6 +89,7 @@ library(AnnotationForge)
 library(GOSemSim)
 library(tidyverse)
 library(flexoki)
+library(plotly)
 ```
 
 ## Read in gene lists and counts
@@ -392,15 +391,21 @@ heatmapPlot(simMatrix,
 ## Scatter plot depicting groups and distance between terms
 
 Plot GO terms as scattered points. Distances between points represent the similarity between terms, and axes are the first 2 components of applying a PCoA to the (di)similarity matrix. Size of the point represents the provided scores or, in its absence, the number of genes the GO term contains.
-
 ```{r}
+?scatterPlot
+```
+
+- addLabel	
+add labels with the most representative term of the group.
+```{r, fig.height=10, fig.width=14}
 scatterPlot(simMatrix, reducedTerms,
             onlyParents = FALSE,
-            addLabel = TRUE)
+            addLabel = TRUE,
+            labelSize = 4)
 ```
 
 I want a dataframe that groups my GO terms based on these 5 main clusters displayed in this PCA.
-The scatterPlot uses a dimensionality reduction (PCoA) approach to project GO terms into 2D space and then visually groups the points into a smaller number of major clusters. These visual clusters are typically broader groupings, which correspond to higher-level semantic similarity rather than the narrow clusters from the cut tree.A possible approach if you want to create a cluster assignment dataframe matching the 5 visual clusters is to:
+The scatterPlot uses a dimensionality reduction (PCoA) approach to project GO terms into 2D space and then visually groups the points into a smaller number of major clusters. These visual clusters are typically broader groupings, which correspond to higher-level semantic similarity rather than the narrow clusters from the cut tree. A possible approach if you want to create a cluster assignment dataframe matching the 5 visual clusters is to:
 - Extract the 2D coordinates from the scatterPlot dimensionality reduction output,
 - Apply a clustering method on the 2D coordinates (e.g., k-means with k=5),
 - Create a new dataframe linking each GO term to its visual cluster.
@@ -432,6 +437,115 @@ Merge this dataframe with your reducedTerms or other GO annotation information a
 final_df <- merge(df_coords, reducedTerms, by.x = "go", by.y = "go")
 ```
 This dataframe `final_df` will now include each GO term, its 2D coordinates used for visualization, and its assigned cluster corresponding to the 5 major groups in the scatterPlot.
+
+```{r}
+# 5) Quick visual check (should resemble your scatterPlot clusters)
+ggplot(final_df, aes(Dim1, Dim2, color = cluster.x, size = score, alpha = 0.4)) +
+  geom_point() +
+  coord_equal() +
+  labs(color = "Cluster (k=5)", title = "GO terms clustered in PCoA space") +
+  theme_minimal(base_size = 12)
+```
+```{r, fig.height=10, fig.width=15}
+# 5) Quick visual check (should resemble your scatterPlot clusters)
+ggplot(final_df, aes(Dim1, Dim2, color = parentTerm, size = score)) +
+  geom_point(alpha = 0.5) +
+  coord_equal() +
+  labs(color = "Parent Term", title = "GO terms clustered in PCoA space") +
+  theme_minimal(base_size = 12)
+```
+```{r}
+p <- ggplot(final_df, aes(
+    Dim1, Dim2,
+    color = parentTerm,
+    size  = score,
+    text  = paste0(
+      "GO: ", go,
+      "<br>Parent Term: ", parentTerm,
+      "<br>Term: ", term,
+      "<br>Score: ", round(score, 2)
+    )
+  )) +
+  geom_point(alpha = 0.5) +
+  coord_equal() +
+  labs(color = "Parent Term",
+       size  = "Score",
+       title = "GO terms clustered in PCoA space") +
+  theme_minimal(base_size = 12)
+
+ggplotly(p, tooltip = "text")
+```
+How to interpret distances
+
+Closer points = more semantically similar GO terms.
+That means the gene sets they represent overlap more or describe conceptually related processes.
+
+Farther points = less similar biologically.
+Their gene sets don’t overlap much, and the ontology sees them as describing different processes.
+The PCoA projection does not use your logFCs or sample-level values — it uses GO term relationships (semantic similarity).
+
+1. What your clusters represent
+
+The clusters from the PCoA + k-means are based on the pairwise semantic similarity scores across all GO terms.
+
+These are data-driven groupings that capture overall gene overlap + ontology proximity.
+
+The algorithm doesn’t “know” about your chosen parentTerm column — it just groups terms that have similar meaning.
+
+2. What your parentTerm variable is
+
+The “parent term” you merged in is a single hierarchical label from the GO DAG (graph).
+
+A GO term can belong under multiple higher-level categories in the ontology, but in your dataset it’s probably annotated with just one chosen parent (often the most specific or most frequent).
+
+Because the GO graph is not a strict tree, related terms may have different parents — so they don’t collapse neatly into one parentTerm cluster.
+
+3. Why they don’t line up
+
+Ontology is many-to-many: two GO terms might be semantically very close (high overlap) but come from different parents in the hierarchy.
+
+Cluster ≠ hierarchy: k-means clusters cut across the graph structure; they group by similarity, not by the official ontology tree.
+
+Parent terms are broad: “cellular process” or “metabolic process” can cover huge swathes of biology, so those categories span multiple similarity clusters.
+
+4. How to check alignment
+
+Look at your clusters and check: are terms within a cluster biologically coherent even if they span different parents? Often they are — they share overlapping gene sets or related functions.
+
+The clusters are “data-driven neighborhoods” of related GO terms.
+The parent terms are “administrative labels” from the GO DAG.
+They don’t always coincide because biology (and the GO ontology) is more tangled than a simple tree.
+Clusters in the 2D space: show neighborhoods of semantically similar terms (terms that describe similar biology and often share many genes).
+
+Point size (score): tells you which terms were more strongly enriched.
+
+Color by parentTerm: just tags each dot with the one “parent” you merged in. The fact that colors are mixed within a cluster shows that ontology categories don’t always line up with semantic neighborhoods.
+
+### Summarize cluster content
+
+```{r}
+# Summarize cluster content by parent term
+cluster_summary <- final_df %>%
+  group_by(cluster.x, parentTerm) %>%
+  summarise(
+    n_terms = n(),                     # how many GO terms in this parent within cluster
+    mean_score = mean(score, na.rm = TRUE),  # average enrichment strength
+    max_score = max(score, na.rm = TRUE),    # strongest term in that parent
+    .groups = "drop"
+  ) %>%
+  arrange(cluster.x, desc(n_terms))
+
+# For each cluster, show top 5 parent terms by count (or max score)
+top_terms_by_cluster <- cluster_summary %>%
+  group_by(cluster.x) %>%
+  slice_max(order_by = n_terms, n = 5) %>% # top 5 terms for each of the 5 clusters
+  arrange(cluster.x, desc(n_terms))
+
+top_terms_by_cluster
+```
+
+
+
 
 ## Treemap plot
 
@@ -691,11 +805,30 @@ ribbons_viridis <- viridis(5)
 ribbons_pastel <- brewer.pal(5, "Pastel2")
 ```
 
-```{r plot-chord, fig.height=12}
-# Plot
-GOChord(chord, gene.order = "logFC", gene.size = 0)
+```{r plot-chord, fig.height=10, fig.width=9}
+chordplot <- GOChord(chord, 
+                     gene.order = "logFC",
+                     border.size = 0.2,
+                     gene.size = 3,
+                     title = "Enriched GO terms across significantly different interaction genes",
+                     process.label = 10,
+                     space = 0.02,
+                     gene.space = 0.25)
+chordplot
+```
+
+```{r}
+ggsave("../../output/07_go/chord_plot.png", width = 12, height = 12, dpi = 600 )
 ```
 
 
-
 > Therefore, if you want to include more than one logFC value per gene. To adjust to this situation you should use the nlfc argument. It is a numeric value and it defines the number of logFC columns within your binary membership matrix. The default is '1' assuming that most of the time you just have one contrast and one logFC value per gene.
+
+
+
+# GOHeat
+
+```{r}
+GOHeat(chord, nlfc = 1, fill.col = c('red', 'white', 'blue'))
+```
+

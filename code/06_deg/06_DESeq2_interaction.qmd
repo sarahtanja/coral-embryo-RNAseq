@@ -1,6 +1,6 @@
 ---
 title: "Multifactorial Differential Gene Expression"
-subtitle: "Exploring the **interactions** between embryonic stage and PVC leachate in *Montipora capitata* using DESeq2"
+subtitle: "Exploring the interactions between embryonic stage and PVC leachate in Montipora capitata using DESeq2"
 author: "Sarah Tanja"
 date: 2024-12-02
 date-modified: today
@@ -30,12 +30,14 @@ format:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
-  echo = TRUE,         # Display code chunks
-  eval = TRUE,        # Evaluate code chunks
-  warning = FALSE,     # Hide warnings
-  message = FALSE,     # Hide messages
-  comment = ""         # Prevents appending '##' to beginning of lines in code output
-)
+  echo = TRUE, # Display code chunks
+  eval = TRUE, # Evaluate code chunks
+  warning = FALSE, # Hide warnings
+  message = FALSE, # Hide messages
+  comment = "", # Prevents appending '##' to beginning of lines in code output)
+  dev = "jpeg",
+  dpi = 600,
+  fig.retina = 2)        
 ```
 
 # Background
@@ -56,9 +58,7 @@ Here we are looking at a multifactorial differential gene expression analysis fo
 
 ## Install packages
 
-Copy and run this once in the console
-
-```{r}
+```{r, eval=FALSE}
 # CRAN packages
 install.packages(c(
   "tidyverse",
@@ -71,6 +71,7 @@ install.packages(c(
   "remotes"  # required for GitHub installs
 ))
 
+install.packages("ComplexUpset")    # ggplot2-based, prettier
 # GitHub package
 remotes::install_github("mdscheuerell/flexoki")
 
@@ -95,11 +96,12 @@ library(plotly)
 library(cowplot)
 library(vsn)
 library(pheatmap)
+library(ComplexUpset)
 ```
 
 ## Import filtered gene count matrix
 
-In this count matrix, each row represents a gene, each column a sequenced RNA library, and the values give the estimated counts of fragments that were assigned to the respective gene in each library by `HISAT2`
+In this count matrix, each row represents a gene, each column a sequenced RNA library (i.e. a sample), and the values give the estimated counts of fragments that were assigned to the respective gene in each library by `HISAT2`
 
 -   `check.names = FALSE` removed the 'X' from in front of sample id's in the column headers
 
@@ -108,13 +110,13 @@ gcm_filtor <- read.csv("../../output/05_explore/gcm_filtor.csv", row.names="gene
 head(gcm_filtor)
 ```
 
--   The raw unfiltered, untransformed, count matrix shows counts of whole numbers (integers)
+-   The count matrix shows counts of whole numbers (integers)
 -   Each column is a sample
 -   Each row is a gene
 -   A sample id describes parental crosses (the first string of numbers), the pollution exposure (C, L, M, H), and the embryonic stage (4, 9, 14)
 
 ::: callout-note
-`gcm_filtor` is the gene count matrix that has been filtered down to only contain rows where counts are at least 15 in 75% of the samples and 2 outlier samples ( `131415L4` and `789C4` ) that had poor HISAT alignment and did not group in the exploratory PCA are already removed
+`gcm_filtor` is the gene count matrix that has been filtered down to only contain rows where counts are at least 15 in 75% of the samples and 2 outlier samples ( `131415L4` and `789C4` ) that had poor HISAT alignment and did not group in the exploratory PCA are already removed. This step was completed in `code/05_explore`
 :::
 
 ## Import metadata
@@ -136,10 +138,7 @@ str(metadata_or)
 ```
 
 ::: callout-note
-`metadata_filt` contains metadata for 61 samples with explanatory variables: - `stage` is a factor with 3 levels (cleavage, prawnchip, earlygastrula) - `hpf` is a discrete numerical variable representing the hours post fertilization 4, 9, and 14 (corresponding to `stage`)
-
--   `leachate` is a factor with 4 levels (control, low, mid, high)
--   `leachate_mgL` is a continuous numerical variable representing leachate concentrations in mg/L with values 0 , 0.01 , 0.1 , and 1 (corresponding to `leachate`)
+`metadata_or` contains metadata for 61 samples (*o*utliers *r*emoved) with explanatory variables: - `stage` is a factor with 3 levels (cleavage, prawnchip, earlygastrula) - `hpf` is a discrete numerical variable representing the hours post fertilization 4, 9, and 14 (corresponding to `stage`) - `leachate` is a factor with 4 levels (control, low, mid, high) - `leachate_mgL` is a continuous numerical variable representing leachate concentrations in mg/L with values 0 , 0.01 , 0.1 , and 1 (corresponding to `leachate`)
 :::
 
 # LRT
@@ -160,7 +159,7 @@ Embryonic stage should be treated as a categorical variable because DESeq2 will 
 
 Whether leachate is treated as a factor or a numeric (continuous) variable radically changes the interpretation of both the main effect and the interaction. If a variable is numeric, DESeq2 treats it as a continuous covariate. This fits a regression slope, estimating the change in gene expression per unit increase in the variable.
 
-Coding `leachate` as a categorical factor allows each stage to have its own independent leachate effect. ✅ Use this if you expect nonlinear, stage-specific effects of exposure.
+Coding `leachate` as a categorical factor allows each stage to have its own independent leachate effect. ✅ Use this if you expect nonlinear, stage-specific effects of exposure (note: we do).
 
 ```{r, eval=TRUE}
 
@@ -417,24 +416,7 @@ for (i in 1:nrow(all_info)) {
 
 ```
 
-Display all plots
-
-```{r}
-# Now render them all
-for (p in plots) {
-  print(p)
-}
-```
-
-'Variance stabilized gene expression across genes with significant interactions between leachate and stage'
-
-```{r}
-plotly::subplot(plots, nrows = 2, margin = 0.05) %>% 
-  layout(title = "All 44",
-         showlegend = FALSE)
-```
-
-### Gene Expression Plots
+### Gene Expression Interaction Plots
 
 ::: {.grid layout-ncol="4"}
 ![](../../output/06_deg/interactions/gene_plots/1.png) ![](../../output/06_deg/interactions/gene_plots/2.png) ![](../../output/06_deg/interactions/gene_plots/3.png) ![](../../output/06_deg/interactions/gene_plots/4.png) ![](../../output/06_deg/interactions/gene_plots/5.png) ![](../../output/06_deg/interactions/gene_plots/6.png) ![](../../output/06_deg/interactions/gene_plots/7.png) ![](../../output/06_deg/interactions/gene_plots/8.png) ![](../../output/06_deg/interactions/gene_plots/9.png) ![](../../output/06_deg/interactions/gene_plots/10.png) ![](../../output/06_deg/interactions/gene_plots/11.png) ![](../../output/06_deg/interactions/gene_plots/12.png) ![](../../output/06_deg/interactions/gene_plots/13.png) ![](../../output/06_deg/interactions/gene_plots/14.png) ![](../../output/06_deg/interactions/gene_plots/15.png) ![](../../output/06_deg/interactions/gene_plots/16.png) ![](../../output/06_deg/interactions/gene_plots/17.png) ![](../../output/06_deg/interactions/gene_plots/18.png) ![](../../output/06_deg/interactions/gene_plots/19.png) ![](../../output/06_deg/interactions/gene_plots/20.png) ![](../../output/06_deg/interactions/gene_plots/21.png) ![](../../output/06_deg/interactions/gene_plots/22.png) ![](../../output/06_deg/interactions/gene_plots/23.png) ![](../../output/06_deg/interactions/gene_plots/24.png) ![](../../output/06_deg/interactions/gene_plots/25.png) ![](../../output/06_deg/interactions/gene_plots/26.png) ![](../../output/06_deg/interactions/gene_plots/27.png) ![](../../output/06_deg/interactions/gene_plots/28.png) ![](../../output/06_deg/interactions/gene_plots/29.png) ![](../../output/06_deg/interactions/gene_plots/30.png) ![](../../output/06_deg/interactions/gene_plots/31.png) ![](../../output/06_deg/interactions/gene_plots/32.png) ![](../../output/06_deg/interactions/gene_plots/33.png) ![](../../output/06_deg/interactions/gene_plots/34.png) ![](../../output/06_deg/interactions/gene_plots/35.png) ![](../../output/06_deg/interactions/gene_plots/36.png) ![](../../output/06_deg/interactions/gene_plots/37.png) ![](../../output/06_deg/interactions/gene_plots/38.png) ![](../../output/06_deg/interactions/gene_plots/39.png) ![](../../output/06_deg/interactions/gene_plots/40.png) ![](../../output/06_deg/interactions/gene_plots/41.png) ![](../../output/06_deg/interactions/gene_plots/42.png) ![](../../output/06_deg/interactions/gene_plots/43.png) ![](../../output/06_deg/interactions/gene_plots/44.png)
@@ -450,12 +432,10 @@ Next step: 👉 Use Wald tests to dig into which interactions (e.g., stage × le
 
 > Wald tests on interaction terms assess whether the interaction coefficient **differs significantly from 0** --- i.e., whether the combined effect of that `hpf` and `leachate` level deviates from what would be expected by the additive effects alone.
 
-| What You Want to Know                                 | Use                           | Explanation                                     |
-|-------------------------------------------------------|-------------------------------|-------------------------------------------------|
-| Any interaction overall?                              | LRT                           | `reduced = ~ stage + leachate`                  |
-| Specific interaction term significant?                | Wald                          | `results(dds, name = "stageX.leachateY")`       |
-| Total effect of leachate at specific stage vs control | Wald with combined contrast   | `c("leachateY_vs_control", "stageX.leachateY")` |
-| Difference in leachate effect between two stages      | Wald contrast of interactions | `list("stageX.leachateY", "stageZ.leachateY")`  |
+| What You Want to Know                                               | Use            | Explanation                                                                   |
+|---------------------------------------------------------------------|----------------|-------------------------------------------------------------------------------|
+| Specific interaction term significant?                              | Wald           | `results(dds, name = "stageX.leachateY")`                                     |
+| Total effect of a leachate treatment at a specific stage vs control | Wald contrasts | `results(dds, conrtast = list(c("leachateY_vs_control", "stageX.leachateY"))` |
 
 ```{r}
 dds <- DESeqDataSetFromMatrix(countData = gcm_filtor,
@@ -485,9 +465,9 @@ resultsNames(dds_wald)
 
 -   "stageearlygastrula.leachatehigh"
 
-> Each of the above interaction terms tells us the extra effect of leachate at this stage (vs the additive sum of the stage and leachate effects).
+Each of the above interaction terms tells us the extra effect of the leachate level at a stage (vs the additive sum of the stage and leachate effects) in comparison to a control baseline count. For the interaction terms, we are trying to get the "difference of the differences". For this analysis, we are interested in genes that are differentially expressed in treatment conditions, but not in the control condition (ie. genes uniquely changing in a stage due to treatment).
 
-### Extract Wald results for all interaction terms
+### Summarize interactions
 
 ```{r}
 # Get the interaction Wald results
@@ -497,7 +477,33 @@ res_low_pc  <- results(dds_wald, name = "stageprawnchip.leachatelow")
 res_high_eg <- results(dds_wald, name = "stageearlygastrula.leachatehigh")
 res_mid_eg  <- results(dds_wald, name = "stageearlygastrula.leachatemid")
 res_low_eg  <- results(dds_wald, name = "stageearlygastrula.leachatelow")
+```
 
+```{r}
+summary(res_high_pc)
+```
+
+```{r}
+summary(res_mid_pc)
+```
+
+```{r}
+summary(res_low_pc)
+```
+
+```{r}
+summary(res_high_eg)
+```
+
+```{r}
+summary(res_mid_eg)
+```
+
+```{r}
+summary(res_low_eg)
+```
+
+```{r}
 # Combine into a summary
 int_wald_df <- data.frame(
   gene_id = rownames(res_high_pc),
@@ -649,7 +655,150 @@ PCA_sig <- ggplot(pca_sig, aes(PC1, PC2, color = stage, shape = leachate, label 
 ggplotly(PCA_sig, tooltip = "label")
 ```
 
-# Contrasts
+# Contrasts (vs.)
+
+See [A guide to designs and contrasts in DESeq2](https://www.atakanekiz.com/technical/a-guide-to-designs-and-contrasts-in-DESeq2/) by Dr. Atakan Ekiz
+
+```{r}
+resultsNames(dds_wald)
+```
+
+## low leachate vs control (lvc)
+
+for cleavage (baseline stage)
+
+```{r}
+res_lvc_cl <- results(dds_wald, name = "leachate_low_vs_control", alpha = 0.05)
+summary(res_lvc_cl)
+```
+
+::: callout-note
+39 genes were found to be significantly differentially expressed (adjusted p value \< 0.05) at the cleavage stage in the low leachate treatment compared to the control. 14 LFC \> 0 & 25 LFC \< 0.
+:::
+
+```{r}
+sig_lvc_cl <- as.data.frame(subset(res_lvc_cl, padj<0.05))
+sig_lvc_cl <- sig_lvc_cl %>% rownames_to_column(., var = "gene_id") 
+write_csv(sig_lvc_cl, "../../output/06_deg/contrasts/sig_lvc_cl.csv")
+```
+
+for prawnchip
+
+```{r}
+res_lvc_pc <- results(dds_wald, contrast = list(c("leachate_low_vs_control",
+                                                  "stageprawnchip.leachatelow")), 
+                      alpha = 0.05)
+summary(res_lvc_pc)
+```
+
+::: callout-note
+0 genes differentially expressed (adjusted p value \< 0.05) at the prawn chip stage in the low leachate treatment when compared to the control.
+:::
+
+for early gastrula
+
+```{r}
+res_lvc_eg <- results(dds_wald, contrast = list(c("leachate_low_vs_control",
+                                                 "stageearlygastrula.leachatelow")),
+                      alpha = 0.05)
+summary(res_lvc_eg)
+```
+
+::: callout-note
+0 genes differentially expressed (adjusted p value \< 0.05) at the early gatrula stage in the low leachate treatment when compared to the control.
+:::
+
+## mid leachate vs. control (mvc)
+
+for cleavage
+
+```{r}
+res_mvc_cl <- results(dds_wald, name = "leachate_mid_vs_control", alpha = 0.05)
+summary(res_mvc_cl)
+```
+
+::: callout-note
+77 genes were found to be significantly differentially expressed (adjusted p value \< 0.05) at the cleavage stage in the mid leachate treatment compared to the control. 77 LFC \> 0 .
+:::
+
+```{r}
+sig_mvc_cl <- as.data.frame(subset(res_mvc_cl, padj<0.05))
+sig_mvc_cl <- sig_mvc_cl %>% rownames_to_column(., var = "gene_id")
+write_csv(sig_mvc_cl, "../../output/06_deg/contrasts/sig_mvc_cl.csv")
+```
+
+for prawnchip
+
+```{r}
+res_mvc_pc <- results(dds_wald, contrast = list(c("leachate_mid_vs_control",
+                                                  "stageprawnchip.leachatemid")))
+summary(res_mvc_pc)
+```
+
+::: callout-note
+0 genes differentially expressed (adjusted p value \< 0.05) at the prawn chip stage in the mid leachate treatment when compared to the control.
+:::
+
+for early gastrula
+
+```{r}
+res_mvc_eg <- results(dds_wald, contrast = list(c("leachate_mid_vs_control",
+                                                  "stageearlygastrula.leachatemid")))
+summary(res_mvc_eg)
+```
+
+::: callout-note
+0 genes differentially expressed (adjusted p value \< 0.05) at the early gastrula stage in the mid leachate treatment when compared to the control.
+:::
+
+## high leachate vs. control (hvc)
+
+for cleavage
+
+```{r}
+res_hvc_cl <- results(dds_wald, name = "leachate_high_vs_control")
+summary(res_hvc_cl)
+```
+
+::: callout-note
+24 genes were found to be significantly differentially expressed (adjusted p value \< 0.05) at the cleavage stage in the high leachate treatment compared to the control. 8 LFC \> 0 , 16 LFC \<0.
+:::
+
+```{r}
+sig_hvc_cl <- as.data.frame(subset(res_hvc_cl, padj<0.05))
+sig_hvc_cl <- sig_hvc_cl %>% rownames_to_column(., var = "gene_id")
+write_csv(sig_hvc_cl, "../../output/06_deg/contrasts/sig_hvc_cl.csv")
+```
+
+for prawnchip
+
+```{r}
+res_hvc_pc <- results(dds_wald, contrast = list(c("leachate_high_vs_control",
+                                                  "stageprawnchip.leachatehigh")))
+summary(res_hvc_pc)
+```
+
+::: callout-note
+0 genes differentially expressed (adjusted p value \< 0.05) at the prawn chip stage in the high leachate treatment when compared to the control.
+:::
+
+for early gastrula
+
+```{r}
+res_hvc_eg <- results(dds_wald, contrast = list(c("leachate_high_vs_control",
+                                                  "stageearlygastrula.leachatehigh")))
+summary(res_hvc_eg)
+```
+
+::: callout-note
+32 genes were found to be significantly differentially expressed (adjusted p value \< 0.05) at the early gastrula stage in the high leachate treatment compared to the control. 32 LFC \> 0 .
+:::
+
+```{r}
+sig_hvc_eg <- as.data.frame(subset(res_hvc_eg, padj<0.05))
+sig_hvc_eg <- sig_hvc_eg %>% rownames_to_column(., var = "gene_id")
+write_csv(sig_hvc_eg, "../../output/06_deg/contrasts/sig_hvc_eg.csv")
+```
 
 # Save gene lists
 
@@ -662,6 +811,79 @@ ggplotly(PCA_sig, tooltip = "label")
 -   `vsd_sig` : Variance stabilized count matrix of genes from significant list
 
 -   `all_genes` : List of all genes in the dataset (the filtered input to the DESeq object) which will serve as a reference for functional enrichment
+
+```{r}
+# The 39 genes that are sig diff from control at low cleavage 
+sig_lvc_cl <- sig_lvc_cl %>% 
+  mutate(low_cleavage = 1)
+
+# The 77 genes that are sig diff from control at mid cleavage
+sig_mvc_cl <- sig_mvc_cl %>% 
+  mutate(mid_cleavage = 1)
+
+# The 18 genes that are sig diff from control at high cleavage
+sig_hvc_cl <- sig_hvc_cl %>% 
+  mutate(high_cleavage = 1)
+
+# The 13 genes that are sig diff from control at high early gastrula
+sig_hvc_eg <- sig_hvc_eg %>% 
+  mutate(high_earlygastrula = 1)
+```
+
+```{r}
+common_genes <- Reduce(intersect, list(
+  sig_lvc_cl$gene_id,
+  sig_mvc_cl$gene_id,
+  sig_hvc_cl$gene_id
+))
+
+length(common_genes)  # Number of genes common to all cleavage, just 1!
+print(common_genes) # And it is...
+```
+
+::: callout-note
+Montipora_capitata_HIv3\_\_\_TS.g50653.t2" is the only gene common across cleavage with differential expression due to low, mid, and high leachate treatments
+:::
+
+# Gene set overlap: Venn Diagram
+
+```{r}
+genes1 <- sig_lvc_cl$gene_id
+genes2 <- sig_mvc_cl$gene_id
+genes3 <- sig_hvc_cl$gene_id
+genes4 <- sig_hvc_eg$gene_id
+genes5 <- LRT_sig_genes$gene_id
+```
+
+Upset requires a binary membership table (presence/absence dataframe)
+
+```{r}
+all_genes <- unique(c(genes1, genes2, genes3, genes4, genes5))
+
+upset_data <- data.frame(
+  gene_id = all_genes,
+  LVC_CL  = all_genes %in% genes1,
+  MVC_CL  = all_genes %in% genes2,
+  HVC_CL  = all_genes %in% genes3,
+  HVC_EG  = all_genes %in% genes4,
+  LRT     = all_genes %in% genes5
+)
+```
+
+```{r}
+upset_plot <- upset_data %>% 
+  upset(
+    intersect = c("LVC_CL", "MVC_CL", "HVC_CL", "HVC_EG", "LRT"),
+    base_annotations = list(
+      'Intersection size' = intersection_size(
+        counts = TRUE
+      )
+    )
+  ) +
+  labs(title = "UpSet Plot of Significant Genes (P < 0.05)")
+
+upset_plot
+```
 
 ```{r}
 Wald_sig_genes <- int_wald_df_sig
