@@ -12,6 +12,7 @@
 *.fasta
 *.fa
 *.gff3
+*.gtf
 *.gz
 *.ht2
 input/hisat/Montipora_capitata_HIv3-hisat2-indices.tar.gz
