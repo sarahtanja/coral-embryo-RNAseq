@@ -186,7 +186,7 @@ dds_con <- DESeq(dds_con, test = "LRT", reduced = ~ stage + leachate_mgL)
 ```
 
 | Model         | Full model                                  | Reduced model          | LRT tests...                                               |
-|---------------|---------------------------------------------|------------------------|------------------------------------------------------------|
+|--------------|------------------|--------------|--------------------------|
 | `dds_cat_LRT` | `stage + leachate + stage:leachate`         | `stage + leachate`     | Are there **stage-specific effects of leachate (factor)**? |
 | `dds_con_LRT` | `stage + leachate_mgL + stage:leachate_mgL` | `stage + leachate_mgL` | Are there **stage-specific trends** in dose response?      |
 
@@ -433,7 +433,7 @@ Next step: 👉 Use Wald tests to dig into which interactions (e.g., stage × le
 > Wald tests on interaction terms assess whether the interaction coefficient **differs significantly from 0** --- i.e., whether the combined effect of that `hpf` and `leachate` level deviates from what would be expected by the additive effects alone.
 
 | What You Want to Know                                               | Use            | Explanation                                                                   |
-|---------------------------------------------------------------------|----------------|-------------------------------------------------------------------------------|
+|--------------------------|---------------|-------------------------------|
 | Specific interaction term significant?                              | Wald           | `results(dds, name = "stageX.leachateY")`                                     |
 | Total effect of a leachate treatment at a specific stage vs control | Wald contrasts | `results(dds, conrtast = list(c("leachateY_vs_control", "stageX.leachateY"))` |
 
@@ -941,12 +941,16 @@ Run with minimum 3 genes per cluster to detect because we have few DEGs.\
 
 ```{r}
 # Use the `degPatterns` function from the 'DEGreport' package to show gene clusters across sample groups
-stage_clusters <- degPatterns(cluster_vst, metadata = meta, time = "stage", col=NULL, plot=TRUE, minc = 3)
+stage_clusters <- degPatterns(cluster_vst, metadata = meta, time = "stage", col=NULL, plot=TRUE, minc = 4)
 ```
 
 ```{r}
 # Use the `degPatterns` function from the 'DEGreport' package to show gene clusters across sample groups
 clusters <- degPatterns(cluster_vst, metadata = meta, time = "leachate", col=NULL, plot=TRUE, minc = 3)
+```
+
+```{r}
+ggsave(filename="../../output/06_deg/interactions/degPatternscluster_plot.png", width=12, height=10)
 ```
 
 Extract the list of genes in each cluster for leachate (stage grouped all together in one big group, so we can focus in on leachate with the cluster analysis here).
@@ -961,7 +965,7 @@ groups <- clusters$df %>%
 Save the gene cluster annotation
 
 ```{r}
-write.csv(groups, "../../output/06_deg/interactions/clusters.csv")
+write.csv(groups, "../../output/06_deg/interactions/clusters.csv", row.names = FALSE)
 ```
 
 Plot is showing Z score of VST normalized gene counts

@@ -44,10 +44,20 @@ In this script, we will generate FastQC/MultiQC for raw sequences, conduct trimm
 ## [multiqc](https://anaconda.org/bioconda/multiqc)
 
 *Multiqc summarizes FastQC analysis logs and summarizes results in an html report. Checkout the* [git developer version](Installation)
+```{r multiqc, engine='bash'}
+source .bashvars
+${multiqc} -v
+```
+
 
 ## [fastp](https://anaconda.org/bioconda/fastp)
 
 *FastP provides fast all-in-one preprocessing for FastQ files*
+```{r fastp, engine='bash'}
+source .bashvars
+${fastp} -v
+```
+
 
 Reference bash variables from Roberts Lab [Code Snippets](https://robertslab.github.io/resources/code_Snippets/)
 

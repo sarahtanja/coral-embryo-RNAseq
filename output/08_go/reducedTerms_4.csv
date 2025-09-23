@@ -1,0 +1,76 @@
+go,cluster,parent,parentSimScore,score,size,term,parentTerm
+GO:0019222,1,GO:0019222,0.912,3.980560741021142,1,regulation of metabolic process,regulation of metabolic process
+GO:0006412,2,GO:0006412,0.981,3.980560741021142,238,translation,translation
+GO:0043043,2,GO:0006412,0.979,3.980560741021142,0,peptide biosynthetic process,translation
+GO:0007049,3,GO:0007049,0.963,3.980560741021142,179,cell cycle,cell cycle
+GO:0043603,2,GO:0006412,0.924,3.980560741021142,0,cellular amide metabolic process,translation
+GO:0043604,2,GO:0006412,0.966,3.980560741021142,2,amide biosynthetic process,translation
+GO:0000003,4,GO:0000003,0.955,3.980560741021142,107,reproduction,reproduction
+GO:0009889,1,GO:0019222,0.826,3.980560741021142,0,regulation of biosynthetic process,regulation of metabolic process
+GO:0008152,5,GO:0008152,0.628,3.980560741021142,82,metabolic process,metabolic process
+GO:0007283,4,GO:0000003,0.646,3.980560741021142,71,spermatogenesis,reproduction
+GO:0006413,2,GO:0006412,0.798,3.980560741021142,59,translational initiation,translation
+GO:0006417,2,GO:0006412,0.838,3.980560741021142,52,regulation of translation,translation
+GO:0007281,4,GO:0000003,0.727,3.980560741021142,46,germ cell development,reproduction
+GO:0009058,5,GO:0008152,0.394,3.980560741021142,31,biosynthetic process,metabolic process
+GO:0044238,5,GO:0008152,0.571,3.980560741021142,13,primary metabolic process,metabolic process
+GO:0022402,3,GO:0007049,0.911,3.980560741021142,0,cell cycle process,cell cycle
+GO:0007276,4,GO:0000003,0.781,3.980560741021142,19,gamete generation,reproduction
+GO:0009987,6,GO:0009987,0.337,3.980560741021142,0,cellular process,cellular process
+GO:0006807,5,GO:0008152,0.546,3.980560741021142,14,nitrogen compound metabolic process,metabolic process
+GO:0031326,1,GO:0019222,0.825,3.980560741021142,0,regulation of cellular biosynthetic process,regulation of metabolic process
+GO:0019953,4,GO:0000003,0.794,3.980560741021142,6,sexual reproduction,reproduction
+GO:0031323,1,GO:0019222,0.86,3.980560741021142,0,regulation of cellular metabolic process,regulation of metabolic process
+GO:0016043,7,GO:0016043,0.896,3.980560741021142,5,cellular component organization,cellular component organization
+GO:0006996,7,GO:0016043,0.801,3.980560741021142,11,organelle organization,cellular component organization
+GO:0034645,8,GO:0034645,0.97,3.980560741021142,1,cellular macromolecule biosynthetic process,cellular macromolecule biosynthetic process
+GO:0006518,2,GO:0006412,0.947,3.980560741021142,9,peptide metabolic process,translation
+GO:0010556,1,GO:0019222,0.823,3.980560741021142,0,regulation of macromolecule biosynthetic process,regulation of metabolic process
+GO:0034248,2,GO:0006412,0.752,3.980560741021142,0,regulation of cellular amide metabolic process,translation
+GO:0010608,1,GO:0019222,0.607,3.980560741021142,17,post-transcriptional regulation of gene expression,regulation of metabolic process
+GO:0032501,9,GO:0032501,0.843,3.980560741021142,2,multicellular organismal process,multicellular organismal process
+GO:0010467,5,GO:0008152,0.4,3.980560741021142,1,gene expression,metabolic process
+GO:0044237,5,GO:0008152,0.555,3.980560741021142,12,cellular metabolic process,metabolic process
+GO:0007140,4,GO:0000003,0.521,3.980560741021142,4,male meiotic nuclear division,reproduction
+GO:0044249,5,GO:0008152,0.39,3.980560741021142,5,cellular biosynthetic process,metabolic process
+GO:0043170,5,GO:0008152,0.526,3.980560741021142,2,macromolecule metabolic process,metabolic process
+GO:0032502,10,GO:0032502,0.869,3.980560741021142,13,developmental process,developmental process
+GO:0044260,8,GO:0034645,0.793,3.980560741021142,3,cellular macromolecule metabolic process,cellular macromolecule biosynthetic process
+GO:0034641,5,GO:0008152,0.441,3.980560741021142,0,cellular nitrogen compound metabolic process,metabolic process
+GO:0030154,10,GO:0032502,0.697,3.980560741021142,305,cell differentiation,developmental process
+GO:0022414,4,GO:0000003,0.943,3.980560741021142,11,reproductive process,reproduction
+GO:0019538,5,GO:0008152,0.402,3.980560741021142,7,protein metabolic process,metabolic process
+GO:0000280,7,GO:0016043,0.6,3.980560741021142,2,nuclear division,cellular component organization
+GO:0044271,5,GO:0008152,0.36,3.980560741021142,0,cellular nitrogen compound biosynthetic process,metabolic process
+GO:0032504,4,GO:0000003,0.839,3.980560741021142,24,multicellular organism reproduction,reproduction
+GO:0022412,4,GO:0000003,0.75,3.980560741021142,0,cellular process involved in reproduction in multicellular organism,reproduction
+GO:0010468,1,GO:0019222,0.871,3.980560741021142,103,regulation of gene expression,regulation of metabolic process
+GO:0009059,5,GO:0008152,0.357,3.980560741021142,0,macromolecule biosynthetic process,metabolic process
+GO:0008283,11,GO:0008283,0.998,3.980560741021142,1,cell population proliferation,cell population proliferation
+GO:0003006,4,GO:0000003,0.844,3.980560741021142,1,developmental process involved in reproduction,reproduction
+GO:2000112,8,GO:0034645,0.774,3.980560741021142,0,regulation of cellular macromolecule biosynthetic process,cellular macromolecule biosynthetic process
+GO:1903046,3,GO:0007049,0.773,3.980560741021142,0,meiotic cell cycle process,cell cycle
+GO:1901576,5,GO:0008152,0.393,3.980560741021142,1,organic substance biosynthetic process,metabolic process
+GO:1901566,5,GO:0008152,0.305,3.980560741021142,2,organonitrogen compound biosynthetic process,metabolic process
+GO:1901564,5,GO:0008152,0.438,3.980560741021142,0,organonitrogen compound metabolic process,metabolic process
+GO:0140013,3,GO:0007049,0.746,3.980560741021142,0,meiotic nuclear division,cell cycle
+GO:0080090,1,GO:0019222,0.869,3.980560741021142,3,regulation of primary metabolic process,regulation of metabolic process
+GO:0071840,7,GO:0016043,0.871,3.980560741021142,0,cellular component organization or biogenesis,cellular component organization
+GO:0071704,5,GO:0008152,0.595,3.980560741021142,30,organic substance metabolic process,metabolic process
+GO:0065007,1,GO:0019222,0.488,3.980560741021142,0,biological regulation,regulation of metabolic process
+GO:0060255,1,GO:0019222,0.903,3.980560741021142,4,regulation of macromolecule metabolic process,regulation of metabolic process
+GO:0051321,3,GO:0007049,0.809,3.980560741021142,111,meiotic cell cycle,cell cycle
+GO:0051301,12,GO:0051301,0.991,3.980560741021142,152,cell division,cell division
+GO:0051246,1,GO:0019222,0.681,3.980560741021142,0,regulation of protein metabolic process,regulation of metabolic process
+GO:0051171,1,GO:0019222,0.867,3.980560741021142,3,regulation of nitrogen compound metabolic process,regulation of metabolic process
+GO:0050794,1,GO:0019222,0.502,3.980560741021142,0,regulation of cellular process,regulation of metabolic process
+GO:0050789,1,GO:0019222,0.534,3.980560741021142,0,regulation of biological process,regulation of metabolic process
+GO:0048869,10,GO:0032502,0.698,3.980560741021142,0,cellular developmental process,developmental process
+GO:0048856,10,GO:0032502,0.83,3.980560741021142,191,anatomical structure development,developmental process
+GO:0048609,4,GO:0000003,0.788,3.980560741021142,9,multicellular organismal reproductive process,reproduction
+GO:0048515,4,GO:0000003,0.549,3.980560741021142,2,spermatid differentiation,reproduction
+GO:0048468,10,GO:0032502,0.616,3.980560741021142,6,cell development,developmental process
+GO:0048285,7,GO:0016043,0.605,3.980560741021142,0,organelle fission,cellular component organization
+GO:0048232,4,GO:0000003,0.653,3.980560741021142,0,male gamete generation,reproduction
+GO:0048137,4,GO:0000003,0.433,3.980560741021142,1,spermatocyte division,reproduction
+GO:0044703,4,GO:0000003,0.537,3.980560741021142,0,multi-organism reproductive process,reproduction

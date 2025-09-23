@@ -214,7 +214,7 @@ cat ../../output/04_count/gtf_list.txt
 
 ## Run python script
 
-Run the python script `prepDR.py3`, which takes the basenames, filepaths
+Run the python script `prepDE.py3`, which takes the basenames, filepaths
 to gtf files and churns out a gene count matrix and a transcript count
 matrix.
 

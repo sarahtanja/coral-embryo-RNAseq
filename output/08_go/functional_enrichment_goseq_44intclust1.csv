@@ -1,0 +1,667 @@
+category,over_represented_pvalue,under_represented_pvalue,numDEInCat,numInCat,term,ontology,bh_adjust
+GO:0006139,0,1,5,5,nucleobase-containing compound metabolic process,BP,0
+GO:0006355,0,1,5,5,regulation of DNA-templated transcription,BP,0
+GO:0006357,0,1,5,5,regulation of transcription by RNA polymerase II,BP,0
+GO:0006725,0,1,5,5,cellular aromatic compound metabolic process,BP,0
+GO:0006807,0,1,6,6,nitrogen compound metabolic process,BP,0
+GO:0006950,0,1,5,5,response to stress,BP,0
+GO:0007275,0,1,6,6,multicellular organism development,BP,0
+GO:0007399,0,1,5,5,nervous system development,BP,0
+GO:0008150,0,1,14,14,biological_process,BP,0
+GO:0008152,0,1,8,8,metabolic process,BP,0
+GO:0009889,0,1,5,5,regulation of biosynthetic process,BP,0
+GO:0009893,0,1,5,5,positive regulation of metabolic process,BP,0
+GO:0009987,0,1,12,12,cellular process,BP,0
+GO:0010468,0,1,5,5,regulation of gene expression,BP,0
+GO:0010556,0,1,5,5,regulation of macromolecule biosynthetic process,BP,0
+GO:0010604,0,1,5,5,positive regulation of macromolecule metabolic process,BP,0
+GO:0019219,0,1,5,5,regulation of nucleobase-containing compound metabolic process,BP,0
+GO:0019222,0,1,7,7,regulation of metabolic process,BP,0
+GO:0022008,0,1,5,5,neurogenesis,BP,0
+GO:0030154,0,1,5,5,cell differentiation,BP,0
+GO:0031323,0,1,7,7,regulation of cellular metabolic process,BP,0
+GO:0031325,0,1,5,5,positive regulation of cellular metabolic process,BP,0
+GO:0031326,0,1,5,5,regulation of cellular biosynthetic process,BP,0
+GO:0032501,0,1,7,7,multicellular organismal process,BP,0
+GO:0032502,0,1,6,6,developmental process,BP,0
+GO:0033554,0,1,5,5,cellular response to stress,BP,0
+GO:0034641,0,1,5,5,cellular nitrogen compound metabolic process,BP,0
+GO:0042221,0,1,5,5,response to chemical,BP,0
+GO:0043170,0,1,6,6,macromolecule metabolic process,BP,0
+GO:0044237,0,1,8,8,cellular metabolic process,BP,0
+GO:0044238,0,1,7,7,primary metabolic process,BP,0
+GO:0044260,0,1,6,6,cellular macromolecule metabolic process,BP,0
+GO:0046483,0,1,5,5,heterocycle metabolic process,BP,0
+GO:0048518,0,1,5,5,positive regulation of biological process,BP,0
+GO:0048519,0,1,6,6,negative regulation of biological process,BP,0
+GO:0048522,0,1,5,5,positive regulation of cellular process,BP,0
+GO:0048523,0,1,6,6,negative regulation of cellular process,BP,0
+GO:0048731,0,1,6,6,system development,BP,0
+GO:0048856,0,1,6,6,anatomical structure development,BP,0
+GO:0048869,0,1,5,5,cellular developmental process,BP,0
+GO:0050789,0,1,8,8,regulation of biological process,BP,0
+GO:0050794,0,1,7,7,regulation of cellular process,BP,0
+GO:0050896,0,1,8,8,response to stimulus,BP,0
+GO:0051171,0,1,6,6,regulation of nitrogen compound metabolic process,BP,0
+GO:0051173,0,1,5,5,positive regulation of nitrogen compound metabolic process,BP,0
+GO:0051179,0,1,5,5,localization,BP,0
+GO:0051252,0,1,5,5,regulation of RNA metabolic process,BP,0
+GO:0051716,0,1,5,5,cellular response to stimulus,BP,0
+GO:0060255,0,1,6,6,regulation of macromolecule metabolic process,BP,0
+GO:0065007,0,1,8,8,biological regulation,BP,0
+GO:0071704,0,1,7,7,organic substance metabolic process,BP,0
+GO:0080090,0,1,6,6,regulation of primary metabolic process,BP,0
+GO:0090304,0,1,5,5,nucleic acid metabolic process,BP,0
+GO:1901360,0,1,5,5,organic cyclic compound metabolic process,BP,0
+GO:1903506,0,1,5,5,regulation of nucleic acid-templated transcription,BP,0
+GO:2000112,0,1,5,5,regulation of cellular macromolecule biosynthetic process,BP,0
+GO:2001141,0,1,5,5,regulation of RNA biosynthetic process,BP,0
+GO:0009888,2.6365626182645148e-12,1,4,4,tissue development,BP,2.6012624746007342e-11
+GO:0048513,2.6365626182645148e-12,1,4,4,animal organ development,BP,2.6012624746007342e-11
+GO:0007417,2.822521383506511e-12,1,4,4,central nervous system development,BP,2.6012624746007342e-11
+GO:0009891,2.822521383506511e-12,1,4,4,positive regulation of biosynthetic process,BP,2.6012624746007342e-11
+GO:0010557,2.822521383506511e-12,1,4,4,positive regulation of macromolecule biosynthetic process,BP,2.6012624746007342e-11
+GO:0010628,2.822521383506511e-12,1,4,4,positive regulation of gene expression,BP,2.6012624746007342e-11
+GO:0030182,2.822521383506511e-12,1,4,4,neuron differentiation,BP,2.6012624746007342e-11
+GO:0031328,2.822521383506511e-12,1,4,4,positive regulation of cellular biosynthetic process,BP,2.6012624746007342e-11
+GO:0045893,2.822521383506511e-12,1,4,4,positive regulation of DNA-templated transcription,BP,2.6012624746007342e-11
+GO:0045935,2.822521383506511e-12,1,4,4,positive regulation of nucleobase-containing compound metabolic process,BP,2.6012624746007342e-11
+GO:0045944,2.822521383506511e-12,1,4,4,positive regulation of transcription by RNA polymerase II,BP,2.6012624746007342e-11
+GO:0048699,2.822521383506511e-12,1,4,4,generation of neurons,BP,2.6012624746007342e-11
+GO:0051254,2.822521383506511e-12,1,4,4,positive regulation of RNA metabolic process,BP,2.6012624746007342e-11
+GO:1902680,2.822521383506511e-12,1,4,4,positive regulation of RNA biosynthetic process,BP,2.6012624746007342e-11
+GO:1903508,2.822521383506511e-12,1,4,4,positive regulation of nucleic acid-templated transcription,BP,2.6012624746007342e-11
+GO:0009058,2.9294718170686056e-12,1,4,4,biosynthetic process,BP,2.6012624746007342e-11
+GO:0009059,2.9294718170686056e-12,1,4,4,macromolecule biosynthetic process,BP,2.6012624746007342e-11
+GO:0016070,2.9294718170686056e-12,1,4,4,RNA metabolic process,BP,2.6012624746007342e-11
+GO:0034645,2.9294718170686056e-12,1,4,4,cellular macromolecule biosynthetic process,BP,2.6012624746007342e-11
+GO:0044249,2.9294718170686056e-12,1,4,4,cellular biosynthetic process,BP,2.6012624746007342e-11
+GO:1901576,2.9294718170686056e-12,1,4,4,organic substance biosynthetic process,BP,2.6012624746007342e-11
+GO:0006810,3.1699353319893796e-12,1,4,4,transport,BP,2.7636072576161956e-11
+GO:0051234,3.1699353319893796e-12,1,4,4,establishment of localization,BP,2.7636072576161956e-11
+GO:0016043,3.2871321111331854e-12,1,4,4,cellular component organization,BP,2.81460687015779e-11
+GO:0071840,3.2871321111331854e-12,1,4,4,cellular component organization or biogenesis,BP,2.81460687015779e-11
+GO:0009966,3.494934949241718e-12,1,4,4,regulation of signal transduction,BP,2.889347083036903e-11
+GO:0010646,3.494934949241718e-12,1,4,4,regulation of cell communication,BP,2.889347083036903e-11
+GO:0023051,3.494934949241718e-12,1,4,4,regulation of signaling,BP,2.889347083036903e-11
+GO:0048583,3.494934949241718e-12,1,4,4,regulation of response to stimulus,BP,2.889347083036903e-11
+GO:0006974,3.942523985625358e-12,1,4,4,cellular response to DNA damage stimulus,BP,3.124694629929519e-11
+GO:0001775,4.453422289956889e-12,1,4,4,cell activation,BP,3.310722462068726e-11
+GO:0002376,4.453422289956889e-12,1,4,4,immune system process,BP,3.310722462068726e-11
+GO:0045321,4.453422289956889e-12,1,4,4,leukocyte activation,BP,3.310722462068726e-11
+GO:0010033,4.596779426747561e-12,1,4,4,response to organic substance,BP,3.391008823269932e-11
+GO:0009892,5.350536612539721e-12,1,4,4,negative regulation of metabolic process,BP,3.887245917746661e-11
+GO:0031324,5.350536612539721e-12,1,4,4,negative regulation of cellular metabolic process,BP,3.887245917746661e-11
+GO:0006811,2.4673813310849815e-9,1,3,3,ion transport,BP,1.6286016959044187e-8
+GO:0009605,2.6384690671720743e-9,1,3,3,response to external stimulus,BP,1.6286016959044187e-8
+GO:0060429,2.6889446427746645e-9,1,3,3,epithelium development,BP,1.6286016959044187e-8
+GO:0006351,2.859076331978129e-9,1,3,3,DNA-templated transcription,BP,1.6286016959044187e-8
+GO:0006366,2.859076331978129e-9,1,3,3,transcription by RNA polymerase II,BP,1.6286016959044187e-8
+GO:0008284,2.859076331978129e-9,1,3,3,positive regulation of cell population proliferation,BP,1.6286016959044187e-8
+GO:0010467,2.859076331978129e-9,1,3,3,gene expression,BP,1.6286016959044187e-8
+GO:0018130,2.859076331978129e-9,1,3,3,heterocycle biosynthetic process,BP,1.6286016959044187e-8
+GO:0019438,2.859076331978129e-9,1,3,3,aromatic compound biosynthetic process,BP,1.6286016959044187e-8
+GO:0032774,2.859076331978129e-9,1,3,3,RNA biosynthetic process,BP,1.6286016959044187e-8
+GO:0034654,2.859076331978129e-9,1,3,3,nucleobase-containing compound biosynthetic process,BP,1.6286016959044187e-8
+GO:0035270,2.859076331978129e-9,1,3,3,endocrine system development,BP,1.6286016959044187e-8
+GO:0042127,2.859076331978129e-9,1,3,3,regulation of cell population proliferation,BP,1.6286016959044187e-8
+GO:0044271,2.859076331978129e-9,1,3,3,cellular nitrogen compound biosynthetic process,BP,1.6286016959044187e-8
+GO:0097659,2.859076331978129e-9,1,3,3,nucleic acid-templated transcription,BP,1.6286016959044187e-8
+GO:1901362,2.859076331978129e-9,1,3,3,organic cyclic compound biosynthetic process,BP,1.6286016959044187e-8
+GO:0009653,2.8700071596230106e-9,1,3,3,anatomical structure morphogenesis,BP,1.6286016959044187e-8
+GO:0009790,2.8700071596230106e-9,1,3,3,embryo development,BP,1.6286016959044187e-8
+GO:0030111,2.8700071596230106e-9,1,3,3,regulation of Wnt signaling pathway,BP,1.6286016959044187e-8
+GO:0048468,2.8700071596230106e-9,1,3,3,cell development,BP,1.6286016959044187e-8
+GO:0060828,2.8700071596230106e-9,1,3,3,regulation of canonical Wnt signaling pathway,BP,1.6286016959044187e-8
+GO:0000278,3.228781273707471e-9,1,3,3,mitotic cell cycle,BP,1.739551259261497e-8
+GO:0007049,3.228781273707471e-9,1,3,3,cell cycle,BP,1.739551259261497e-8
+GO:0007346,3.228781273707471e-9,1,3,3,regulation of mitotic cell cycle,BP,1.739551259261497e-8
+GO:0010564,3.228781273707471e-9,1,3,3,regulation of cell cycle process,BP,1.739551259261497e-8
+GO:0022402,3.228781273707471e-9,1,3,3,cell cycle process,BP,1.739551259261497e-8
+GO:0051726,3.228781273707471e-9,1,3,3,regulation of cell cycle,BP,1.739551259261497e-8
+GO:1901987,3.228781273707471e-9,1,3,3,regulation of cell cycle phase transition,BP,1.739551259261497e-8
+GO:1901990,3.228781273707471e-9,1,3,3,regulation of mitotic cell cycle phase transition,BP,1.739551259261497e-8
+GO:1903047,3.228781273707471e-9,1,3,3,mitotic cell cycle process,BP,1.739551259261497e-8
+GO:0006996,3.3045513189298725e-9,1,3,3,organelle organization,BP,1.7397761890384068e-8
+GO:0032879,3.391062137324176e-9,1,3,3,regulation of localization,BP,1.7397761890384068e-8
+GO:0065008,3.391062137324176e-9,1,3,3,regulation of biological quality,BP,1.7397761890384068e-8
+GO:0016192,3.3956956989670157e-9,1,3,3,vesicle-mediated transport,BP,1.7397761890384068e-8
+GO:0031396,3.5013222573974195e-9,1,3,3,regulation of protein ubiquitination,BP,1.7397761890384068e-8
+GO:0031399,3.5013222573974195e-9,1,3,3,regulation of protein modification process,BP,1.7397761890384068e-8
+GO:0031401,3.5013222573974195e-9,1,3,3,positive regulation of protein modification process,BP,1.7397761890384068e-8
+GO:0032268,3.5013222573974195e-9,1,3,3,regulation of cellular protein metabolic process,BP,1.7397761890384068e-8
+GO:0051246,3.5013222573974195e-9,1,3,3,regulation of protein metabolic process,BP,1.7397761890384068e-8
+GO:0051247,3.5013222573974195e-9,1,3,3,positive regulation of protein metabolic process,BP,1.7397761890384068e-8
+GO:1903320,3.5013222573974195e-9,1,3,3,regulation of protein modification by small protein conjugation or removal,BP,1.7397761890384068e-8
+GO:0007154,3.769597768509233e-9,1,3,3,cell communication,BP,1.8075221300001774e-8
+GO:0070887,3.769597768509233e-9,1,3,3,cellular response to chemical stimulus,BP,1.8075221300001774e-8
+GO:0071310,3.769597768509233e-9,1,3,3,cellular response to organic substance,BP,1.8075221300001774e-8
+GO:1901700,3.769597768509233e-9,1,3,3,response to oxygen-containing compound,BP,1.8075221300001774e-8
+GO:1901701,3.769597768509233e-9,1,3,3,cellular response to oxygen-containing compound,BP,1.8075221300001774e-8
+GO:0010605,4.7060001563140484e-9,1,3,3,negative regulation of macromolecule metabolic process,BP,2.234185222725333e-8
+GO:0051172,4.7060001563140484e-9,1,3,3,negative regulation of nitrogen compound metabolic process,BP,2.234185222725333e-8
+GO:0042303,1.3549439933388843e-6,1,2,2,molting cycle,BP,5.086891755633718e-6
+GO:0009056,1.4169501089506524e-6,1,2,2,catabolic process,BP,5.086891755633718e-6
+GO:0009057,1.4169501089506524e-6,1,2,2,macromolecule catabolic process,BP,5.086891755633718e-6
+GO:0044248,1.4169501089506524e-6,1,2,2,cellular catabolic process,BP,5.086891755633718e-6
+GO:0044265,1.4169501089506524e-6,1,2,2,cellular macromolecule catabolic process,BP,5.086891755633718e-6
+GO:1901575,1.4169501089506524e-6,1,2,2,organic substance catabolic process,BP,5.086891755633718e-6
+GO:0003002,1.4612784319468826e-6,1,2,2,regionalization,BP,5.086891755633718e-6
+GO:0007389,1.4612784319468826e-6,1,2,2,pattern specification process,BP,5.086891755633718e-6
+GO:0030030,1.691074414241208e-6,1,2,2,cell projection organization,BP,5.086891755633718e-6
+GO:0120036,1.691074414241208e-6,1,2,2,plasma membrane bounded cell projection organization,BP,5.086891755633718e-6
+GO:0009968,1.85921991349233e-6,1,2,2,negative regulation of signal transduction,BP,5.086891755633718e-6
+GO:0010648,1.85921991349233e-6,1,2,2,negative regulation of cell communication,BP,5.086891755633718e-6
+GO:0023057,1.85921991349233e-6,1,2,2,negative regulation of signaling,BP,5.086891755633718e-6
+GO:0048585,1.85921991349233e-6,1,2,2,negative regulation of response to stimulus,BP,5.086891755633718e-6
+GO:0006812,1.8903942359243333e-6,1,2,2,cation transport,BP,5.086891755633718e-6
+GO:0050790,2.1091262494330592e-6,1,2,2,regulation of catalytic activity,BP,5.086891755633718e-6
+GO:0051336,2.1091262494330592e-6,1,2,2,regulation of hydrolase activity,BP,5.086891755633718e-6
+GO:0065009,2.1091262494330592e-6,1,2,2,regulation of molecular function,BP,5.086891755633718e-6
+GO:0006259,2.1155176431720003e-6,1,2,2,DNA metabolic process,BP,5.086891755633718e-6
+GO:0006281,2.1155176431720003e-6,1,2,2,DNA repair,BP,5.086891755633718e-6
+GO:0051640,2.2186090838745093e-6,1,2,2,organelle localization,BP,5.086891755633718e-6
+GO:0051641,2.2186090838745093e-6,1,2,2,cellular localization,BP,5.086891755633718e-6
+GO:0002252,2.4002405996541363e-6,1,2,2,immune effector process,BP,5.086891755633718e-6
+GO:0002263,2.4002405996541363e-6,1,2,2,cell activation involved in immune response,BP,5.086891755633718e-6
+GO:0002274,2.4002405996541363e-6,1,2,2,myeloid leukocyte activation,BP,5.086891755633718e-6
+GO:0002275,2.4002405996541363e-6,1,2,2,myeloid cell activation involved in immune response,BP,5.086891755633718e-6
+GO:0002283,2.4002405996541363e-6,1,2,2,neutrophil activation involved in immune response,BP,5.086891755633718e-6
+GO:0002366,2.4002405996541363e-6,1,2,2,leukocyte activation involved in immune response,BP,5.086891755633718e-6
+GO:0002443,2.4002405996541363e-6,1,2,2,leukocyte mediated immunity,BP,5.086891755633718e-6
+GO:0002444,2.4002405996541363e-6,1,2,2,myeloid leukocyte mediated immunity,BP,5.086891755633718e-6
+GO:0002446,2.4002405996541363e-6,1,2,2,neutrophil mediated immunity,BP,5.086891755633718e-6
+GO:0006887,2.4002405996541363e-6,1,2,2,exocytosis,BP,5.086891755633718e-6
+GO:0006955,2.4002405996541363e-6,1,2,2,immune response,BP,5.086891755633718e-6
+GO:0032940,2.4002405996541363e-6,1,2,2,secretion by cell,BP,5.086891755633718e-6
+GO:0036230,2.4002405996541363e-6,1,2,2,granulocyte activation,BP,5.086891755633718e-6
+GO:0042119,2.4002405996541363e-6,1,2,2,neutrophil activation,BP,5.086891755633718e-6
+GO:0043299,2.4002405996541363e-6,1,2,2,leukocyte degranulation,BP,5.086891755633718e-6
+GO:0043312,2.4002405996541363e-6,1,2,2,neutrophil degranulation,BP,5.086891755633718e-6
+GO:0045055,2.4002405996541363e-6,1,2,2,regulated exocytosis,BP,5.086891755633718e-6
+GO:0046903,2.4002405996541363e-6,1,2,2,secretion,BP,5.086891755633718e-6
+GO:0071702,2.4002405996541363e-6,1,2,2,organic substance transport,BP,5.086891755633718e-6
+GO:0045595,2.5793565304700418e-6,1,2,2,regulation of cell differentiation,BP,5.086891755633718e-6
+GO:0050793,2.5793565304700418e-6,1,2,2,regulation of developmental process,BP,5.086891755633718e-6
+GO:0000075,2.5938374019863276e-6,1,2,2,cell cycle checkpoint signaling,BP,5.086891755633718e-6
+GO:0000077,2.5938374019863276e-6,1,2,2,DNA damage checkpoint signaling,BP,5.086891755633718e-6
+GO:0001501,2.5938374019863276e-6,1,2,2,skeletal system development,BP,5.086891755633718e-6
+GO:0001568,2.5938374019863276e-6,1,2,2,blood vessel development,BP,5.086891755633718e-6
+GO:0001655,2.5938374019863276e-6,1,2,2,urogenital system development,BP,5.086891755633718e-6
+GO:0001666,2.5938374019863276e-6,1,2,2,response to hypoxia,BP,5.086891755633718e-6
+GO:0001678,2.5938374019863276e-6,1,2,2,cellular glucose homeostasis,BP,5.086891755633718e-6
+GO:0001822,2.5938374019863276e-6,1,2,2,kidney development,BP,5.086891755633718e-6
+GO:0001838,2.5938374019863276e-6,1,2,2,embryonic epithelial tube formation,BP,5.086891755633718e-6
+GO:0001841,2.5938374019863276e-6,1,2,2,neural tube formation,BP,5.086891755633718e-6
+GO:0001944,2.5938374019863276e-6,1,2,2,vasculature development,BP,5.086891755633718e-6
+GO:0002009,2.5938374019863276e-6,1,2,2,morphogenesis of an epithelium,BP,5.086891755633718e-6
+GO:0002065,2.5938374019863276e-6,1,2,2,columnar/cuboidal epithelial cell differentiation,BP,5.086891755633718e-6
+GO:0002244,2.5938374019863276e-6,1,2,2,hematopoietic progenitor cell differentiation,BP,5.086891755633718e-6
+GO:0002320,2.5938374019863276e-6,1,2,2,lymphoid progenitor cell differentiation,BP,5.086891755633718e-6
+GO:0002328,2.5938374019863276e-6,1,2,2,pro-B cell differentiation,BP,5.086891755633718e-6
+GO:0002520,2.5938374019863276e-6,1,2,2,immune system development,BP,5.086891755633718e-6
+GO:0002521,2.5938374019863276e-6,1,2,2,leukocyte differentiation,BP,5.086891755633718e-6
+GO:0002791,2.5938374019863276e-6,1,2,2,regulation of peptide secretion,BP,5.086891755633718e-6
+GO:0002793,2.5938374019863276e-6,1,2,2,positive regulation of peptide secretion,BP,5.086891755633718e-6
+GO:0003007,2.5938374019863276e-6,1,2,2,heart morphogenesis,BP,5.086891755633718e-6
+GO:0003170,2.5938374019863276e-6,1,2,2,heart valve development,BP,5.086891755633718e-6
+GO:0003171,2.5938374019863276e-6,1,2,2,atrioventricular valve development,BP,5.086891755633718e-6
+GO:0003174,2.5938374019863276e-6,1,2,2,mitral valve development,BP,5.086891755633718e-6
+GO:0003179,2.5938374019863276e-6,1,2,2,heart valve morphogenesis,BP,5.086891755633718e-6
+GO:0003181,2.5938374019863276e-6,1,2,2,atrioventricular valve morphogenesis,BP,5.086891755633718e-6
+GO:0003183,2.5938374019863276e-6,1,2,2,mitral valve morphogenesis,BP,5.086891755633718e-6
+GO:0003205,2.5938374019863276e-6,1,2,2,cardiac chamber development,BP,5.086891755633718e-6
+GO:0003206,2.5938374019863276e-6,1,2,2,cardiac chamber morphogenesis,BP,5.086891755633718e-6
+GO:0003207,2.5938374019863276e-6,1,2,2,cardiac chamber formation,BP,5.086891755633718e-6
+GO:0003208,2.5938374019863276e-6,1,2,2,cardiac ventricle morphogenesis,BP,5.086891755633718e-6
+GO:0003209,2.5938374019863276e-6,1,2,2,cardiac atrium morphogenesis,BP,5.086891755633718e-6
+GO:0003211,2.5938374019863276e-6,1,2,2,cardiac ventricle formation,BP,5.086891755633718e-6
+GO:0003215,2.5938374019863276e-6,1,2,2,cardiac right ventricle morphogenesis,BP,5.086891755633718e-6
+GO:0003230,2.5938374019863276e-6,1,2,2,cardiac atrium development,BP,5.086891755633718e-6
+GO:0003231,2.5938374019863276e-6,1,2,2,cardiac ventricle development,BP,5.086891755633718e-6
+GO:0003279,2.5938374019863276e-6,1,2,2,cardiac septum development,BP,5.086891755633718e-6
+GO:0003281,2.5938374019863276e-6,1,2,2,ventricular septum development,BP,5.086891755633718e-6
+GO:0003283,2.5938374019863276e-6,1,2,2,atrial septum development,BP,5.086891755633718e-6
+GO:0003284,2.5938374019863276e-6,1,2,2,septum primum development,BP,5.086891755633718e-6
+GO:0003289,2.5938374019863276e-6,1,2,2,atrial septum primum morphogenesis,BP,5.086891755633718e-6
+GO:0003357,2.5938374019863276e-6,1,2,2,noradrenergic neuron differentiation,BP,5.086891755633718e-6
+GO:0006417,2.5938374019863276e-6,1,2,2,regulation of translation,BP,5.086891755633718e-6
+GO:0006977,2.5938374019863276e-6,1,2,2,"DNA damage response, signal transduction by p53 class mediator resulting in cell cycle arrest",BP,5.086891755633718e-6
+GO:0007093,2.5938374019863276e-6,1,2,2,mitotic cell cycle checkpoint signaling,BP,5.086891755633718e-6
+GO:0007165,2.5938374019863276e-6,1,2,2,signal transduction,BP,5.086891755633718e-6
+GO:0007166,2.5938374019863276e-6,1,2,2,cell surface receptor signaling pathway,BP,5.086891755633718e-6
+GO:0007267,2.5938374019863276e-6,1,2,2,cell-cell signaling,BP,5.086891755633718e-6
+GO:0007507,2.5938374019863276e-6,1,2,2,heart development,BP,5.086891755633718e-6
+GO:0008283,2.5938374019863276e-6,1,2,2,cell population proliferation,BP,5.086891755633718e-6
+GO:0008285,2.5938374019863276e-6,1,2,2,negative regulation of cell population proliferation,BP,5.086891755633718e-6
+GO:0009628,2.5938374019863276e-6,1,2,2,response to abiotic stimulus,BP,5.086891755633718e-6
+GO:0009743,2.5938374019863276e-6,1,2,2,response to carbohydrate,BP,5.086891755633718e-6
+GO:0009746,2.5938374019863276e-6,1,2,2,response to hexose,BP,5.086891755633718e-6
+GO:0009749,2.5938374019863276e-6,1,2,2,response to glucose,BP,5.086891755633718e-6
+GO:0009792,2.5938374019863276e-6,1,2,2,embryo development ending in birth or egg hatching,BP,5.086891755633718e-6
+GO:0009887,2.5938374019863276e-6,1,2,2,animal organ morphogenesis,BP,5.086891755633718e-6
+GO:0009967,2.5938374019863276e-6,1,2,2,positive regulation of signal transduction,BP,5.086891755633718e-6
+GO:0010001,2.5938374019863276e-6,1,2,2,glial cell differentiation,BP,5.086891755633718e-6
+GO:0010608,2.5938374019863276e-6,1,2,2,post-transcriptional regulation of gene expression,BP,5.086891755633718e-6
+GO:0010647,2.5938374019863276e-6,1,2,2,positive regulation of cell communication,BP,5.086891755633718e-6
+GO:0010817,2.5938374019863276e-6,1,2,2,regulation of hormone levels,BP,5.086891755633718e-6
+GO:0010941,2.5938374019863276e-6,1,2,2,regulation of cell death,BP,5.086891755633718e-6
+GO:0010942,2.5938374019863276e-6,1,2,2,positive regulation of cell death,BP,5.086891755633718e-6
+GO:0010948,2.5938374019863276e-6,1,2,2,negative regulation of cell cycle process,BP,5.086891755633718e-6
+GO:0014009,2.5938374019863276e-6,1,2,2,glial cell proliferation,BP,5.086891755633718e-6
+GO:0016055,2.5938374019863276e-6,1,2,2,Wnt signaling pathway,BP,5.086891755633718e-6
+GO:0016331,2.5938374019863276e-6,1,2,2,morphogenesis of embryonic epithelium,BP,5.086891755633718e-6
+GO:0019725,2.5938374019863276e-6,1,2,2,cellular homeostasis,BP,5.086891755633718e-6
+GO:0019827,2.5938374019863276e-6,1,2,2,stem cell population maintenance,BP,5.086891755633718e-6
+GO:0021510,2.5938374019863276e-6,1,2,2,spinal cord development,BP,5.086891755633718e-6
+GO:0021515,2.5938374019863276e-6,1,2,2,cell differentiation in spinal cord,BP,5.086891755633718e-6
+GO:0021517,2.5938374019863276e-6,1,2,2,ventral spinal cord development,BP,5.086891755633718e-6
+GO:0021522,2.5938374019863276e-6,1,2,2,spinal cord motor neuron differentiation,BP,5.086891755633718e-6
+GO:0021782,2.5938374019863276e-6,1,2,2,glial cell development,BP,5.086891755633718e-6
+GO:0021915,2.5938374019863276e-6,1,2,2,neural tube development,BP,5.086891755633718e-6
+GO:0021953,2.5938374019863276e-6,1,2,2,central nervous system neuron differentiation,BP,5.086891755633718e-6
+GO:0023052,2.5938374019863276e-6,1,2,2,signaling,BP,5.086891755633718e-6
+GO:0023056,2.5938374019863276e-6,1,2,2,positive regulation of signaling,BP,5.086891755633718e-6
+GO:0030097,2.5938374019863276e-6,1,2,2,hemopoiesis,BP,5.086891755633718e-6
+GO:0030098,2.5938374019863276e-6,1,2,2,lymphocyte differentiation,BP,5.086891755633718e-6
+GO:0030177,2.5938374019863276e-6,1,2,2,positive regulation of Wnt signaling pathway,BP,5.086891755633718e-6
+GO:0030217,2.5938374019863276e-6,1,2,2,T cell differentiation,BP,5.086891755633718e-6
+GO:0030330,2.5938374019863276e-6,1,2,2,"DNA damage response, signal transduction by p53 class mediator",BP,5.086891755633718e-6
+GO:0030855,2.5938374019863276e-6,1,2,2,epithelial cell differentiation,BP,5.086891755633718e-6
+GO:0031016,2.5938374019863276e-6,1,2,2,pancreas development,BP,5.086891755633718e-6
+GO:0031018,2.5938374019863276e-6,1,2,2,endocrine pancreas development,BP,5.086891755633718e-6
+GO:0031397,2.5938374019863276e-6,1,2,2,negative regulation of protein ubiquitination,BP,5.086891755633718e-6
+GO:0031400,2.5938374019863276e-6,1,2,2,negative regulation of protein modification process,BP,5.086891755633718e-6
+GO:0031570,2.5938374019863276e-6,1,2,2,DNA integrity checkpoint signaling,BP,5.086891755633718e-6
+GO:0031571,2.5938374019863276e-6,1,2,2,mitotic G1 DNA damage checkpoint signaling,BP,5.086891755633718e-6
+GO:0031647,2.5938374019863276e-6,1,2,2,regulation of protein stability,BP,5.086891755633718e-6
+GO:0032024,2.5938374019863276e-6,1,2,2,positive regulation of insulin secretion,BP,5.086891755633718e-6
+GO:0032880,2.5938374019863276e-6,1,2,2,regulation of protein localization,BP,5.086891755633718e-6
+GO:0033500,2.5938374019863276e-6,1,2,2,carbohydrate homeostasis,BP,5.086891755633718e-6
+GO:0034248,2.5938374019863276e-6,1,2,2,regulation of cellular amide metabolic process,BP,5.086891755633718e-6
+GO:0034250,2.5938374019863276e-6,1,2,2,positive regulation of cellular amide metabolic process,BP,5.086891755633718e-6
+GO:0034284,2.5938374019863276e-6,1,2,2,response to monosaccharide,BP,5.086891755633718e-6
+GO:0035019,2.5938374019863276e-6,1,2,2,somatic stem cell population maintenance,BP,5.086891755633718e-6
+GO:0035107,2.5938374019863276e-6,1,2,2,appendage morphogenesis,BP,5.086891755633718e-6
+GO:0035108,2.5938374019863276e-6,1,2,2,limb morphogenesis,BP,5.086891755633718e-6
+GO:0035148,2.5938374019863276e-6,1,2,2,tube formation,BP,5.086891755633718e-6
+GO:0035239,2.5938374019863276e-6,1,2,2,tube morphogenesis,BP,5.086891755633718e-6
+GO:0035295,2.5938374019863276e-6,1,2,2,tube development,BP,5.086891755633718e-6
+GO:0035556,2.5938374019863276e-6,1,2,2,intracellular signal transduction,BP,5.086891755633718e-6
+GO:0035904,2.5938374019863276e-6,1,2,2,aorta development,BP,5.086891755633718e-6
+GO:0035905,2.5938374019863276e-6,1,2,2,ascending aorta development,BP,5.086891755633718e-6
+GO:0035909,2.5938374019863276e-6,1,2,2,aorta morphogenesis,BP,5.086891755633718e-6
+GO:0035910,2.5938374019863276e-6,1,2,2,ascending aorta morphogenesis,BP,5.086891755633718e-6
+GO:0036293,2.5938374019863276e-6,1,2,2,response to decreased oxygen levels,BP,5.086891755633718e-6
+GO:0042063,2.5938374019863276e-6,1,2,2,gliogenesis,BP,5.086891755633718e-6
+GO:0042110,2.5938374019863276e-6,1,2,2,T cell activation,BP,5.086891755633718e-6
+GO:0042592,2.5938374019863276e-6,1,2,2,homeostatic process,BP,5.086891755633718e-6
+GO:0042593,2.5938374019863276e-6,1,2,2,glucose homeostasis,BP,5.086891755633718e-6
+GO:0042770,2.5938374019863276e-6,1,2,2,signal transduction in response to DNA damage,BP,5.086891755633718e-6
+GO:0042981,2.5938374019863276e-6,1,2,2,regulation of apoptotic process,BP,5.086891755633718e-6
+GO:0043009,2.5938374019863276e-6,1,2,2,chordate embryonic development,BP,5.086891755633718e-6
+GO:0043065,2.5938374019863276e-6,1,2,2,positive regulation of apoptotic process,BP,5.086891755633718e-6
+GO:0043067,2.5938374019863276e-6,1,2,2,regulation of programmed cell death,BP,5.086891755633718e-6
+GO:0043068,2.5938374019863276e-6,1,2,2,positive regulation of programmed cell death,BP,5.086891755633718e-6
+GO:0044773,2.5938374019863276e-6,1,2,2,mitotic DNA damage checkpoint signaling,BP,5.086891755633718e-6
+GO:0044774,2.5938374019863276e-6,1,2,2,mitotic DNA integrity checkpoint signaling,BP,5.086891755633718e-6
+GO:0044819,2.5938374019863276e-6,1,2,2,mitotic G1/S transition checkpoint signaling,BP,5.086891755633718e-6
+GO:0045727,2.5938374019863276e-6,1,2,2,positive regulation of translation,BP,5.086891755633718e-6
+GO:0045786,2.5938374019863276e-6,1,2,2,negative regulation of cell cycle,BP,5.086891755633718e-6
+GO:0045787,2.5938374019863276e-6,1,2,2,positive regulation of cell cycle,BP,5.086891755633718e-6
+GO:0045930,2.5938374019863276e-6,1,2,2,negative regulation of mitotic cell cycle,BP,5.086891755633718e-6
+GO:0046649,2.5938374019863276e-6,1,2,2,lymphocyte activation,BP,5.086891755633718e-6
+GO:0046883,2.5938374019863276e-6,1,2,2,regulation of hormone secretion,BP,5.086891755633718e-6
+GO:0046887,2.5938374019863276e-6,1,2,2,positive regulation of hormone secretion,BP,5.086891755633718e-6
+GO:0048483,2.5938374019863276e-6,1,2,2,autonomic nervous system development,BP,5.086891755633718e-6
+GO:0048485,2.5938374019863276e-6,1,2,2,sympathetic nervous system development,BP,5.086891755633718e-6
+GO:0048514,2.5938374019863276e-6,1,2,2,blood vessel morphogenesis,BP,5.086891755633718e-6
+GO:0048534,2.5938374019863276e-6,1,2,2,hematopoietic or lymphoid organ development,BP,5.086891755633718e-6
+GO:0048584,2.5938374019863276e-6,1,2,2,positive regulation of response to stimulus,BP,5.086891755633718e-6
+GO:0048598,2.5938374019863276e-6,1,2,2,embryonic morphogenesis,BP,5.086891755633718e-6
+GO:0048646,2.5938374019863276e-6,1,2,2,anatomical structure formation involved in morphogenesis,BP,5.086891755633718e-6
+GO:0048729,2.5938374019863276e-6,1,2,2,tissue morphogenesis,BP,5.086891755633718e-6
+GO:0048736,2.5938374019863276e-6,1,2,2,appendage development,BP,5.086891755633718e-6
+GO:0048844,2.5938374019863276e-6,1,2,2,artery morphogenesis,BP,5.086891755633718e-6
+GO:0048878,2.5938374019863276e-6,1,2,2,chemical homeostasis,BP,5.086891755633718e-6
+GO:0050708,2.5938374019863276e-6,1,2,2,regulation of protein secretion,BP,5.086891755633718e-6
+GO:0050714,2.5938374019863276e-6,1,2,2,positive regulation of protein secretion,BP,5.086891755633718e-6
+GO:0050796,2.5938374019863276e-6,1,2,2,regulation of insulin secretion,BP,5.086891755633718e-6
+GO:0050821,2.5938374019863276e-6,1,2,2,protein stabilization,BP,5.086891755633718e-6
+GO:0051046,2.5938374019863276e-6,1,2,2,regulation of secretion,BP,5.086891755633718e-6
+GO:0051047,2.5938374019863276e-6,1,2,2,positive regulation of secretion,BP,5.086891755633718e-6
+GO:0051049,2.5938374019863276e-6,1,2,2,regulation of transport,BP,5.086891755633718e-6
+GO:0051050,2.5938374019863276e-6,1,2,2,positive regulation of transport,BP,5.086891755633718e-6
+GO:0051222,2.5938374019863276e-6,1,2,2,positive regulation of protein transport,BP,5.086891755633718e-6
+GO:0051223,2.5938374019863276e-6,1,2,2,regulation of protein transport,BP,5.086891755633718e-6
+GO:0051248,2.5938374019863276e-6,1,2,2,negative regulation of protein metabolic process,BP,5.086891755633718e-6
+GO:0051606,2.5938374019863276e-6,1,2,2,detection of stimulus,BP,5.086891755633718e-6
+GO:0055082,2.5938374019863276e-6,1,2,2,cellular chemical homeostasis,BP,5.086891755633718e-6
+GO:0060070,2.5938374019863276e-6,1,2,2,canonical Wnt signaling pathway,BP,5.086891755633718e-6
+GO:0060173,2.5938374019863276e-6,1,2,2,limb development,BP,5.086891755633718e-6
+GO:0060174,2.5938374019863276e-6,1,2,2,limb bud formation,BP,5.086891755633718e-6
+GO:0060411,2.5938374019863276e-6,1,2,2,cardiac septum morphogenesis,BP,5.086891755633718e-6
+GO:0060412,2.5938374019863276e-6,1,2,2,ventricular septum morphogenesis,BP,5.086891755633718e-6
+GO:0060413,2.5938374019863276e-6,1,2,2,atrial septum morphogenesis,BP,5.086891755633718e-6
+GO:0060548,2.5938374019863276e-6,1,2,2,negative regulation of cell death,BP,5.086891755633718e-6
+GO:0060562,2.5938374019863276e-6,1,2,2,epithelial tube morphogenesis,BP,5.086891755633718e-6
+GO:0060563,2.5938374019863276e-6,1,2,2,neuroepithelial cell differentiation,BP,5.086891755633718e-6
+GO:0060840,2.5938374019863276e-6,1,2,2,artery development,BP,5.086891755633718e-6
+GO:0060993,2.5938374019863276e-6,1,2,2,kidney morphogenesis,BP,5.086891755633718e-6
+GO:0070201,2.5938374019863276e-6,1,2,2,regulation of establishment of protein localization,BP,5.086891755633718e-6
+GO:0070482,2.5938374019863276e-6,1,2,2,response to oxygen levels,BP,5.086891755633718e-6
+GO:0071322,2.5938374019863276e-6,1,2,2,cellular response to carbohydrate stimulus,BP,5.086891755633718e-6
+GO:0071326,2.5938374019863276e-6,1,2,2,cellular response to monosaccharide stimulus,BP,5.086891755633718e-6
+GO:0071331,2.5938374019863276e-6,1,2,2,cellular response to hexose stimulus,BP,5.086891755633718e-6
+GO:0071333,2.5938374019863276e-6,1,2,2,cellular response to glucose stimulus,BP,5.086891755633718e-6
+GO:0072001,2.5938374019863276e-6,1,2,2,renal system development,BP,5.086891755633718e-6
+GO:0072175,2.5938374019863276e-6,1,2,2,epithelial tube formation,BP,5.086891755633718e-6
+GO:0072331,2.5938374019863276e-6,1,2,2,signal transduction by p53 class mediator,BP,5.086891755633718e-6
+GO:0072359,2.5938374019863276e-6,1,2,2,circulatory system development,BP,5.086891755633718e-6
+GO:0090068,2.5938374019863276e-6,1,2,2,positive regulation of cell cycle process,BP,5.086891755633718e-6
+GO:0090087,2.5938374019863276e-6,1,2,2,regulation of peptide transport,BP,5.086891755633718e-6
+GO:0090263,2.5938374019863276e-6,1,2,2,positive regulation of canonical Wnt signaling pathway,BP,5.086891755633718e-6
+GO:0090276,2.5938374019863276e-6,1,2,2,regulation of peptide hormone secretion,BP,5.086891755633718e-6
+GO:0090277,2.5938374019863276e-6,1,2,2,positive regulation of peptide hormone secretion,BP,5.086891755633718e-6
+GO:0098727,2.5938374019863276e-6,1,2,2,maintenance of cell number,BP,5.086891755633718e-6
+GO:0198738,2.5938374019863276e-6,1,2,2,cell-cell signaling by wnt,BP,5.086891755633718e-6
+GO:1901983,2.5938374019863276e-6,1,2,2,regulation of protein acetylation,BP,5.086891755633718e-6
+GO:1901985,2.5938374019863276e-6,1,2,2,positive regulation of protein acetylation,BP,5.086891755633718e-6
+GO:1901988,2.5938374019863276e-6,1,2,2,negative regulation of cell cycle phase transition,BP,5.086891755633718e-6
+GO:1901991,2.5938374019863276e-6,1,2,2,negative regulation of mitotic cell cycle phase transition,BP,5.086891755633718e-6
+GO:1902806,2.5938374019863276e-6,1,2,2,regulation of cell cycle G1/S phase transition,BP,5.086891755633718e-6
+GO:1902807,2.5938374019863276e-6,1,2,2,negative regulation of cell cycle G1/S phase transition,BP,5.086891755633718e-6
+GO:1903317,2.5938374019863276e-6,1,2,2,regulation of protein maturation,BP,5.086891755633718e-6
+GO:1903319,2.5938374019863276e-6,1,2,2,positive regulation of protein maturation,BP,5.086891755633718e-6
+GO:1903321,2.5938374019863276e-6,1,2,2,negative regulation of protein modification by small protein conjugation or removal,BP,5.086891755633718e-6
+GO:1903530,2.5938374019863276e-6,1,2,2,regulation of secretion by cell,BP,5.086891755633718e-6
+GO:1903532,2.5938374019863276e-6,1,2,2,positive regulation of secretion by cell,BP,5.086891755633718e-6
+GO:1904951,2.5938374019863276e-6,1,2,2,positive regulation of establishment of protein localization,BP,5.086891755633718e-6
+GO:1905114,2.5938374019863276e-6,1,2,2,cell surface receptor signaling pathway involved in cell-cell signaling,BP,5.086891755633718e-6
+GO:2000045,2.5938374019863276e-6,1,2,2,regulation of G1/S transition of mitotic cell cycle,BP,5.086891755633718e-6
+GO:2000134,2.5938374019863276e-6,1,2,2,negative regulation of G1/S transition of mitotic cell cycle,BP,5.086891755633718e-6
+GO:2000756,2.5938374019863276e-6,1,2,2,regulation of peptidyl-lysine acetylation,BP,5.086891755633718e-6
+GO:2000758,2.5938374019863276e-6,1,2,2,positive regulation of peptidyl-lysine acetylation,BP,5.086891755633718e-6
+GO:2000759,2.5938374019863276e-6,1,2,2,regulation of N-terminal peptidyl-lysine acetylation,BP,5.086891755633718e-6
+GO:2000761,2.5938374019863276e-6,1,2,2,positive regulation of N-terminal peptidyl-lysine acetylation,BP,5.086891755633718e-6
+GO:0051276,2.651779756623296e-6,1,2,2,chromosome organization,BP,5.179341724239798e-6
+GO:0001942,0.0011584954791301427,1,1,1,hair follicle development,BP,0.0017355321216620014
+GO:0006508,0.0011584954791301427,1,1,1,proteolysis,BP,0.0017355321216620014
+GO:0006511,0.0011584954791301427,1,1,1,ubiquitin-dependent protein catabolic process,BP,0.0017355321216620014
+GO:0006816,0.0011584954791301427,1,1,1,calcium ion transport,BP,0.0017355321216620014
+GO:0008544,0.0011584954791301427,1,1,1,epidermis development,BP,0.0017355321216620014
+GO:0016567,0.0011584954791301427,1,1,1,protein ubiquitination,BP,0.0017355321216620014
+GO:0019538,0.0011584954791301427,1,1,1,protein metabolic process,BP,0.0017355321216620014
+GO:0019941,0.0011584954791301427,1,1,1,modification-dependent protein catabolic process,BP,0.0017355321216620014
+GO:0021700,0.0011584954791301427,1,1,1,developmental maturation,BP,0.0017355321216620014
+GO:0022404,0.0011584954791301427,1,1,1,molting cycle process,BP,0.0017355321216620014
+GO:0022405,0.0011584954791301427,1,1,1,hair cycle process,BP,0.0017355321216620014
+GO:0030001,0.0011584954791301427,1,1,1,metal ion transport,BP,0.0017355321216620014
+GO:0030163,0.0011584954791301427,1,1,1,protein catabolic process,BP,0.0017355321216620014
+GO:0032446,0.0011584954791301427,1,1,1,protein modification by small protein conjugation,BP,0.0017355321216620014
+GO:0034220,0.0011584954791301427,1,1,1,ion transmembrane transport,BP,0.0017355321216620014
+GO:0036211,0.0011584954791301427,1,1,1,protein modification process,BP,0.0017355321216620014
+GO:0042633,0.0011584954791301427,1,1,1,hair cycle,BP,0.0017355321216620014
+GO:0043412,0.0011584954791301427,1,1,1,macromolecule modification,BP,0.0017355321216620014
+GO:0043588,0.0011584954791301427,1,1,1,skin development,BP,0.0017355321216620014
+GO:0043632,0.0011584954791301427,1,1,1,modification-dependent macromolecule catabolic process,BP,0.0017355321216620014
+GO:0048820,0.0011584954791301427,1,1,1,hair follicle maturation,BP,0.0017355321216620014
+GO:0051603,0.0011584954791301427,1,1,1,proteolysis involved in protein catabolic process,BP,0.0017355321216620014
+GO:0055085,0.0011584954791301427,1,1,1,transmembrane transport,BP,0.0017355321216620014
+GO:0070588,0.0011584954791301427,1,1,1,calcium ion transmembrane transport,BP,0.0017355321216620014
+GO:0070647,0.0011584954791301427,1,1,1,protein modification by small protein conjugation or removal,BP,0.0017355321216620014
+GO:0071695,0.0011584954791301427,1,1,1,anatomical structure maturation,BP,0.0017355321216620014
+GO:0098655,0.0011584954791301427,1,1,1,cation transmembrane transport,BP,0.0017355321216620014
+GO:0098660,0.0011584954791301427,1,1,1,inorganic ion transmembrane transport,BP,0.0017355321216620014
+GO:0098662,0.0011584954791301427,1,1,1,inorganic cation transmembrane transport,BP,0.0017355321216620014
+GO:0098773,0.0011584954791301427,1,1,1,skin epidermis development,BP,0.0017355321216620014
+GO:1901564,0.0011584954791301427,1,1,1,organonitrogen compound metabolic process,BP,0.0017355321216620014
+GO:1901565,0.0011584954791301427,1,1,1,organonitrogen compound catabolic process,BP,0.0017355321216620014
+GO:0001708,0.0012514953038558613,1,1,1,cell fate specification,BP,0.0017355321216620014
+GO:0002052,0.0012514953038558613,1,1,1,positive regulation of neuroblast proliferation,BP,0.0017355321216620014
+GO:0007420,0.0012514953038558613,1,1,1,brain development,BP,0.0017355321216620014
+GO:0007517,0.0012514953038558613,1,1,1,muscle organ development,BP,0.0017355321216620014
+GO:0007519,0.0012514953038558613,1,1,1,skeletal muscle tissue development,BP,0.0017355321216620014
+GO:0010720,0.0012514953038558613,1,1,1,positive regulation of cell development,BP,0.0017355321216620014
+GO:0014706,0.0012514953038558613,1,1,1,striated muscle tissue development,BP,0.0017355321216620014
+GO:0021536,0.0012514953038558613,1,1,1,diencephalon development,BP,0.0017355321216620014
+GO:0021537,0.0012514953038558613,1,1,1,telencephalon development,BP,0.0017355321216620014
+GO:0021543,0.0012514953038558613,1,1,1,pallium development,BP,0.0017355321216620014
+GO:0021796,0.0012514953038558613,1,1,1,cerebral cortex regionalization,BP,0.0017355321216620014
+GO:0021871,0.0012514953038558613,1,1,1,forebrain regionalization,BP,0.0017355321216620014
+GO:0021978,0.0012514953038558613,1,1,1,telencephalon regionalization,BP,0.0017355321216620014
+GO:0021983,0.0012514953038558613,1,1,1,pituitary gland development,BP,0.0017355321216620014
+GO:0021984,0.0012514953038558613,1,1,1,adenohypophysis development,BP,0.0017355321216620014
+GO:0021987,0.0012514953038558613,1,1,1,cerebral cortex development,BP,0.0017355321216620014
+GO:0030900,0.0012514953038558613,1,1,1,forebrain development,BP,0.0017355321216620014
+GO:0035914,0.0012514953038558613,1,1,1,skeletal muscle cell differentiation,BP,0.0017355321216620014
+GO:0045165,0.0012514953038558613,1,1,1,cell fate commitment,BP,0.0017355321216620014
+GO:0045597,0.0012514953038558613,1,1,1,positive regulation of cell differentiation,BP,0.0017355321216620014
+GO:0048663,0.0012514953038558613,1,1,1,neuron fate commitment,BP,0.0017355321216620014
+GO:0048665,0.0012514953038558613,1,1,1,neuron fate specification,BP,0.0017355321216620014
+GO:0048732,0.0012514953038558613,1,1,1,gland development,BP,0.0017355321216620014
+GO:0050767,0.0012514953038558613,1,1,1,regulation of neurogenesis,BP,0.0017355321216620014
+GO:0050769,0.0012514953038558613,1,1,1,positive regulation of neurogenesis,BP,0.0017355321216620014
+GO:0051094,0.0012514953038558613,1,1,1,positive regulation of developmental process,BP,0.0017355321216620014
+GO:0051239,0.0012514953038558613,1,1,1,regulation of multicellular organismal process,BP,0.0017355321216620014
+GO:0051240,0.0012514953038558613,1,1,1,positive regulation of multicellular organismal process,BP,0.0017355321216620014
+GO:0051960,0.0012514953038558613,1,1,1,regulation of nervous system development,BP,0.0017355321216620014
+GO:0051962,0.0012514953038558613,1,1,1,positive regulation of nervous system development,BP,0.0017355321216620014
+GO:0060128,0.0012514953038558613,1,1,1,corticotropin hormone secreting cell differentiation,BP,0.0017355321216620014
+GO:0060284,0.0012514953038558613,1,1,1,regulation of cell development,BP,0.0017355321216620014
+GO:0060322,0.0012514953038558613,1,1,1,head development,BP,0.0017355321216620014
+GO:0060537,0.0012514953038558613,1,1,1,muscle tissue development,BP,0.0017355321216620014
+GO:0060538,0.0012514953038558613,1,1,1,skeletal muscle organ development,BP,0.0017355321216620014
+GO:0061061,0.0012514953038558613,1,1,1,muscle structure development,BP,0.0017355321216620014
+GO:0071542,0.0012514953038558613,1,1,1,dopaminergic neuron differentiation,BP,0.0017355321216620014
+GO:0072091,0.0012514953038558613,1,1,1,regulation of stem cell proliferation,BP,0.0017355321216620014
+GO:1902692,0.0012514953038558613,1,1,1,regulation of neuroblast proliferation,BP,0.0017355321216620014
+GO:2000026,0.0012514953038558613,1,1,1,regulation of multicellular organismal development,BP,0.0017355321216620014
+GO:2000177,0.0012514953038558613,1,1,1,regulation of neural precursor cell proliferation,BP,0.0017355321216620014
+GO:2000179,0.0012514953038558613,1,1,1,positive regulation of neural precursor cell proliferation,BP,0.0017355321216620014
+GO:2000648,0.0012514953038558613,1,1,1,positive regulation of stem cell proliferation,BP,0.0017355321216620014
+GO:0000902,0.0012573426824145518,1,1,1,cell morphogenesis,BP,0.0017355321216620014
+GO:0000904,0.0012573426824145518,1,1,1,cell morphogenesis involved in differentiation,BP,0.0017355321216620014
+GO:0002164,0.0012573426824145518,1,1,1,larval development,BP,0.0017355321216620014
+GO:0002165,0.0012573426824145518,1,1,1,instar larval or pupal development,BP,0.0017355321216620014
+GO:0002168,0.0012573426824145518,1,1,1,instar larval development,BP,0.0017355321216620014
+GO:0006935,0.0012573426824145518,1,1,1,chemotaxis,BP,0.0017355321216620014
+GO:0007350,0.0012573426824145518,1,1,1,blastoderm segmentation,BP,0.0017355321216620014
+GO:0007365,0.0012573426824145518,1,1,1,periodic partitioning,BP,0.0017355321216620014
+GO:0007367,0.0012573426824145518,1,1,1,segment polarity determination,BP,0.0017355321216620014
+GO:0007409,0.0012573426824145518,1,1,1,axonogenesis,BP,0.0017355321216620014
+GO:0007411,0.0012573426824145518,1,1,1,axon guidance,BP,0.0017355321216620014
+GO:0007591,0.0012573426824145518,1,1,1,"molting cycle, chitin-based cuticle",BP,0.0017355321216620014
+GO:0008363,0.0012573426824145518,1,1,1,larval chitin-based cuticle development,BP,0.0017355321216620014
+GO:0009791,0.0012573426824145518,1,1,1,post-embryonic development,BP,0.0017355321216620014
+GO:0009880,0.0012573426824145518,1,1,1,embryonic pattern specification,BP,0.0017355321216620014
+GO:0030178,0.0012573426824145518,1,1,1,negative regulation of Wnt signaling pathway,BP,0.0017355321216620014
+GO:0031175,0.0012573426824145518,1,1,1,neuron projection development,BP,0.0017355321216620014
+GO:0032989,0.0012573426824145518,1,1,1,cellular component morphogenesis,BP,0.0017355321216620014
+GO:0032990,0.0012573426824145518,1,1,1,cell part morphogenesis,BP,0.0017355321216620014
+GO:0035017,0.0012573426824145518,1,1,1,cuticle pattern formation,BP,0.0017355321216620014
+GO:0035282,0.0012573426824145518,1,1,1,segmentation,BP,0.0017355321216620014
+GO:0035293,0.0012573426824145518,1,1,1,chitin-based larval cuticle pattern formation,BP,0.0017355321216620014
+GO:0040003,0.0012573426824145518,1,1,1,chitin-based cuticle development,BP,0.0017355321216620014
+GO:0040011,0.0012573426824145518,1,1,1,locomotion,BP,0.0017355321216620014
+GO:0042330,0.0012573426824145518,1,1,1,taxis,BP,0.0017355321216620014
+GO:0042335,0.0012573426824145518,1,1,1,cuticle development,BP,0.0017355321216620014
+GO:0042337,0.0012573426824145518,1,1,1,cuticle development involved in chitin-based cuticle molting cycle,BP,0.0017355321216620014
+GO:0048666,0.0012573426824145518,1,1,1,neuron development,BP,0.0017355321216620014
+GO:0048667,0.0012573426824145518,1,1,1,cell morphogenesis involved in neuron differentiation,BP,0.0017355321216620014
+GO:0048812,0.0012573426824145518,1,1,1,neuron projection morphogenesis,BP,0.0017355321216620014
+GO:0048858,0.0012573426824145518,1,1,1,cell projection morphogenesis,BP,0.0017355321216620014
+GO:0061564,0.0012573426824145518,1,1,1,axon development,BP,0.0017355321216620014
+GO:0090090,0.0012573426824145518,1,1,1,negative regulation of canonical Wnt signaling pathway,BP,0.0017355321216620014
+GO:0097485,0.0012573426824145518,1,1,1,neuron projection guidance,BP,0.0017355321216620014
+GO:0120039,0.0012573426824145518,1,1,1,plasma membrane bounded cell projection morphogenesis,BP,0.0017355321216620014
+GO:0006260,0.0013119941913669513,1,1,1,DNA replication,BP,0.0017355321216620014
+GO:0006261,0.0013119941913669513,1,1,1,DNA-templated DNA replication,BP,0.0017355321216620014
+GO:0006271,0.0013119941913669513,1,1,1,DNA strand elongation involved in DNA replication,BP,0.0017355321216620014
+GO:0006273,0.0013119941913669513,1,1,1,lagging strand elongation,BP,0.0017355321216620014
+GO:0006298,0.0013119941913669513,1,1,1,mismatch repair,BP,0.0017355321216620014
+GO:0006401,0.0013119941913669513,1,1,1,RNA catabolic process,BP,0.0017355321216620014
+GO:0019439,0.0013119941913669513,1,1,1,aromatic compound catabolic process,BP,0.0017355321216620014
+GO:0022616,0.0013119941913669513,1,1,1,DNA strand elongation,BP,0.0017355321216620014
+GO:0033567,0.0013119941913669513,1,1,1,"DNA replication, Okazaki fragment processing",BP,0.0017355321216620014
+GO:0034655,0.0013119941913669513,1,1,1,nucleobase-containing compound catabolic process,BP,0.0017355321216620014
+GO:0043137,0.0013119941913669513,1,1,1,"DNA replication, removal of RNA primer",BP,0.0017355321216620014
+GO:0044270,0.0013119941913669513,1,1,1,cellular nitrogen compound catabolic process,BP,0.0017355321216620014
+GO:0046700,0.0013119941913669513,1,1,1,heterocycle catabolic process,BP,0.0017355321216620014
+GO:0090305,0.0013119941913669513,1,1,1,nucleic acid phosphodiester bond hydrolysis,BP,0.0017355321216620014
+GO:0090501,0.0013119941913669513,1,1,1,RNA phosphodiester bond hydrolysis,BP,0.0017355321216620014
+GO:0090502,0.0013119941913669513,1,1,1,"RNA phosphodiester bond hydrolysis, endonucleolytic",BP,0.0017355321216620014
+GO:1901361,0.0013119941913669513,1,1,1,organic cyclic compound catabolic process,BP,0.0017355321216620014
+GO:0000086,0.001441535440310795,1,1,1,G2/M transition of mitotic cell cycle,BP,0.0017355321216620014
+GO:0010389,0.001441535440310795,1,1,1,regulation of G2/M transition of mitotic cell cycle,BP,0.0017355321216620014
+GO:0010563,0.001441535440310795,1,1,1,negative regulation of phosphorus metabolic process,BP,0.0017355321216620014
+GO:0010921,0.001441535440310795,1,1,1,regulation of phosphatase activity,BP,0.0017355321216620014
+GO:0010923,0.001441535440310795,1,1,1,negative regulation of phosphatase activity,BP,0.0017355321216620014
+GO:0019220,0.001441535440310795,1,1,1,regulation of phosphate metabolic process,BP,0.0017355321216620014
+GO:0022406,0.001441535440310795,1,1,1,membrane docking,BP,0.0017355321216620014
+GO:0022607,0.001441535440310795,1,1,1,cellular component assembly,BP,0.0017355321216620014
+GO:0030031,0.001441535440310795,1,1,1,cell projection assembly,BP,0.0017355321216620014
+GO:0035303,0.001441535440310795,1,1,1,regulation of dephosphorylation,BP,0.0017355321216620014
+GO:0035305,0.001441535440310795,1,1,1,negative regulation of dephosphorylation,BP,0.0017355321216620014
+GO:0043086,0.001441535440310795,1,1,1,negative regulation of catalytic activity,BP,0.0017355321216620014
+GO:0044085,0.001441535440310795,1,1,1,cellular component biogenesis,BP,0.0017355321216620014
+GO:0044092,0.001441535440310795,1,1,1,negative regulation of molecular function,BP,0.0017355321216620014
+GO:0044770,0.001441535440310795,1,1,1,cell cycle phase transition,BP,0.0017355321216620014
+GO:0044772,0.001441535440310795,1,1,1,mitotic cell cycle phase transition,BP,0.0017355321216620014
+GO:0044782,0.001441535440310795,1,1,1,cilium organization,BP,0.0017355321216620014
+GO:0044839,0.001441535440310795,1,1,1,cell cycle G2/M phase transition,BP,0.0017355321216620014
+GO:0045936,0.001441535440310795,1,1,1,negative regulation of phosphate metabolic process,BP,0.0017355321216620014
+GO:0051174,0.001441535440310795,1,1,1,regulation of phosphorus metabolic process,BP,0.0017355321216620014
+GO:0051346,0.001441535440310795,1,1,1,negative regulation of hydrolase activity,BP,0.0017355321216620014
+GO:0060271,0.001441535440310795,1,1,1,cilium assembly,BP,0.0017355321216620014
+GO:0070925,0.001441535440310795,1,1,1,organelle assembly,BP,0.0017355321216620014
+GO:0097711,0.001441535440310795,1,1,1,ciliary basal body-plasma membrane docking,BP,0.0017355321216620014
+GO:0120031,0.001441535440310795,1,1,1,plasma membrane bounded cell projection assembly,BP,0.0017355321216620014
+GO:0140056,0.001441535440310795,1,1,1,organelle localization by membrane tethering,BP,0.0017355321216620014
+GO:1902749,0.001441535440310795,1,1,1,regulation of cell cycle G2/M phase transition,BP,0.0017355321216620014
+GO:0001878,0.0015203690565271388,1,1,1,response to yeast,BP,0.0017355321216620014
+GO:0002576,0.0015203690565271388,1,1,1,platelet degranulation,BP,0.0017355321216620014
+GO:0003008,0.0015203690565271388,1,1,1,system process,BP,0.0017355321216620014
+GO:0003013,0.0015203690565271388,1,1,1,circulatory system process,BP,0.0017355321216620014
+GO:0005975,0.0015203690565271388,1,1,1,carbohydrate metabolic process,BP,0.0017355321216620014
+GO:0005996,0.0015203690565271388,1,1,1,monosaccharide metabolic process,BP,0.0017355321216620014
+GO:0006082,0.0015203690565271388,1,1,1,organic acid metabolic process,BP,0.0017355321216620014
+GO:0006766,0.0015203690565271388,1,1,1,vitamin metabolic process,BP,0.0017355321216620014
+GO:0006767,0.0015203690565271388,1,1,1,water-soluble vitamin metabolic process,BP,0.0017355321216620014
+GO:0006820,0.0015203690565271388,1,1,1,anion transport,BP,0.0017355321216620014
+GO:0006890,0.0015203690565271388,1,1,1,"retrograde vesicle-mediated transport, Golgi to endoplasmic reticulum",BP,0.0017355321216620014
+GO:0008015,0.0015203690565271388,1,1,1,blood circulation,BP,0.0017355321216620014
+GO:0009607,0.0015203690565271388,1,1,1,response to biotic stimulus,BP,0.0017355321216620014
+GO:0009620,0.0015203690565271388,1,1,1,response to fungus,BP,0.0017355321216620014
+GO:0010883,0.0015203690565271388,1,1,1,regulation of lipid storage,BP,0.0017355321216620014
+GO:0015701,0.0015203690565271388,1,1,1,bicarbonate transport,BP,0.0017355321216620014
+GO:0015711,0.0015203690565271388,1,1,1,organic anion transport,BP,0.0017355321216620014
+GO:0019752,0.0015203690565271388,1,1,1,carboxylic acid metabolic process,BP,0.0017355321216620014
+GO:0019852,0.0015203690565271388,1,1,1,L-ascorbic acid metabolic process,BP,0.0017355321216620014
+GO:0043207,0.0015203690565271388,1,1,1,response to external biotic stimulus,BP,0.0017355321216620014
+GO:0043436,0.0015203690565271388,1,1,1,oxoacid metabolic process,BP,0.0017355321216620014
+GO:0044281,0.0015203690565271388,1,1,1,small molecule metabolic process,BP,0.0017355321216620014
+GO:0048193,0.0015203690565271388,1,1,1,Golgi vesicle transport,BP,0.0017355321216620014
+GO:0051707,0.0015203690565271388,1,1,1,response to other organism,BP,0.0017355321216620014
+GO:1905952,0.0015203690565271388,1,1,1,regulation of lipid localization,BP,0.0017355321216620014
+GO:0010639,0.0015725045290973466,1,1,1,negative regulation of organelle organization,BP,0.0017355321216620014
+GO:0031344,0.0015725045290973466,1,1,1,regulation of cell projection organization,BP,0.0017355321216620014
+GO:0031345,0.0015725045290973466,1,1,1,negative regulation of cell projection organization,BP,0.0017355321216620014
+GO:0031398,0.0015725045290973466,1,1,1,positive regulation of protein ubiquitination,BP,0.0017355321216620014
+GO:0032006,0.0015725045290973466,1,1,1,regulation of TOR signaling,BP,0.0017355321216620014
+GO:0032007,0.0015725045290973466,1,1,1,negative regulation of TOR signaling,BP,0.0017355321216620014
+GO:0033043,0.0015725045290973466,1,1,1,regulation of organelle organization,BP,0.0017355321216620014
+GO:0043085,0.0015725045290973466,1,1,1,positive regulation of catalytic activity,BP,0.0017355321216620014
+GO:0043087,0.0015725045290973466,1,1,1,regulation of GTPase activity,BP,0.0017355321216620014
+GO:0043547,0.0015725045290973466,1,1,1,positive regulation of GTPase activity,BP,0.0017355321216620014
+GO:0044087,0.0015725045290973466,1,1,1,regulation of cellular component biogenesis,BP,0.0017355321216620014
+GO:0044093,0.0015725045290973466,1,1,1,positive regulation of molecular function,BP,0.0017355321216620014
+GO:0051128,0.0015725045290973466,1,1,1,regulation of cellular component organization,BP,0.0017355321216620014
+GO:0051129,0.0015725045290973466,1,1,1,negative regulation of cellular component organization,BP,0.0017355321216620014
+GO:0051345,0.0015725045290973466,1,1,1,positive regulation of hydrolase activity,BP,0.0017355321216620014
+GO:0060491,0.0015725045290973466,1,1,1,regulation of cell projection assembly,BP,0.0017355321216620014
+GO:0070848,0.0015725045290973466,1,1,1,response to growth factor,BP,0.0017355321216620014
+GO:0090630,0.0015725045290973466,1,1,1,activation of GTPase activity,BP,0.0017355321216620014
+GO:0120032,0.0015725045290973466,1,1,1,regulation of plasma membrane bounded cell projection assembly,BP,0.0017355321216620014
+GO:0120033,0.0015725045290973466,1,1,1,negative regulation of plasma membrane bounded cell projection assembly,BP,0.0017355321216620014
+GO:0120035,0.0015725045290973466,1,1,1,regulation of plasma membrane bounded cell projection organization,BP,0.0017355321216620014
+GO:1902017,0.0015725045290973466,1,1,1,regulation of cilium assembly,BP,0.0017355321216620014
+GO:1902018,0.0015725045290973466,1,1,1,negative regulation of cilium assembly,BP,0.0017355321216620014
+GO:1902115,0.0015725045290973466,1,1,1,regulation of organelle assembly,BP,0.0017355321216620014
+GO:1902116,0.0015725045290973466,1,1,1,negative regulation of organelle assembly,BP,0.0017355321216620014
+GO:1902531,0.0015725045290973466,1,1,1,regulation of intracellular signal transduction,BP,0.0017355321216620014
+GO:1902532,0.0015725045290973466,1,1,1,negative regulation of intracellular signal transduction,BP,0.0017355321216620014
+GO:1903322,0.0015725045290973466,1,1,1,positive regulation of protein modification by small protein conjugation or removal,BP,0.0017355321216620014
+GO:0046907,0.0016497283928950928,1,1,1,intracellular transport,BP,0.0017355321216620014
+GO:0048489,0.0016497283928950928,1,1,1,synaptic vesicle transport,BP,0.0017355321216620014
+GO:0051648,0.0016497283928950928,1,1,1,vesicle localization,BP,0.0017355321216620014
+GO:0051649,0.0016497283928950928,1,1,1,establishment of localization in cell,BP,0.0017355321216620014
+GO:0051650,0.0016497283928950928,1,1,1,establishment of vesicle localization,BP,0.0017355321216620014
+GO:0051656,0.0016497283928950928,1,1,1,establishment of organelle localization,BP,0.0017355321216620014
+GO:0097479,0.0016497283928950928,1,1,1,synaptic vesicle localization,BP,0.0017355321216620014
+GO:0097480,0.0016497283928950928,1,1,1,establishment of synaptic vesicle localization,BP,0.0017355321216620014
+GO:0099003,0.0016497283928950928,1,1,1,vesicle-mediated transport in synapse,BP,0.0017355321216620014
+GO:0006325,0.0016729925491676264,1,1,1,chromatin organization,BP,0.0017355321216620014
+GO:0070828,0.0016729925491676264,1,1,1,heterochromatin organization,BP,0.0017355321216620014
+GO:0006805,0.001694931699871635,1,1,1,xenobiotic metabolic process,BP,0.0017355321216620014
+GO:0009267,0.001694931699871635,1,1,1,cellular response to starvation,BP,0.0017355321216620014
+GO:0009410,0.001694931699871635,1,1,1,response to xenobiotic stimulus,BP,0.0017355321216620014
+GO:0009719,0.001694931699871635,1,1,1,response to endogenous stimulus,BP,0.0017355321216620014
+GO:0009991,0.001694931699871635,1,1,1,response to extracellular stimulus,BP,0.0017355321216620014
+GO:0010035,0.001694931699871635,1,1,1,response to inorganic substance,BP,0.0017355321216620014
+GO:0010038,0.001694931699871635,1,1,1,response to metal ion,BP,0.0017355321216620014
+GO:0010243,0.001694931699871635,1,1,1,response to organonitrogen compound,BP,0.0017355321216620014
+GO:0014070,0.001694931699871635,1,1,1,response to organic cyclic compound,BP,0.0017355321216620014
+GO:0015695,0.001694931699871635,1,1,1,organic cation transport,BP,0.0017355321216620014
+GO:0015898,0.001694931699871635,1,1,1,amiloride transport,BP,0.0017355321216620014
+GO:0031667,0.001694931699871635,1,1,1,response to nutrient levels,BP,0.0017355321216620014
+GO:0031668,0.001694931699871635,1,1,1,cellular response to extracellular stimulus,BP,0.0017355321216620014
+GO:0031669,0.001694931699871635,1,1,1,cellular response to nutrient levels,BP,0.0017355321216620014
+GO:0034776,0.001694931699871635,1,1,1,response to histamine,BP,0.0017355321216620014
+GO:0035874,0.001694931699871635,1,1,1,cellular response to copper ion starvation,BP,0.0017355321216620014
+GO:0042594,0.001694931699871635,1,1,1,response to starvation,BP,0.0017355321216620014
+GO:0046677,0.001694931699871635,1,1,1,response to antibiotic,BP,0.0017355321216620014
+GO:0046688,0.001694931699871635,1,1,1,response to copper ion,BP,0.0017355321216620014
+GO:0060359,0.001694931699871635,1,1,1,response to ammonium ion,BP,0.0017355321216620014
+GO:0061476,0.001694931699871635,1,1,1,response to anticoagulant,BP,0.0017355321216620014
+GO:0071241,0.001694931699871635,1,1,1,cellular response to inorganic substance,BP,0.0017355321216620014
+GO:0071242,0.001694931699871635,1,1,1,cellular response to ammonium ion,BP,0.0017355321216620014
+GO:0071248,0.001694931699871635,1,1,1,cellular response to metal ion,BP,0.0017355321216620014
+GO:0071280,0.001694931699871635,1,1,1,cellular response to copper ion,BP,0.0017355321216620014
+GO:0071407,0.001694931699871635,1,1,1,cellular response to organic cyclic compound,BP,0.0017355321216620014
+GO:0071417,0.001694931699871635,1,1,1,cellular response to organonitrogen compound,BP,0.0017355321216620014
+GO:0071420,0.001694931699871635,1,1,1,cellular response to histamine,BP,0.0017355321216620014
+GO:0071466,0.001694931699871635,1,1,1,cellular response to xenobiotic stimulus,BP,0.0017355321216620014
+GO:0071495,0.001694931699871635,1,1,1,cellular response to endogenous stimulus,BP,0.0017355321216620014
+GO:0071496,0.001694931699871635,1,1,1,cellular response to external stimulus,BP,0.0017355321216620014
+GO:0071503,0.001694931699871635,1,1,1,response to heparin,BP,0.0017355321216620014
+GO:0071504,0.001694931699871635,1,1,1,cellular response to heparin,BP,0.0017355321216620014
+GO:0071705,0.001694931699871635,1,1,1,nitrogen compound transport,BP,0.0017355321216620014
+GO:0097184,0.001694931699871635,1,1,1,response to azide,BP,0.0017355321216620014
+GO:0097185,0.001694931699871635,1,1,1,cellular response to azide,BP,0.0017355321216620014
+GO:0120126,0.001694931699871635,1,1,1,response to copper ion starvation,BP,0.0017355321216620014
+GO:1901698,0.001694931699871635,1,1,1,response to nitrogen compound,BP,0.0017355321216620014
+GO:1901699,0.001694931699871635,1,1,1,cellular response to nitrogen compound,BP,0.0017355321216620014
+GO:0000724,0.0017065764241160242,1,1,1,double-strand break repair via homologous recombination,BP,0.0017355321216620014
+GO:0000725,0.0017065764241160242,1,1,1,recombinational repair,BP,0.0017355321216620014
+GO:0006302,0.0017065764241160242,1,1,1,double-strand break repair,BP,0.0017355321216620014
+GO:0006310,0.0017065764241160242,1,1,1,DNA recombination,BP,0.0017355321216620014
+GO:0032392,0.0017065764241160242,1,1,1,DNA geometric change,BP,0.0017355321216620014
+GO:0032508,0.0017065764241160242,1,1,1,DNA duplex unwinding,BP,0.0017355321216620014
+GO:0071103,0.0017065764241160242,1,1,1,DNA conformation change,BP,0.0017355321216620014
+GO:0009890,0.002081449787724493,1,1,1,negative regulation of biosynthetic process,BP,0.002081449787724493
+GO:0010558,0.002081449787724493,1,1,1,negative regulation of macromolecule biosynthetic process,BP,0.002081449787724493
+GO:0010629,0.002081449787724493,1,1,1,negative regulation of gene expression,BP,0.002081449787724493
+GO:0031327,0.002081449787724493,1,1,1,negative regulation of cellular biosynthetic process,BP,0.002081449787724493
+GO:0045596,0.002081449787724493,1,1,1,negative regulation of cell differentiation,BP,0.002081449787724493
+GO:0045892,0.002081449787724493,1,1,1,negative regulation of DNA-templated transcription,BP,0.002081449787724493
+GO:0045934,0.002081449787724493,1,1,1,negative regulation of nucleobase-containing compound metabolic process,BP,0.002081449787724493
+GO:0051093,0.002081449787724493,1,1,1,negative regulation of developmental process,BP,0.002081449787724493
+GO:0051147,0.002081449787724493,1,1,1,regulation of muscle cell differentiation,BP,0.002081449787724493
+GO:0051148,0.002081449787724493,1,1,1,negative regulation of muscle cell differentiation,BP,0.002081449787724493
+GO:0051150,0.002081449787724493,1,1,1,regulation of smooth muscle cell differentiation,BP,0.002081449787724493
+GO:0051151,0.002081449787724493,1,1,1,negative regulation of smooth muscle cell differentiation,BP,0.002081449787724493
+GO:0051253,0.002081449787724493,1,1,1,negative regulation of RNA metabolic process,BP,0.002081449787724493
+GO:1902679,0.002081449787724493,1,1,1,negative regulation of RNA biosynthetic process,BP,0.002081449787724493
+GO:1903507,0.002081449787724493,1,1,1,negative regulation of nucleic acid-templated transcription,BP,0.002081449787724493
+GO:2000113,0.002081449787724493,1,1,1,negative regulation of cellular macromolecule biosynthetic process,BP,0.002081449787724493

@@ -259,6 +259,15 @@ head ../../output/03_align/exon.tab
 wc -l ../../output/03_align/exon.tab #count the number of files 
 ```
 
+Exons are the coding regions of a gene that remain in the final mature mRNA after introns are removed during splicing. In the genome sequence, exons are separated by introns (non-coding stretches that get spliced out).
+
+```         
+DNA:  [EXON1]---intron---[EXON2]---intron---[EXON3]
+mRNA: [EXON1][EXON2][EXON3]
+```
+
+Our RNA-seq reads come from mRNA, so our reads will map to exons in the genome. HISAT2 needs to know where the exons are in the genome to align our reads correctly.
+
 # Extract splice sites
 
 ```{r extract-splices, engine='bash', eval=FALSE}
@@ -272,6 +281,23 @@ wc -l ../../output/03_align/exon.tab #count the number of files
 head ../../output/03_align/splice_sites.tab
 wc -l ../../output/03_align/splice_sites.tab #count the number of files 
 ```
+
+Splice sites are the **boundaries between exons and introns** where splicing occurs during mRNA processing.These positions tell HISAT2 where reads might "jump" from one exon to another, because RNA-seq reads can span exon--exon junctions.
+
+-   **Donor site (5′ splice site):** the beginning of an intron.
+
+-   **Acceptor site (3′ splice site):** the end of an intron.
+
+```         
+DNA:   [EXON1]---intron---[EXON2]
+Reads: [EXON1----EXON2]   (spanning across splice site)
+```
+
+HISAT2 can align reads in a "splice-aware" way. If a read doesn't align continuously, HISAT2 checks whether it could cross a known splice junction (from splice_sites.tab). This improves alignment accuracy, especially for reads that bridge exons. The helper scripts take a GTF annotation and produce:
+
+-   exon.tab: A list of all exon coordinates (so HISAT2 knows where continuous alignments are expected).
+
+-   splice_sites.tab: A list of exon--intron boundaries (so HISAT2 knows where gapped alignments are allowed).
 
 > Sam says HISAT index build for M cap included exons and splice sites [here](https://robertslab.github.io/sams-notebook/posts/2023/2023-01-31-Genome-Indexing—M.capitata-HIv3-Assembly-with-HiSat2-on-Mox/index.html)
 

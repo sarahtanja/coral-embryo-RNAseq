@@ -1,0 +1,234 @@
+---
+title: "Clustering gene lists"
+subtitle: "Grouping genes by metadata and expression patterns"
+author: "Sarah Tanja"
+date: 2024-12-02
+date-modified: today
+format:
+  gfm: 
+    toc: true
+    number-sections: true
+  html:
+    theme: journal
+    highlight-style: github
+    page-layout: article
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    number-sections: true
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    reference-location: margin
+    citation-location: margin
+---
+# Background
+## Inputs
+- `sig_cat`: List of the 44 genes that show significant interactions between leachate and stage 
+- `vsd_sig`: The variance stabilized transformed gene count matrix of 44 significant interaction genes
+- `LRT_sig_genes`: DESeq results list of LRT significant genes, LFC, & padj values 
+- `Wald_sig_genes`: DESeq results list of Wald test results, LFC & padj values for each interaction contrast
+- `sig_lvc_cl`: DESeq results list of the 39 genes that are sig diff from control at low cleavage 
+- `sig_mvc_cl`: DESeq results list of the 77 genes that are sig diff from control at mid cleavage
+- `sig_hvc_cl`: DESeq results list of the 18 genes that are sig diff from control at high cleavage
+- `sig_hvc_eg `:DESeq results list of the 13 genes that are sig diff from control at high early gastrula
+
+
+## Outputs
+
+# Setup
+
+## Install packages
+## Load packages
+```{r}
+library(ComplexUpset)
+library(patchwork)
+library(tidyverse)
+library(DEGreport)
+```
+
+## Load inputs
+
+```{r}
+# 44 interaction genes
+LRT_sig_genes <- read_csv("../../output/06_deg/interactions/LRT_sig_genes.csv")
+Wald_sig_genes <- read_csv("../../output/06_deg/interactions/Wald_sig_genes.csv")
+vsd_sig <- read_csv("../../output/06_deg/interactions/vsd_sig.csv")
+
+# contrasts
+sig_lvc_cl <- read_csv("../../output/06_deg/contrasts/sig_lvc_cl.csv")
+sig_mvc_cl <- read_csv("../../output/06_deg/contrasts/sig_mvc_cl.csv")
+sig_hvc_cl <- read_csv("../../output/06_deg/contrasts/sig_hvc_cl.csv")
+sig_hvc_eg <- read_csv("../../output/06_deg/contrasts/sig_hvc_eg.csv")
+```
+
+```{r}
+# metadata
+metadata_or <- read_csv("../../metadata/metadata_or.csv")
+
+# Reorder factors
+metadata_or$stage <- as.factor(metadata_or$stage)
+metadata_or$stage <- fct_relevel(metadata_or$stage, "cleavage", "prawnchip", "earlygastrula")
+ 
+metadata_or$leachate <- as.factor(metadata_or$leachate)
+metadata_or$leachate <- fct_relevel(metadata_or$leachate, "control", "low", "mid", "high")
+```
+
+# Gene lists exploration
+
+## Common significant genes across cleavage
+```{r}
+common_genes <- Reduce(intersect, list(
+  sig_lvc_cl$gene_id,
+  sig_mvc_cl$gene_id,
+  sig_hvc_cl$gene_id
+))
+
+length(common_genes)  # Number of genes common to all cleavage, just 1!
+print(common_genes) # And it is...
+```
+
+::: callout-note
+Montipora_capitata_HIv3\_\_\_TS.g50653.t2" is the only gene common across cleavage with differential expression due to low, mid, and high leachate treatments
+:::
+
+## Venn Diagram with ComplexUpset
+
+```{r}
+genes1 <- sig_lvc_cl$gene_id
+genes2 <- sig_mvc_cl$gene_id
+genes3 <- sig_hvc_cl$gene_id
+genes4 <- sig_hvc_eg$gene_id
+genes5 <- LRT_sig_genes$gene_id
+```
+
+Upset requires a binary membership table (presence/absence dataframe)
+
+```{r}
+all_genes <- unique(c(genes1, genes2, genes3, genes4, genes5))
+
+upset_data <- data.frame(
+  gene_id = all_genes,
+  LVC_CL  = all_genes %in% genes1,
+  MVC_CL  = all_genes %in% genes2,
+  HVC_CL  = all_genes %in% genes3,
+  HVC_EG  = all_genes %in% genes4,
+  LRT     = all_genes %in% genes5
+)
+```
+
+```{r}
+install.packages("ComplexUpset")
+```
+
+```{r}
+ComplexUpset::upset(
+  upset_data,
+    intersect = c("LVC_CL", "MVC_CL", "HVC_CL", "HVC_EG", "LRT"),
+    base_annotations = list('Intersection size'= 
+                              ComplexUpset::intersection_size(counts = TRUE)))
+
+```
+
+## Gene set overlaps with `UpSetR`
+
+```{r}
+# install.packages("UpSetR")  # if needed
+library(UpSetR)
+sets <- c("LVC_CL","MVC_CL","HVC_CL","HVC_EG","LRT")
+
+df_up <- upset_data
+df_up[sets] <- lapply(df_up[sets], function(x) as.integer(as.logical(x)))
+
+UpSetR::upset(df_up, sets = sets, keep.order = TRUE)
+
+```
+
+# Perform clustering with `DEGreport`
+
+see Roberts Lab Issue [#1916](https://github.com/RobertsLab/resources/issues/1916)
+
+Perform clustering.
+
+```{r}
+clustering_sig_genes <- LRT_sig_genes %>%
+  arrange(padj) #genes in rows, stats in columns
+
+matrix <- vsd_sig %>% 
+  column_to_rownames(var = "gene_id") #genes in rows, sample ID in columns
+
+meta <- metadata_or %>%
+  dplyr::select(sample_id, stage, leachate) %>% #sample id and stage, and leachate columns
+  column_to_rownames(var = "sample_id") %>%
+  dplyr::select(stage, leachate) #sample ID in rows, one column of lifestage 
+
+# Obtain transformed values for those significant genes
+cluster_vst <- matrix[clustering_sig_genes$gene_id, ] #rows are DEGs and columns are sample ID
+```
+
+Run with minimum 4 genes per cluster to detect because we have few DEGs.\
+- DEGreport vignette, [degPatterns](https://www.bioconductor.org/packages/release/bioc/vignettes/DEGreport/inst/doc/DEGreport.html#:~:text=%22expression%22)-,Detect%20patterns%20of%20expression,-In%20this%20section)
+
+```{r}
+# Use the `degPatterns` function from the 'DEGreport' package to show gene clusters across sample groups
+stage_clusters <- degPatterns(cluster_vst, metadata = meta, time = "stage", col=NULL, plot=TRUE, minc = 4)
+```
+
+```{r}
+# Use the `degPatterns` function from the 'DEGreport' package to show gene clusters across sample groups
+clusters <- degPatterns(cluster_vst, metadata = meta, time = "leachate", col=NULL, plot=TRUE, minc = 3)
+```
+```{r}
+27+8+4+5
+```
+
+```{r}
+ggsave(filename="../../output/06_deg/interactions/degPatternscluster_plot.png", width=12, height=10)
+```
+
+Extract the list of genes in each cluster for leachate (stage grouped all together in one big group, so we can focus in on leachate with the cluster analysis here).
+
+```{r}
+# Rename and extract information 
+groups <- clusters$df %>%
+          rename(gene_id=genes) %>% 
+          rename(leachate_cluster=cluster)
+```
+
+Save the gene cluster annotation
+
+```{r}
+write.csv(groups, "../../output/06_deg/interactions/clusters.csv", row.names = FALSE)
+```
+
+Plot is showing Z score of VST normalized gene counts
+
+```{r, warning=FALSE}
+cluster_plot<-ggplot(clusters[["normalized"]],
+        aes(x=leachate, y=value)) +
+  facet_wrap(~ cluster)+
+   geom_point(colour="darkgray", size=1) +
+  ylab("Z-score expression")+
+  xlab("")+
+   # change the method to make it smoother
+   geom_smooth(aes(group=genes), method = "loess", colour="red", linewidth=0.1, se=FALSE)+
+   geom_smooth(aes(group=1), method = "loess", colour="black")+
+  geom_hline(yintercept=0, linetype="dashed")+
+  geom_vline(xintercept=3, linetype="dotted")+
+  geom_vline(xintercept=6, linetype="dotted")+
+  theme_classic()+
+  theme(
+    axis.text.x = element_text(angle=90, hjust=1, vjust=1)
+  );cluster_plot
+
+ggsave(cluster_plot, filename="../../output/06_deg/interactions/cluster_plot.png", width=12, height=10)
+```
+
+# Summary & Next Steps
+
+We can perform functional enrichment on these clusters now!
