@@ -212,7 +212,7 @@ unmatched rows in either input are not included in the result.
 
 ## Interactions
 
-sig_genes > sig_genes_anno > sig_genes_annofilt
+sig_genes \> sig_genes_anno \> sig_genes_annofilt
 
 ```{r}
 # Annotate the interaction gene list
@@ -236,12 +236,15 @@ paste("GO annotated interaction genes:",
       round(100*nrow(sig_genes_annofilt)/nrow(sig_genes),1),"%")
 ```
 
-::: {.callout-important title = "Results"}
-- 37 of the 44 (84.1%) significant interaction genes were in the `EggNog_anno` dataframe!
-- 23 of the 44 (52.3%) actually had GO terms.
+::: callout-important
+-   37 of the 44 (84.1%) significant interaction genes were in the
+    `EggNog_anno` dataframe!
+
+-   23 of the 44 (52.3%) actually had GO terms
 :::
 
 ## Contrasts
+
 ```{r}
 # Annotate the contrast gene lists
 sig_lvc_cl_anno <- inner_join(sig_lvc_cl, EggNog_anno, by = "gene_id")
@@ -266,7 +269,6 @@ sig_hvc_eg_annofilt <- sig_hvc_eg_anno %>%
   mutate(GOs = na_if(str_trim(GOs), "-")) %>% # treat "-" as missing and trim whitespace
   filter(!is.na(GOs), GOs != "") # keep only rows that have GO terms (remove NA and blank)
 ```
-
 
 ```{r}
 # Low vs control (cleavage)
@@ -311,21 +313,25 @@ paste("GO annotated high vs control early gastrula:",
 ```
 
 ::: {.callout-important title="Results"}
-- 36 of the 39 (92.3%) significant low vs control cleavage genes were
+-   36 of the 39 (92.3%) significant low vs control cleavage genes were
     in the `EggNog_anno` dataframe!
-- 26 of the 39 (66.7%) were annotated with GO terms
 
-- 56 of the 77 (72.7%) significant mid vs control cleavage genes were
+-   26 of the 39 (66.7%) were annotated with GO terms
+
+-   56 of the 77 (72.7%) significant mid vs control cleavage genes were
     in the `EggNog_anno` dataframe!
-- 40 of the 77 (51.9%) were annotated with GO terms
 
-- 16 of the 18 (88.9%) significant high vs control cleavage genes were
+-   40 of the 77 (51.9%) were annotated with GO terms
+
+-   16 of the 18 (88.9%) significant high vs control cleavage genes were
     in the `EggNog_anno` dataframe!
-- 11 of the 18 (61.1%) were annotated with GO terms
 
-- 10 of the 13 (76.9%) significant high vs control early gastrula
+-   11 of the 18 (61.1%) were annotated with GO terms
+
+-   10 of the 13 (76.9%) significant high vs control early gastrula
     genes were in the `EggNog_anno` dataframe!
-- 8 of the 13 (61.5%) were annotated with GO terms
+
+-   8 of the 13 (61.5%) were annotated with GO terms
 :::
 
 ## Format & filter GOs column
@@ -337,14 +343,18 @@ sig_genes_anno$GOs <- gsub(",", ";", sig_genes_anno$GOs)
 
 ::: callout-important
 23 of the 44 significant genes were annotated with GO terms! The
-annotation file `sig_genes_annofilt` dataframe now only contains genes that
-were significant *and* have GO annotation information.
+annotation file `sig_genes_annofilt` dataframe now only contains genes
+that were significant *and* have GO annotation information.
 
 Previously I didn't filter out the genes with NA GO terms and my results
 were different... not sure why that is as I select only the GOs in the
-mapping step. I think it's because I included genes without GOs in the universe for bias correction. I've changed this so that I filter out any that lack GO terms. 
+mapping step. I think it's because I included genes without GOs in the
+universe for bias correction. I've changed this so that I filter out any
+that lack GO terms.
 
-One bummer about this is the category 'response to chemical' dropped... which was a category that made biological sense to the leachate pollution exposure. 
+One bummer about this is the category 'response to chemical' dropped...
+which was a category that made biological sense to the leachate
+pollution exposure.
 :::
 
 ## Get gene lengths
@@ -430,7 +440,6 @@ closely with the others in pattern 3.
 > that don't meet the pattern similarity, it doesn't group them in to
 > 'close enough' pattern. We'll stick with the 4 patterns. And see what
 > happens with functional enrichment of 1 gene....
-
 :::
 
 ## Annotate contrast DEG lists
@@ -446,21 +455,37 @@ Conduct at biological process level. Filter for adjusted p-value \<0.05.
 
 ## Turn DEG lists into vectors
 
-```{r}
+```{r, deg-list-vectors}
 # Define your DEG lists — the genes you're testing
 ## Interaction
-ID.vector.int <- sig_genes_af$gene_id # significant interaction genes
+### significant interaction genes
+ID.vector.int <- sig_genes_af$gene_id 
 
-ID.vector.1 <- sig_genes_af1$gene_id # all sig interaction genes that fall into cluster 1
-ID.vector.2 <- sig_genes_af2$gene_id # all sig interaction genes that fall into cluster 2
-ID.vector.3 <- sig_genes_af3$gene_id # all sig interaction genes that fall into cluster 3
-ID.vector.4 <- sig_genes_af4$gene_id # all sig interaction genes that fall into cluster 4
+### all sig interaction genes that fall into cluster 1
+ID.vector.1 <- sig_genes_af1$gene_id 
+
+### all sig interaction genes that fall into cluster 2
+ID.vector.2 <- sig_genes_af2$gene_id 
+
+### all sig interaction genes that fall into cluster 3
+ID.vector.3 <- sig_genes_af3$gene_id 
+
+### all sig interaction genes that fall into cluster 4
+ID.vector.4 <- sig_genes_af4$gene_id 
+
 
 ## Contrasts
-ID.vector.lvc_cl <- sig_lvc_cl_af$gene_id # all sig genes low vs control cleavage contrast
-ID.vector.mvc_cl <- sig_mvc_cl_af$gene_id # all sig genes mid vs control cleavage contrast
-ID.vector.hvc_cl <- sig_hvc_cl_af$gene_id # all sig genes high vs control cleavage contrast
-ID.vector.hvc_eg <- sig_hvc_eg_af$gene_id # all sig genes high vs control early gastrula contrast
+# all sig genes low vs control cleavage contrast
+ID.vector.lvc_cl <- sig_lvc_cl_af$gene_id
+
+# all sig genes mid vs control cleavage contrast
+ID.vector.mvc_cl <- sig_mvc_cl_af$gene_id 
+
+# all sig genes high vs control cleavage contrast
+ID.vector.hvc_cl <- sig_hvc_cl_af$gene_id 
+
+# all sig genes high vs control early gastrula contrast
+ID.vector.hvc_eg <- sig_hvc_eg_af$gene_id 
 
 ```
 
@@ -488,36 +513,36 @@ paste("There are", length(ID.vector.hvc_cl), "high vs control cleavage GO annota
 paste("There are", length(ID.vector.hvc_eg), "high vs control early gastrula GO annotated DE genes")
 ```
 
-::: {callout-important title = "Results"}
-- "6979 genes out of 12564 genes in our DESeq2 dataset have GO annotations"
-- "23 genes out of 44 significant interaction genes have GO annotations"
-- "14 of the 23 bin into deg pattern 1"
-- "5 of the 23 bin into deg pattern 2"
-- "3 of the 23 bin into deg pattern 3"
-- "1 of the 23 bin into deg pattern 4"
-- "There are 26 low vs control cleavage GO annotated DE genes"
-- "There are 40 mid vs control cleavage GO annotated DE genes"
-- "There are 11 high vs control cleavage GO annotated DE genes"
-- "There are 8 high vs control early gastrula GO annotated DE genes"
+::: callout-important
+\- "6979 genes out of 12564 genes in our DESeq2 dataset have GO
+annotations"
+
+\- "23 genes out of 44 significant interaction genes have GO
+annotations"
+
+\- "14 of the 23 bin into deg pattern 1"
+
+"5 of the 23 bin into deg pattern 2"
+
+\- "3 of the 23 bin into deg pattern 3"
+
+\- "1 of the 23 bin into deg pattern 4"
+
+\- "There are 26 low vs control cleavage GO annotated DE genes"
+
+\- "There are 40 mid vs control cleavage GO annotated DE genes"
+
+\- "There are 11 high vs control cleavage GO annotated DE genes"
+
+\- "There are 8 high vs control early gastrula GO annotated DE genes"
 :::
-
-## Weight by sequence length
-
-```{r}
-lengths_anno <- lengths %>% 
-  dplyr::filter(gene_id %in% all_genes$gene_id) %>% 
-  dplyr::filter(gene_id %in% EggNog_anno$gene_id)
-
-LENGTH.vector <- as.integer(lengths_anno$transcript_length)
-names(LENGTH.vector) <- ALL.vector  # Needed for bias correction
-```
 
 ## GO term mapping
 
 About goseq() command:
 
 | Argument                       | Meaning                                                                                                                                                      |
-|----------------------|--------------------------------------------------|
+|-------------------------|-----------------------------------------------|
 | `pwf`                          | A **probability weighting function** object from `nullp()`. It contains the DEG status of all genes (1 = DEG, 0 = not DEG), plus gene length bias info.      |
 | `gene2cat`                     | A data frame or list mapping **genes to functional categories** (like GO terms). In your case, it's a long-format table of gene-GO pairs.                    |
 | `test.cats = "GO:BP"`          | This limits the enrichment to only **biological process** GO terms (you could also use `"GO:MF"` or `"GO:CC"` for molecular function or cellular component). |
@@ -540,7 +565,7 @@ About goseq() command:
 
 -   Other metadata (like GO term name)
 
-```{r}
+```{r, go-maps}
 # Gene to GO term mapping
 ## Interaction
 GO.terms.int <- sig_genes_af %>%
@@ -560,12 +585,22 @@ GO.terms.4 <- sig_genes_af4 %>%
   dplyr::select(gene_id, GOs)
 
 ## Contrasts
+GO.terms.lvccl <- sig_lvc_cl_af %>% 
+  dplyr::select(gene_id, GOs)
 
+GO.terms.mvccl <- sig_mvc_cl_af %>% 
+  dplyr::select(gene_id, GOs)
+
+GO.terms.hvccl <- sig_hvc_cl_af %>% 
+  dplyr::select(gene_id, GOs)
+
+GO.terms.hvceg <- sig_hvc_eg_af %>% 
+  dplyr::select(gene_id, GOs)
 ```
 
 Function to split GO terms to a single term per row
 
-```{r}
+```{r, split-go-fun}
 split_go <- function(df, gene_col = "gene_id", go_col = "GOs") {
   df %>%
     mutate(across(all_of(c(gene_col, go_col)), as.character)) %>%
@@ -580,54 +615,135 @@ split_go <- function(df, gene_col = "gene_id", go_col = "GOs") {
 
 ```{r}
 # Format GO terms to one term per row
-GO.terms.all <- split_go(GO.terms.all)
+## Interaction
+GO.terms.int <- split_go(GO.terms.int)
+
+## Interaction patterns
 GO.terms.1 <- split_go(GO.terms.1) 
 GO.terms.2 <- split_go(GO.terms.2) 
 GO.terms.3 <- split_go(GO.terms.3) 
 GO.terms.4 <- split_go(GO.terms.4) 
+
+## Contrasts
+GO.terms.lvccl <- split_go(GO.terms.lvccl)
+GO.terms.mvccl <- split_go(GO.terms.mvccl)
+GO.terms.hvccl <- split_go(GO.terms.hvccl)
+GO.terms.hvceg <- split_go(GO.terms.hvceg)
+```
+
+```{r, weight-length}
+lengths_anno <- lengths %>% 
+  dplyr::filter(gene_id %in% all_genes$gene_id) %>% 
+  dplyr::filter(gene_id %in% EggNog_anno$gene_id)
+
+LENGTH.vector <- as.integer(lengths_anno$transcript_length)
+names(LENGTH.vector) <- ALL.vector  # Needed for bias correction
+```
+
+Make gene vector function
+
+```{r}
+# --- Safety helper -----------------------------------------------------------
+make_gene_vector <- function(all_ids, de_ids, label = "DE set") {
+  # Normalize to clean character vectors
+  all_ids <- as.character(all_ids)
+  de_ids  <- unique(trimws(as.character(de_ids)))
+
+  # Hard checks on ALL.vector
+  if (anyNA(all_ids)) stop("ALL.vector contains NA gene IDs.")
+  if (anyDuplicated(all_ids)) {
+    dups <- unique(all_ids[duplicated(all_ids)])
+    stop("ALL.vector has duplicated gene IDs (e.g., ", paste(head(dups, 5), collapse = ", "), ").")
+  }
+
+  # Soft check: DE IDs not in ALL
+  extras <- setdiff(de_ids, all_ids)
+  if (length(extras) > 0) {
+    warning(length(extras), " ", label, " IDs not found in ALL.vector (showing up to 5): ",
+            paste(head(extras, 5), collapse = ", "))
+    # Drop them so %in% works as intended
+    de_ids <- intersect(de_ids, all_ids)
+  }
+
+  # Construct 0/1 vector aligned to ALL.vector
+  vec <- as.integer(all_ids %in% de_ids)
+  names(vec) <- all_ids
+
+  # Final sanity
+  stopifnot(length(vec) == length(all_ids), all(vec %in% c(0L, 1L)))
+  vec
+}
+
 ```
 
 ```{r}
-class(GO.terms.all)
+# Interaction
+gene.vector.int  <- make_gene_vector(ALL.vector, ID.vector.int,  "interaction")
+
+# Interaction patterns
+gene.vector.1    <- make_gene_vector(ALL.vector, ID.vector.1,    "pattern 1")
+gene.vector.2    <- make_gene_vector(ALL.vector, ID.vector.2,    "pattern 2")
+gene.vector.3    <- make_gene_vector(ALL.vector, ID.vector.3,    "pattern 3")
+gene.vector.4    <- make_gene_vector(ALL.vector, ID.vector.4,    "pattern 4")
+
+# Contrasts
+gene.vector.lvccl <- make_gene_vector(ALL.vector, ID.vector.lvc_cl, "low vs control (cleavage)")
+gene.vector.mvccl <- make_gene_vector(ALL.vector, ID.vector.mvc_cl, "mid vs control (cleavage)")
+gene.vector.hvccl <- make_gene_vector(ALL.vector, ID.vector.hvc_cl, "high vs control (cleavage)")
+gene.vector.hvceg <- make_gene_vector(ALL.vector, ID.vector.hvc_eg, "high vs control (earlygastrula)")
+```
+
+### Null probability weighting function (bias for gene length)
+
+> What "weighting by sequence length" means in goseq In RNA-seq, longer
+> genes tend to produce more reads at the same per-base expression, so
+> they're more likely to be called DE simply because statistical power
+> is higher. If you ran GO enrichment naively, GO categories enriched
+> for long genes could look significant even under the null. goseq fixes
+> this by estimating a probability weighting function (PWF): a smooth
+> curve of Pr(DE \| length) from your data. Then, when it tests each GO
+> category, it reweights genes by their PWF values so long-gene
+> categories aren't unfairly favored.
+
+```{r}
+# LENGTH.vector must be a named numeric vector with names == gene IDs
+stopifnot(is.numeric(LENGTH.vector), !is.null(names(LENGTH.vector)))
+
+# Keep only genes present in ALL.vector and align the order
+LENGTH.vector <- LENGTH.vector[ALL.vector]
+stopifnot(identical(names(LENGTH.vector), ALL.vector))
 ```
 
 ```{r}
-# Construct named gene vector: 1 = DEG, 0 = not DEG
-gene.vector.all <- as.integer(ALL.vector %in% ID.vector.all)
-names(gene.vector.all) <- ALL.vector
-
-gene.vector.1 <- as.integer(ALL.vector %in% ID.vector.1)
-names(gene.vector.1) <- ALL.vector
-
-gene.vector.2 <- as.integer(ALL.vector %in% ID.vector.2)
-names(gene.vector.2) <- ALL.vector
-
-gene.vector.3 <- as.integer(ALL.vector %in% ID.vector.3)
-names(gene.vector.3) <- ALL.vector
-
-gene.vector.4 <- as.integer(ALL.vector %in% ID.vector.4)
-names(gene.vector.4) <- ALL.vector
-
-# Null probability weighting function (bias for gene length)
 # nullp is a function from nadiadavidson/goseq
-pwf.all <- nullp(gene.vector.all, bias.data = LENGTH.vector)
+## Interactions
+pwf.int <- nullp(gene.vector.int, bias.data = LENGTH.vector)
+
+## Interaction patterns
 pwf.1 <- nullp(gene.vector.1, bias.data = LENGTH.vector)
 pwf.2 <- nullp(gene.vector.2, bias.data = LENGTH.vector)
 pwf.3 <- nullp(gene.vector.3, bias.data = LENGTH.vector)
 pwf.4 <- nullp(gene.vector.4, bias.data = LENGTH.vector)
+
+## Contrasts
+pwf.lvccl <- nullp(gene.vector.lvccl, bias.data = LENGTH.vector)
+pwf.mvccl <- nullp(gene.vector.mvccl, bias.data = LENGTH.vector)
+pwf.hvccl <- nullp(gene.vector.hvccl, bias.data = LENGTH.vector)
+pwf.hvceg <- nullp(gene.vector.hvceg, bias.data = LENGTH.vector)
 ```
 
-```{r}
-length(intersect(names(gene.vector.all), GO.terms.all[[1]]))
-```
+>
+> You should typically see an **increasing** trend: longer genes →
+> higher DE probability. If it\'s flat, length bias is minimal (fine!).
+> If it\'s erratic, check inputs.
 
 ## GO enrichment
 
 ```{r}
 # Run GO enrichment for biological process terms
-GO.bp.all <- goseq(
-  pwf.all,
-  gene2cat = GO.terms.all,
+GO.bp.int <- goseq(
+  pwf.int,
+  gene2cat = GO.terms.int,
   test.cats = c("GO:BP"),
   method = "Wallenius",
   use_genes_without_cat = TRUE
@@ -665,25 +781,69 @@ GO.bp.4 <- goseq(
   use_genes_without_cat = TRUE
 )
 
+GO.bp.lvccl <- goseq(
+  pwf.lvccl,
+  gene2cat = GO.terms.lvccl,
+  test.cats = c("GO:BP"),
+  method = "Wallenius",
+  use_genes_without_cat = TRUE
+)
+
+GO.bp.mvccl <- goseq(
+  pwf.mvccl,
+  gene2cat = GO.terms.mvccl,
+  test.cats = c("GO:BP"),
+  method = "Wallenius",
+  use_genes_without_cat = TRUE
+)
+
+GO.bp.hvccl <- goseq(
+  pwf.hvccl,
+  gene2cat = GO.terms.hvccl,
+  test.cats = c("GO:BP"),
+  method = "Wallenius",
+  use_genes_without_cat = TRUE
+)
+
+GO.bp.hvceg <- goseq(
+  pwf.hvceg,
+  gene2cat = GO.terms.hvceg,
+  test.cats = c("GO:BP"),
+  method = "Wallenius",
+  use_genes_without_cat = TRUE
+)
 ```
 
-```{r}
-# Use the Benjamini-Hochberg method to control false discovery rate 
-GO.bp.all$bh_adjust <- p.adjust(GO.bp.all$over_represented_pvalue, method = "BH")
+Use the Benjamini-Hochberg method to control false discovery rate
+
+```{r, bh-adjust}
+# Interactions
+GO.bp.int$bh_adjust <- p.adjust(GO.bp.int$over_represented_pvalue, method = "BH")
+
+# Interaction patterns
 GO.bp.1$bh_adjust <- p.adjust(GO.bp.1$over_represented_pvalue, method = "BH")
 GO.bp.2$bh_adjust <- p.adjust(GO.bp.2$over_represented_pvalue, method = "BH")
 GO.bp.3$bh_adjust <- p.adjust(GO.bp.3$over_represented_pvalue, method = "BH")
 GO.bp.4$bh_adjust <- p.adjust(GO.bp.4$over_represented_pvalue, method = "BH")
+
+# Contrasts
+GO.bp.lvccl$bh_adjust <- p.adjust(GO.bp.lvccl$over_represented_pvalue, method = "BH")
+GO.bp.mvccl$bh_adjust <- p.adjust(GO.bp.mvccl$over_represented_pvalue, method = "BH")
+GO.bp.hvccl$bh_adjust <- p.adjust(GO.bp.hvccl$over_represented_pvalue, method = "BH")
+GO.bp.hvceg$bh_adjust <- p.adjust(GO.bp.hvceg$over_represented_pvalue, method = "BH")
 ```
 
+Filter for biological process terms with valid p-values
+
 ```{r}
-# Filter for biological process terms with valid p-values
-GO.BP.all <- GO.bp.all %>%
+# Interaction
+GO.BP.int <- GO.bp.int %>%
   filter(ontology == "BP") %>%
   filter(!is.na(bh_adjust)) %>% 
   filter(bh_adjust < 0.05) %>%
   arrange(ontology, bh_adjust)
 
+# Interaction patterns
 GO.BP.1 <- GO.bp.1 %>%
   filter(ontology == "BP") %>%
   filter(!is.na(bh_adjust)) %>% 
@@ -707,15 +867,59 @@ GO.BP.4 <- GO.bp.4 %>%
   filter(!is.na(bh_adjust)) %>% 
   filter(bh_adjust < 0.05) %>%
   arrange(ontology, bh_adjust)
+
+# Contrasts
+GO.BP.lvccl <- GO.bp.lvccl %>%
+  filter(ontology == "BP") %>%
+  filter(!is.na(bh_adjust)) %>% 
+  filter(bh_adjust < 0.05) %>%
+  arrange(ontology, bh_adjust)
+
+GO.BP.mvccl <- GO.bp.mvccl %>%
+  filter(ontology == "BP") %>%
+  filter(!is.na(bh_adjust)) %>% 
+  filter(bh_adjust < 0.05) %>%
+  arrange(ontology, bh_adjust)
+
+GO.BP.hvccl <- GO.bp.hvccl %>%
+  filter(ontology == "BP") %>%
+  filter(!is.na(bh_adjust)) %>% 
+  filter(bh_adjust < 0.05) %>%
+  arrange(ontology, bh_adjust)
+
+GO.BP.hvceg <- GO.bp.hvceg %>%
+  filter(ontology == "BP") %>%
+  filter(!is.na(bh_adjust)) %>% 
+  filter(bh_adjust < 0.05) %>%
+  arrange(ontology, bh_adjust)
 ```
 
+Write to csv
+
 ```{r}
-# Write to csv
-write_csv(GO.BP.all, file = "../../output/08_go/functional_enrichment_goseq_44int.csv")
-write_csv(GO.BP.1, file = "../../output/08_go/functional_enrichment_goseq_44intclust1.csv")
-write_csv(GO.BP.2, file = "../../output/08_go/functional_enrichment_goseq_44intclust2.csv")
-write_csv(GO.BP.3, file = "../../output/08_go/functional_enrichment_goseq_44intclust3.csv")
-write_csv(GO.BP.4, file = "../../output/08_go/functional_enrichment_goseq_44intclust4.csv")
+# Interactions 
+write_csv(GO.BP.int, 
+          file = "../../output/08_go/functional_enrichment_goseq_44int.csv")
+
+# Interaction patterns
+write_csv(GO.BP.1, 
+          file = "../../output/08_go/functional_enrichment_goseq_44intclust1.csv")
+write_csv(GO.BP.2, 
+          file = "../../output/08_go/functional_enrichment_goseq_44intclust2.csv")
+write_csv(GO.BP.3, 
+          file = "../../output/08_go/functional_enrichment_goseq_44intclust3.csv")
+write_csv(GO.BP.4, 
+          file = "../../output/08_go/functional_enrichment_goseq_44intclust4.csv")
+
+# Contrasts
+write_csv(GO.BP.lvccl, 
+          file = "../../output/08_go/functional_enrichment_goseq_lvc_cl.csv")
+write_csv(GO.BP.mvccl, 
+          file = "../../output/08_go/functional_enrichment_goseq_mvc_cl.csv")
+write_csv(GO.BP.hvccl, 
+          file = "../../output/08_go/functional_enrichment_goseq_hvc_cl.csv")
+write_csv(GO.BP.hvceg, 
+          file = "../../output/08_go/functional_enrichment_goseq_hvc_eg.csv")
 ```
 
 ::: column-margin
@@ -774,8 +978,8 @@ What is a semantic similarity matrix?
 
 ```{r}
 # Calculate semantic similarity matrix
-simMatrix.all <- calculateSimMatrix(
-  GO.BP.all$category, # the column of go terms
+simMatrix.int <- calculateSimMatrix(
+  GO.BP.int$category, # the column of go terms
   orgdb="org.Ce.eg.db", #c. elegans database org.Ce.eg.db
   ont = "BP",
   method = "Rel"
@@ -824,9 +1028,9 @@ any 0 with that minimum before transforming it with `-log10()`.
 
 ```{r}
 # Create named scores vector
-scores.all <- setNames(
-  -log10(pmax(GO.BP.all$bh_adjust, .Machine$double.xmin)),
-  GO.BP.all$category
+scores.int <- setNames(
+  -log10(pmax(GO.BP.int$bh_adjust, .Machine$double.xmin)),
+  GO.BP.int$category
 )
 
 scores.1 <- setNames(
