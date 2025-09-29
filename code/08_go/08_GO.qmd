@@ -136,7 +136,7 @@ sig_hvc_eg <- read_csv("../../output/06_deg/contrasts/sig_hvc_eg.csv")
 Read in pattern clusters
 
 ```{r}
-clusters <- read.csv("../../output/06_deg/interactions/clusters.csv")
+int_deg_patterns <- read.csv("../../output/06_deg/interactions/clusters.csv")
 ```
 
 Import fasta
@@ -210,48 +210,144 @@ key in `y`. The most important property of an inner join is that
 unmatched rows in either input are not included in the result.
 :::
 
+## Interactions
+
+sig_genes > sig_genes_anno > sig_genes_annofilt
+
 ```{r}
+# Annotate the interaction gene list
 sig_genes_anno <- inner_join(sig_genes, EggNog_anno, by = "gene_id")
 
-nrow(sig_genes_anno)
+# Filter out any that lack GO term annotation
+sig_genes_annofilt <- sig_genes_anno %>% 
+  mutate(GOs = na_if(str_trim(GOs), "-")) %>% # treat "-" as missing and trim whitespace
+  filter(!is.na(GOs), GOs != "") # keep only rows that have GO terms (remove NA and blank)
 ```
 
-::: callout-note
-37 of the 44 significant genes were in the `EggNog_anno` dataframe!
+```{r}
+paste("Annotated interaction genes:", 
+      nrow(sig_genes_anno), "/", 
+      nrow(sig_genes), "=",
+      round(100*nrow(sig_genes_anno)/nrow(sig_genes),1),"%")
+
+paste("GO annotated interaction genes:", 
+      nrow(sig_genes_annofilt), "/", 
+      nrow(sig_genes), "=",
+      round(100*nrow(sig_genes_annofilt)/nrow(sig_genes),1),"%")
+```
+
+::: {.callout-important title = "Results"}
+- 37 of the 44 (84.1%) significant interaction genes were in the `EggNog_anno` dataframe!
+- 23 of the 44 (52.3%) actually had GO terms.
 :::
 
-Format GO terms to remove dashes and quotes.
-
+## Contrasts
 ```{r}
-#remove dashes, remove quotes from columns and separate by semicolons (replace , with ;) in KEGG_ko, KEGG_pathway, and Annotation.GO.ID columns
-head(sig_genes_anno$GOs)
-sig_genes_anno$GOs <- gsub(",", ";", sig_genes_anno$GOs)
-sig_genes_anno$GOs <- gsub('"', "", sig_genes_anno$GOs)
-sig_genes_anno$GOs <- gsub("-", NA, sig_genes_anno$GOs)
+# Annotate the contrast gene lists
+sig_lvc_cl_anno <- inner_join(sig_lvc_cl, EggNog_anno, by = "gene_id")
+sig_mvc_cl_anno <- inner_join(sig_mvc_cl, EggNog_anno, by = "gene_id")
+sig_hvc_cl_anno <- inner_join(sig_hvc_cl, EggNog_anno, by = "gene_id")
+sig_hvc_eg_anno <- inner_join(sig_hvc_eg, EggNog_anno, by = "gene_id")
+
+# Filter out any that lack GO term annotation
+sig_lvc_cl_annofilt <- sig_lvc_cl_anno %>% 
+  mutate(GOs = na_if(str_trim(GOs), "-")) %>% # treat "-" as missing and trim whitespace
+  filter(!is.na(GOs), GOs != "") # keep only rows that have GO terms (remove NA and blank)
+
+sig_mvc_cl_annofilt <- sig_mvc_cl_anno %>% 
+  mutate(GOs = na_if(str_trim(GOs), "-")) %>% # treat "-" as missing and trim whitespace
+  filter(!is.na(GOs), GOs != "") # keep only rows that have GO terms (remove NA and blank)
+
+sig_hvc_cl_annofilt <- sig_hvc_cl_anno %>% 
+  mutate(GOs = na_if(str_trim(GOs), "-")) %>% # treat "-" as missing and trim whitespace
+  filter(!is.na(GOs), GOs != "") # keep only rows that have GO terms (remove NA and blank)
+
+sig_hvc_eg_annofilt <- sig_hvc_eg_anno %>% 
+  mutate(GOs = na_if(str_trim(GOs), "-")) %>% # treat "-" as missing and trim whitespace
+  filter(!is.na(GOs), GOs != "") # keep only rows that have GO terms (remove NA and blank)
 ```
 
-Drop NA GO term rows
 
 ```{r}
-sig_genes_anno <- sig_genes_anno %>% drop_na(GOs)
+# Low vs control (cleavage)
+paste("Annotated low vs control cleavage:", 
+      nrow(sig_lvc_cl_anno),"/", 
+      nrow(sig_lvc_cl),"=",
+      round(100*nrow(sig_lvc_cl_anno)/nrow(sig_lvc_cl),1),"%")
+paste("GO annotated low vs control cleavage:", 
+      nrow(sig_lvc_cl_annofilt),"/", 
+      nrow(sig_lvc_cl),"=",
+      round(100*nrow(sig_lvc_cl_annofilt)/nrow(sig_lvc_cl),1),"%")
 
-nrow(sig_genes_anno)
+# Mid vs control (cleavage)
+paste("Annotated mid vs control cleavage:", 
+      nrow(sig_mvc_cl_anno), "/", 
+      nrow(sig_mvc_cl),"=",
+      round(100*nrow(sig_mvc_cl_anno)/nrow(sig_mvc_cl),1),"%")
+paste("GO annotated mid vs control cleavage:", 
+      nrow(sig_mvc_cl_annofilt), "/", 
+      nrow(sig_mvc_cl),"=",
+      round(100*nrow(sig_mvc_cl_annofilt)/nrow(sig_mvc_cl),1),"%")
+
+# High vs control (cleavage)
+paste("Annotated high vs control cleavage:", 
+      nrow(sig_hvc_cl_anno), "/", 
+      nrow(sig_hvc_cl),"=",
+      round(100*nrow(sig_hvc_cl_anno)/nrow(sig_hvc_cl),1),"%")
+paste("GO annotated high vs control cleavage:", 
+      nrow(sig_hvc_cl_annofilt), "/", 
+      nrow(sig_hvc_cl),"=",
+      round(100*nrow(sig_hvc_cl_annofilt)/nrow(sig_hvc_cl),1),"%")
+
+# High vs control (early gastrula)
+paste("Annotated high vs control early gastrula:", 
+      nrow(sig_hvc_eg_anno), "/", 
+      nrow(sig_hvc_eg),"=",
+      round(100*nrow(sig_hvc_eg_anno)/nrow(sig_hvc_eg),1),"%")
+paste("GO annotated high vs control early gastrula:", 
+      nrow(sig_hvc_eg_annofilt), "/", 
+      nrow(sig_hvc_eg),"=",
+      round(100*nrow(sig_hvc_eg_annofilt)/nrow(sig_hvc_eg),1),"%")
+```
+
+::: {.callout-important title="Results"}
+- 36 of the 39 (92.3%) significant low vs control cleavage genes were
+    in the `EggNog_anno` dataframe!
+- 26 of the 39 (66.7%) were annotated with GO terms
+
+- 56 of the 77 (72.7%) significant mid vs control cleavage genes were
+    in the `EggNog_anno` dataframe!
+- 40 of the 77 (51.9%) were annotated with GO terms
+
+- 16 of the 18 (88.9%) significant high vs control cleavage genes were
+    in the `EggNog_anno` dataframe!
+- 11 of the 18 (61.1%) were annotated with GO terms
+
+- 10 of the 13 (76.9%) significant high vs control early gastrula
+    genes were in the `EggNog_anno` dataframe!
+- 8 of the 13 (61.5%) were annotated with GO terms
+:::
+
+## Format & filter GOs column
+
+```{r}
+#separate by semicolons (replace , with ;) in GOs column
+sig_genes_anno$GOs <- gsub(",", ";", sig_genes_anno$GOs)
 ```
 
 ::: callout-important
 23 of the 44 significant genes were annotated with GO terms! The
-annotation file `sig_genes_anno` dataframe now only contains genes that
-were significant *and* have annotation information.
+annotation file `sig_genes_annofilt` dataframe now only contains genes that
+were significant *and* have GO annotation information.
+
+Previously I didn't filter out the genes with NA GO terms and my results
+were different... not sure why that is as I select only the GOs in the
+mapping step. I think it's because I included genes without GOs in the universe for bias correction. I've changed this so that I filter out any that lack GO terms. 
+
+One bummer about this is the category 'response to chemical' dropped... which was a category that made biological sense to the leachate pollution exposure. 
 :::
 
-Add column indicating cluster of expression pattern (1-4)
-
-```{r}
-sig_genes_anno <- inner_join(sig_genes_anno, clusters, by = "gene_id")
-str(sig_genes_anno)
-```
-
-Get gene length information.
+## Get gene lengths
 
 ```{r}
 #import file
@@ -270,36 +366,52 @@ lengths <- cbind(gene_id, transcript_lengths)
 lengths <- as.data.frame(lengths) #convert to data frame
 ```
 
-Add in length to the annotation file
-(`sig_genes_anno$transcript_lengths`).
+Add in length to the annotation dataframes
 
-```{r}
-sig_genes_anno <- sig_genes_anno %>% left_join(lengths, by = "gene_id")
-str(sig_genes_anno)
+```{r, length-annotation}
+# Interaction genes
+sig_genes_af <- sig_genes_annofilt %>% left_join(lengths, by = "gene_id")
+
+# Contrasts
+sig_lvc_cl_af <- sig_lvc_cl_annofilt %>% left_join(lengths, by = "gene_id")
+sig_mvc_cl_af <- sig_mvc_cl_annofilt %>% left_join(lengths, by = "gene_id")
+sig_hvc_cl_af <- sig_hvc_cl_annofilt %>% left_join(lengths, by = "gene_id")
+sig_hvc_eg_af <- sig_hvc_eg_annofilt %>% left_join(lengths, by = "gene_id")
 ```
 
-## Subset to interaction pattern clusters
+## Add interaction deg pattern clusters
 
-```{r}
-sig_genes_anno1 <- sig_genes_anno %>% 
+Add column indicating deg pattern (1-4)
+
+```{r, deg-pattern-annotation}
+sig_genes_afp <- inner_join(sig_genes_af, int_deg_patterns, by = "gene_id")
+str(sig_genes_afp)
+```
+
+Subset annotated dataframe to each deg pattern (1-4)
+
+```{r, deg-pattern-subset}
+sig_genes_af1 <- sig_genes_afp %>% 
   filter(leachate_cluster == 1)
 
-sig_genes_anno2 <- sig_genes_anno %>% 
+sig_genes_af2 <- sig_genes_afp %>% 
   filter(leachate_cluster == 2)
 
-sig_genes_anno3 <- sig_genes_anno %>% 
+sig_genes_af3 <- sig_genes_afp %>% 
   filter(leachate_cluster == 3)
 
-sig_genes_anno4 <- sig_genes_anno %>% 
+sig_genes_af4 <- sig_genes_afp %>% 
   filter(leachate_cluster == 4)
 
-length(sig_genes_anno1$leachate_cluster)
-length(sig_genes_anno2$leachate_cluster)
-length(sig_genes_anno3$leachate_cluster)
-length(sig_genes_anno4$leachate_cluster)
+nrow(sig_genes_af1)
+nrow(sig_genes_af2)
+nrow(sig_genes_af3)
+nrow(sig_genes_af4)
 ```
 
 ::: callout-note
+All interaction genes with GO annotations: 23
+
 DGE pattern 1 : 14 genes
 
 DGE pattern 2: 5 genes
@@ -316,45 +428,77 @@ closely with the others in pattern 3.
 
 > NOPE.. that's not how the clustering works... it just drops the genes
 > that don't meet the pattern similarity, it doesn't group them in to
-> 'close enough' pattern. We'll stick with the 4 patterns.
+> 'close enough' pattern. We'll stick with the 4 patterns. And see what
+> happens with functional enrichment of 1 gene....
+
 :::
 
-## Subset to contrasts
+## Annotate contrast DEG lists
 
 # Functional enrichment
 
 Conduct functional enrichment using goseq and
 [rrvgo](https://www.bioconductor.org/packages/release/bioc/vignettes/rrvgo/inst/doc/rrvgo.html).
-Compare against all genes detected in the dataset that we have
+Compare against all genes detected in the dataset that we have GO
 annotation information for.
 
 Conduct at biological process level. Filter for adjusted p-value \<0.05.
 
+## Turn DEG lists into vectors
+
 ```{r}
 # Define your DEG lists — the genes you're testing
-ID.vector.all <- sig_genes_anno$gene_id # all sig interaction genes
-ID.vector.1 <- sig_genes_anno1$gene_id # all sig interaction genes that fall into cluster 1
-ID.vector.2 <- sig_genes_anno2$gene_id # all sig interaction genes that fall into cluster 2
-ID.vector.3 <- sig_genes_anno3$gene_id # all sig interaction genes that fall into cluster 3
-ID.vector.4 <- sig_genes_anno4$gene_id # all sig interaction genes that fall into cluster 4
+## Interaction
+ID.vector.int <- sig_genes_af$gene_id # significant interaction genes
 
+ID.vector.1 <- sig_genes_af1$gene_id # all sig interaction genes that fall into cluster 1
+ID.vector.2 <- sig_genes_af2$gene_id # all sig interaction genes that fall into cluster 2
+ID.vector.3 <- sig_genes_af3$gene_id # all sig interaction genes that fall into cluster 3
+ID.vector.4 <- sig_genes_af4$gene_id # all sig interaction genes that fall into cluster 4
 
-# All genes detected in the dataset with annotation info
-ALL.vector <- all_genes$gene_id # gene_ids for all 12565 genes that we used to make our DESeq2 object
-ALL.vector <- ALL.vector[ALL.vector %in% EggNog_anno$gene_id] #filtered down to only 37 genes that are annotated
+## Contrasts
+ID.vector.lvc_cl <- sig_lvc_cl_af$gene_id # all sig genes low vs control cleavage contrast
+ID.vector.mvc_cl <- sig_mvc_cl_af$gene_id # all sig genes mid vs control cleavage contrast
+ID.vector.hvc_cl <- sig_hvc_cl_af$gene_id # all sig genes high vs control cleavage contrast
+ID.vector.hvc_eg <- sig_hvc_eg_af$gene_id # all sig genes high vs control early gastrula contrast
 
-length(ALL.vector)
-length(ID.vector.all)
-length(ID.vector.1)
-length(ID.vector.2)
-length(ID.vector.3)
-length(ID.vector.4)
 ```
 
-::: callout-note
-9563 out of the total 12564 genes in our dataset are annotated. 23 of
-those genes are both significantly differentially expressed (due to
-leachate:stage interaction) and have annotations.
+## Create gene universe for bias correction
+
+```{r}
+# Universe for bias correction
+# All genes detected in our filtered DEG tested genes with GO annotation info
+ALL.vector <- EggNog_anno %>%
+  mutate(GOs = na_if(str_trim(GOs), "-")) %>% # treat "-" as missing and trim whitespace
+  filter(!is.na(GOs), GOs != "") %>% # keep only rows that have GO terms (remove NA and blank)
+  pull(gene_id) %>% # make gene_id column a vector
+  intersect(all_genes$gene_id) #keep only genes from our DESeq2 set used to generate our DEG lists
+
+paste(length(ALL.vector), "genes out of 12564 genes in our DESeq2 dataset have GO annotations")
+paste(length(ID.vector.int), "genes out of 44 significant interaction genes have GO annotations")
+paste(length(ID.vector.1), "of the 23 bin into deg pattern 1")
+paste(length(ID.vector.2), "of the 23 bin into deg pattern 2")
+paste(length(ID.vector.3), "of the 23 bin into deg pattern 3")
+paste(length(ID.vector.4), "of the 23 bin into deg pattern 4")
+
+paste("There are", length(ID.vector.lvc_cl), "low vs control cleavage GO annotated DE genes")
+paste("There are", length(ID.vector.mvc_cl), "mid vs control cleavage GO annotated DE genes")
+paste("There are", length(ID.vector.hvc_cl), "high vs control cleavage GO annotated DE genes")
+paste("There are", length(ID.vector.hvc_eg), "high vs control early gastrula GO annotated DE genes")
+```
+
+::: {callout-important title = "Results"}
+- "6979 genes out of 12564 genes in our DESeq2 dataset have GO annotations"
+- "23 genes out of 44 significant interaction genes have GO annotations"
+- "14 of the 23 bin into deg pattern 1"
+- "5 of the 23 bin into deg pattern 2"
+- "3 of the 23 bin into deg pattern 3"
+- "1 of the 23 bin into deg pattern 4"
+- "There are 26 low vs control cleavage GO annotated DE genes"
+- "There are 40 mid vs control cleavage GO annotated DE genes"
+- "There are 11 high vs control cleavage GO annotated DE genes"
+- "There are 8 high vs control early gastrula GO annotated DE genes"
 :::
 
 ## Weight by sequence length
@@ -373,7 +517,7 @@ names(LENGTH.vector) <- ALL.vector  # Needed for bias correction
 About goseq() command:
 
 | Argument                       | Meaning                                                                                                                                                      |
-|---------------------|---------------------------------------------------|
+|----------------------|--------------------------------------------------|
 | `pwf`                          | A **probability weighting function** object from `nullp()`. It contains the DEG status of all genes (1 = DEG, 0 = not DEG), plus gene length bias info.      |
 | `gene2cat`                     | A data frame or list mapping **genes to functional categories** (like GO terms). In your case, it's a long-format table of gene-GO pairs.                    |
 | `test.cats = "GO:BP"`          | This limits the enrichment to only **biological process** GO terms (you could also use `"GO:MF"` or `"GO:CC"` for molecular function or cellular component). |
@@ -398,24 +542,25 @@ About goseq() command:
 
 ```{r}
 # Gene to GO term mapping
-GO.terms.all <- sig_genes_anno %>%
+## Interaction
+GO.terms.int <- sig_genes_af %>%
   dplyr::select(gene_id, GOs)
 
-GO.terms.1 <- sig_genes_anno %>%
-  dplyr::select(gene_id, GOs, leachate_cluster) %>% 
-  dplyr::filter(leachate_cluster == "1")
+## Interaction patterns
+GO.terms.1 <- sig_genes_af1 %>%
+  dplyr::select(gene_id, GOs)
 
-GO.terms.2 <- sig_genes_anno %>%
-  dplyr::select(gene_id, GOs, leachate_cluster) %>% 
-  dplyr::filter(leachate_cluster == "2")
+GO.terms.2 <- sig_genes_af2 %>%
+  dplyr::select(gene_id, GOs) 
 
-GO.terms.3 <- sig_genes_anno %>%
-  dplyr::select(gene_id, GOs, leachate_cluster) %>% 
-  dplyr::filter(leachate_cluster == "3")
+GO.terms.3 <- sig_genes_af3 %>%
+  dplyr::select(gene_id, GOs)
 
-GO.terms.4 <- sig_genes_anno %>%
-  dplyr::select(gene_id, GOs, leachate_cluster) %>% 
-  dplyr::filter(leachate_cluster == "4")
+GO.terms.4 <- sig_genes_af4 %>%
+  dplyr::select(gene_id, GOs)
+
+## Contrasts
+
 ```
 
 Function to split GO terms to a single term per row
@@ -424,7 +569,7 @@ Function to split GO terms to a single term per row
 split_go <- function(df, gene_col = "gene_id", go_col = "GOs") {
   df %>%
     mutate(across(all_of(c(gene_col, go_col)), as.character)) %>%
-    separate_rows(!!rlang::sym(go_col), sep = ";") %>%
+    separate_rows(!!rlang::sym(go_col), sep = ",") %>%
     mutate(!!rlang::sym(go_col) := str_trim(!!rlang::sym(go_col))) %>%
     filter(!is.na(!!rlang::sym(go_col)), !!rlang::sym(go_col) != "") %>%
     dplyr::select(all_of(c(gene_col, go_col))) %>%      # keep only 2 cols
