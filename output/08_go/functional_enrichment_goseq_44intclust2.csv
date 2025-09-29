@@ -1,99 +1,99 @@
 category,over_represented_pvalue,under_represented_pvalue,numDEInCat,numInCat,term,ontology,bh_adjust
 GO:0008150,0,1,4,4,biological_process,BP,0
 GO:0009987,0,1,4,4,cellular process,BP,0
-GO:0006508,1.4297195899678485e-10,1,3,3,proteolysis,BP,9.60409255981821e-10
-GO:0006807,1.4297195899678485e-10,1,3,3,nitrogen compound metabolic process,BP,9.60409255981821e-10
-GO:0008152,1.4297195899678485e-10,1,3,3,metabolic process,BP,9.60409255981821e-10
-GO:0019538,1.4297195899678485e-10,1,3,3,protein metabolic process,BP,9.60409255981821e-10
-GO:0043170,1.4297195899678485e-10,1,3,3,macromolecule metabolic process,BP,9.60409255981821e-10
-GO:0044237,1.4297195899678485e-10,1,3,3,cellular metabolic process,BP,9.60409255981821e-10
-GO:0044238,1.4297195899678485e-10,1,3,3,primary metabolic process,BP,9.60409255981821e-10
-GO:0071704,1.4297195899678485e-10,1,3,3,organic substance metabolic process,BP,9.60409255981821e-10
-GO:1901564,1.4297195899678485e-10,1,3,3,organonitrogen compound metabolic process,BP,9.60409255981821e-10
-GO:0000209,3.290191897714876e-7,1,2,2,protein polyubiquitination,BP,9.496125957692786e-7
-GO:0006511,3.290191897714876e-7,1,2,2,ubiquitin-dependent protein catabolic process,BP,9.496125957692786e-7
-GO:0009056,3.290191897714876e-7,1,2,2,catabolic process,BP,9.496125957692786e-7
-GO:0009057,3.290191897714876e-7,1,2,2,macromolecule catabolic process,BP,9.496125957692786e-7
-GO:0010498,3.290191897714876e-7,1,2,2,proteasomal protein catabolic process,BP,9.496125957692786e-7
-GO:0016567,3.290191897714876e-7,1,2,2,protein ubiquitination,BP,9.496125957692786e-7
-GO:0019941,3.290191897714876e-7,1,2,2,modification-dependent protein catabolic process,BP,9.496125957692786e-7
-GO:0030163,3.290191897714876e-7,1,2,2,protein catabolic process,BP,9.496125957692786e-7
-GO:0032446,3.290191897714876e-7,1,2,2,protein modification by small protein conjugation,BP,9.496125957692786e-7
-GO:0036211,3.290191897714876e-7,1,2,2,protein modification process,BP,9.496125957692786e-7
-GO:0043161,3.290191897714876e-7,1,2,2,proteasome-mediated ubiquitin-dependent protein catabolic process,BP,9.496125957692786e-7
-GO:0043412,3.290191897714876e-7,1,2,2,macromolecule modification,BP,9.496125957692786e-7
-GO:0043632,3.290191897714876e-7,1,2,2,modification-dependent macromolecule catabolic process,BP,9.496125957692786e-7
-GO:0044248,3.290191897714876e-7,1,2,2,cellular catabolic process,BP,9.496125957692786e-7
-GO:0044260,3.290191897714876e-7,1,2,2,cellular macromolecule metabolic process,BP,9.496125957692786e-7
-GO:0044265,3.290191897714876e-7,1,2,2,cellular macromolecule catabolic process,BP,9.496125957692786e-7
-GO:0051603,3.290191897714876e-7,1,2,2,proteolysis involved in protein catabolic process,BP,9.496125957692786e-7
-GO:0051865,3.290191897714876e-7,1,2,2,protein autoubiquitination,BP,9.496125957692786e-7
-GO:0070647,3.290191897714876e-7,1,2,2,protein modification by small protein conjugation or removal,BP,9.496125957692786e-7
-GO:1901565,3.290191897714876e-7,1,2,2,organonitrogen compound catabolic process,BP,9.496125957692786e-7
-GO:1901575,3.290191897714876e-7,1,2,2,organic substance catabolic process,BP,9.496125957692786e-7
-GO:0006996,3.331101775735166e-7,1,2,2,organelle organization,BP,9.496125957692786e-7
-GO:0016043,3.331101775735166e-7,1,2,2,cellular component organization,BP,9.496125957692786e-7
-GO:0071840,3.331101775735166e-7,1,2,2,cellular component organization or biogenesis,BP,9.496125957692786e-7
-GO:0003341,5.977185685924566e-4,1,1,1,cilium movement,BP,7.206654088359468e-4
-GO:0007017,5.977185685924566e-4,1,1,1,microtubule-based process,BP,7.206654088359468e-4
-GO:0007018,5.977185685924566e-4,1,1,1,microtubule-based movement,BP,7.206654088359468e-4
-GO:0030030,5.977185685924566e-4,1,1,1,cell projection organization,BP,7.206654088359468e-4
-GO:0044782,5.977185685924566e-4,1,1,1,cilium organization,BP,7.206654088359468e-4
-GO:0120036,5.977185685924566e-4,1,1,1,plasma membrane bounded cell projection organization,BP,7.206654088359468e-4
-GO:0006810,6.927427884944642e-4,1,1,1,transport,BP,7.206654088359468e-4
-GO:0006892,6.927427884944642e-4,1,1,1,post-Golgi vesicle-mediated transport,BP,7.206654088359468e-4
-GO:0006895,6.927427884944642e-4,1,1,1,Golgi to endosome transport,BP,7.206654088359468e-4
-GO:0007010,6.927427884944642e-4,1,1,1,cytoskeleton organization,BP,7.206654088359468e-4
-GO:0008582,6.927427884944642e-4,1,1,1,regulation of synaptic assembly at neuromuscular junction,BP,7.206654088359468e-4
-GO:0010033,6.927427884944642e-4,1,1,1,response to organic substance,BP,7.206654088359468e-4
-GO:0010941,6.927427884944642e-4,1,1,1,regulation of cell death,BP,7.206654088359468e-4
-GO:0016192,6.927427884944642e-4,1,1,1,vesicle-mediated transport,BP,7.206654088359468e-4
-GO:0016482,6.927427884944642e-4,1,1,1,cytosolic transport,BP,7.206654088359468e-4
-GO:0034097,6.927427884944642e-4,1,1,1,response to cytokine,BP,7.206654088359468e-4
-GO:0035455,6.927427884944642e-4,1,1,1,response to interferon-alpha,BP,7.206654088359468e-4
-GO:0040008,6.927427884944642e-4,1,1,1,regulation of growth,BP,7.206654088359468e-4
-GO:0042221,6.927427884944642e-4,1,1,1,response to chemical,BP,7.206654088359468e-4
-GO:0042981,6.927427884944642e-4,1,1,1,regulation of apoptotic process,BP,7.206654088359468e-4
-GO:0043066,6.927427884944642e-4,1,1,1,negative regulation of apoptotic process,BP,7.206654088359468e-4
-GO:0043067,6.927427884944642e-4,1,1,1,regulation of programmed cell death,BP,7.206654088359468e-4
-GO:0043069,6.927427884944642e-4,1,1,1,negative regulation of programmed cell death,BP,7.206654088359468e-4
-GO:0043687,6.927427884944642e-4,1,1,1,post-translational protein modification,BP,7.206654088359468e-4
-GO:0044087,6.927427884944642e-4,1,1,1,regulation of cellular component biogenesis,BP,7.206654088359468e-4
-GO:0045886,6.927427884944642e-4,1,1,1,negative regulation of synaptic assembly at neuromuscular junction,BP,7.206654088359468e-4
-GO:0045926,6.927427884944642e-4,1,1,1,negative regulation of growth,BP,7.206654088359468e-4
-GO:0046907,6.927427884944642e-4,1,1,1,intracellular transport,BP,7.206654088359468e-4
-GO:0048193,6.927427884944642e-4,1,1,1,Golgi vesicle transport,BP,7.206654088359468e-4
-GO:0048519,6.927427884944642e-4,1,1,1,negative regulation of biological process,BP,7.206654088359468e-4
-GO:0048523,6.927427884944642e-4,1,1,1,negative regulation of cellular process,BP,7.206654088359468e-4
-GO:0048638,6.927427884944642e-4,1,1,1,regulation of developmental growth,BP,7.206654088359468e-4
-GO:0048640,6.927427884944642e-4,1,1,1,negative regulation of developmental growth,BP,7.206654088359468e-4
-GO:0050789,6.927427884944642e-4,1,1,1,regulation of biological process,BP,7.206654088359468e-4
-GO:0050793,6.927427884944642e-4,1,1,1,regulation of developmental process,BP,7.206654088359468e-4
-GO:0050794,6.927427884944642e-4,1,1,1,regulation of cellular process,BP,7.206654088359468e-4
-GO:0050803,6.927427884944642e-4,1,1,1,regulation of synapse structure or activity,BP,7.206654088359468e-4
-GO:0050807,6.927427884944642e-4,1,1,1,regulation of synapse organization,BP,7.206654088359468e-4
-GO:0050896,6.927427884944642e-4,1,1,1,response to stimulus,BP,7.206654088359468e-4
-GO:0051093,6.927427884944642e-4,1,1,1,negative regulation of developmental process,BP,7.206654088359468e-4
-GO:0051128,6.927427884944642e-4,1,1,1,regulation of cellular component organization,BP,7.206654088359468e-4
-GO:0051129,6.927427884944642e-4,1,1,1,negative regulation of cellular component organization,BP,7.206654088359468e-4
-GO:0051179,6.927427884944642e-4,1,1,1,localization,BP,7.206654088359468e-4
-GO:0051234,6.927427884944642e-4,1,1,1,establishment of localization,BP,7.206654088359468e-4
-GO:0051239,6.927427884944642e-4,1,1,1,regulation of multicellular organismal process,BP,7.206654088359468e-4
-GO:0051241,6.927427884944642e-4,1,1,1,negative regulation of multicellular organismal process,BP,7.206654088359468e-4
-GO:0051641,6.927427884944642e-4,1,1,1,cellular localization,BP,7.206654088359468e-4
-GO:0051649,6.927427884944642e-4,1,1,1,establishment of localization in cell,BP,7.206654088359468e-4
-GO:0051960,6.927427884944642e-4,1,1,1,regulation of nervous system development,BP,7.206654088359468e-4
-GO:0051961,6.927427884944642e-4,1,1,1,negative regulation of nervous system development,BP,7.206654088359468e-4
-GO:0051963,6.927427884944642e-4,1,1,1,regulation of synapse assembly,BP,7.206654088359468e-4
-GO:0051964,6.927427884944642e-4,1,1,1,negative regulation of synapse assembly,BP,7.206654088359468e-4
-GO:0060548,6.927427884944642e-4,1,1,1,negative regulation of cell death,BP,7.206654088359468e-4
-GO:0065007,6.927427884944642e-4,1,1,1,biological regulation,BP,7.206654088359468e-4
-GO:0065008,6.927427884944642e-4,1,1,1,regulation of biological quality,BP,7.206654088359468e-4
-GO:1904396,6.927427884944642e-4,1,1,1,regulation of neuromuscular junction development,BP,7.206654088359468e-4
-GO:1904397,6.927427884944642e-4,1,1,1,negative regulation of neuromuscular junction development,BP,7.206654088359468e-4
-GO:1905809,6.927427884944642e-4,1,1,1,negative regulation of synapse organization,BP,7.206654088359468e-4
-GO:1990390,6.927427884944642e-4,1,1,1,protein K33-linked ubiquitination,BP,7.206654088359468e-4
-GO:2000026,6.927427884944642e-4,1,1,1,regulation of multicellular organismal development,BP,7.206654088359468e-4
-GO:0006518,7.206654088359468e-4,1,1,1,peptide metabolic process,BP,7.206654088359468e-4
-GO:0034641,7.206654088359468e-4,1,1,1,cellular nitrogen compound metabolic process,BP,7.206654088359468e-4
-GO:0043603,7.206654088359468e-4,1,1,1,cellular amide metabolic process,BP,7.206654088359468e-4
+GO:0006508,2.890379633370906e-10,1,3,3,proteolysis,BP,1.8402083665794766e-9
+GO:0006807,2.890379633370906e-10,1,3,3,nitrogen compound metabolic process,BP,1.8402083665794766e-9
+GO:0008152,2.890379633370906e-10,1,3,3,metabolic process,BP,1.8402083665794766e-9
+GO:0019538,2.890379633370906e-10,1,3,3,protein metabolic process,BP,1.8402083665794766e-9
+GO:0043170,2.890379633370906e-10,1,3,3,macromolecule metabolic process,BP,1.8402083665794766e-9
+GO:0044237,2.890379633370906e-10,1,3,3,cellular metabolic process,BP,1.8402083665794766e-9
+GO:0044238,2.890379633370906e-10,1,3,3,primary metabolic process,BP,1.8402083665794766e-9
+GO:0071704,2.890379633370906e-10,1,3,3,organic substance metabolic process,BP,1.8402083665794766e-9
+GO:1901564,2.890379633370906e-10,1,3,3,organonitrogen compound metabolic process,BP,1.8402083665794766e-9
+GO:0000209,5.460873147869094e-7,1,2,2,protein polyubiquitination,BP,1.5413477518803832e-6
+GO:0006511,5.460873147869094e-7,1,2,2,ubiquitin-dependent protein catabolic process,BP,1.5413477518803832e-6
+GO:0009056,5.460873147869094e-7,1,2,2,catabolic process,BP,1.5413477518803832e-6
+GO:0009057,5.460873147869094e-7,1,2,2,macromolecule catabolic process,BP,1.5413477518803832e-6
+GO:0010498,5.460873147869094e-7,1,2,2,proteasomal protein catabolic process,BP,1.5413477518803832e-6
+GO:0016567,5.460873147869094e-7,1,2,2,protein ubiquitination,BP,1.5413477518803832e-6
+GO:0019941,5.460873147869094e-7,1,2,2,modification-dependent protein catabolic process,BP,1.5413477518803832e-6
+GO:0030163,5.460873147869094e-7,1,2,2,protein catabolic process,BP,1.5413477518803832e-6
+GO:0032446,5.460873147869094e-7,1,2,2,protein modification by small protein conjugation,BP,1.5413477518803832e-6
+GO:0036211,5.460873147869094e-7,1,2,2,protein modification process,BP,1.5413477518803832e-6
+GO:0043161,5.460873147869094e-7,1,2,2,proteasome-mediated ubiquitin-dependent protein catabolic process,BP,1.5413477518803832e-6
+GO:0043412,5.460873147869094e-7,1,2,2,macromolecule modification,BP,1.5413477518803832e-6
+GO:0043632,5.460873147869094e-7,1,2,2,modification-dependent macromolecule catabolic process,BP,1.5413477518803832e-6
+GO:0044248,5.460873147869094e-7,1,2,2,cellular catabolic process,BP,1.5413477518803832e-6
+GO:0044260,5.460873147869094e-7,1,2,2,cellular macromolecule metabolic process,BP,1.5413477518803832e-6
+GO:0044265,5.460873147869094e-7,1,2,2,cellular macromolecule catabolic process,BP,1.5413477518803832e-6
+GO:0051603,5.460873147869094e-7,1,2,2,proteolysis involved in protein catabolic process,BP,1.5413477518803832e-6
+GO:0051865,5.460873147869094e-7,1,2,2,protein autoubiquitination,BP,1.5413477518803832e-6
+GO:0070647,5.460873147869094e-7,1,2,2,protein modification by small protein conjugation or removal,BP,1.5413477518803832e-6
+GO:1901565,5.460873147869094e-7,1,2,2,organonitrogen compound catabolic process,BP,1.5413477518803832e-6
+GO:1901575,5.460873147869094e-7,1,2,2,organic substance catabolic process,BP,1.5413477518803832e-6
+GO:0006996,5.729617297565823e-7,1,2,2,organelle organization,BP,1.5413477518803832e-6
+GO:0016043,5.729617297565823e-7,1,2,2,cellular component organization,BP,1.5413477518803832e-6
+GO:0071840,5.729617297565823e-7,1,2,2,cellular component organization or biogenesis,BP,1.5413477518803832e-6
+GO:0006810,8.359915934101514e-4,1,1,1,transport,BP,8.805920976312148e-4
+GO:0006892,8.359915934101514e-4,1,1,1,post-Golgi vesicle-mediated transport,BP,8.805920976312148e-4
+GO:0006895,8.359915934101514e-4,1,1,1,Golgi to endosome transport,BP,8.805920976312148e-4
+GO:0007010,8.359915934101514e-4,1,1,1,cytoskeleton organization,BP,8.805920976312148e-4
+GO:0008582,8.359915934101514e-4,1,1,1,regulation of synaptic assembly at neuromuscular junction,BP,8.805920976312148e-4
+GO:0010033,8.359915934101514e-4,1,1,1,response to organic substance,BP,8.805920976312148e-4
+GO:0010941,8.359915934101514e-4,1,1,1,regulation of cell death,BP,8.805920976312148e-4
+GO:0016192,8.359915934101514e-4,1,1,1,vesicle-mediated transport,BP,8.805920976312148e-4
+GO:0016482,8.359915934101514e-4,1,1,1,cytosolic transport,BP,8.805920976312148e-4
+GO:0034097,8.359915934101514e-4,1,1,1,response to cytokine,BP,8.805920976312148e-4
+GO:0035455,8.359915934101514e-4,1,1,1,response to interferon-alpha,BP,8.805920976312148e-4
+GO:0040008,8.359915934101514e-4,1,1,1,regulation of growth,BP,8.805920976312148e-4
+GO:0042221,8.359915934101514e-4,1,1,1,response to chemical,BP,8.805920976312148e-4
+GO:0042981,8.359915934101514e-4,1,1,1,regulation of apoptotic process,BP,8.805920976312148e-4
+GO:0043066,8.359915934101514e-4,1,1,1,negative regulation of apoptotic process,BP,8.805920976312148e-4
+GO:0043067,8.359915934101514e-4,1,1,1,regulation of programmed cell death,BP,8.805920976312148e-4
+GO:0043069,8.359915934101514e-4,1,1,1,negative regulation of programmed cell death,BP,8.805920976312148e-4
+GO:0043687,8.359915934101514e-4,1,1,1,post-translational protein modification,BP,8.805920976312148e-4
+GO:0044087,8.359915934101514e-4,1,1,1,regulation of cellular component biogenesis,BP,8.805920976312148e-4
+GO:0045886,8.359915934101514e-4,1,1,1,negative regulation of synaptic assembly at neuromuscular junction,BP,8.805920976312148e-4
+GO:0045926,8.359915934101514e-4,1,1,1,negative regulation of growth,BP,8.805920976312148e-4
+GO:0046907,8.359915934101514e-4,1,1,1,intracellular transport,BP,8.805920976312148e-4
+GO:0048193,8.359915934101514e-4,1,1,1,Golgi vesicle transport,BP,8.805920976312148e-4
+GO:0048519,8.359915934101514e-4,1,1,1,negative regulation of biological process,BP,8.805920976312148e-4
+GO:0048523,8.359915934101514e-4,1,1,1,negative regulation of cellular process,BP,8.805920976312148e-4
+GO:0048638,8.359915934101514e-4,1,1,1,regulation of developmental growth,BP,8.805920976312148e-4
+GO:0048640,8.359915934101514e-4,1,1,1,negative regulation of developmental growth,BP,8.805920976312148e-4
+GO:0050789,8.359915934101514e-4,1,1,1,regulation of biological process,BP,8.805920976312148e-4
+GO:0050793,8.359915934101514e-4,1,1,1,regulation of developmental process,BP,8.805920976312148e-4
+GO:0050794,8.359915934101514e-4,1,1,1,regulation of cellular process,BP,8.805920976312148e-4
+GO:0050803,8.359915934101514e-4,1,1,1,regulation of synapse structure or activity,BP,8.805920976312148e-4
+GO:0050807,8.359915934101514e-4,1,1,1,regulation of synapse organization,BP,8.805920976312148e-4
+GO:0050896,8.359915934101514e-4,1,1,1,response to stimulus,BP,8.805920976312148e-4
+GO:0051093,8.359915934101514e-4,1,1,1,negative regulation of developmental process,BP,8.805920976312148e-4
+GO:0051128,8.359915934101514e-4,1,1,1,regulation of cellular component organization,BP,8.805920976312148e-4
+GO:0051129,8.359915934101514e-4,1,1,1,negative regulation of cellular component organization,BP,8.805920976312148e-4
+GO:0051179,8.359915934101514e-4,1,1,1,localization,BP,8.805920976312148e-4
+GO:0051234,8.359915934101514e-4,1,1,1,establishment of localization,BP,8.805920976312148e-4
+GO:0051239,8.359915934101514e-4,1,1,1,regulation of multicellular organismal process,BP,8.805920976312148e-4
+GO:0051241,8.359915934101514e-4,1,1,1,negative regulation of multicellular organismal process,BP,8.805920976312148e-4
+GO:0051641,8.359915934101514e-4,1,1,1,cellular localization,BP,8.805920976312148e-4
+GO:0051649,8.359915934101514e-4,1,1,1,establishment of localization in cell,BP,8.805920976312148e-4
+GO:0051960,8.359915934101514e-4,1,1,1,regulation of nervous system development,BP,8.805920976312148e-4
+GO:0051961,8.359915934101514e-4,1,1,1,negative regulation of nervous system development,BP,8.805920976312148e-4
+GO:0051963,8.359915934101514e-4,1,1,1,regulation of synapse assembly,BP,8.805920976312148e-4
+GO:0051964,8.359915934101514e-4,1,1,1,negative regulation of synapse assembly,BP,8.805920976312148e-4
+GO:0060548,8.359915934101514e-4,1,1,1,negative regulation of cell death,BP,8.805920976312148e-4
+GO:0065007,8.359915934101514e-4,1,1,1,biological regulation,BP,8.805920976312148e-4
+GO:0065008,8.359915934101514e-4,1,1,1,regulation of biological quality,BP,8.805920976312148e-4
+GO:1904396,8.359915934101514e-4,1,1,1,regulation of neuromuscular junction development,BP,8.805920976312148e-4
+GO:1904397,8.359915934101514e-4,1,1,1,negative regulation of neuromuscular junction development,BP,8.805920976312148e-4
+GO:1905809,8.359915934101514e-4,1,1,1,negative regulation of synapse organization,BP,8.805920976312148e-4
+GO:1990390,8.359915934101514e-4,1,1,1,protein K33-linked ubiquitination,BP,8.805920976312148e-4
+GO:2000026,8.359915934101514e-4,1,1,1,regulation of multicellular organismal development,BP,8.805920976312148e-4
+GO:0003341,8.56417679736489e-4,1,1,1,cilium movement,BP,8.805920976312148e-4
+GO:0007017,8.56417679736489e-4,1,1,1,microtubule-based process,BP,8.805920976312148e-4
+GO:0007018,8.56417679736489e-4,1,1,1,microtubule-based movement,BP,8.805920976312148e-4
+GO:0030030,8.56417679736489e-4,1,1,1,cell projection organization,BP,8.805920976312148e-4
+GO:0044782,8.56417679736489e-4,1,1,1,cilium organization,BP,8.805920976312148e-4
+GO:0120036,8.56417679736489e-4,1,1,1,plasma membrane bounded cell projection organization,BP,8.805920976312148e-4
+GO:0006518,8.805920976312148e-4,1,1,1,peptide metabolic process,BP,8.805920976312148e-4
+GO:0034641,8.805920976312148e-4,1,1,1,cellular nitrogen compound metabolic process,BP,8.805920976312148e-4
+GO:0043603,8.805920976312148e-4,1,1,1,cellular amide metabolic process,BP,8.805920976312148e-4
