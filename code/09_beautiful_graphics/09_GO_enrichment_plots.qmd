@@ -35,6 +35,8 @@ editor:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   fig.align = "center",
+  fig.height=4, 
+  fig.width=6,
   dpi = 600,
   echo = TRUE,         # Display code chunks
   eval = TRUE,        # Evaluate code chunks
@@ -44,8 +46,58 @@ knitr::opts_chunk$set(
 )
 ```
 ## Install packages
+```{r}
+## CRAN packages-----------
+#install.packages("GOplot")
+#remotes::install_github("mdscheuerell/flexoki")
+
+## Bioconductor packages---------
+#if (!require("BiocManager", quietly = TRUE))
+#    install.packages("BiocManager")
+#BiocManager::install("rrvgo")
+```
+
 ## Load packages
+```{r}
+library(rrvgo)
+library(GOplot)
+library(flexoki)
+library(plotly)
+library(tidyverse)
+```
+
 ## Load inputs
+```{r}
+## Reduced Terms
+### Interaction
+reducedTerms.int <- read_csv("../../output/08_go/reducedTerms_int.csv")
+
+### Interaction patterns
+reducedTerms.1 <- write_csv("../../output/08_go/reducedTerms_1.csv")
+reducedTerms.2 <- write_csv("../../output/08_go/reducedTerms_2.csv")
+reducedTerms.3 <- write_csv("../../output/08_go/reducedTerms_3.csv")
+
+### Contrasts
+reducedTerms.lvccl <- write_csv("../../output/08_go/reducedTerms_lvccl.csv")
+reducedTerms.mvccl <- write_csv("../../output/08_go/reducedTerms_mvccl.csv")
+reducedTerms.hvccl <- write_csv("../../output/08_go/reducedTerms_hvccl.csv")
+reducedTerms.hvceg <- write_csv("../../output/08_go/reducedTerms_hvceg.csv")
+
+## Similarity matrices
+### Interaction
+simMatrix.int <- read_csv("../../output/08_go/simMatrix_int.csv")
+
+### Interaction patterns
+simMatrix.1 <- read_csv("../../output/08_go/simMatrix_1.csv")
+simMatrix.2 <- read_csv("../../output/08_go/simMatrix_2.csv")
+simMatrix.3 <- read_csv("../../output/08_go/simMatrix_3.csv")
+
+### Contrasts
+simMatrix.lvccl <- read_csv("../../output/08_go/simMatrix_lvccl.csv")
+simMatrix.mvccl <- read_csv("../../output/08_go/simMatrix_mvccl.csv")
+simMatrix.hvccl <- read_csv("../../output/08_go/simMatrix_hvccl.csv")
+simMatrix.hvceg <- read_csv("../../output/08_go/simMatrix_hvceg.csv")
+```
 
 
 # Plotting & interpretation
@@ -59,8 +111,8 @@ Plot similarity matrix as a heatmap, with clustering of columns of rows
 turned on by default (thus arranging together similar terms).
 
 ```{r}
-heatmapPlot(simMatrix.all,
-            reducedTerms.all,
+heatmapPlot(simMatrix.int,
+            reducedTerms.int,
             annotateParent=TRUE,
             annotationLabel="parentTerm",
             fontsize=6)
@@ -90,15 +142,8 @@ heatmapPlot(simMatrix.3,
             fontsize=6)
 ```
 
-```{r}
-heatmapPlot(simMatrix.4,
-            reducedTerms.4,
-            annotateParent=TRUE,
-            annotationLabel="parentTerm",
-            fontsize=6)
-```
 
-## Scatter plot depicting groups and distance between terms
+## Scatter plot
 
 Plot GO terms as scattered points. Distances between points represent
 the similarity between terms, and axes are the first 2 components of
@@ -107,47 +152,35 @@ represents the provided scores or, in its absence, the number of genes
 the GO term contains.
 
 ```{r}
-?scatterPlot
-```
-
--   addLabel\
-    add labels with the most representative term of the group.
-
-```{r, fig.height=10, fig.width=14}
-scatterPlot(simMatrix.all, reducedTerms.all,
+scatterPlot(simMatrix.int, reducedTerms.int,
             onlyParents = FALSE,
             addLabel = TRUE,
             labelSize = 4)
 ```
 
-```{r, fig.height=10, fig.width=14}
+```{r}
 scatterPlot(simMatrix.1, reducedTerms.1,
             onlyParents = FALSE,
             addLabel = TRUE,
             labelSize = 4)
 ```
 
-```{r, fig.height=10, fig.width=14}
+```{r}
 scatterPlot(simMatrix.2, reducedTerms.2,
             onlyParents = FALSE,
             addLabel = TRUE,
             labelSize = 4)
 ```
 
-```{r, fig.height=10, fig.width=14}
+```{r}
 scatterPlot(simMatrix.3, reducedTerms.3,
             onlyParents = FALSE,
             addLabel = TRUE,
             labelSize = 4)
 ```
 
-```{r, fig.height=10, fig.width=14}
-scatterPlot(simMatrix.4, reducedTerms.4,
-            onlyParents = FALSE,
-            addLabel = TRUE,
-            labelSize = 4)
-```
 
+### Cluster summaries
 I want a dataframe that groups my GO terms based on these 5 main
 clusters displayed in this PCA. The scatterPlot uses a dimensionality
 reduction (PCoA) approach to project GO terms into 2D space and then
@@ -304,8 +337,6 @@ categories don't always line up with semantic neighborhoods.
 :::
 :::
 
-### Summarize cluster content
-
 ```{r}
 # Summarize cluster content by parent term
 cluster_summary <- final_df %>%
@@ -336,7 +367,35 @@ interpretation of the summarized results and also comparing different
 sets of GO terms.
 
 ```{r}
-treemapPlot(reducedTerms.all)
+treemapPlot(reducedTerms.int)
+```
+
+```{r}
+treemapPlot(reducedTerms.1)
+```
+
+```{r}
+treemapPlot(reducedTerms.2)
+```
+
+```{r}
+treemapPlot(reducedTerms.3)
+```
+
+```{r}
+treemapPlot(reducedTerms.lvccl)
+```
+
+```{r}
+treemapPlot(reducedTerms.mvccl)
+```
+
+```{r}
+treemapPlot(reducedTerms.hvccl)
+```
+
+```{r}
+treemapPlot(reducedTerms.hvceg)
 ```
 
 ## Word cloud
@@ -347,7 +406,28 @@ processes and functions that happen more commonly in a set of enriched
 GO terms, as well as comparing between different sets.
 
 ```{r}
-wordcloudPlot(reducedTerms.all, min.freq=1, colors="black")
+wordcloudPlot(reducedTerms.int, min.freq=1, colors="black")
+```
+```{r}
+wordcloudPlot(reducedTerms.1, min.freq=1, colors="black")
+```
+```{r}
+wordcloudPlot(reducedTerms.2, min.freq=1, colors="black")
+```
+```{r}
+wordcloudPlot(reducedTerms.3, min.freq=1, colors="black")
+```
+```{r}
+wordcloudPlot(reducedTerms.lvccl, min.freq=1, colors="black")
+```
+```{r}
+wordcloudPlot(reducedTerms.mvccl, min.freq=1, colors="black")
+```
+```{r}
+wordcloudPlot(reducedTerms.hvccl, min.freq=1, colors="black")
+```
+```{r}
+wordcloudPlot(reducedTerms.hvceg, min.freq=1, colors="black")
 ```
 
 ## Chord diagram
@@ -690,4 +770,9 @@ Outputs:
 -   Tables of enriched GO terms, reduced clusters, semantic similarity
     matrices, and gene-to-term assignments.
 -   Multiple graphical summaries (heatmap, PCA scatter, treemap, word
-    cloud, chord plot).
+    cloud, chord plot)
+    
+```{r}
+sessionInfo()
+```
+

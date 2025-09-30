@@ -1,0 +1,787 @@
+go,cluster,parent,parentSimScore,score,size,term,parentTerm
+GO:0048522,1,GO:0048522,0.96,307.6526555685888,0,positive regulation of cellular process,positive regulation of cellular process
+GO:0048518,1,GO:0048522,0.88,307.6526555685888,0,positive regulation of biological process,positive regulation of cellular process
+GO:0080090,2,GO:0080090,0.931,307.6526555685888,3,regulation of primary metabolic process,regulation of primary metabolic process
+GO:1901362,3,GO:1901362,0.934,307.6526555685888,0,organic cyclic compound biosynthetic process,organic cyclic compound biosynthetic process
+GO:0051716,4,GO:0051716,0.889,307.6526555685888,1,cellular response to stimulus,cellular response to stimulus
+GO:1901360,5,GO:1901360,0.859,307.6526555685888,0,organic cyclic compound metabolic process,organic cyclic compound metabolic process
+GO:0036211,6,GO:0036211,0.933,307.6526555685888,19,protein modification process,protein modification process
+GO:0044248,7,GO:0044248,0.966,307.6526555685888,2,cellular catabolic process,cellular catabolic process
+GO:0051171,2,GO:0080090,0.828,307.6526555685888,3,regulation of nitrogen compound metabolic process,regulation of primary metabolic process
+GO:0006810,8,GO:0006810,0.871,307.6526555685888,32,transport,transport
+GO:0009605,4,GO:0051716,0.516,307.6526555685888,5,response to external stimulus,cellular response to stimulus
+GO:1901566,3,GO:1901362,0.665,307.6526555685888,2,organonitrogen compound biosynthetic process,organic cyclic compound biosynthetic process
+GO:0006725,9,GO:0006725,0.862,307.6526555685888,0,cellular aromatic compound metabolic process,cellular aromatic compound metabolic process
+GO:0044271,3,GO:1901362,0.739,307.6526555685888,0,cellular nitrogen compound biosynthetic process,organic cyclic compound biosynthetic process
+GO:0007154,10,GO:0007154,0.903,307.6526555685888,19,cell communication,cell communication
+GO:0060255,2,GO:0080090,0.861,307.6526555685888,4,regulation of macromolecule metabolic process,regulation of primary metabolic process
+GO:0008152,9,GO:0006725,0.419,307.6526555685888,82,metabolic process,cellular aromatic compound metabolic process
+GO:0071840,11,GO:0071840,0.887,307.6526555685888,0,cellular component organization or biogenesis,cellular component organization or biogenesis
+GO:0009987,12,GO:0009987,0.337,307.6526555685888,0,cellular process,cellular process
+GO:0050896,4,GO:0051716,0.727,307.6526555685888,29,response to stimulus,cellular response to stimulus
+GO:0006996,11,GO:0071840,0.778,307.6526555685888,11,organelle organization,cellular component organization or biogenesis
+GO:0043603,13,GO:0043603,0.972,307.6526555685888,0,cellular amide metabolic process,cellular amide metabolic process
+GO:0044281,14,GO:0044281,0.953,307.6526555685888,9,small molecule metabolic process,small molecule metabolic process
+GO:0016070,5,GO:1901360,0.778,307.6526555685888,19,RNA metabolic process,organic cyclic compound metabolic process
+GO:0044260,15,GO:0044260,0.928,307.6526555685888,3,cellular macromolecule metabolic process,cellular macromolecule metabolic process
+GO:0050794,1,GO:0048522,0.53,307.6526555685888,0,regulation of cellular process,positive regulation of cellular process
+GO:0043604,13,GO:0043603,0.936,307.6526555685888,2,amide biosynthetic process,cellular amide metabolic process
+GO:0034641,9,GO:0006725,0.469,307.6526555685888,0,cellular nitrogen compound metabolic process,cellular aromatic compound metabolic process
+GO:0031323,2,GO:0080090,0.822,307.6526555685888,0,regulation of cellular metabolic process,regulation of primary metabolic process
+GO:0050789,1,GO:0048522,0.441,307.6526555685888,0,regulation of biological process,positive regulation of cellular process
+GO:0043170,9,GO:0006725,0.371,307.6526555685888,2,macromolecule metabolic process,cellular aromatic compound metabolic process
+GO:0065007,1,GO:0048522,0.402,307.6526555685888,0,biological regulation,positive regulation of cellular process
+GO:0051234,8,GO:0006810,0.861,307.6526555685888,0,establishment of localization,transport
+GO:0046483,5,GO:1901360,0.316,307.6526555685888,0,heterocycle metabolic process,organic cyclic compound metabolic process
+GO:0010467,9,GO:0006725,0.304,307.6526555685888,1,gene expression,cellular aromatic compound metabolic process
+GO:0044238,9,GO:0006725,0.393,307.6526555685888,13,primary metabolic process,cellular aromatic compound metabolic process
+GO:0009058,3,GO:1901362,0.784,307.6526555685888,31,biosynthetic process,organic cyclic compound biosynthetic process
+GO:1901564,9,GO:0006725,0.325,307.6526555685888,0,organonitrogen compound metabolic process,cellular aromatic compound metabolic process
+GO:1901576,3,GO:1901362,0.789,307.6526555685888,1,organic substance biosynthetic process,organic cyclic compound biosynthetic process
+GO:0019538,9,GO:0006725,0.305,307.6526555685888,7,protein metabolic process,cellular aromatic compound metabolic process
+GO:0090304,5,GO:1901360,0.819,307.6526555685888,2,nucleic acid metabolic process,organic cyclic compound metabolic process
+GO:0071704,9,GO:0006725,0.404,307.6526555685888,30,organic substance metabolic process,cellular aromatic compound metabolic process
+GO:0042221,16,GO:0042221,0.949,307.6526555685888,1,response to chemical,response to chemical
+GO:0006807,9,GO:0006725,0.381,307.6526555685888,14,nitrogen compound metabolic process,cellular aromatic compound metabolic process
+GO:0051179,8,GO:0006810,0.818,307.6526555685888,7,localization,transport
+GO:0044249,3,GO:1901362,0.779,307.6526555685888,5,cellular biosynthetic process,organic cyclic compound biosynthetic process
+GO:0044237,9,GO:0006725,0.553,307.6526555685888,12,cellular metabolic process,cellular aromatic compound metabolic process
+GO:0043412,6,GO:0036211,0.91,307.6526555685888,3,macromolecule modification,protein modification process
+GO:0019222,2,GO:0080090,0.869,307.6526555685888,1,regulation of metabolic process,regulation of primary metabolic process
+GO:0010033,16,GO:0042221,0.797,307.6526555685888,3,response to organic substance,response to chemical
+GO:0009056,7,GO:0044248,0.924,307.6526555685888,0,catabolic process,cellular catabolic process
+GO:0006139,5,GO:1901360,0.848,307.6526555685888,24,nucleobase-containing compound metabolic process,organic cyclic compound metabolic process
+GO:0034645,15,GO:0044260,0.793,307.6526555685888,1,cellular macromolecule biosynthetic process,cellular macromolecule metabolic process
+GO:0032501,17,GO:0032501,0.843,307.6526555685888,2,multicellular organismal process,multicellular organismal process
+GO:0023052,18,GO:0023052,0.904,307.6526555685888,4,signaling,signaling
+GO:0016043,11,GO:0071840,0.871,307.6526555685888,5,cellular component organization,cellular component organization or biogenesis
+GO:0009059,3,GO:1901362,0.741,307.6526555685888,0,macromolecule biosynthetic process,organic cyclic compound biosynthetic process
+GO:0006950,4,GO:0051716,0.568,307.6526555685888,11,response to stress,cellular response to stimulus
+GO:0043043,13,GO:0043603,0.926,11.461062547554265,0,peptide biosynthetic process,cellular amide metabolic process
+GO:0043933,19,GO:0043933,0.985,11.461062547554265,0,protein-containing complex organization,protein-containing complex organization
+GO:0006518,13,GO:0043603,0.952,11.461062547554265,9,peptide metabolic process,cellular amide metabolic process
+GO:0007165,18,GO:0023052,0.879,11.413237520627446,543,signal transduction,signaling
+GO:0016192,20,GO:0016192,0.974,11.413237520627446,139,vesicle-mediated transport,vesicle-mediated transport
+GO:0009889,2,GO:0080090,0.79,11.318834380906809,0,regulation of biosynthetic process,regulation of primary metabolic process
+GO:0010604,1,GO:0048522,0.745,11.318834380906809,0,positive regulation of macromolecule metabolic process,positive regulation of cellular process
+GO:0048583,21,GO:0048583,0.981,11.318834380906809,0,regulation of response to stimulus,regulation of response to stimulus
+GO:0018130,3,GO:1901362,0.701,11.318834380906809,0,heterocycle biosynthetic process,organic cyclic compound biosynthetic process
+GO:0010556,2,GO:0080090,0.788,11.318834380906809,0,regulation of macromolecule biosynthetic process,regulation of primary metabolic process
+GO:0051128,11,GO:0071840,0.632,11.318834380906809,2,regulation of cellular component organization,cellular component organization or biogenesis
+GO:0019438,3,GO:1901362,0.7,11.318834380906809,0,aromatic compound biosynthetic process,organic cyclic compound biosynthetic process
+GO:0031326,2,GO:0080090,0.79,11.318834380906809,0,regulation of cellular biosynthetic process,regulation of primary metabolic process
+GO:0031325,1,GO:0048522,0.849,11.318834380906809,0,positive regulation of cellular metabolic process,positive regulation of cellular process
+GO:0009893,1,GO:0048522,0.757,11.318834380906809,0,positive regulation of metabolic process,positive regulation of cellular process
+GO:1901575,7,GO:0044248,0.899,11.316737456515005,0,organic substance catabolic process,cellular catabolic process
+GO:0032502,22,GO:0032502,0.869,11.316737456515005,13,developmental process,developmental process
+GO:1901565,7,GO:0044248,0.833,11.316737456515005,3,organonitrogen compound catabolic process,cellular catabolic process
+GO:0048856,22,GO:0032502,0.83,11.316737456515005,191,anatomical structure development,developmental process
+GO:0070887,16,GO:0042221,0.808,8.860179181992196,0,cellular response to chemical stimulus,response to chemical
+GO:0006412,13,GO:0043603,0.924,8.810952611680095,238,translation,cellular amide metabolic process
+GO:0140053,23,GO:0140053,0.998,8.810952611680095,0,mitochondrial gene expression,mitochondrial gene expression
+GO:0034097,16,GO:0042221,0.479,8.810952611680095,0,response to cytokine,response to chemical
+GO:0071702,24,GO:0071702,0.966,8.795421186488012,6,organic substance transport,organic substance transport
+GO:0044087,25,GO:0044087,0.995,8.788829580543931,3,regulation of cellular component biogenesis,regulation of cellular component biogenesis
+GO:0032774,3,GO:1901362,0.893,8.788829580543931,0,RNA biosynthetic process,organic cyclic compound biosynthetic process
+GO:0006796,26,GO:0006796,0.925,8.788829580543931,6,phosphate-containing compound metabolic process,phosphate-containing compound metabolic process
+GO:0043436,14,GO:0044281,0.859,8.788829580543931,0,oxoacid metabolic process,small molecule metabolic process
+GO:0048523,27,GO:0048523,0.974,8.788829580543931,0,negative regulation of cellular process,negative regulation of cellular process
+GO:0044703,28,GO:0044703,1,8.788829580543931,0,multi-organism reproductive process,multi-organism reproductive process
+GO:0051641,8,GO:0006810,0.643,8.788829580543931,0,cellular localization,transport
+GO:0032879,8,GO:0006810,0.515,8.788829580543931,0,regulation of localization,transport
+GO:0022414,28,GO:0044703,0.549,8.788829580543931,11,reproductive process,multi-organism reproductive process
+GO:2000112,2,GO:0080090,0.558,8.788829580543931,0,regulation of cellular macromolecule biosynthetic process,regulation of primary metabolic process
+GO:0010646,10,GO:0007154,0.64,8.788829580543931,1,regulation of cell communication,cell communication
+GO:0034654,3,GO:1901362,0.924,8.788829580543931,1,nucleobase-containing compound biosynthetic process,organic cyclic compound biosynthetic process
+GO:0051173,1,GO:0048522,0.728,8.788829580543931,0,positive regulation of nitrogen compound metabolic process,positive regulation of cellular process
+GO:0006811,29,GO:0006811,0.949,8.788829580543931,434,ion transport,ion transport
+GO:0010557,1,GO:0048522,0.68,8.788829580543931,0,positive regulation of macromolecule biosynthetic process,positive regulation of cellular process
+GO:1901700,16,GO:0042221,0.682,8.788829580543931,0,response to oxygen-containing compound,response to chemical
+GO:0023051,18,GO:0023052,0.643,8.788829580543931,2,regulation of signaling,signaling
+GO:0044085,11,GO:0071840,0.704,8.788829580543931,0,cellular component biogenesis,cellular component organization or biogenesis
+GO:0031328,1,GO:0048522,0.792,8.788829580543931,0,positive regulation of cellular biosynthetic process,positive regulation of cellular process
+GO:0006793,26,GO:0006796,0.922,8.788829580543931,0,phosphorus metabolic process,phosphate-containing compound metabolic process
+GO:0010468,2,GO:0080090,0.832,8.788829580543931,103,regulation of gene expression,regulation of primary metabolic process
+GO:0009966,10,GO:0007154,0.615,8.788829580543931,14,regulation of signal transduction,cell communication
+GO:0048519,27,GO:0048523,0.884,8.788829580543931,0,negative regulation of biological process,negative regulation of cellular process
+GO:0009891,1,GO:0048522,0.682,8.788829580543931,0,positive regulation of biosynthetic process,positive regulation of cellular process
+GO:0065008,30,GO:0065008,0.971,8.788829580543931,5,regulation of biological quality,regulation of biological quality
+GO:0051130,11,GO:0071840,0.538,8.788829580543931,0,positive regulation of cellular component organization,cellular component organization or biogenesis
+GO:0006082,14,GO:0044281,0.864,8.788829580543931,39,organic acid metabolic process,small molecule metabolic process
+GO:0033554,4,GO:0051716,0.684,8.788829580543931,1,cellular response to stress,cellular response to stimulus
+GO:0006351,3,GO:1901362,0.892,8.788829580543931,38,DNA-templated transcription,organic cyclic compound biosynthetic process
+GO:0019752,14,GO:0044281,0.858,8.788829580543931,13,carboxylic acid metabolic process,small molecule metabolic process
+GO:0019953,28,GO:0044703,0.482,8.788829580543931,6,sexual reproduction,multi-organism reproductive process
+GO:0000003,28,GO:0044703,0.537,8.788829580543931,107,reproduction,multi-organism reproductive process
+GO:0022607,11,GO:0071840,0.67,8.788829580543931,0,cellular component assembly,cellular component organization or biogenesis
+GO:0097659,3,GO:1901362,0.893,8.788829580543931,0,nucleic acid-templated transcription,organic cyclic compound biosynthetic process
+GO:0071310,16,GO:0042221,0.769,6.578170013755762,0,cellular response to organic substance,response to chemical
+GO:0048609,28,GO:0044703,0.494,6.5291481542878,9,multicellular organismal reproductive process,multi-organism reproductive process
+GO:0005996,31,GO:0005996,0.998,6.5291481542878,0,monosaccharide metabolic process,monosaccharide metabolic process
+GO:0044255,32,GO:0044255,0.978,6.5291481542878,13,cellular lipid metabolic process,cellular lipid metabolic process
+GO:0051649,8,GO:0006810,0.631,6.5291481542878,0,establishment of localization in cell,transport
+GO:0007276,28,GO:0044703,0.491,6.5291481542878,19,gamete generation,multi-organism reproductive process
+GO:0022412,28,GO:0044703,0.479,6.5291481542878,0,cellular process involved in reproduction in multicellular organism,multi-organism reproductive process
+GO:0009725,4,GO:0051716,0.32,6.5291481542878,1,response to hormone,cellular response to stimulus
+GO:0006414,3,GO:1901362,0.414,6.5291481542878,18,translational elongation,organic cyclic compound biosynthetic process
+GO:0007275,22,GO:0032502,0.784,6.5291481542878,57,multicellular organism development,developmental process
+GO:0098655,29,GO:0006811,0.778,6.5291481542878,50,cation transmembrane transport,ion transport
+GO:0019219,2,GO:0080090,0.885,6.5291481542878,0,regulation of nucleobase-containing compound metabolic process,regulation of primary metabolic process
+GO:0010941,33,GO:0010941,0.995,6.5291481542878,1,regulation of cell death,regulation of cell death
+GO:0051252,2,GO:0080090,0.879,6.5291481542878,2,regulation of RNA metabolic process,regulation of primary metabolic process
+GO:0009991,4,GO:0051716,0.349,6.5291481542878,0,response to extracellular stimulus,cellular response to stimulus
+GO:0009892,27,GO:0048523,0.81,6.5291481542878,0,negative regulation of metabolic process,negative regulation of cellular process
+GO:0045935,1,GO:0048522,0.8,6.5291481542878,0,positive regulation of nucleobase-containing compound metabolic process,positive regulation of cellular process
+GO:0055085,29,GO:0006811,0.585,6.5291481542878,462,transmembrane transport,ion transport
+GO:0030154,22,GO:0032502,0.697,6.5291481542878,305,cell differentiation,developmental process
+GO:0048232,28,GO:0044703,0.439,6.5291481542878,0,male gamete generation,multi-organism reproductive process
+GO:1901698,16,GO:0042221,0.68,6.5291481542878,0,response to nitrogen compound,response to chemical
+GO:0048731,22,GO:0032502,0.657,6.5291481542878,1,system development,developmental process
+GO:0010243,16,GO:0042221,0.673,6.5291481542878,0,response to organonitrogen compound,response to chemical
+GO:1901135,34,GO:1901135,0.975,6.5291481542878,2,carbohydrate derivative metabolic process,carbohydrate derivative metabolic process
+GO:0033043,11,GO:0071840,0.552,6.5291481542878,0,regulation of organelle organization,cellular component organization or biogenesis
+GO:0032543,23,GO:0140053,0.981,6.5291481542878,37,mitochondrial translation,mitochondrial gene expression
+GO:0010605,27,GO:0048523,0.806,6.5291481542878,0,negative regulation of macromolecule metabolic process,negative regulation of cellular process
+GO:0051049,8,GO:0006810,0.537,6.5291481542878,2,regulation of transport,transport
+GO:0070125,3,GO:1901362,0.345,6.5291481542878,8,mitochondrial translational elongation,organic cyclic compound biosynthetic process
+GO:0051246,2,GO:0080090,0.737,6.5291481542878,0,regulation of protein metabolic process,regulation of primary metabolic process
+GO:0031324,27,GO:0048523,0.866,6.5291481542878,0,negative regulation of cellular metabolic process,negative regulation of cellular process
+GO:0051254,1,GO:0048522,0.795,6.5291481542878,0,positive regulation of RNA metabolic process,positive regulation of cellular process
+GO:0060627,8,GO:0006810,0.462,6.5291481542878,1,regulation of vesicle-mediated transport,transport
+GO:1901657,34,GO:1901135,0.689,6.5291481542878,0,glycosyl compound metabolic process,carbohydrate derivative metabolic process
+GO:0031667,4,GO:0051716,0.347,6.5291481542878,0,response to nutrient levels,cellular response to stimulus
+GO:0006629,32,GO:0044255,0.913,6.5291481542878,231,lipid metabolic process,cellular lipid metabolic process
+GO:0009410,16,GO:0042221,0.606,6.5291481542878,28,response to xenobiotic stimulus,response to chemical
+GO:0009719,4,GO:0051716,0.386,6.5291481542878,0,response to endogenous stimulus,cellular response to stimulus
+GO:0051241,35,GO:0051241,0.996,6.5291481542878,0,negative regulation of multicellular organismal process,negative regulation of multicellular organismal process
+GO:0007049,36,GO:0007049,0.963,6.5291481542878,179,cell cycle,cell cycle
+GO:0048193,20,GO:0016192,0.782,6.5291481542878,6,Golgi vesicle transport,vesicle-mediated transport
+GO:0035556,18,GO:0023052,0.67,6.5291481542878,169,intracellular signal transduction,signaling
+GO:0046907,8,GO:0006810,0.613,6.5291481542878,8,intracellular transport,transport
+GO:0006790,37,GO:0006790,0.99,6.5291481542878,4,sulfur compound metabolic process,sulfur compound metabolic process
+GO:0006508,9,GO:0006725,0.232,6.5291481542878,415,proteolysis,cellular aromatic compound metabolic process
+GO:1903506,3,GO:1901362,0.877,6.5291481542878,0,regulation of nucleic acid-templated transcription,organic cyclic compound biosynthetic process
+GO:0005975,31,GO:0005996,0.818,6.5291481542878,164,carbohydrate metabolic process,monosaccharide metabolic process
+GO:0048869,22,GO:0032502,0.698,6.5291481542878,0,cellular developmental process,developmental process
+GO:1902680,1,GO:0048522,0.778,6.5291481542878,0,positive regulation of RNA biosynthetic process,positive regulation of cellular process
+GO:0006812,29,GO:0006811,0.837,6.5291481542878,37,cation transport,ion transport
+GO:0065003,19,GO:0043933,0.966,6.5291481542878,10,protein-containing complex assembly,protein-containing complex organization
+GO:0051172,27,GO:0048523,0.753,6.5291481542878,0,negative regulation of nitrogen compound metabolic process,negative regulation of cellular process
+GO:0006643,32,GO:0044255,0.817,6.5291481542878,1,membrane lipid metabolic process,cellular lipid metabolic process
+GO:0044242,32,GO:0044255,0.786,6.5291481542878,0,cellular lipid catabolic process,cellular lipid metabolic process
+GO:0016042,32,GO:0044255,0.734,6.5291481542878,82,lipid catabolic process,cellular lipid metabolic process
+GO:0048468,22,GO:0032502,0.616,6.5291481542878,6,cell development,developmental process
+GO:0060548,33,GO:0010941,0.92,6.5291481542878,2,negative regulation of cell death,regulation of cell death
+GO:0051239,35,GO:0051241,0.796,6.5291481542878,4,regulation of multicellular organismal process,negative regulation of multicellular organismal process
+GO:0009057,7,GO:0044248,0.837,6.5291481542878,0,macromolecule catabolic process,cellular catabolic process
+GO:2001141,3,GO:1901362,0.877,6.5291481542878,0,regulation of RNA biosynthetic process,organic cyclic compound biosynthetic process
+GO:1903508,1,GO:0048522,0.778,6.5291481542878,0,positive regulation of nucleic acid-templated transcription,positive regulation of cellular process
+GO:0032504,28,GO:0044703,0.498,6.5291481542878,24,multicellular organism reproduction,multi-organism reproductive process
+GO:0034220,29,GO:0006811,0.852,6.5291481542878,255,ion transmembrane transport,ion transport
+GO:0002252,38,GO:0002252,1,4.359692401003168,0,immune effector process,immune effector process
+GO:0006914,39,GO:0006914,0.994,4.359692401003168,61,autophagy,autophagy
+GO:0048640,40,GO:0048640,0.999,4.359692401003168,0,negative regulation of developmental growth,negative regulation of developmental growth
+GO:0007169,18,GO:0023052,0.538,4.359692401003168,79,transmembrane receptor protein tyrosine kinase signaling pathway,signaling
+GO:0003008,41,GO:0003008,0.977,4.359692401003168,0,system process,system process
+GO:0010035,16,GO:0042221,0.683,4.359692401003168,10,response to inorganic substance,response to chemical
+GO:1903046,36,GO:0007049,0.773,4.359692401003168,0,meiotic cell cycle process,cell cycle
+GO:0006468,26,GO:0006796,0.765,4.359692401003168,541,protein phosphorylation,phosphate-containing compound metabolic process
+GO:1901136,34,GO:1901135,0.752,4.359692401003168,1,carbohydrate derivative catabolic process,carbohydrate derivative metabolic process
+GO:0022411,19,GO:0043933,0.425,4.359692401003168,0,cellular component disassembly,protein-containing complex organization
+GO:0007140,28,GO:0044703,0.376,4.359692401003168,4,male meiotic nuclear division,multi-organism reproductive process
+GO:0002376,38,GO:0002252,0.671,4.359692401003168,24,immune system process,immune effector process
+GO:0001932,26,GO:0006796,0.579,4.359692401003168,2,regulation of protein phosphorylation,phosphate-containing compound metabolic process
+GO:0032984,19,GO:0043933,0.813,4.359692401003168,0,protein-containing complex disassembly,protein-containing complex organization
+GO:0050790,42,GO:0050790,0.985,4.359692401003168,142,regulation of catalytic activity,regulation of catalytic activity
+GO:0003006,28,GO:0044703,0.515,4.359692401003168,1,developmental process involved in reproduction,multi-organism reproductive process
+GO:0043161,7,GO:0044248,0.768,4.359692401003168,75,proteasome-mediated ubiquitin-dependent protein catabolic process,cellular catabolic process
+GO:0010498,7,GO:0044248,0.724,4.359692401003168,16,proteasomal protein catabolic process,cellular catabolic process
+GO:1903509,32,GO:0044255,0.658,4.359692401003168,0,liposaccharide metabolic process,cellular lipid metabolic process
+GO:0016310,26,GO:0006796,0.828,4.359692401003168,483,phosphorylation,phosphate-containing compound metabolic process
+GO:0042325,26,GO:0006796,0.602,4.359692401003168,1,regulation of phosphorylation,phosphate-containing compound metabolic process
+GO:0006974,43,GO:0006974,0.985,4.359692401003168,123,cellular response to DNA damage stimulus,cellular response to DNA damage stimulus
+GO:0006665,32,GO:0044255,0.784,4.359692401003168,36,sphingolipid metabolic process,cellular lipid metabolic process
+GO:0006890,20,GO:0016192,0.638,4.359692401003168,22,"retrograde vesicle-mediated transport, Golgi to endoplasmic reticulum",vesicle-mediated transport
+GO:0042594,4,GO:0051716,0.336,4.359692401003168,33,response to starvation,cellular response to stimulus
+GO:0032446,6,GO:0036211,0.687,4.359692401003168,8,protein modification by small protein conjugation,protein modification process
+GO:0098660,29,GO:0006811,0.782,4.359692401003168,0,inorganic ion transmembrane transport,ion transport
+GO:1901701,16,GO:0042221,0.655,4.359692401003168,0,cellular response to oxygen-containing compound,response to chemical
+GO:0034660,5,GO:1901360,0.564,4.359692401003168,2,ncRNA metabolic process,organic cyclic compound metabolic process
+GO:0048515,28,GO:0044703,0.391,4.359692401003168,2,spermatid differentiation,multi-organism reproductive process
+GO:0006396,5,GO:1901360,0.612,4.359692401003168,49,RNA processing,organic cyclic compound metabolic process
+GO:0048285,11,GO:0071840,0.585,4.359692401003168,0,organelle fission,cellular component organization or biogenesis
+GO:0098662,29,GO:0006811,0.763,4.359692401003168,4,inorganic cation transmembrane transport,ion transport
+GO:0045893,1,GO:0048522,0.778,4.359692401003168,50,positive regulation of DNA-templated transcription,positive regulation of cellular process
+GO:0006415,19,GO:0043933,0.677,4.359692401003168,5,translational termination,protein-containing complex organization
+GO:0019637,26,GO:0006796,0.754,4.359692401003168,0,organophosphate metabolic process,phosphate-containing compound metabolic process
+GO:0043254,25,GO:0044087,0.912,4.359692401003168,0,regulation of protein-containing complex assembly,regulation of cellular component biogenesis
+GO:0031163,25,GO:0044087,0.512,4.359692401003168,0,metallo-sulfur cluster assembly,regulation of cellular component biogenesis
+GO:0001775,44,GO:0001775,1,4.359692401003168,0,cell activation,cell activation
+GO:1901214,33,GO:0010941,0.847,4.359692401003168,2,regulation of neuron death,regulation of cell death
+GO:0006664,32,GO:0044255,0.743,4.359692401003168,1,glycolipid metabolic process,cellular lipid metabolic process
+GO:0030163,7,GO:0044248,0.792,4.359692401003168,26,protein catabolic process,cellular catabolic process
+GO:0051707,4,GO:0051716,0.455,4.359692401003168,1,response to other organism,cellular response to stimulus
+GO:0051248,27,GO:0048523,0.696,4.359692401003168,0,negative regulation of protein metabolic process,negative regulation of cellular process
+GO:1901617,45,GO:1901617,0.998,4.359692401003168,0,organic hydroxy compound biosynthetic process,organic hydroxy compound biosynthetic process
+GO:0010038,16,GO:0042221,0.656,4.359692401003168,10,response to metal ion,response to chemical
+GO:0071705,8,GO:0006810,0.627,4.359692401003168,1,nitrogen compound transport,transport
+GO:0120036,11,GO:0071840,0.631,4.359692401003168,1,plasma membrane bounded cell projection organization,cellular component organization or biogenesis
+GO:0009636,16,GO:0042221,0.627,4.359692401003168,9,response to toxic substance,response to chemical
+GO:0048638,40,GO:0048640,0.843,4.359692401003168,0,regulation of developmental growth,negative regulation of developmental growth
+GO:0006887,8,GO:0006810,0.47,4.359692401003168,40,exocytosis,transport
+GO:0019318,31,GO:0005996,0.987,4.359692401003168,5,hexose metabolic process,monosaccharide metabolic process
+GO:0031399,2,GO:0080090,0.63,4.359692401003168,0,regulation of protein modification process,regulation of primary metabolic process
+GO:0023056,18,GO:0023052,0.554,4.359692401003168,0,positive regulation of signaling,signaling
+GO:0007399,22,GO:0032502,0.625,4.359692401003168,112,nervous system development,developmental process
+GO:0043687,6,GO:0036211,0.46,4.359692401003168,1,post-translational protein modification,protein modification process
+GO:0051865,6,GO:0036211,0.446,4.359692401003168,7,protein autoubiquitination,protein modification process
+GO:0016567,6,GO:0036211,0.673,4.359692401003168,210,protein ubiquitination,protein modification process
+GO:0016236,39,GO:0006914,0.917,4.359692401003168,15,macroautophagy,autophagy
+GO:0061024,11,GO:0071840,0.558,4.359692401003168,8,membrane organization,cellular component organization or biogenesis
+GO:0006672,32,GO:0044255,0.71,4.359692401003168,2,ceramide metabolic process,cellular lipid metabolic process
+GO:0050793,22,GO:0032502,0.612,4.359692401003168,4,regulation of developmental process,developmental process
+GO:0080134,21,GO:0048583,0.84,4.359692401003168,0,regulation of response to stress,regulation of response to stimulus
+GO:0043207,4,GO:0051716,0.455,4.359692401003168,0,response to external biotic stimulus,cellular response to stimulus
+GO:0000280,11,GO:0071840,0.58,4.359692401003168,2,nuclear division,cellular component organization or biogenesis
+GO:0000165,18,GO:0023052,0.527,4.359692401003168,46,MAPK cascade,signaling
+GO:0046686,16,GO:0042221,0.554,4.359692401003168,11,response to cadmium ion,response to chemical
+GO:0006979,43,GO:0006974,0.56,4.359692401003168,75,response to oxidative stress,cellular response to DNA damage stimulus
+GO:0016482,8,GO:0006810,0.43,4.359692401003168,0,cytosolic transport,transport
+GO:0051050,8,GO:0006810,0.484,4.359692401003168,0,positive regulation of transport,transport
+GO:0019220,26,GO:0006796,0.619,4.359692401003168,0,regulation of phosphate metabolic process,phosphate-containing compound metabolic process
+GO:0051093,22,GO:0032502,0.468,4.359692401003168,3,negative regulation of developmental process,developmental process
+GO:0032940,8,GO:0006810,0.505,4.359692401003168,0,secretion by cell,transport
+GO:0006820,29,GO:0006811,0.74,4.359692401003168,8,anion transport,ion transport
+GO:0051321,36,GO:0007049,0.809,4.359692401003168,111,meiotic cell cycle,cell cycle
+GO:0022402,36,GO:0007049,0.911,4.359692401003168,0,cell cycle process,cell cycle
+GO:0009628,46,GO:0009628,0.987,4.359692401003168,0,response to abiotic stimulus,response to abiotic stimulus
+GO:1902531,10,GO:0007154,0.557,4.359692401003168,2,regulation of intracellular signal transduction,cell communication
+GO:1901615,45,GO:1901617,0.934,4.359692401003168,0,organic hydroxy compound metabolic process,organic hydroxy compound biosynthetic process
+GO:0040008,40,GO:0048640,0.821,4.359692401003168,6,regulation of growth,negative regulation of developmental growth
+GO:0051603,7,GO:0044248,0.776,4.359692401003168,53,proteolysis involved in protein catabolic process,cellular catabolic process
+GO:0000209,6,GO:0036211,0.571,4.359692401003168,65,protein polyubiquitination,protein modification process
+GO:0048584,21,GO:0048583,0.868,4.359692401003168,0,positive regulation of response to stimulus,regulation of response to stimulus
+GO:0016226,25,GO:0044087,0.512,4.359692401003168,27,iron-sulfur cluster assembly,regulation of cellular component biogenesis
+GO:0010628,1,GO:0048522,0.616,4.359692401003168,104,positive regulation of gene expression,positive regulation of cellular process
+GO:0051174,26,GO:0006796,0.616,4.359692401003168,0,regulation of phosphorus metabolic process,phosphate-containing compound metabolic process
+GO:0031400,2,GO:0080090,0.538,4.359692401003168,0,negative regulation of protein modification process,regulation of primary metabolic process
+GO:0007283,28,GO:0044703,0.436,4.359692401003168,71,spermatogenesis,multi-organism reproductive process
+GO:0007281,28,GO:0044703,0.47,4.359692401003168,46,germ cell development,multi-organism reproductive process
+GO:0034612,16,GO:0042221,0.438,4.359692401003168,0,response to tumor necrosis factor,response to chemical
+GO:0051129,27,GO:0048523,0.769,4.359692401003168,0,negative regulation of cellular component organization,negative regulation of cellular process
+GO:0045926,40,GO:0048640,0.993,4.359692401003168,0,negative regulation of growth,negative regulation of developmental growth
+GO:0044265,7,GO:0044248,0.875,4.359692401003168,0,cellular macromolecule catabolic process,cellular catabolic process
+GO:0070727,8,GO:0006810,0.577,4.359692401003168,0,cellular macromolecule localization,transport
+GO:0030030,11,GO:0071840,0.639,4.359692401003168,31,cell projection organization,cellular component organization or biogenesis
+GO:0045055,8,GO:0006810,0.435,4.359692401003168,2,regulated exocytosis,transport
+GO:0140013,36,GO:0007049,0.746,4.359692401003168,0,meiotic nuclear division,cell cycle
+GO:0071345,16,GO:0042221,0.479,4.359692401003168,0,cellular response to cytokine stimulus,response to chemical
+GO:1901215,33,GO:0010941,0.789,4.359692401003168,8,negative regulation of neuron death,regulation of cell death
+GO:0042326,26,GO:0006796,0.494,4.359692401003168,2,negative regulation of phosphorylation,phosphate-containing compound metabolic process
+GO:0033993,16,GO:0042221,0.472,4.359692401003168,3,response to lipid,response to chemical
+GO:0014070,16,GO:0042221,0.603,4.359692401003168,1,response to organic cyclic compound,response to chemical
+GO:0010563,26,GO:0006796,0.518,4.359692401003168,0,negative regulation of phosphorus metabolic process,phosphate-containing compound metabolic process
+GO:0001933,26,GO:0006796,0.489,4.359692401003168,8,negative regulation of protein phosphorylation,phosphate-containing compound metabolic process
+GO:0008283,47,GO:0008283,0.998,4.359692401003168,1,cell population proliferation,cell population proliferation
+GO:0046466,32,GO:0044255,0.674,4.359692401003168,0,membrane lipid catabolic process,cellular lipid metabolic process
+GO:0007568,22,GO:0032502,0.366,4.359692401003168,17,aging,developmental process
+GO:0043632,7,GO:0044248,0.82,4.359692401003168,0,modification-dependent macromolecule catabolic process,cellular catabolic process
+GO:0019941,7,GO:0044248,0.815,4.359692401003168,6,modification-dependent protein catabolic process,cellular catabolic process
+GO:0010638,11,GO:0071840,0.461,4.359692401003168,0,positive regulation of organelle organization,cellular component organization or biogenesis
+GO:0008104,8,GO:0006810,0.577,4.359692401003168,83,protein localization,transport
+GO:0006355,3,GO:1901362,0.877,4.359692401003168,564,regulation of DNA-templated transcription,organic cyclic compound biosynthetic process
+GO:0045321,44,GO:0001775,0.907,4.359692401003168,1,leukocyte activation,cell activation
+GO:0045936,26,GO:0006796,0.52,4.359692401003168,0,negative regulation of phosphate metabolic process,phosphate-containing compound metabolic process
+GO:0010647,10,GO:0007154,0.552,4.359692401003168,0,positive regulation of cell communication,cell communication
+GO:1901658,34,GO:1901135,0.635,4.359692401003168,0,glycosyl compound catabolic process,carbohydrate derivative metabolic process
+GO:0097164,48,GO:0097164,1,4.359692401003168,0,ammonium ion metabolic process,ammonium ion metabolic process
+GO:0019377,32,GO:0044255,0.626,4.359692401003168,0,glycolipid catabolic process,cellular lipid metabolic process
+GO:0016139,34,GO:1901135,0.561,4.359692401003168,3,glycoside catabolic process,carbohydrate derivative metabolic process
+GO:0016137,34,GO:1901135,0.608,4.359692401003168,0,glycoside metabolic process,carbohydrate derivative metabolic process
+GO:0001101,16,GO:0042221,0.52,4.359692401003168,0,response to acid chemical,response to chemical
+GO:0006520,14,GO:0044281,0.784,4.359692401003168,16,cellular amino acid metabolic process,small molecule metabolic process
+GO:0006366,3,GO:1901362,0.816,4.359692401003168,19,transcription by RNA polymerase II,organic cyclic compound biosynthetic process
+GO:0048513,49,GO:0048513,0.983,4.359692401003168,1,animal organ development,animal organ development
+GO:0009653,22,GO:0032502,0.651,4.359692401003168,31,anatomical structure morphogenesis,developmental process
+GO:0070647,6,GO:0036211,0.711,4.359692401003168,0,protein modification by small protein conjugation or removal,protein modification process
+GO:0006511,7,GO:0044248,0.813,4.359692401003168,118,ubiquitin-dependent protein catabolic process,cellular catabolic process
+GO:0044089,25,GO:0044087,0.887,4.359692401003168,0,positive regulation of cellular component biogenesis,regulation of cellular component biogenesis
+GO:0033036,8,GO:0006810,0.604,4.359692401003168,4,macromolecule localization,transport
+GO:0065009,42,GO:0050790,0.97,4.359692401003168,0,regulation of molecular function,regulation of catalytic activity
+GO:0061919,39,GO:0006914,0.994,4.359692401003168,0,process utilizing autophagic mechanism,autophagy
+GO:0046903,8,GO:0006810,0.516,4.359692401003168,2,secretion,transport
+GO:0015711,29,GO:0006811,0.671,4.359692401003168,0,organic anion transport,ion transport
+GO:0009607,4,GO:0051716,0.455,4.359692401003168,0,response to biotic stimulus,cellular response to stimulus
+GO:0006955,38,GO:0002252,0.668,4.359692401003168,3,immune response,immune effector process
+GO:0007167,18,GO:0023052,0.586,4.359692401003168,0,enzyme-linked receptor protein signaling pathway,signaling
+GO:0007166,18,GO:0023052,0.658,4.359692401003168,11,cell surface receptor signaling pathway,signaling
+GO:0070126,19,GO:0043933,0.591,4.359692401003168,2,mitochondrial translational termination,protein-containing complex organization
+GO:0051345,42,GO:0050790,0.804,2.3797370991065607,1,positive regulation of hydrolase activity,regulation of catalytic activity
+GO:1901652,16,GO:0042221,0.556,2.3797370991065607,0,response to peptide,response to chemical
+GO:0007059,50,GO:0007059,0.99,2.3797370991065607,47,chromosome segregation,chromosome segregation
+GO:0042147,8,GO:0006810,0.389,2.3797370991065607,28,"retrograde transport, endosome to Golgi",transport
+GO:0045911,15,GO:0044260,0.412,2.3797370991065607,0,positive regulation of DNA recombination,cellular macromolecule metabolic process
+GO:0042886,8,GO:0006810,0.399,2.3797370991065607,0,amide transport,transport
+GO:0097428,23,GO:0140053,0.252,2.3797370991065607,5,protein maturation by iron-sulfur cluster transfer,mitochondrial gene expression
+GO:0008361,30,GO:0065008,0.71,2.3797370991065607,7,regulation of cell size,regulation of biological quality
+GO:0071375,16,GO:0042221,0.556,2.3797370991065607,0,cellular response to peptide hormone stimulus,response to chemical
+GO:0043547,42,GO:0050790,0.776,2.3797370991065607,31,positive regulation of GTPase activity,regulation of catalytic activity
+GO:1905809,30,GO:0065008,0.528,2.3797370991065607,0,negative regulation of synapse organization,regulation of biological quality
+GO:0071417,16,GO:0042221,0.633,2.3797370991065607,0,cellular response to organonitrogen compound,response to chemical
+GO:0051960,22,GO:0032502,0.437,2.3797370991065607,0,regulation of nervous system development,developmental process
+GO:0006895,20,GO:0016192,0.541,2.3797370991065607,3,Golgi to endosome transport,vesicle-mediated transport
+GO:2000779,43,GO:0006974,0.645,2.3797370991065607,1,regulation of double-strand break repair,cellular response to DNA damage stimulus
+GO:0006259,15,GO:0044260,0.751,2.3797370991065607,12,DNA metabolic process,cellular macromolecule metabolic process
+GO:0006766,14,GO:0044281,0.539,2.3797370991065607,0,vitamin metabolic process,small molecule metabolic process
+GO:0007141,28,GO:0044703,0.33,2.3797370991065607,1,male meiosis I,multi-organism reproductive process
+GO:0099536,10,GO:0007154,0.618,2.3797370991065607,4,synaptic signaling,cell communication
+GO:0007409,22,GO:0032502,0.528,2.3797370991065607,10,axonogenesis,developmental process
+GO:2000026,22,GO:0032502,0.508,2.3797370991065607,0,regulation of multicellular organismal development,developmental process
+GO:0080135,21,GO:0048583,0.796,2.3797370991065607,1,regulation of cellular response to stress,regulation of response to stimulus
+GO:0051604,23,GO:0140053,0.319,2.3797370991065607,5,protein maturation,mitochondrial gene expression
+GO:0006289,43,GO:0006974,0.764,2.3797370991065607,30,nucleotide-excision repair,cellular response to DNA damage stimulus
+GO:0007005,11,GO:0071840,0.533,2.3797370991065607,38,mitochondrion organization,cellular component organization or biogenesis
+GO:0010569,43,GO:0006974,0.628,2.3797370991065607,3,regulation of double-strand break repair via homologous recombination,cellular response to DNA damage stimulus
+GO:0031338,11,GO:0071840,0.303,2.3797370991065607,0,regulation of vesicle fusion,cellular component organization or biogenesis
+GO:0009620,51,GO:0009620,0.999,2.3797370991065607,1,response to fungus,response to fungus
+GO:0032870,4,GO:0051716,0.437,2.3797370991065607,0,cellular response to hormone stimulus,cellular response to stimulus
+GO:0050808,19,GO:0043933,0.411,2.3797370991065607,16,synapse organization,protein-containing complex organization
+GO:0010256,11,GO:0071840,0.522,2.3797370991065607,0,endomembrane system organization,cellular component organization or biogenesis
+GO:0000160,18,GO:0023052,0.328,2.3797370991065607,1,phosphorelay signal transduction system,signaling
+GO:0007127,36,GO:0007049,0.675,2.3797370991065607,1,meiosis I,cell cycle
+GO:0007351,22,GO:0032502,0.389,2.3797370991065607,0,tripartite regional subdivision,developmental process
+GO:0003002,22,GO:0032502,0.453,2.3797370991065607,0,regionalization,developmental process
+GO:0050803,30,GO:0065008,0.71,2.3797370991065607,7,regulation of synapse structure or activity,regulation of biological quality
+GO:0060628,8,GO:0006810,0.3,2.3797370991065607,0,regulation of ER to Golgi vesicle-mediated transport,transport
+GO:0007528,19,GO:0043933,0.362,2.3797370991065607,8,neuromuscular junction development,protein-containing complex organization
+GO:0015701,29,GO:0006811,0.501,2.3797370991065607,10,bicarbonate transport,ion transport
+GO:0048259,8,GO:0006810,0.375,2.3797370991065607,4,regulation of receptor-mediated endocytosis,transport
+GO:0015031,8,GO:0006810,0.578,2.3797370991065607,212,protein transport,transport
+GO:0051054,15,GO:0044260,0.48,2.3797370991065607,0,positive regulation of DNA metabolic process,cellular macromolecule metabolic process
+GO:0008595,22,GO:0032502,0.389,2.3797370991065607,14,"anterior/posterior axis specification, embryo",developmental process
+GO:1904396,19,GO:0043933,0.351,2.3797370991065607,0,regulation of neuromuscular junction development,protein-containing complex organization
+GO:0051961,22,GO:0032502,0.38,2.3797370991065607,0,negative regulation of nervous system development,developmental process
+GO:0006892,20,GO:0016192,0.658,2.3797370991065607,3,post-Golgi vesicle-mediated transport,vesicle-mediated transport
+GO:0002090,8,GO:0006810,0.283,2.3797370991065607,0,regulation of receptor internalization,transport
+GO:0007018,52,GO:0007018,0.995,2.3797370991065607,60,microtubule-based movement,microtubule-based movement
+GO:0003341,52,GO:0007018,0.774,2.3797370991065607,1,cilium movement,microtubule-based movement
+GO:0043434,16,GO:0042221,0.556,2.3797370991065607,0,response to peptide hormone,response to chemical
+GO:0051964,30,GO:0065008,0.528,2.3797370991065607,2,negative regulation of synapse assembly,regulation of biological quality
+GO:1903358,11,GO:0071840,0.353,2.3797370991065607,6,regulation of Golgi organization,cellular component organization or biogenesis
+GO:0060341,8,GO:0006810,0.451,2.3797370991065607,2,regulation of cellular localization,transport
+GO:0044093,42,GO:0050790,0.859,2.3797370991065607,0,positive regulation of molecular function,regulation of catalytic activity
+GO:1905168,43,GO:0006974,0.56,2.3797370991065607,1,positive regulation of double-strand break repair via homologous recombination,cellular response to DNA damage stimulus
+GO:0003013,41,GO:0003008,0.515,2.3797370991065607,0,circulatory system process,system process
+GO:0015749,24,GO:0071702,0.654,2.3797370991065607,23,monosaccharide transmembrane transport,organic substance transport
+GO:0000002,11,GO:0071840,0.366,2.3797370991065607,2,mitochondrial genome maintenance,cellular component organization or biogenesis
+GO:0018193,6,GO:0036211,0.74,2.3797370991065607,1,peptidyl-amino acid modification,protein modification process
+GO:0000413,6,GO:0036211,0.539,2.3797370991065607,50,protein peptidyl-prolyl isomerization,protein modification process
+GO:1902117,25,GO:0044087,0.809,2.3797370991065607,0,positive regulation of organelle assembly,regulation of cellular component biogenesis
+GO:0098916,10,GO:0007154,0.615,2.3797370991065607,0,anterograde trans-synaptic signaling,cell communication
+GO:0006888,20,GO:0016192,0.719,2.3797370991065607,69,endoplasmic reticulum to Golgi vesicle-mediated transport,vesicle-mediated transport
+GO:0015833,8,GO:0006810,0.386,2.3797370991065607,7,peptide transport,transport
+GO:0051052,15,GO:0044260,0.541,2.3797370991065607,0,regulation of DNA metabolic process,cellular macromolecule metabolic process
+GO:0007017,52,GO:0007018,0.852,2.3797370991065607,41,microtubule-based process,microtubule-based movement
+GO:0032869,16,GO:0042221,0.554,2.3797370991065607,3,cellular response to insulin stimulus,response to chemical
+GO:0006357,3,GO:1901362,0.805,2.3797370991065607,643,regulation of transcription by RNA polymerase II,organic cyclic compound biosynthetic process
+GO:0043067,33,GO:0010941,0.974,2.3797370991065607,3,regulation of programmed cell death,regulation of cell death
+GO:0043066,33,GO:0010941,0.902,2.3797370991065607,38,negative regulation of apoptotic process,regulation of cell death
+GO:0099537,10,GO:0007154,0.615,2.3797370991065607,0,trans-synaptic signaling,cell communication
+GO:0090158,11,GO:0071840,0.362,2.3797370991065607,8,endoplasmic reticulum membrane organization,cellular component organization or biogenesis
+GO:0032388,8,GO:0006810,0.413,2.3797370991065607,0,positive regulation of intracellular transport,transport
+GO:0032386,8,GO:0006810,0.432,2.3797370991065607,0,regulation of intracellular transport,transport
+GO:0006886,8,GO:0006810,0.53,2.3797370991065607,121,intracellular protein transport,transport
+GO:2001022,43,GO:0006974,0.668,2.3797370991065607,0,positive regulation of response to DNA damage stimulus,cellular response to DNA damage stimulus
+GO:0008015,41,GO:0003008,0.515,2.3797370991065607,0,blood circulation,system process
+GO:1901699,16,GO:0042221,0.641,2.3797370991065607,0,cellular response to nitrogen compound,response to chemical
+GO:0001666,46,GO:0009628,0.766,2.3797370991065607,31,response to hypoxia,response to abiotic stimulus
+GO:0009880,22,GO:0032502,0.413,2.3797370991065607,17,embryonic pattern specification,developmental process
+GO:0007411,53,GO:0007411,0.992,2.3797370991065607,78,axon guidance,axon guidance
+GO:0006935,53,GO:0007411,0.955,2.3797370991065607,78,chemotaxis,axon guidance
+GO:0000904,22,GO:0032502,0.538,2.3797370991065607,0,cell morphogenesis involved in differentiation,developmental process
+GO:0000578,22,GO:0032502,0.392,2.3797370991065607,2,embryonic axis specification,developmental process
+GO:0050807,30,GO:0065008,0.703,2.3797370991065607,15,regulation of synapse organization,regulation of biological quality
+GO:1902115,25,GO:0044087,0.875,2.3797370991065607,1,regulation of organelle assembly,regulation of cellular component biogenesis
+GO:0061025,11,GO:0071840,0.451,2.3797370991065607,9,membrane fusion,cellular component organization or biogenesis
+GO:0007267,10,GO:0007154,0.654,2.3797370991065607,14,cell-cell signaling,cell communication
+GO:0007029,11,GO:0071840,0.431,2.3797370991065607,14,endoplasmic reticulum organization,cellular component organization or biogenesis
+GO:0090630,42,GO:0050790,0.729,2.3797370991065607,31,activation of GTPase activity,regulation of catalytic activity
+GO:0051336,42,GO:0050790,0.899,2.3797370991065607,0,regulation of hydrolase activity,regulation of catalytic activity
+GO:0030100,8,GO:0006810,0.43,2.3797370991065607,7,regulation of endocytosis,transport
+GO:0016197,20,GO:0016192,0.752,2.3797370991065607,22,endosomal transport,vesicle-mediated transport
+GO:0002092,8,GO:0006810,0.283,2.3797370991065607,1,positive regulation of receptor internalization,transport
+GO:2001020,43,GO:0006974,0.749,2.3797370991065607,1,regulation of response to DNA damage stimulus,cellular response to DNA damage stimulus
+GO:2000781,43,GO:0006974,0.587,2.3797370991065607,1,positive regulation of double-strand break repair,cellular response to DNA damage stimulus
+GO:0006281,43,GO:0006974,0.939,2.3797370991065607,142,DNA repair,cellular response to DNA damage stimulus
+GO:0000018,15,GO:0044260,0.477,2.3797370991065607,0,regulation of DNA recombination,cellular macromolecule metabolic process
+GO:0010883,8,GO:0006810,0.334,2.3797370991065607,8,regulation of lipid storage,transport
+GO:0061982,36,GO:0007049,0.685,2.3797370991065607,0,meiosis I cell cycle process,cell cycle
+GO:0008645,24,GO:0071702,0.607,2.3797370991065607,22,hexose transmembrane transport,organic substance transport
+GO:0008643,24,GO:0071702,0.701,2.3797370991065607,32,carbohydrate transport,organic substance transport
+GO:0010629,27,GO:0048523,0.743,2.3797370991065607,66,negative regulation of gene expression,negative regulation of cellular process
+GO:0010558,27,GO:0048523,0.7,2.3797370991065607,0,negative regulation of macromolecule biosynthetic process,negative regulation of cellular process
+GO:0009952,22,GO:0032502,0.43,2.3797370991065607,25,anterior/posterior pattern specification,developmental process
+GO:0009948,22,GO:0032502,0.411,2.3797370991065607,4,anterior/posterior axis specification,developmental process
+GO:0009890,27,GO:0048523,0.704,2.3797370991065607,1,negative regulation of biosynthetic process,negative regulation of cellular process
+GO:0009798,22,GO:0032502,0.439,2.3797370991065607,0,axis specification,developmental process
+GO:0009790,17,GO:0032501,0.542,2.3797370991065607,62,embryo development,multicellular organismal process
+GO:0007389,22,GO:0032502,0.475,2.3797370991065607,5,pattern specification process,developmental process
+GO:0007350,22,GO:0032502,0.394,2.3797370991065607,0,blastoderm segmentation,developmental process
+GO:0000902,22,GO:0032502,0.552,2.3797370991065607,13,cell morphogenesis,developmental process
+GO:0000122,27,GO:0048523,0.759,2.3797370991065607,128,negative regulation of transcription by RNA polymerase II,negative regulation of cellular process
+GO:0018208,6,GO:0036211,0.551,2.3797370991065607,0,peptidyl-proline modification,protein modification process
+GO:0051963,30,GO:0065008,0.671,2.3797370991065607,1,regulation of synapse assembly,regulation of biological quality
+GO:0043069,33,GO:0010941,0.906,2.3797370991065607,3,negative regulation of programmed cell death,regulation of cell death
+GO:0042981,33,GO:0010941,0.961,2.3797370991065607,15,regulation of apoptotic process,regulation of cell death
+GO:0008582,19,GO:0043933,0.351,2.3797370991065607,16,regulation of synaptic assembly at neuromuscular junction,protein-containing complex organization
+GO:0007010,11,GO:0071840,0.64,2.3797370991065607,17,cytoskeleton organization,cellular component organization or biogenesis
+GO:0007274,10,GO:0007154,0.429,2.3797370991065607,13,neuromuscular synaptic transmission,cell communication
+GO:0007268,10,GO:0007154,0.615,2.3797370991065607,144,chemical synaptic transmission,cell communication
+GO:0048260,8,GO:0006810,0.361,2.3797370991065607,0,positive regulation of receptor-mediated endocytosis,transport
+GO:0045807,8,GO:0006810,0.409,2.3797370991065607,6,positive regulation of endocytosis,transport
+GO:0045184,8,GO:0006810,0.57,2.3797370991065607,5,establishment of protein localization,transport
+GO:0043087,42,GO:0050790,0.796,2.3797370991065607,19,regulation of GTPase activity,regulation of catalytic activity
+GO:0043085,42,GO:0050790,0.868,2.3797370991065607,2,positive regulation of catalytic activity,regulation of catalytic activity
+GO:0045739,43,GO:0006974,0.668,2.3797370991065607,1,positive regulation of DNA repair,cellular response to DNA damage stimulus
+GO:0006282,43,GO:0006974,0.696,2.3797370991065607,2,regulation of DNA repair,cellular response to DNA damage stimulus
+GO:0044782,11,GO:0071840,0.523,2.3797370991065607,2,cilium organization,cellular component organization or biogenesis
+GO:1905952,8,GO:0006810,0.351,2.3797370991065607,0,regulation of lipid localization,transport
+GO:0006767,14,GO:0044281,0.539,2.3797370991065607,0,water-soluble vitamin metabolic process,small molecule metabolic process
+GO:1904659,24,GO:0071702,0.506,2.3797370991065607,2,glucose transmembrane transport,organic substance transport
+GO:1902600,29,GO:0006811,0.616,2.3797370991065607,74,proton transmembrane transport,ion transport
+GO:1901653,16,GO:0042221,0.556,2.3797370991065607,0,cellular response to peptide,response to chemical
+GO:0071495,4,GO:0051716,0.385,2.3797370991065607,0,cellular response to endogenous stimulus,cellular response to stimulus
+GO:0070482,46,GO:0009628,0.803,2.3797370991065607,20,response to oxygen levels,response to abiotic stimulus
+GO:0036293,46,GO:0009628,0.771,2.3797370991065607,0,response to decreased oxygen levels,response to abiotic stimulus
+GO:0034219,24,GO:0071702,0.674,2.3797370991065607,10,carbohydrate transmembrane transport,organic substance transport
+GO:0032868,16,GO:0042221,0.554,2.3797370991065607,0,response to insulin,response to chemical
+GO:0008286,16,GO:0042221,0.548,2.3797370991065607,18,insulin receptor signaling pathway,response to chemical
+GO:0006006,31,GO:0005996,0.951,2.3797370991065607,19,glucose metabolic process,monosaccharide metabolic process
+GO:1903531,8,GO:0006810,0.339,2.3797370991065607,0,negative regulation of secretion by cell,transport
+GO:1903530,8,GO:0006810,0.442,2.3797370991065607,0,regulation of secretion by cell,transport
+GO:0097237,16,GO:0042221,0.597,2.3797370991065607,6,cellular response to toxic substance,response to chemical
+GO:0072347,16,GO:0042221,0.453,2.3797370991065607,3,response to anesthetic,response to chemical
+GO:0071276,16,GO:0042221,0.438,2.3797370991065607,0,cellular response to cadmium ion,response to chemical
+GO:0071248,16,GO:0042221,0.573,2.3797370991065607,4,cellular response to metal ion,response to chemical
+GO:0071241,16,GO:0042221,0.583,2.3797370991065607,0,cellular response to inorganic substance,response to chemical
+GO:0070301,43,GO:0006974,0.511,2.3797370991065607,4,cellular response to hydrogen peroxide,cellular response to DNA damage stimulus
+GO:0070262,26,GO:0006796,0.397,2.3797370991065607,3,peptidyl-serine dephosphorylation,phosphate-containing compound metabolic process
+GO:0051276,11,GO:0071840,0.581,2.3797370991065607,11,chromosome organization,cellular component organization or biogenesis
+GO:0051259,19,GO:0043933,0.774,2.3797370991065607,2,protein complex oligomerization,protein-containing complex organization
+GO:0051051,8,GO:0006810,0.402,2.3797370991065607,0,negative regulation of transport,transport
+GO:0051048,8,GO:0006810,0.343,2.3797370991065607,0,negative regulation of secretion,transport
+GO:0051046,8,GO:0006810,0.458,2.3797370991065607,2,regulation of secretion,transport
+GO:0045920,8,GO:0006810,0.3,2.3797370991065607,1,negative regulation of exocytosis,transport
+GO:0043279,16,GO:0042221,0.416,2.3797370991065607,1,response to alkaloid,response to chemical
+GO:0042542,43,GO:0006974,0.446,2.3797370991065607,12,response to hydrogen peroxide,cellular response to DNA damage stimulus
+GO:0035970,26,GO:0006796,0.422,2.3797370991065607,6,peptidyl-threonine dephosphorylation,phosphate-containing compound metabolic process
+GO:0034614,43,GO:0006974,0.567,2.3797370991065607,3,cellular response to reactive oxygen species,cellular response to DNA damage stimulus
+GO:0034599,43,GO:0006974,0.598,2.3797370991065607,8,cellular response to oxidative stress,cellular response to DNA damage stimulus
+GO:0033365,8,GO:0006810,0.483,2.3797370991065607,8,protein localization to organelle,transport
+GO:0017157,8,GO:0006810,0.386,2.3797370991065607,10,regulation of exocytosis,transport
+GO:0016570,6,GO:0036211,0.638,2.3797370991065607,5,histone modification,protein modification process
+GO:0016311,26,GO:0006796,0.686,2.3797370991065607,78,dephosphorylation,phosphate-containing compound metabolic process
+GO:0010288,16,GO:0042221,0.416,2.3797370991065607,1,response to lead ion,response to chemical
+GO:0009967,18,GO:0023052,0.527,2.3797370991065607,0,positive regulation of signal transduction,signaling
+GO:0006470,26,GO:0006796,0.657,2.3797370991065607,210,protein dephosphorylation,phosphate-containing compound metabolic process
+GO:0006325,11,GO:0071840,0.529,2.3797370991065607,68,chromatin organization,cellular component organization or biogenesis
+GO:0000302,43,GO:0006974,0.493,2.3797370991065607,11,response to reactive oxygen species,cellular response to DNA damage stimulus
+GO:0000278,36,GO:0007049,0.843,2.3797370991065607,54,mitotic cell cycle,cell cycle
+GO:0051301,54,GO:0051301,0.991,2.3797370991065607,152,cell division,cell division
+GO:0048137,28,GO:0044703,0.33,2.3797370991065607,1,spermatocyte division,multi-organism reproductive process
+GO:0034248,13,GO:0043603,0.784,2.3797370991065607,0,regulation of cellular amide metabolic process,cellular amide metabolic process
+GO:0010608,2,GO:0080090,0.588,2.3797370991065607,17,post-transcriptional regulation of gene expression,regulation of primary metabolic process
+GO:0006417,13,GO:0043603,0.783,2.3797370991065607,52,regulation of translation,cellular amide metabolic process
+GO:0006413,3,GO:1901362,0.455,2.3797370991065607,59,translational initiation,organic cyclic compound biosynthetic process
+GO:1903830,29,GO:0006811,0.416,2.3797370991065607,1,magnesium ion transmembrane transport,ion transport
+GO:0071421,29,GO:0006811,0.472,2.3797370991065607,5,manganese ion transmembrane transport,ion transport
+GO:0035434,29,GO:0006811,0.506,2.3797370991065607,10,copper ion transmembrane transport,ion transport
+GO:0034755,29,GO:0006811,0.472,2.3797370991065607,3,iron ion transmembrane transport,ion transport
+GO:0030001,29,GO:0006811,0.797,2.3797370991065607,17,metal ion transport,ion transport
+GO:0015693,29,GO:0006811,0.48,2.3797370991065607,5,magnesium ion transport,ion transport
+GO:0006828,29,GO:0006811,0.501,2.3797370991065607,5,manganese ion transport,ion transport
+GO:0006826,29,GO:0006811,0.539,2.3797370991065607,3,iron ion transport,ion transport
+GO:0006825,29,GO:0006811,0.55,2.3797370991065607,14,copper ion transport,ion transport
+GO:0000041,29,GO:0006811,0.626,2.3797370991065607,3,transition metal ion transport,ion transport
+GO:1901796,10,GO:0007154,0.404,2.3797370991065607,0,regulation of signal transduction by p53 class mediator,cell communication
+GO:1900864,5,GO:1901360,0.284,2.3797370991065607,0,mitochondrial RNA modification,organic cyclic compound metabolic process
+GO:1900370,2,GO:0080090,0.388,2.3797370991065607,0,positive regulation of post-transcriptional gene silencing by RNA,regulation of primary metabolic process
+GO:1900368,2,GO:0080090,0.416,2.3797370991065607,1,regulation of post-transcriptional gene silencing by RNA,regulation of primary metabolic process
+GO:0098781,3,GO:1901362,0.48,2.3797370991065607,0,ncRNA transcription,organic cyclic compound biosynthetic process
+GO:0090646,5,GO:1901360,0.301,2.3797370991065607,0,mitochondrial tRNA processing,organic cyclic compound metabolic process
+GO:0090407,26,GO:0006796,0.705,2.3797370991065607,0,organophosphate biosynthetic process,phosphate-containing compound metabolic process
+GO:0072521,55,GO:0072521,0.991,2.3797370991065607,0,purine-containing compound metabolic process,purine-containing compound metabolic process
+GO:0071824,19,GO:0043933,0.8,2.3797370991065607,0,protein-DNA complex subunit organization,protein-containing complex organization
+GO:0070900,5,GO:1901360,0.284,2.3797370991065607,0,mitochondrial tRNA modification,organic cyclic compound metabolic process
+GO:0070897,3,GO:1901362,0.474,2.3797370991065607,2,transcription preinitiation complex assembly,organic cyclic compound biosynthetic process
+GO:0070525,5,GO:1901360,0.322,2.3797370991065607,3,tRNA threonylcarbamoyladenosine metabolic process,organic cyclic compound metabolic process
+GO:0065004,19,GO:0043933,0.788,2.3797370991065607,0,protein-DNA complex assembly,protein-containing complex organization
+GO:0060966,27,GO:0048523,0.529,2.3797370991065607,1,regulation of gene silencing by RNA,negative regulation of cellular process
+GO:0060148,2,GO:0080090,0.388,2.3797370991065607,0,positive regulation of post-transcriptional gene silencing,regulation of primary metabolic process
+GO:0060147,2,GO:0080090,0.416,2.3797370991065607,0,regulation of post-transcriptional gene silencing,regulation of primary metabolic process
+GO:0055086,14,GO:0044281,0.817,2.3797370991065607,2,nucleobase-containing small molecule metabolic process,small molecule metabolic process
+GO:0051189,56,GO:0051189,0.999,2.3797370991065607,0,prosthetic group metabolic process,prosthetic group metabolic process
+GO:0051123,3,GO:1901362,0.448,2.3797370991065607,6,RNA polymerase II preinitiation complex assembly,organic cyclic compound biosynthetic process
+GO:0046128,34,GO:1901135,0.603,2.3797370991065607,0,purine ribonucleoside metabolic process,carbohydrate derivative metabolic process
+GO:0046039,55,GO:0072521,0.66,2.3797370991065607,1,GTP metabolic process,purine-containing compound metabolic process
+GO:0044419,51,GO:0009620,0.728,2.3797370991065607,24,biological process involved in interspecies interaction between organisms,response to fungus
+GO:0043545,56,GO:0051189,0.999,2.3797370991065607,2,molybdopterin cofactor metabolic process,prosthetic group metabolic process
+GO:0042795,3,GO:1901362,0.427,2.3797370991065607,4,snRNA transcription by RNA polymerase II,organic cyclic compound biosynthetic process
+GO:0042278,34,GO:1901135,0.617,2.3797370991065607,1,purine nucleoside metabolic process,carbohydrate derivative metabolic process
+GO:0035821,51,GO:0009620,0.475,2.3797370991065607,0,modulation of process of another organism,response to fungus
+GO:0034470,5,GO:1901360,0.536,2.3797370991065607,5,ncRNA processing,organic cyclic compound metabolic process
+GO:0034227,5,GO:1901360,0.332,2.3797370991065607,7,tRNA thio-modification,organic cyclic compound metabolic process
+GO:0032324,56,GO:0051189,0.903,2.3797370991065607,4,molybdopterin cofactor biosynthetic process,prosthetic group metabolic process
+GO:0031334,25,GO:0044087,0.796,2.3797370991065607,2,positive regulation of protein-containing complex assembly,regulation of cellular component biogenesis
+GO:0019693,34,GO:1901135,0.857,2.3797370991065607,3,ribose phosphate metabolic process,carbohydrate derivative metabolic process
+GO:0018283,25,GO:0044087,0.401,2.3797370991065607,1,iron incorporation into metallo-sulfur cluster,regulation of cellular component biogenesis
+GO:0018282,25,GO:0044087,0.401,2.3797370991065607,0,metal incorporation into metallo-sulfur cluster,regulation of cellular component biogenesis
+GO:0016073,5,GO:1901360,0.381,2.3797370991065607,0,snRNA metabolic process,organic cyclic compound metabolic process
+GO:0009451,5,GO:1901360,0.471,2.3797370991065607,11,RNA modification,organic cyclic compound metabolic process
+GO:0009301,3,GO:1901362,0.448,2.3797370991065607,0,snRNA transcription,organic cyclic compound biosynthetic process
+GO:0009259,34,GO:1901135,0.855,2.3797370991065607,1,ribonucleotide metabolic process,carbohydrate derivative metabolic process
+GO:0009205,14,GO:0044281,0.651,2.3797370991065607,0,purine ribonucleoside triphosphate metabolic process,small molecule metabolic process
+GO:0009199,14,GO:0044281,0.656,2.3797370991065607,0,ribonucleoside triphosphate metabolic process,small molecule metabolic process
+GO:0009150,55,GO:0072521,0.977,2.3797370991065607,1,purine ribonucleotide metabolic process,purine-containing compound metabolic process
+GO:0009144,14,GO:0044281,0.651,2.3797370991065607,0,purine nucleoside triphosphate metabolic process,small molecule metabolic process
+GO:0009141,14,GO:0044281,0.662,2.3797370991065607,0,nucleoside triphosphate metabolic process,small molecule metabolic process
+GO:0009119,34,GO:1901135,0.641,2.3797370991065607,0,ribonucleoside metabolic process,carbohydrate derivative metabolic process
+GO:0009117,14,GO:0044281,0.79,2.3797370991065607,5,nucleotide metabolic process,small molecule metabolic process
+GO:0009116,34,GO:1901135,0.668,2.3797370991065607,4,nucleoside metabolic process,carbohydrate derivative metabolic process
+GO:0008033,5,GO:1901360,0.463,2.3797370991065607,56,tRNA processing,organic cyclic compound metabolic process
+GO:0006753,14,GO:0044281,0.793,2.3797370991065607,2,nucleoside phosphate metabolic process,small molecule metabolic process
+GO:0006400,5,GO:1901360,0.433,2.3797370991065607,18,tRNA modification,organic cyclic compound metabolic process
+GO:0006399,5,GO:1901360,0.5,2.3797370991065607,2,tRNA metabolic process,organic cyclic compound metabolic process
+GO:0006367,3,GO:1901362,0.526,2.3797370991065607,28,transcription initiation at RNA polymerase II promoter,organic cyclic compound biosynthetic process
+GO:0006352,3,GO:1901362,0.563,2.3797370991065607,18,DNA-templated transcription initiation,organic cyclic compound biosynthetic process
+GO:0006163,55,GO:0072521,0.982,2.3797370991065607,2,purine nucleotide metabolic process,purine-containing compound metabolic process
+GO:0000963,5,GO:1901360,0.322,2.3797370991065607,1,mitochondrial RNA processing,organic cyclic compound metabolic process
+GO:0000959,5,GO:1901360,0.351,2.3797370991065607,0,mitochondrial RNA metabolic process,organic cyclic compound metabolic process
+GO:0000096,37,GO:0006790,0.842,2.3797370991065607,0,sulfur amino acid metabolic process,sulfur compound metabolic process
+GO:0050776,38,GO:0002252,0.554,2.3797370991065607,0,regulation of immune response,immune effector process
+GO:0033619,57,GO:0033619,1,2.3797370991065607,4,membrane protein proteolysis,membrane protein proteolysis
+GO:0031293,57,GO:0033619,0.874,2.3797370991065607,2,membrane protein intracellular domain proteolysis,membrane protein proteolysis
+GO:0006509,57,GO:0033619,0.974,2.3797370991065607,10,membrane protein ectodomain proteolysis,membrane protein proteolysis
+GO:0002682,38,GO:0002252,0.554,2.3797370991065607,0,regulation of immune system process,immune effector process
+GO:2000060,2,GO:0080090,0.518,2.3797370991065607,1,positive regulation of ubiquitin-dependent protein catabolic process,regulation of primary metabolic process
+GO:2000058,2,GO:0080090,0.523,2.3797370991065607,0,regulation of ubiquitin-dependent protein catabolic process,regulation of primary metabolic process
+GO:1905039,24,GO:0071702,0.693,2.3797370991065607,0,carboxylic acid transmembrane transport,organic substance transport
+GO:1905037,11,GO:0071840,0.431,2.3797370991065607,0,autophagosome organization,cellular component organization or biogenesis
+GO:1904457,41,GO:0003008,0.515,2.3797370991065607,1,positive regulation of neuronal action potential,system process
+GO:1903825,24,GO:0071702,0.693,2.3797370991065607,0,organic acid transmembrane transport,organic substance transport
+GO:1903052,2,GO:0080090,0.532,2.3797370991065607,0,positive regulation of proteolysis involved in protein catabolic process,regulation of primary metabolic process
+GO:1903050,2,GO:0080090,0.54,2.3797370991065607,0,regulation of proteolysis involved in protein catabolic process,regulation of primary metabolic process
+GO:1902532,18,GO:0023052,0.506,2.3797370991065607,0,negative regulation of intracellular signal transduction,signaling
+GO:1902475,24,GO:0071702,0.633,2.3797370991065607,19,L-alpha-amino acid transmembrane transport,organic substance transport
+GO:1901800,2,GO:0080090,0.531,2.3797370991065607,8,positive regulation of proteasomal protein catabolic process,regulation of primary metabolic process
+GO:0098908,41,GO:0003008,0.515,2.3797370991065607,0,regulation of neuronal action potential,system process
+GO:0098900,30,GO:0065008,0.528,2.3797370991065607,0,regulation of action potential,regulation of biological quality
+GO:0098656,29,GO:0006811,0.68,2.3797370991065607,19,anion transmembrane transport,ion transport
+GO:0098542,4,GO:0051716,0.454,2.3797370991065607,6,defense response to other organism,cellular response to stimulus
+GO:0072329,7,GO:0044248,0.688,2.3797370991065607,0,monocarboxylic acid catabolic process,cellular catabolic process
+GO:0071901,42,GO:0050790,0.667,2.3797370991065607,0,negative regulation of protein serine/threonine kinase activity,regulation of catalytic activity
+GO:0071900,26,GO:0006796,0.519,2.3797370991065607,1,regulation of protein serine/threonine kinase activity,phosphate-containing compound metabolic process
+GO:0071496,4,GO:0051716,0.314,2.3797370991065607,0,cellular response to external stimulus,cellular response to stimulus
+GO:0071356,16,GO:0042221,0.438,2.3797370991065607,0,cellular response to tumor necrosis factor,response to chemical
+GO:0061136,2,GO:0080090,0.539,2.3797370991065607,3,regulation of proteasomal protein catabolic process,regulation of primary metabolic process
+GO:0060249,30,GO:0065008,0.633,2.3797370991065607,0,anatomical structure homeostasis,regulation of biological quality
+GO:0051971,41,GO:0003008,0.515,2.3797370991065607,0,positive regulation of transmission of nerve impulse,system process
+GO:0051969,41,GO:0003008,0.515,2.3797370991065607,0,regulation of transmission of nerve impulse,system process
+GO:0051348,42,GO:0050790,0.71,2.3797370991065607,0,negative regulation of transferase activity,regulation of catalytic activity
+GO:0051338,42,GO:0050790,0.841,2.3797370991065607,1,regulation of transferase activity,regulation of catalytic activity
+GO:0051247,2,GO:0080090,0.635,2.3797370991065607,0,positive regulation of protein metabolic process,regulation of primary metabolic process
+GO:0051240,35,GO:0051241,0.729,2.3797370991065607,0,positive regulation of multicellular organismal process,negative regulation of multicellular organismal process
+GO:0050891,30,GO:0065008,0.549,2.3797370991065607,5,multicellular organismal water homeostasis,regulation of biological quality
+GO:0050890,41,GO:0003008,0.752,2.3797370991065607,0,cognition,system process
+GO:0050878,30,GO:0065008,0.582,2.3797370991065607,0,regulation of body fluid levels,regulation of biological quality
+GO:0050877,41,GO:0003008,0.95,2.3797370991065607,100,nervous system process,system process
+GO:0050728,21,GO:0048583,0.534,2.3797370991065607,1,negative regulation of inflammatory response,regulation of response to stimulus
+GO:0050727,21,GO:0048583,0.534,2.3797370991065607,0,regulation of inflammatory response,regulation of response to stimulus
+GO:0048878,30,GO:0065008,0.814,2.3797370991065607,0,chemical homeostasis,regulation of biological quality
+GO:0048871,30,GO:0065008,0.571,2.3797370991065607,0,multicellular organismal homeostasis,regulation of biological quality
+GO:0048585,21,GO:0048583,0.861,2.3797370991065607,0,negative regulation of response to stimulus,regulation of response to stimulus
+GO:0048545,16,GO:0042221,0.416,2.3797370991065607,0,response to steroid hormone,response to chemical
+GO:0046942,29,GO:0006811,0.638,2.3797370991065607,0,carboxylic acid transport,ion transport
+GO:0046520,32,GO:0044255,0.583,2.3797370991065607,0,sphingoid biosynthetic process,cellular lipid metabolic process
+GO:0046519,32,GO:0044255,0.592,2.3797370991065607,0,sphingoid metabolic process,cellular lipid metabolic process
+GO:0046514,32,GO:0044255,0.63,2.3797370991065607,1,ceramide catabolic process,cellular lipid metabolic process
+GO:0046513,32,GO:0044255,0.686,2.3797370991065607,26,ceramide biosynthetic process,cellular lipid metabolic process
+GO:0046512,32,GO:0044255,0.583,2.3797370991065607,5,sphingosine biosynthetic process,cellular lipid metabolic process
+GO:0046503,32,GO:0044255,0.648,2.3797370991065607,0,glycerolipid catabolic process,cellular lipid metabolic process
+GO:0046486,32,GO:0044255,0.844,2.3797370991065607,1,glycerolipid metabolic process,cellular lipid metabolic process
+GO:0046479,32,GO:0044255,0.626,2.3797370991065607,0,glycosphingolipid catabolic process,cellular lipid metabolic process
+GO:0046477,32,GO:0044255,0.611,2.3797370991065607,1,glycosylceramide catabolic process,cellular lipid metabolic process
+GO:0046475,32,GO:0044255,0.606,2.3797370991065607,3,glycerophospholipid catabolic process,cellular lipid metabolic process
+GO:0046470,32,GO:0044255,0.676,2.3797370991065607,0,phosphatidylcholine metabolic process,cellular lipid metabolic process
+GO:0046467,32,GO:0044255,0.777,2.3797370991065607,0,membrane lipid biosynthetic process,cellular lipid metabolic process
+GO:0046434,26,GO:0006796,0.544,2.3797370991065607,0,organophosphate catabolic process,phosphate-containing compound metabolic process
+GO:0046395,7,GO:0044248,0.752,2.3797370991065607,0,carboxylic acid catabolic process,cellular catabolic process
+GO:0046337,32,GO:0044255,0.638,2.3797370991065607,0,phosphatidylethanolamine metabolic process,cellular lipid metabolic process
+GO:0046189,45,GO:1901617,0.919,2.3797370991065607,0,phenol-containing compound biosynthetic process,organic hydroxy compound biosynthetic process
+GO:0046173,45,GO:1901617,0.919,2.3797370991065607,0,polyol biosynthetic process,organic hydroxy compound biosynthetic process
+GO:0046165,45,GO:1901617,0.944,2.3797370991065607,0,alcohol biosynthetic process,organic hydroxy compound biosynthetic process
+GO:0046148,58,GO:0046148,1,2.3797370991065607,0,pigment biosynthetic process,pigment biosynthetic process
+GO:0045937,26,GO:0006796,0.574,2.3797370991065607,0,positive regulation of phosphate metabolic process,phosphate-containing compound metabolic process
+GO:0045862,2,GO:0080090,0.562,2.3797370991065607,1,positive regulation of proteolysis,regulation of primary metabolic process
+GO:0045859,26,GO:0006796,0.552,2.3797370991065607,2,regulation of protein kinase activity,phosphate-containing compound metabolic process
+GO:0045760,30,GO:0065008,0.512,2.3797370991065607,1,positive regulation of action potential,regulation of biological quality
+GO:0045732,7,GO:0044248,0.611,2.3797370991065607,11,positive regulation of protein catabolic process,cellular catabolic process
+GO:0044550,59,GO:0044550,1,2.3797370991065607,1,secondary metabolite biosynthetic process,secondary metabolite biosynthetic process
+GO:0044283,14,GO:0044281,0.759,2.3797370991065607,0,small molecule biosynthetic process,small molecule metabolic process
+GO:0044282,7,GO:0044248,0.716,2.3797370991065607,0,small molecule catabolic process,cellular catabolic process
+GO:0044092,42,GO:0050790,0.852,2.3797370991065607,0,negative regulation of molecular function,regulation of catalytic activity
+GO:0044057,41,GO:0003008,0.771,2.3797370991065607,0,regulation of system process,system process
+GO:0043588,49,GO:0048513,0.548,2.3797370991065607,0,skin development,animal organ development
+GO:0043549,42,GO:0050790,0.835,2.3797370991065607,0,regulation of kinase activity,regulation of catalytic activity
+GO:0043473,60,GO:0043473,1,2.3797370991065607,0,pigmentation,pigmentation
+GO:0043409,18,GO:0023052,0.429,2.3797370991065607,9,negative regulation of MAPK cascade,signaling
+GO:0043408,18,GO:0023052,0.475,2.3797370991065607,9,regulation of MAPK cascade,signaling
+GO:0043407,42,GO:0050790,0.627,2.3797370991065607,5,negative regulation of MAP kinase activity,regulation of catalytic activity
+GO:0043405,42,GO:0050790,0.672,2.3797370991065607,2,regulation of MAP kinase activity,regulation of catalytic activity
+GO:0043244,19,GO:0043933,0.75,2.3797370991065607,0,regulation of protein-containing complex disassembly,protein-containing complex organization
+GO:0043243,19,GO:0043933,0.667,2.3797370991065607,0,positive regulation of protein-containing complex disassembly,protein-containing complex organization
+GO:0043086,42,GO:0050790,0.865,2.3797370991065607,21,negative regulation of catalytic activity,regulation of catalytic activity
+GO:0042742,4,GO:0051716,0.396,2.3797370991065607,15,defense response to bacterium,cellular response to stimulus
+GO:0042592,30,GO:0065008,0.83,2.3797370991065607,1,homeostatic process,regulation of biological quality
+GO:0042440,58,GO:0046148,1,2.3797370991065607,0,pigment metabolic process,pigment biosynthetic process
+GO:0042438,58,GO:0046148,0.931,2.3797370991065607,4,melanin biosynthetic process,pigment biosynthetic process
+GO:0042391,30,GO:0065008,0.791,2.3797370991065607,105,regulation of membrane potential,regulation of biological quality
+GO:0042176,7,GO:0044248,0.629,2.3797370991065607,7,regulation of protein catabolic process,cellular catabolic process
+GO:0035967,16,GO:0042221,0.711,2.3797370991065607,0,cellular response to topologically incorrect protein,response to chemical
+GO:0035966,16,GO:0042221,0.719,2.3797370991065607,11,response to topologically incorrect protein,response to chemical
+GO:0035307,26,GO:0006796,0.427,2.3797370991065607,6,positive regulation of protein dephosphorylation,phosphate-containing compound metabolic process
+GO:0035306,26,GO:0006796,0.427,2.3797370991065607,0,positive regulation of dephosphorylation,phosphate-containing compound metabolic process
+GO:0035304,26,GO:0006796,0.489,2.3797370991065607,1,regulation of protein dephosphorylation,phosphate-containing compound metabolic process
+GO:0035303,26,GO:0006796,0.493,2.3797370991065607,1,regulation of dephosphorylation,phosphate-containing compound metabolic process
+GO:0034638,32,GO:0044255,0.518,2.3797370991065607,1,phosphatidylcholine catabolic process,cellular lipid metabolic process
+GO:0034620,16,GO:0042221,0.707,2.3797370991065607,9,cellular response to unfolded protein,response to chemical
+GO:0034312,45,GO:1901617,0.862,2.3797370991065607,0,diol biosynthetic process,organic hydroxy compound biosynthetic process
+GO:0034311,45,GO:1901617,0.761,2.3797370991065607,0,diol metabolic process,organic hydroxy compound biosynthetic process
+GO:0033673,42,GO:0050790,0.707,2.3797370991065607,0,negative regulation of kinase activity,regulation of catalytic activity
+GO:0032787,14,GO:0044281,0.765,2.3797370991065607,2,monocarboxylic acid metabolic process,small molecule metabolic process
+GO:0032436,2,GO:0080090,0.516,2.3797370991065607,34,positive regulation of proteasomal ubiquitin-dependent protein catabolic process,regulation of primary metabolic process
+GO:0032434,2,GO:0080090,0.522,2.3797370991065607,1,regulation of proteasomal ubiquitin-dependent protein catabolic process,regulation of primary metabolic process
+GO:0032102,21,GO:0048583,0.712,2.3797370991065607,0,negative regulation of response to external stimulus,regulation of response to stimulus
+GO:0032101,21,GO:0048583,0.842,2.3797370991065607,0,regulation of response to external stimulus,regulation of response to stimulus
+GO:0031669,4,GO:0051716,0.424,2.3797370991065607,0,cellular response to nutrient levels,cellular response to stimulus
+GO:0031668,4,GO:0051716,0.428,2.3797370991065607,1,cellular response to extracellular stimulus,cellular response to stimulus
+GO:0031646,41,GO:0003008,0.627,2.3797370991065607,0,positive regulation of nervous system process,system process
+GO:0031644,41,GO:0003008,0.638,2.3797370991065607,0,regulation of nervous system process,system process
+GO:0031401,2,GO:0080090,0.577,2.3797370991065607,0,positive regulation of protein modification process,regulation of primary metabolic process
+GO:0031348,21,GO:0048583,0.639,2.3797370991065607,0,negative regulation of defense response,regulation of response to stimulus
+GO:0031347,21,GO:0048583,0.69,2.3797370991065607,0,regulation of defense response,regulation of response to stimulus
+GO:0031333,25,GO:0044087,0.868,2.3797370991065607,3,negative regulation of protein-containing complex assembly,regulation of cellular component biogenesis
+GO:0031331,7,GO:0044248,0.713,2.3797370991065607,1,positive regulation of cellular catabolic process,cellular catabolic process
+GO:0031329,7,GO:0044248,0.74,2.3797370991065607,0,regulation of cellular catabolic process,cellular catabolic process
+GO:0030534,17,GO:0032501,0.334,2.3797370991065607,1,adult behavior,multicellular organismal process
+GO:0030203,34,GO:1901135,0.7,2.3797370991065607,1,glycosaminoglycan metabolic process,carbohydrate derivative metabolic process
+GO:0030162,2,GO:0080090,0.643,2.3797370991065607,8,regulation of proteolysis,regulation of primary metabolic process
+GO:0030149,32,GO:0044255,0.674,2.3797370991065607,4,sphingolipid catabolic process,cellular lipid metabolic process
+GO:0030148,32,GO:0044255,0.729,2.3797370991065607,15,sphingolipid biosynthetic process,cellular lipid metabolic process
+GO:0030104,30,GO:0065008,0.586,2.3797370991065607,4,water homeostasis,regulation of biological quality
+GO:0023057,18,GO:0023052,0.556,2.3797370991065607,0,negative regulation of signaling,signaling
+GO:0019751,45,GO:1901617,0.855,2.3797370991065607,0,polyol metabolic process,organic hydroxy compound biosynthetic process
+GO:0019748,59,GO:0044550,0.994,2.3797370991065607,1,secondary metabolic process,secondary metabolite biosynthetic process
+GO:0019725,30,GO:0065008,0.786,2.3797370991065607,2,cellular homeostasis,regulation of biological quality
+GO:0018958,45,GO:1901617,0.825,2.3797370991065607,0,phenol-containing compound metabolic process,organic hydroxy compound biosynthetic process
+GO:0016241,39,GO:0006914,0.8,2.3797370991065607,0,regulation of macroautophagy,autophagy
+GO:0016054,7,GO:0044248,0.757,2.3797370991065607,0,organic acid catabolic process,cellular catabolic process
+GO:0015849,24,GO:0071702,0.737,2.3797370991065607,0,organic acid transport,organic substance transport
+GO:0015807,29,GO:0006811,0.572,2.3797370991065607,18,L-amino acid transport,ion transport
+GO:0010822,11,GO:0071840,0.347,2.3797370991065607,0,positive regulation of mitochondrion organization,cellular component organization or biogenesis
+GO:0010821,11,GO:0071840,0.37,2.3797370991065607,3,regulation of mitochondrion organization,cellular component organization or biogenesis
+GO:0010648,10,GO:0007154,0.553,2.3797370991065607,0,negative regulation of cell communication,cell communication
+GO:0010562,26,GO:0006796,0.571,2.3797370991065607,0,positive regulation of phosphorus metabolic process,phosphate-containing compound metabolic process
+GO:0010508,39,GO:0006914,0.816,2.3797370991065607,13,positive regulation of autophagy,autophagy
+GO:0010506,39,GO:0006914,0.862,2.3797370991065607,12,regulation of autophagy,autophagy
+GO:0010259,22,GO:0032502,0.297,2.3797370991065607,2,multicellular organism aging,developmental process
+GO:0009968,18,GO:0023052,0.552,2.3797370991065607,13,negative regulation of signal transduction,signaling
+GO:0009896,7,GO:0044248,0.67,2.3797370991065607,0,positive regulation of catabolic process,cellular catabolic process
+GO:0009894,7,GO:0044248,0.698,2.3797370991065607,0,regulation of catabolic process,cellular catabolic process
+GO:0009887,49,GO:0048513,0.871,2.3797370991065607,20,animal organ morphogenesis,animal organ development
+GO:0009617,4,GO:0051716,0.397,2.3797370991065607,0,response to bacterium,cellular response to stimulus
+GO:0009566,28,GO:0044703,0.417,2.3797370991065607,1,fertilization,multi-organism reproductive process
+GO:0009395,26,GO:0006796,0.484,2.3797370991065607,7,phospholipid catabolic process,phosphate-containing compound metabolic process
+GO:0009268,46,GO:0009628,0.702,2.3797370991065607,0,response to pH,response to abiotic stimulus
+GO:0009267,4,GO:0051716,0.424,2.3797370991065607,6,cellular response to starvation,cellular response to stimulus
+GO:0009062,7,GO:0044248,0.681,2.3797370991065607,13,fatty acid catabolic process,cellular catabolic process
+GO:0008610,32,GO:0044255,0.804,2.3797370991065607,13,lipid biosynthetic process,cellular lipid metabolic process
+GO:0008344,17,GO:0032501,0.302,2.3797370991065607,8,adult locomotory behavior,multicellular organismal process
+GO:0008340,17,GO:0032501,0.464,2.3797370991065607,298,determination of adult lifespan,multicellular organismal process
+GO:0008037,61,GO:0008037,0.999,2.3797370991065607,0,cell recognition,cell recognition
+GO:0007626,17,GO:0032501,0.394,2.3797370991065607,22,locomotory behavior,multicellular organismal process
+GO:0007613,41,GO:0003008,0.677,2.3797370991065607,1,memory,system process
+GO:0007611,41,GO:0003008,0.742,2.3797370991065607,4,learning or memory,system process
+GO:0007610,17,GO:0032501,0.557,2.3797370991065607,18,behavior,multicellular organismal process
+GO:0007338,28,GO:0044703,0.407,2.3797370991065607,14,single fertilization,multi-organism reproductive process
+GO:0007286,28,GO:0044703,0.388,2.3797370991065607,16,spermatid development,multi-organism reproductive process
+GO:0007033,11,GO:0071840,0.467,2.3797370991065607,4,vacuole organization,cellular component organization or biogenesis
+GO:0006986,16,GO:0042221,0.71,2.3797370991065607,10,response to unfolded protein,response to chemical
+GO:0006952,4,GO:0051716,0.455,2.3797370991065607,6,defense response,cellular response to stimulus
+GO:0006865,24,GO:0071702,0.695,2.3797370991065607,13,amino acid transport,organic substance transport
+GO:0006687,32,GO:0044255,0.651,2.3797370991065607,0,glycosphingolipid metabolic process,cellular lipid metabolic process
+GO:0006680,32,GO:0044255,0.592,2.3797370991065607,6,glucosylceramide catabolic process,cellular lipid metabolic process
+GO:0006678,32,GO:0044255,0.626,2.3797370991065607,0,glucosylceramide metabolic process,cellular lipid metabolic process
+GO:0006677,32,GO:0044255,0.638,2.3797370991065607,0,glycosylceramide metabolic process,cellular lipid metabolic process
+GO:0006670,32,GO:0044255,0.583,2.3797370991065607,0,sphingosine metabolic process,cellular lipid metabolic process
+GO:0006650,32,GO:0044255,0.832,2.3797370991065607,0,glycerophospholipid metabolic process,cellular lipid metabolic process
+GO:0006644,26,GO:0006796,0.649,2.3797370991065607,29,phospholipid metabolic process,phosphate-containing compound metabolic process
+GO:0006631,14,GO:0044281,0.741,2.3797370991065607,90,fatty acid metabolic process,small molecule metabolic process
+GO:0006582,58,GO:0046148,0.931,2.3797370991065607,0,melanin metabolic process,pigment biosynthetic process
+GO:0006469,42,GO:0050790,0.704,2.3797370991065607,7,negative regulation of protein kinase activity,regulation of catalytic activity
+GO:0006066,45,GO:1901617,0.901,2.3797370991065607,2,alcohol metabolic process,organic hydroxy compound biosynthetic process
+GO:0006027,34,GO:1901135,0.579,2.3797370991065607,0,glycosaminoglycan catabolic process,carbohydrate derivative metabolic process
+GO:0006026,34,GO:1901135,0.621,2.3797370991065607,0,aminoglycan catabolic process,carbohydrate derivative metabolic process
+GO:0006022,34,GO:1901135,0.716,2.3797370991065607,0,aminoglycan metabolic process,carbohydrate derivative metabolic process
+GO:0006004,31,GO:0005996,0.816,2.3797370991065607,4,fucose metabolic process,monosaccharide metabolic process
+GO:0003333,24,GO:0071702,0.666,2.3797370991065607,24,amino acid transmembrane transport,organic substance transport
+GO:0001818,35,GO:0051241,0.682,2.3797370991065607,0,negative regulation of cytokine production,negative regulation of multicellular organismal process
+GO:0001817,35,GO:0051241,0.48,2.3797370991065607,0,regulation of cytokine production,negative regulation of multicellular organismal process
+GO:0016071,5,GO:1901360,0.549,2.3797370991065607,5,mRNA metabolic process,organic cyclic compound metabolic process
+GO:0008380,5,GO:1901360,0.505,2.3797370991065607,88,RNA splicing,organic cyclic compound metabolic process
+GO:0006397,5,GO:1901360,0.521,2.3797370991065607,131,mRNA processing,organic cyclic compound metabolic process
+GO:0000398,5,GO:1901360,0.477,2.3797370991065607,122,"mRNA splicing, via spliceosome",organic cyclic compound metabolic process
+GO:0000377,5,GO:1901360,0.477,2.3797370991065607,0,"RNA splicing, via transesterification reactions with bulged adenosine as nucleophile",organic cyclic compound metabolic process
+GO:0000375,5,GO:1901360,0.477,2.3797370991065607,1,"RNA splicing, via transesterification reactions",organic cyclic compound metabolic process
+GO:0098754,16,GO:0042221,0.604,2.3797370991065607,0,detoxification,response to chemical
+GO:0097305,16,GO:0042221,0.497,2.3797370991065607,1,response to alcohol,response to chemical
+GO:0071722,16,GO:0042221,0.416,2.3797370991065607,1,detoxification of arsenic-containing substance,response to chemical
+GO:0046685,16,GO:0042221,0.491,2.3797370991065607,3,response to arsenic-containing substance,response to chemical
+GO:0045471,16,GO:0042221,0.486,2.3797370991065607,4,response to ethanol,response to chemical
+GO:0044272,37,GO:0006790,0.892,2.3797370991065607,1,sulfur compound biosynthetic process,sulfur compound metabolic process
+GO:0043200,16,GO:0042221,0.513,2.3797370991065607,2,response to amino acid,response to chemical
+GO:0042398,56,GO:0051189,0.21,2.3797370991065607,0,cellular modified amino acid biosynthetic process,prosthetic group metabolic process
+GO:0019184,13,GO:0043603,0.577,2.3797370991065607,0,nonribosomal peptide biosynthetic process,cellular amide metabolic process
+GO:0006750,13,GO:0043603,0.564,2.3797370991065607,6,glutathione biosynthetic process,cellular amide metabolic process
+GO:0006749,56,GO:0051189,0.235,2.3797370991065607,116,glutathione metabolic process,prosthetic group metabolic process
+GO:0006575,56,GO:0051189,0.24,2.3797370991065607,0,cellular modified amino acid metabolic process,prosthetic group metabolic process
+GO:2000113,2,GO:0080090,0.506,2.3797370991065607,0,negative regulation of cellular macromolecule biosynthetic process,regulation of primary metabolic process
+GO:1903507,27,GO:0048523,0.796,2.3797370991065607,0,negative regulation of nucleic acid-templated transcription,negative regulation of cellular process
+GO:1902679,27,GO:0048523,0.796,2.3797370991065607,0,negative regulation of RNA biosynthetic process,negative regulation of cellular process
+GO:0120039,22,GO:0032502,0.54,2.3797370991065607,0,plasma membrane bounded cell projection morphogenesis,developmental process
+GO:0097485,53,GO:0007411,0.992,2.3797370991065607,0,neuron projection guidance,axon guidance
+GO:0090066,30,GO:0065008,0.756,2.3797370991065607,0,regulation of anatomical structure size,regulation of biological quality
+GO:0061564,22,GO:0032502,0.539,2.3797370991065607,3,axon development,developmental process
+GO:0060322,22,GO:0032502,0.321,2.3797370991065607,0,head development,developmental process
+GO:0051253,27,GO:0048523,0.803,2.3797370991065607,0,negative regulation of RNA metabolic process,negative regulation of cellular process
+GO:0048858,22,GO:0032502,0.542,2.3797370991065607,12,cell projection morphogenesis,developmental process
+GO:0048812,22,GO:0032502,0.54,2.3797370991065607,15,neuron projection morphogenesis,developmental process
+GO:0048732,49,GO:0048513,0.683,2.3797370991065607,0,gland development,animal organ development
+GO:0048699,22,GO:0032502,0.595,2.3797370991065607,2,generation of neurons,developmental process
+GO:0048667,22,GO:0032502,0.535,2.3797370991065607,0,cell morphogenesis involved in neuron differentiation,developmental process
+GO:0048666,22,GO:0032502,0.564,2.3797370991065607,28,neuron development,developmental process
+GO:0045944,1,GO:0048522,0.76,2.3797370991065607,250,positive regulation of transcription by RNA polymerase II,positive regulation of cellular process
+GO:0045934,27,GO:0048523,0.815,2.3797370991065607,0,negative regulation of nucleobase-containing compound metabolic process,negative regulation of cellular process
+GO:0045892,27,GO:0048523,0.796,2.3797370991065607,62,negative regulation of DNA-templated transcription,negative regulation of cellular process
+GO:0042330,53,GO:0007411,0.949,2.3797370991065607,1,taxis,axon guidance
+GO:0040015,40,GO:0048640,0.933,2.3797370991065607,13,negative regulation of multicellular organism growth,negative regulation of developmental growth
+GO:0040014,40,GO:0048640,0.801,2.3797370991065607,32,regulation of multicellular organism growth,negative regulation of developmental growth
+GO:0040011,53,GO:0007411,0.852,2.3797370991065607,108,locomotion,axon guidance
+GO:0035282,22,GO:0032502,0.394,2.3797370991065607,0,segmentation,developmental process
+GO:0032990,22,GO:0032502,0.543,2.3797370991065607,0,cell part morphogenesis,developmental process
+GO:0032989,22,GO:0032502,0.556,2.3797370991065607,0,cellular component morphogenesis,developmental process
+GO:0032535,30,GO:0065008,0.751,2.3797370991065607,0,regulation of cellular component size,regulation of biological quality
+GO:0031327,27,GO:0048523,0.834,2.3797370991065607,0,negative regulation of cellular biosynthetic process,negative regulation of cellular process
+GO:0031175,22,GO:0032502,0.555,2.3797370991065607,11,neuron projection development,developmental process
+GO:0030182,22,GO:0032502,0.579,2.3797370991065607,47,neuron differentiation,developmental process
+GO:0022008,22,GO:0032502,0.598,2.3797370991065607,3,neurogenesis,developmental process

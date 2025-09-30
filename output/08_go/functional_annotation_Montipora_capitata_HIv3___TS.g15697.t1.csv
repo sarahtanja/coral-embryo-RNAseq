@@ -1,0 +1,105 @@
+GO_ID,GO_Name,Ontology
+GO:0000003,reproduction,BP
+GO:0000280,nuclear division,BP
+GO:0000339,RNA cap binding,MF
+GO:0000340,RNA 7-methylguanosine cap binding,MF
+GO:0003006,developmental process involved in reproduction,BP
+GO:0003674,molecular_function,MF
+GO:0003676,nucleic acid binding,MF
+GO:0003723,RNA binding,MF
+GO:0003743,translation initiation factor activity,MF
+GO:0005488,binding,MF
+GO:0005515,protein binding,MF
+GO:0005575,cellular_component,CC
+GO:0005622,intracellular anatomical structure,CC
+GO:0005623,NA,NA
+GO:0005737,cytoplasm,CC
+GO:0005829,cytosol,CC
+GO:0006412,translation,BP
+GO:0006413,translational initiation,BP
+GO:0006417,regulation of translation,BP
+GO:0006518,peptide metabolic process,BP
+GO:0006807,nitrogen compound metabolic process,BP
+GO:0006996,organelle organization,BP
+GO:0007049,cell cycle,BP
+GO:0007140,male meiotic nuclear division,BP
+GO:0007276,gamete generation,BP
+GO:0007281,germ cell development,BP
+GO:0007283,spermatogenesis,BP
+GO:0008135,"translation factor activity, RNA binding",MF
+GO:0008150,biological_process,BP
+GO:0008152,metabolic process,BP
+GO:0008190,eukaryotic initiation factor 4E binding,MF
+GO:0008283,cell population proliferation,BP
+GO:0009058,biosynthetic process,BP
+GO:0009059,macromolecule biosynthetic process,BP
+GO:0009889,regulation of biosynthetic process,BP
+GO:0009987,cellular process,BP
+GO:0010467,gene expression,BP
+GO:0010468,regulation of gene expression,BP
+GO:0010556,regulation of macromolecule biosynthetic process,BP
+GO:0010608,post-transcriptional regulation of gene expression,BP
+GO:0016043,cellular component organization,BP
+GO:0016281,eukaryotic translation initiation factor 4F complex,CC
+GO:0019222,regulation of metabolic process,BP
+GO:0019538,protein metabolic process,BP
+GO:0019953,sexual reproduction,BP
+GO:0022402,cell cycle process,BP
+GO:0022412,cellular process involved in reproduction in multicellular organism,BP
+GO:0022414,reproductive process,BP
+GO:0030154,cell differentiation,BP
+GO:0031323,regulation of cellular metabolic process,BP
+GO:0031326,regulation of cellular biosynthetic process,BP
+GO:0031369,translation initiation factor binding,MF
+GO:0032268,regulation of cellular protein metabolic process,BP
+GO:0032501,multicellular organismal process,BP
+GO:0032502,developmental process,BP
+GO:0032504,multicellular organism reproduction,BP
+GO:0032991,protein-containing complex,CC
+GO:0034248,regulation of cellular amide metabolic process,BP
+GO:0034641,cellular nitrogen compound metabolic process,BP
+GO:0034645,cellular macromolecule biosynthetic process,BP
+GO:0043043,peptide biosynthetic process,BP
+GO:0043170,macromolecule metabolic process,BP
+GO:0043603,cellular amide metabolic process,BP
+GO:0043604,amide biosynthetic process,BP
+GO:0044237,cellular metabolic process,BP
+GO:0044238,primary metabolic process,BP
+GO:0044249,cellular biosynthetic process,BP
+GO:0044260,cellular macromolecule metabolic process,BP
+GO:0044267,NA,NA
+GO:0044271,cellular nitrogen compound biosynthetic process,BP
+GO:0044424,NA,NA
+GO:0044444,NA,NA
+GO:0044464,NA,NA
+GO:0044703,multi-organism reproductive process,BP
+GO:0048134,germ-line cyst formation,BP
+GO:0048136,male germ-line cyst formation,BP
+GO:0048137,spermatocyte division,BP
+GO:0048232,male gamete generation,BP
+GO:0048285,organelle fission,BP
+GO:0048468,cell development,BP
+GO:0048515,spermatid differentiation,BP
+GO:0048609,multicellular organismal reproductive process,BP
+GO:0048856,anatomical structure development,BP
+GO:0048869,cellular developmental process,BP
+GO:0050789,regulation of biological process,BP
+GO:0050794,regulation of cellular process,BP
+GO:0051171,regulation of nitrogen compound metabolic process,BP
+GO:0051246,regulation of protein metabolic process,BP
+GO:0051301,cell division,BP
+GO:0051321,meiotic cell cycle,BP
+GO:0051704,NA,NA
+GO:0060255,regulation of macromolecule metabolic process,BP
+GO:0065007,biological regulation,BP
+GO:0071704,organic substance metabolic process,BP
+GO:0071840,cellular component organization or biogenesis,BP
+GO:0080090,regulation of primary metabolic process,BP
+GO:0097159,organic cyclic compound binding,MF
+GO:0140013,meiotic nuclear division,BP
+GO:1901363,heterocyclic compound binding,MF
+GO:1901564,organonitrogen compound metabolic process,BP
+GO:1901566,organonitrogen compound biosynthetic process,BP
+GO:1901576,organic substance biosynthetic process,BP
+GO:1903046,meiotic cell cycle process,BP
+GO:2000112,regulation of cellular macromolecule biosynthetic process,BP

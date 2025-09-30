@@ -1,0 +1,48 @@
+---
+title: ""
+subtitle: ""
+author: "Sarah Tanja"
+date: 2025-06-17
+date-modified: today
+format:
+  gfm: default 
+  html:
+    theme: journal
+    highlight-style: github
+    page-layout: full
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    reference-location: margin
+    citation-location: margin
+editor: 
+  markdown: 
+    wrap: 72
+---
+
+# Background
+## Inputs
+## Outputs
+# Setup
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  fig.align = "center",
+  dpi = 600,
+  echo = TRUE,         # Display code chunks
+  eval = TRUE,        # Evaluate code chunks
+  warning = FALSE,     # Hide warnings
+  message = FALSE,     # Hide messages
+  comment = ""         # Prevents appending '##' to beginning of lines in code output
+)
+```
+## Install packages
+## Load packages
+## Load inputs
