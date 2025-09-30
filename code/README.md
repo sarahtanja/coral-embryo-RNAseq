@@ -2,6 +2,48 @@
 
 Sarah Tanja October 7, 2024
 
+```mermaid
+flowchart TD
+    A[Raw RNA-seq Data]
+    B[Quality Control]
+    C[Read Alignment]
+    D[Transcript Quantification]
+    E[Differential Expression Analysis]
+    F[Functional Enrichment]
+    G[Visualization & Reporting]
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+
+    subgraph Preprocessing
+        A
+        B
+    end
+
+    subgraph Analysis
+        C
+        D
+        E
+        F
+    end
+
+    subgraph Output
+        G
+    end
+```
+- **Raw RNA-seq Data:** Input files, FASTQ format.
+- **Quality Control:** Filtering and trimming reads using `FastQC` .
+- **Read Alignment:** Mapping reads to a reference genome using `HISAT2`.
+- **Transcript Quantification:** Counting gene or transcript abundances.
+- **Differential Expression Analysis:** Identifying genes with significant expression changes using `DESeq2`.
+- **Functional Enrichment:** GO enrichment using `goseq`.
+- **Visualization & Reporting:** Generating plots, tables, and final reports using `rrvgo` and `ggplot2`.
+
+
 -   [Sequence files background](#sequence-files-background)
 -   [Coding resources](#coding-resources)
 -   [Handling Large Files with Git](#handling-large-files-with-git)
