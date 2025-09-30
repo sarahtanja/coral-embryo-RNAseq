@@ -55,477 +55,477 @@ GO:0071704,1,GO:0044237,0.529,307.6526555685888,30,organic substance metabolic p
 GO:0010468,5,GO:0010556,0.81,307.6526555685888,103,regulation of gene expression,regulation of macromolecule biosynthetic process
 GO:0006355,1,GO:0044237,0.413,307.6526555685888,564,regulation of DNA-templated transcription,cellular metabolic process
 GO:0009987,13,GO:0009987,0.337,307.6526555685888,0,cellular process,cellular process
-GO:0007417,7,GO:0007399,0.653,10.584815824074974,10,central nervous system development,nervous system development
-GO:0045935,4,GO:0048518,0.726,10.584815824074974,0,positive regulation of nucleobase-containing compound metabolic process,positive regulation of biological process
-GO:0010557,4,GO:0048518,0.716,10.584815824074974,0,positive regulation of macromolecule biosynthetic process,positive regulation of biological process
-GO:1901576,1,GO:0044237,0.363,10.584815824074974,1,organic substance biosynthetic process,cellular metabolic process
-GO:0044249,1,GO:0044237,0.517,10.584815824074974,5,cellular biosynthetic process,cellular metabolic process
-GO:1903508,4,GO:0048518,0.705,10.584815824074974,0,positive regulation of nucleic acid-templated transcription,positive regulation of biological process
-GO:0009059,1,GO:0044237,0.332,10.584815824074974,0,macromolecule biosynthetic process,cellular metabolic process
-GO:0045893,4,GO:0048518,0.705,10.584815824074974,50,positive regulation of DNA-templated transcription,positive regulation of biological process
-GO:0048699,7,GO:0007399,0.937,10.584815824074974,2,generation of neurons,nervous system development
-GO:0010628,4,GO:0048518,0.645,10.584815824074974,104,positive regulation of gene expression,positive regulation of biological process
-GO:0009891,4,GO:0048518,0.718,10.584815824074974,0,positive regulation of biosynthetic process,positive regulation of biological process
-GO:1902680,4,GO:0048518,0.705,10.584815824074974,0,positive regulation of RNA biosynthetic process,positive regulation of biological process
-GO:0051254,4,GO:0048518,0.72,10.584815824074974,0,positive regulation of RNA metabolic process,positive regulation of biological process
-GO:0009058,1,GO:0044237,0.364,10.584815824074974,31,biosynthetic process,cellular metabolic process
-GO:0016070,1,GO:0044237,0.495,10.584815824074974,19,RNA metabolic process,cellular metabolic process
-GO:0048513,14,GO:0048513,0.983,10.584815824074974,1,animal organ development,animal organ development
-GO:0031328,4,GO:0048518,0.718,10.584815824074974,0,positive regulation of cellular biosynthetic process,positive regulation of biological process
-GO:0009888,15,GO:0009888,0.993,10.584815824074974,30,tissue development,tissue development
-GO:0030182,7,GO:0007399,0.916,10.584815824074974,47,neuron differentiation,nervous system development
-GO:0034645,8,GO:2000112,0.774,10.584815824074974,1,cellular macromolecule biosynthetic process,regulation of cellular macromolecule biosynthetic process
-GO:0045944,4,GO:0048518,0.687,10.584815824074974,250,positive regulation of transcription by RNA polymerase II,positive regulation of biological process
-GO:0051234,12,GO:0051179,0.825,10.558523675469065,0,establishment of localization,localization
-GO:0006810,12,GO:0051179,0.818,10.558523675469065,32,transport,localization
-GO:0071840,16,GO:0071840,0.887,10.550582256600991,0,cellular component organization or biogenesis,cellular component organization or biogenesis
-GO:0016043,16,GO:0071840,0.871,10.550582256600991,5,cellular component organization,cellular component organization or biogenesis
-GO:0009966,17,GO:0009966,0.989,10.53920028536462,14,regulation of signal transduction,regulation of signal transduction
-GO:0023051,17,GO:0009966,0.956,10.53920028536462,2,regulation of signaling,regulation of signal transduction
-GO:0048583,6,GO:0051716,0.466,10.53920028536462,0,regulation of response to stimulus,cellular response to stimulus
-GO:0010646,18,GO:0010646,0.986,10.53920028536462,1,regulation of cell communication,regulation of cell communication
-GO:0006974,19,GO:0006974,0.985,10.505192418965251,123,cellular response to DNA damage stimulus,cellular response to DNA damage stimulus
-GO:0002376,20,GO:0002376,0.99,10.480077224637265,24,immune system process,immune system process
-GO:0001775,21,GO:0001775,1,10.480077224637265,0,cell activation,cell activation
-GO:0045321,21,GO:0001775,0.907,10.480077224637265,1,leukocyte activation,cell activation
-GO:0010033,9,GO:0042221,0.797,10.469671080203495,3,response to organic substance,response to chemical
-GO:0009892,4,GO:0048518,0.308,10.41035798384981,0,negative regulation of metabolic process,positive regulation of biological process
-GO:0031324,4,GO:0048518,0.274,10.41035798384981,0,negative regulation of cellular metabolic process,positive regulation of biological process
-GO:0009653,3,GO:0048856,0.706,7.788185117301043,31,anatomical structure morphogenesis,anatomical structure development
-GO:0097659,1,GO:0044237,0.423,7.788185117301043,0,nucleic acid-templated transcription,cellular metabolic process
-GO:0009605,6,GO:0051716,0.516,7.788185117301043,5,response to external stimulus,cellular response to stimulus
-GO:0060429,15,GO:0009888,0.896,7.788185117301043,1,epithelium development,tissue development
-GO:0042127,22,GO:0042127,0.999,7.788185117301043,14,regulation of cell population proliferation,regulation of cell population proliferation
-GO:0044271,1,GO:0044237,0.481,7.788185117301043,0,cellular nitrogen compound biosynthetic process,cellular metabolic process
-GO:0006811,12,GO:0051179,0.664,7.788185117301043,434,ion transport,localization
-GO:1901362,1,GO:0044237,0.313,7.788185117301043,0,organic cyclic compound biosynthetic process,cellular metabolic process
-GO:0032774,1,GO:0044237,0.423,7.788185117301043,0,RNA biosynthetic process,cellular metabolic process
-GO:0006366,1,GO:0044237,0.375,7.788185117301043,19,transcription by RNA polymerase II,cellular metabolic process
-GO:0048468,3,GO:0048856,0.67,7.788185117301043,6,cell development,anatomical structure development
-GO:0034654,1,GO:0044237,0.443,7.788185117301043,1,nucleobase-containing compound biosynthetic process,cellular metabolic process
-GO:0060828,18,GO:0010646,0.746,7.788185117301043,6,regulation of canonical Wnt signaling pathway,regulation of cell communication
-GO:0030111,18,GO:0010646,0.771,7.788185117301043,2,regulation of Wnt signaling pathway,regulation of cell communication
-GO:0009790,3,GO:0048856,0.648,7.788185117301043,62,embryo development,anatomical structure development
-GO:0019438,1,GO:0044237,0.446,7.788185117301043,0,aromatic compound biosynthetic process,cellular metabolic process
-GO:0018130,1,GO:0044237,0.447,7.788185117301043,0,heterocycle biosynthetic process,cellular metabolic process
-GO:0010467,2,GO:0043170,0.589,7.788185117301043,1,gene expression,macromolecule metabolic process
-GO:0008284,22,GO:0042127,0.943,7.788185117301043,17,positive regulation of cell population proliferation,regulation of cell population proliferation
-GO:0006351,1,GO:0044237,0.423,7.788185117301043,38,DNA-templated transcription,cellular metabolic process
-GO:1903047,23,GO:1903047,0.988,7.759562769396173,0,mitotic cell cycle process,mitotic cell cycle process
-GO:0000278,23,GO:1903047,0.964,7.759562769396173,54,mitotic cell cycle,mitotic cell cycle process
-GO:0007346,23,GO:1903047,0.822,7.759562769396173,8,regulation of mitotic cell cycle,mitotic cell cycle process
-GO:1901990,23,GO:1903047,0.808,7.759562769396173,0,regulation of mitotic cell cycle phase transition,mitotic cell cycle process
-GO:0022402,23,GO:1903047,0.884,7.759562769396173,0,cell cycle process,mitotic cell cycle process
-GO:1901987,23,GO:1903047,0.705,7.759562769396173,0,regulation of cell cycle phase transition,mitotic cell cycle process
-GO:0051726,23,GO:1903047,0.706,7.759562769396173,34,regulation of cell cycle,mitotic cell cycle process
-GO:0007049,23,GO:1903047,0.822,7.759562769396173,179,cell cycle,mitotic cell cycle process
-GO:0010564,23,GO:1903047,0.767,7.759562769396173,2,regulation of cell cycle process,mitotic cell cycle process
-GO:0016192,12,GO:0051179,0.583,7.759506617302118,139,vesicle-mediated transport,localization
-GO:0051246,5,GO:0010556,0.646,7.759506617302118,0,regulation of protein metabolic process,regulation of macromolecule biosynthetic process
-GO:0006996,16,GO:0071840,0.778,7.759506617302118,11,organelle organization,cellular component organization or biogenesis
-GO:0031396,5,GO:0010556,0.398,7.759506617302118,0,regulation of protein ubiquitination,regulation of macromolecule biosynthetic process
-GO:0051247,5,GO:0010556,0.56,7.759506617302118,0,positive regulation of protein metabolic process,regulation of macromolecule biosynthetic process
-GO:0031401,5,GO:0010556,0.511,7.759506617302118,0,positive regulation of protein modification process,regulation of macromolecule biosynthetic process
-GO:0032879,24,GO:0032879,0.985,7.759506617302118,0,regulation of localization,regulation of localization
-GO:1903320,5,GO:0010556,0.428,7.759506617302118,0,regulation of protein modification by small protein conjugation or removal,regulation of macromolecule biosynthetic process
-GO:0031399,5,GO:0010556,0.556,7.759506617302118,0,regulation of protein modification process,regulation of macromolecule biosynthetic process
-GO:0065008,25,GO:0065008,0.971,7.759506617302118,5,regulation of biological quality,regulation of biological quality
-GO:1901700,9,GO:0042221,0.682,7.742916376811785,0,response to oxygen-containing compound,response to chemical
-GO:0071310,9,GO:0042221,0.769,7.742916376811785,0,cellular response to organic substance,response to chemical
-GO:1901701,9,GO:0042221,0.655,7.742916376811785,0,cellular response to oxygen-containing compound,response to chemical
-GO:0070887,9,GO:0042221,0.808,7.742916376811785,0,cellular response to chemical stimulus,response to chemical
-GO:0007154,18,GO:0010646,0.64,7.742916376811785,19,cell communication,regulation of cell communication
-GO:0010605,4,GO:0048518,0.306,7.650880825010474,0,negative regulation of macromolecule metabolic process,positive regulation of biological process
-GO:0051172,4,GO:0048518,0.284,7.650880825010474,0,negative regulation of nitrogen compound metabolic process,positive regulation of biological process
-GO:0048646,3,GO:0048856,0.534,5.293547503656464,0,anatomical structure formation involved in morphogenesis,anatomical structure development
-GO:0007389,7,GO:0007399,0.502,5.293547503656464,5,pattern specification process,nervous system development
-GO:0010942,26,GO:0010942,0.998,5.293547503656464,0,positive regulation of cell death,positive regulation of cell death
-GO:0032024,24,GO:0032879,0.563,5.293547503656464,1,positive regulation of insulin secretion,regulation of localization
-GO:0050790,27,GO:0050790,0.985,5.293547503656464,142,regulation of catalytic activity,regulation of catalytic activity
-GO:0035148,7,GO:0007399,0.354,5.293547503656464,2,tube formation,nervous system development
-GO:0065009,27,GO:0050790,0.97,5.293547503656464,0,regulation of molecular function,regulation of catalytic activity
-GO:0050708,24,GO:0032879,0.696,5.293547503656464,5,regulation of protein secretion,regulation of localization
-GO:0072359,7,GO:0007399,0.527,5.293547503656464,0,circulatory system development,nervous system development
-GO:0010647,18,GO:0010646,0.877,5.293547503656464,0,positive regulation of cell communication,regulation of cell communication
-GO:0046883,25,GO:0065008,0.528,5.293547503656464,1,regulation of hormone secretion,regulation of biological quality
-GO:0090277,24,GO:0032879,0.563,5.293547503656464,0,positive regulation of peptide hormone secretion,regulation of localization
-GO:0010817,25,GO:0065008,0.628,5.293547503656464,0,regulation of hormone levels,regulation of biological quality
-GO:0090087,24,GO:0032879,0.661,5.293547503656464,6,regulation of peptide transport,regulation of localization
-GO:0030177,18,GO:0010646,0.694,5.293547503656464,4,positive regulation of Wnt signaling pathway,regulation of cell communication
-GO:0051606,6,GO:0051716,0.403,5.293547503656464,0,detection of stimulus,cellular response to stimulus
-GO:0044265,28,GO:0044265,0.983,5.293547503656464,0,cellular macromolecule catabolic process,cellular macromolecule catabolic process
-GO:1901575,28,GO:0044265,0.865,5.293547503656464,0,organic substance catabolic process,cellular macromolecule catabolic process
-GO:0048598,3,GO:0048856,0.554,5.293547503656464,43,embryonic morphogenesis,anatomical structure development
-GO:0048729,15,GO:0009888,0.935,5.293547503656464,2,tissue morphogenesis,tissue development
-GO:0032940,12,GO:0051179,0.466,5.293547503656464,0,secretion by cell,localization
-GO:0090263,18,GO:0010646,0.678,5.293547503656464,12,positive regulation of canonical Wnt signaling pathway,regulation of cell communication
-GO:0002009,15,GO:0009888,0.869,5.293547503656464,23,morphogenesis of an epithelium,tissue development
-GO:0070482,6,GO:0051716,0.334,5.293547503656464,20,response to oxygen levels,cellular response to stimulus
-GO:0035556,17,GO:0009966,0.534,5.293547503656464,169,intracellular signal transduction,regulation of signal transduction
-GO:0030855,15,GO:0009888,0.798,5.293547503656464,0,epithelial cell differentiation,tissue development
-GO:0009743,9,GO:0042221,0.453,5.293547503656464,0,response to carbohydrate,response to chemical
-GO:0071702,12,GO:0051179,0.614,5.293547503656464,6,organic substance transport,localization
-GO:0000077,17,GO:0009966,0.399,5.293547503656464,18,DNA damage checkpoint signaling,regulation of signal transduction
-GO:0051248,4,GO:0048518,0.26,5.293547503656464,0,negative regulation of protein metabolic process,positive regulation of biological process
-GO:0071333,9,GO:0042221,0.453,5.293547503656464,3,cellular response to glucose stimulus,response to chemical
-GO:0001568,7,GO:0007399,0.455,5.293547503656464,0,blood vessel development,nervous system development
-GO:0051336,27,GO:0050790,0.899,5.293547503656464,0,regulation of hydrolase activity,regulation of catalytic activity
-GO:0023052,17,GO:0009966,0.619,5.293547503656464,4,signaling,regulation of signal transduction
-GO:0030330,17,GO:0009966,0.36,5.293547503656464,0,"DNA damage response, signal transduction by p53 class mediator",regulation of signal transduction
-GO:0031647,25,GO:0065008,0.652,5.293547503656464,19,regulation of protein stability,regulation of biological quality
-GO:0009967,17,GO:0009966,0.873,5.293547503656464,0,positive regulation of signal transduction,regulation of signal transduction
-GO:0046903,12,GO:0051179,0.477,5.293547503656464,2,secretion,localization
-GO:0035295,7,GO:0007399,0.484,5.293547503656464,1,tube development,nervous system development
-GO:0050793,3,GO:0048856,0.592,5.293547503656464,4,regulation of developmental process,anatomical structure development
-GO:0006259,8,GO:2000112,0.532,5.293547503656464,12,DNA metabolic process,regulation of cellular macromolecule biosynthetic process
-GO:0003007,7,GO:0007399,0.478,5.293547503656464,2,heart morphogenesis,nervous system development
-GO:0044248,28,GO:0044265,0.875,5.293547503656464,2,cellular catabolic process,cellular macromolecule catabolic process
-GO:0072175,7,GO:0007399,0.319,5.293547503656464,0,epithelial tube formation,nervous system development
-GO:0032880,24,GO:0032879,0.864,5.293547503656464,35,regulation of protein localization,regulation of localization
-GO:0002793,24,GO:0032879,0.563,5.293547503656464,0,positive regulation of peptide secretion,regulation of localization
-GO:0090068,23,GO:1903047,0.668,5.293547503656464,0,positive regulation of cell cycle process,mitotic cell cycle process
-GO:0045787,23,GO:1903047,0.612,5.293547503656464,1,positive regulation of cell cycle,mitotic cell cycle process
-GO:0007507,7,GO:0007399,0.52,5.293547503656464,4,heart development,nervous system development
-GO:0034250,5,GO:0010556,0.443,5.293547503656464,0,positive regulation of cellular amide metabolic process,regulation of macromolecule biosynthetic process
-GO:0051047,12,GO:0051179,0.378,5.293547503656464,0,positive regulation of secretion,localization
-GO:0009749,9,GO:0042221,0.453,5.293547503656464,0,response to glucose,response to chemical
-GO:0007166,17,GO:0009966,0.527,5.293547503656464,11,cell surface receptor signaling pathway,regulation of signal transduction
-GO:0019725,25,GO:0065008,0.786,5.293547503656464,2,cellular homeostasis,regulation of biological quality
-GO:0009056,28,GO:0044265,0.833,5.293547503656464,0,catabolic process,cellular macromolecule catabolic process
-GO:0043068,26,GO:0010942,0.974,5.293547503656464,14,positive regulation of programmed cell death,positive regulation of cell death
-GO:0010948,23,GO:1903047,0.698,5.293547503656464,0,negative regulation of cell cycle process,mitotic cell cycle process
-GO:0071331,9,GO:0042221,0.453,5.293547503656464,0,cellular response to hexose stimulus,response to chemical
-GO:0070201,24,GO:0032879,0.758,5.293547503656464,0,regulation of establishment of protein localization,regulation of localization
-GO:0051049,24,GO:0032879,0.943,5.293547503656464,2,regulation of transport,regulation of localization
-GO:0034248,5,GO:0010556,0.538,5.293547503656464,0,regulation of cellular amide metabolic process,regulation of macromolecule biosynthetic process
-GO:0021782,7,GO:0007399,0.497,5.293547503656464,1,glial cell development,nervous system development
-GO:0019827,3,GO:0048856,0.333,5.293547503656464,2,stem cell population maintenance,anatomical structure development
-GO:0002252,20,GO:0002376,0.671,5.293547503656464,0,immune effector process,immune system process
-GO:1904951,24,GO:0032879,0.727,5.293547503656464,3,positive regulation of establishment of protein localization,regulation of localization
-GO:0051223,24,GO:0032879,0.752,5.293547503656464,1,regulation of protein transport,regulation of localization
-GO:0033500,25,GO:0065008,0.591,5.293547503656464,0,carbohydrate homeostasis,regulation of biological quality
-GO:0007093,23,GO:1903047,0.798,5.293547503656464,2,mitotic cell cycle checkpoint signaling,mitotic cell cycle process
-GO:0001666,6,GO:0051716,0.315,5.293547503656464,31,response to hypoxia,cellular response to stimulus
-GO:1903532,12,GO:0051179,0.361,5.293547503656464,0,positive regulation of secretion by cell,localization
-GO:1903319,5,GO:0010556,0.388,5.293547503656464,0,positive regulation of protein maturation,regulation of macromolecule biosynthetic process
-GO:0098727,3,GO:0048856,0.333,5.293547503656464,0,maintenance of cell number,anatomical structure development
-GO:0060070,18,GO:0010646,0.398,5.293547503656464,33,canonical Wnt signaling pathway,regulation of cell communication
-GO:0051050,24,GO:0032879,0.871,5.293547503656464,0,positive regulation of transport,regulation of localization
-GO:0048878,25,GO:0065008,0.814,5.293547503656464,0,chemical homeostasis,regulation of biological quality
-GO:0046887,25,GO:0065008,0.487,5.293547503656464,0,positive regulation of hormone secretion,regulation of biological quality
-GO:0045727,5,GO:0010556,0.557,5.293547503656464,15,positive regulation of translation,regulation of macromolecule biosynthetic process
-GO:0035239,7,GO:0007399,0.45,5.293547503656464,0,tube morphogenesis,nervous system development
-GO:0051640,12,GO:0051179,0.497,5.293547503656464,4,organelle localization,localization
-GO:1903530,12,GO:0051179,0.407,5.293547503656464,0,regulation of secretion by cell,localization
-GO:1903321,5,GO:0010556,0.367,5.293547503656464,0,negative regulation of protein modification by small protein conjugation or removal,regulation of macromolecule biosynthetic process
-GO:1901991,23,GO:1903047,0.782,5.293547503656464,0,negative regulation of mitotic cell cycle phase transition,mitotic cell cycle process
-GO:1901985,5,GO:0010556,0.367,5.293547503656464,0,positive regulation of protein acetylation,regulation of macromolecule biosynthetic process
-GO:0071326,9,GO:0042221,0.453,5.293547503656464,0,cellular response to monosaccharide stimulus,response to chemical
-GO:0060548,26,GO:0010942,0.86,5.293547503656464,2,negative regulation of cell death,positive regulation of cell death
-GO:0051222,24,GO:0032879,0.72,5.293547503656464,1,positive regulation of protein transport,regulation of localization
-GO:0043067,26,GO:0010942,0.907,5.293547503656464,3,regulation of programmed cell death,positive regulation of cell death
-GO:0042592,25,GO:0065008,0.83,5.293547503656464,1,homeostatic process,regulation of biological quality
-GO:0009792,3,GO:0048856,0.565,5.293547503656464,319,embryo development ending in birth or egg hatching,anatomical structure development
-GO:0008283,22,GO:0042127,0.962,5.293547503656464,1,cell population proliferation,regulation of cell population proliferation
-GO:0007165,17,GO:0009966,0.649,5.293547503656464,543,signal transduction,regulation of signal transduction
-GO:0002791,24,GO:0032879,0.608,5.293547503656464,1,regulation of peptide secretion,regulation of localization
-GO:0001944,7,GO:0007399,0.455,5.293547503656464,0,vasculature development,nervous system development
-GO:0045595,3,GO:0048856,0.477,5.293547503656464,9,regulation of cell differentiation,anatomical structure development
-GO:0006955,20,GO:0002376,0.982,5.293547503656464,3,immune response,immune system process
-GO:1902807,23,GO:1903047,0.554,5.293547503656464,3,negative regulation of cell cycle G1/S phase transition,mitotic cell cycle process
-GO:0090276,25,GO:0065008,0.512,5.293547503656464,0,regulation of peptide hormone secretion,regulation of biological quality
-GO:0072331,17,GO:0009966,0.378,5.293547503656464,0,signal transduction by p53 class mediator,regulation of signal transduction
-GO:0060562,7,GO:0007399,0.381,5.293547503656464,9,epithelial tube morphogenesis,nervous system development
-GO:0051046,12,GO:0051179,0.423,5.293547503656464,2,regulation of secretion,localization
-GO:0045786,23,GO:1903047,0.628,5.293547503656464,2,negative regulation of cell cycle,mitotic cell cycle process
-GO:0042981,26,GO:0010942,0.896,5.293547503656464,15,regulation of apoptotic process,positive regulation of cell death
-GO:0042770,17,GO:0009966,0.409,5.293547503656464,2,signal transduction in response to DNA damage,regulation of signal transduction
-GO:0042063,7,GO:0007399,0.588,5.293547503656464,0,gliogenesis,nervous system development
-GO:0036293,6,GO:0051716,0.317,5.293547503656464,0,response to decreased oxygen levels,cellular response to stimulus
-GO:0031400,5,GO:0010556,0.477,5.293547503656464,0,negative regulation of protein modification process,regulation of macromolecule biosynthetic process
-GO:0031397,5,GO:0010556,0.355,5.293547503656464,1,negative regulation of protein ubiquitination,regulation of macromolecule biosynthetic process
-GO:0016331,15,GO:0009888,0.773,5.293547503656464,15,morphogenesis of embryonic epithelium,tissue development
-GO:0010941,26,GO:0010942,0.925,5.293547503656464,1,regulation of cell death,positive regulation of cell death
-GO:0010001,7,GO:0007399,0.56,5.293547503656464,0,glial cell differentiation,nervous system development
-GO:0009628,6,GO:0051716,0.436,5.293547503656464,0,response to abiotic stimulus,cellular response to stimulus
-GO:0008285,22,GO:0042127,0.869,5.293547503656464,7,negative regulation of cell population proliferation,regulation of cell population proliferation
-GO:0006417,5,GO:0010556,0.679,5.293547503656464,52,regulation of translation,regulation of macromolecule biosynthetic process
-GO:0001678,25,GO:0065008,0.576,5.293547503656464,6,cellular glucose homeostasis,regulation of biological quality
-GO:0000075,23,GO:1903047,0.679,5.293547503656464,0,cell cycle checkpoint signaling,mitotic cell cycle process
-GO:0045055,12,GO:0051179,0.401,5.293547503656464,2,regulated exocytosis,localization
-GO:0023057,17,GO:0009966,0.855,5.293547503656464,0,negative regulation of signaling,regulation of signal transduction
-GO:0010648,18,GO:0010646,0.879,5.293547503656464,0,negative regulation of cell communication,regulation of cell communication
-GO:0009057,28,GO:0044265,0.946,5.293547503656464,0,macromolecule catabolic process,cellular macromolecule catabolic process
-GO:1903317,5,GO:0010556,0.409,5.293547503656464,0,regulation of protein maturation,regulation of macromolecule biosynthetic process
-GO:1902806,23,GO:1903047,0.582,5.293547503656464,4,regulation of cell cycle G1/S phase transition,mitotic cell cycle process
-GO:1901988,23,GO:1903047,0.685,5.293547503656464,0,negative regulation of cell cycle phase transition,mitotic cell cycle process
-GO:1901983,5,GO:0010556,0.388,5.293547503656464,0,regulation of protein acetylation,regulation of macromolecule biosynthetic process
-GO:0198738,18,GO:0010646,0.431,5.293547503656464,0,cell-cell signaling by wnt,regulation of cell communication
-GO:0071322,9,GO:0042221,0.453,5.293547503656464,0,cellular response to carbohydrate stimulus,response to chemical
-GO:0055082,25,GO:0065008,0.764,5.293547503656464,0,cellular chemical homeostasis,regulation of biological quality
-GO:0050821,25,GO:0065008,0.599,5.293547503656464,14,protein stabilization,regulation of biological quality
-GO:0050796,25,GO:0065008,0.512,5.293547503656464,0,regulation of insulin secretion,regulation of biological quality
-GO:0050714,24,GO:0032879,0.661,5.293547503656464,6,positive regulation of protein secretion,regulation of localization
-GO:0048584,6,GO:0051716,0.399,5.293547503656464,0,positive regulation of response to stimulus,cellular response to stimulus
-GO:0048514,7,GO:0007399,0.455,5.293547503656464,0,blood vessel morphogenesis,nervous system development
-GO:0045930,23,GO:1903047,0.779,5.293547503656464,2,negative regulation of mitotic cell cycle,mitotic cell cycle process
-GO:0044774,23,GO:1903047,0.757,5.293547503656464,0,mitotic DNA integrity checkpoint signaling,mitotic cell cycle process
-GO:0044773,23,GO:1903047,0.73,5.293547503656464,3,mitotic DNA damage checkpoint signaling,mitotic cell cycle process
-GO:0043065,26,GO:0010942,0.954,5.293547503656464,23,positive regulation of apoptotic process,positive regulation of cell death
-GO:0042593,25,GO:0065008,0.591,5.293547503656464,3,glucose homeostasis,regulation of biological quality
-GO:0034284,9,GO:0042221,0.453,5.293547503656464,0,response to monosaccharide,response to chemical
-GO:0031570,23,GO:1903047,0.655,5.293547503656464,0,DNA integrity checkpoint signaling,mitotic cell cycle process
-GO:0023056,17,GO:0009966,0.853,5.293547503656464,0,positive regulation of signaling,regulation of signal transduction
-GO:0016055,18,GO:0010646,0.43,5.293547503656464,49,Wnt signaling pathway,regulation of cell communication
-GO:0010608,5,GO:0010556,0.581,5.293547503656464,17,post-transcriptional regulation of gene expression,regulation of macromolecule biosynthetic process
-GO:0009887,14,GO:0048513,0.871,5.293547503656464,20,animal organ morphogenesis,animal organ development
-GO:0009746,9,GO:0042221,0.453,5.293547503656464,0,response to hexose,response to chemical
-GO:0007267,18,GO:0010646,0.504,5.293547503656464,14,cell-cell signaling,regulation of cell communication
-GO:0006887,12,GO:0051179,0.433,5.293547503656464,40,exocytosis,localization
-GO:0051641,12,GO:0051179,0.663,5.293547503656464,0,cellular localization,localization
-GO:0006281,19,GO:0006974,0.939,5.293547503656464,142,DNA repair,cellular response to DNA damage stimulus
-GO:0006812,12,GO:0051179,0.571,5.293547503656464,37,cation transport,localization
-GO:0048585,6,GO:0051716,0.395,5.293547503656464,0,negative regulation of response to stimulus,cellular response to stimulus
-GO:0009968,17,GO:0009966,0.906,5.293547503656464,13,negative regulation of signal transduction,regulation of signal transduction
-GO:0120036,16,GO:0071840,0.631,5.293547503656464,1,plasma membrane bounded cell projection organization,cellular component organization or biogenesis
-GO:0030030,16,GO:0071840,0.639,5.293547503656464,31,cell projection organization,cellular component organization or biogenesis
-GO:0003002,7,GO:0007399,0.482,5.293547503656464,0,regionalization,nervous system development
-GO:0042303,10,GO:0032501,0.418,5.293547503656464,4,molting cycle,multicellular organismal process
-GO:2000758,5,GO:0010556,0.367,5.293547503656464,0,positive regulation of peptidyl-lysine acetylation,regulation of macromolecule biosynthetic process
-GO:2000756,5,GO:0010556,0.388,5.293547503656464,0,regulation of peptidyl-lysine acetylation,regulation of macromolecule biosynthetic process
-GO:2000134,23,GO:1903047,0.652,5.293547503656464,4,negative regulation of G1/S transition of mitotic cell cycle,mitotic cell cycle process
-GO:2000045,23,GO:1903047,0.676,5.293547503656464,0,regulation of G1/S transition of mitotic cell cycle,mitotic cell cycle process
-GO:1905114,18,GO:0010646,0.438,5.293547503656464,0,cell surface receptor signaling pathway involved in cell-cell signaling,regulation of cell communication
-GO:0051276,16,GO:0071840,0.581,5.28572543401866,11,chromosome organization,cellular component organization or biogenesis
-GO:0071103,16,GO:0071840,0.448,2.7605673438874363,0,DNA conformation change,cellular component organization or biogenesis
-GO:0032508,16,GO:0071840,0.437,2.7605673438874363,38,DNA duplex unwinding,cellular component organization or biogenesis
-GO:0032392,16,GO:0071840,0.438,2.7605673438874363,0,DNA geometric change,cellular component organization or biogenesis
-GO:0006310,8,GO:2000112,0.458,2.7605673438874363,38,DNA recombination,regulation of cellular macromolecule biosynthetic process
-GO:0006302,19,GO:0006974,0.822,2.7605673438874363,18,double-strand break repair,cellular response to DNA damage stimulus
-GO:0000725,8,GO:2000112,0.419,2.7605673438874363,0,recombinational repair,regulation of cellular macromolecule biosynthetic process
-GO:0000724,8,GO:2000112,0.418,2.7605673438874363,43,double-strand break repair via homologous recombination,regulation of cellular macromolecule biosynthetic process
-GO:1901699,9,GO:0042221,0.641,2.7605673438874363,0,cellular response to nitrogen compound,response to chemical
-GO:1901698,9,GO:0042221,0.68,2.7605673438874363,0,response to nitrogen compound,response to chemical
-GO:0071705,12,GO:0051179,0.583,2.7605673438874363,1,nitrogen compound transport,localization
-GO:0071496,6,GO:0051716,0.314,2.7605673438874363,0,cellular response to external stimulus,cellular response to stimulus
-GO:0071495,6,GO:0051716,0.385,2.7605673438874363,0,cellular response to endogenous stimulus,cellular response to stimulus
-GO:0071466,9,GO:0042221,0.573,2.7605673438874363,0,cellular response to xenobiotic stimulus,response to chemical
-GO:0071417,9,GO:0042221,0.633,2.7605673438874363,0,cellular response to organonitrogen compound,response to chemical
-GO:0071407,9,GO:0042221,0.598,2.7605673438874363,0,cellular response to organic cyclic compound,response to chemical
-GO:0071248,9,GO:0042221,0.573,2.7605673438874363,4,cellular response to metal ion,response to chemical
-GO:0071241,9,GO:0042221,0.583,2.7605673438874363,0,cellular response to inorganic substance,response to chemical
-GO:0046688,9,GO:0042221,0.544,2.7605673438874363,7,response to copper ion,response to chemical
-GO:0042594,6,GO:0051716,0.336,2.7605673438874363,33,response to starvation,cellular response to stimulus
-GO:0031669,6,GO:0051716,0.424,2.7605673438874363,0,cellular response to nutrient levels,cellular response to stimulus
-GO:0031668,6,GO:0051716,0.428,2.7605673438874363,1,cellular response to extracellular stimulus,cellular response to stimulus
-GO:0031667,6,GO:0051716,0.347,2.7605673438874363,0,response to nutrient levels,cellular response to stimulus
-GO:0015695,12,GO:0051179,0.36,2.7605673438874363,1,organic cation transport,localization
-GO:0014070,9,GO:0042221,0.603,2.7605673438874363,1,response to organic cyclic compound,response to chemical
-GO:0010243,9,GO:0042221,0.673,2.7605673438874363,0,response to organonitrogen compound,response to chemical
-GO:0010038,9,GO:0042221,0.656,2.7605673438874363,10,response to metal ion,response to chemical
-GO:0010035,9,GO:0042221,0.683,2.7605673438874363,10,response to inorganic substance,response to chemical
-GO:0009991,6,GO:0051716,0.349,2.7605673438874363,0,response to extracellular stimulus,cellular response to stimulus
-GO:0009719,6,GO:0051716,0.386,2.7605673438874363,0,response to endogenous stimulus,cellular response to stimulus
-GO:0009410,9,GO:0042221,0.606,2.7605673438874363,28,response to xenobiotic stimulus,response to chemical
-GO:0009267,6,GO:0051716,0.424,2.7605673438874363,6,cellular response to starvation,cellular response to stimulus
-GO:0006805,9,GO:0042221,0.573,2.7605673438874363,41,xenobiotic metabolic process,response to chemical
-GO:0070828,16,GO:0071840,0.416,2.7605673438874363,1,heterochromatin organization,cellular component organization or biogenesis
-GO:0006325,16,GO:0071840,0.529,2.7605673438874363,68,chromatin organization,cellular component organization or biogenesis
-GO:0099003,12,GO:0051179,0.4,2.7605673438874363,0,vesicle-mediated transport in synapse,localization
-GO:0097479,12,GO:0051179,0.369,2.7605673438874363,2,synaptic vesicle localization,localization
-GO:0051656,12,GO:0051179,0.472,2.7605673438874363,0,establishment of organelle localization,localization
-GO:0051650,12,GO:0051179,0.403,2.7605673438874363,0,establishment of vesicle localization,localization
-GO:0051649,12,GO:0051179,0.599,2.7605673438874363,0,establishment of localization in cell,localization
-GO:0051648,12,GO:0051179,0.407,2.7605673438874363,0,vesicle localization,localization
-GO:0048489,12,GO:0051179,0.361,2.7605673438874363,18,synaptic vesicle transport,localization
-GO:0046907,12,GO:0051179,0.569,2.7605673438874363,8,intracellular transport,localization
-GO:1903322,5,GO:0010556,0.398,2.7605673438874363,0,positive regulation of protein modification by small protein conjugation or removal,regulation of macromolecule biosynthetic process
-GO:1902532,17,GO:0009966,0.846,2.7605673438874363,0,negative regulation of intracellular signal transduction,regulation of signal transduction
-GO:1902531,17,GO:0009966,0.916,2.7605673438874363,2,regulation of intracellular signal transduction,regulation of signal transduction
-GO:1902116,16,GO:0071840,0.37,2.7605673438874363,0,negative regulation of organelle assembly,cellular component organization or biogenesis
-GO:1902115,16,GO:0071840,0.43,2.7605673438874363,1,regulation of organelle assembly,cellular component organization or biogenesis
-GO:1902018,16,GO:0071840,0.332,2.7605673438874363,0,negative regulation of cilium assembly,cellular component organization or biogenesis
-GO:1902017,16,GO:0071840,0.387,2.7605673438874363,3,regulation of cilium assembly,cellular component organization or biogenesis
-GO:0120035,16,GO:0071840,0.52,2.7605673438874363,0,regulation of plasma membrane bounded cell projection organization,cellular component organization or biogenesis
-GO:0120033,16,GO:0071840,0.34,2.7605673438874363,0,negative regulation of plasma membrane bounded cell projection assembly,cellular component organization or biogenesis
-GO:0120032,16,GO:0071840,0.407,2.7605673438874363,0,regulation of plasma membrane bounded cell projection assembly,cellular component organization or biogenesis
-GO:0090630,27,GO:0050790,0.729,2.7605673438874363,31,activation of GTPase activity,regulation of catalytic activity
-GO:0070848,9,GO:0042221,0.625,2.7605673438874363,0,response to growth factor,response to chemical
-GO:0060491,16,GO:0071840,0.407,2.7605673438874363,0,regulation of cell projection assembly,cellular component organization or biogenesis
-GO:0051345,27,GO:0050790,0.804,2.7605673438874363,1,positive regulation of hydrolase activity,regulation of catalytic activity
-GO:0051129,16,GO:0071840,0.498,2.7605673438874363,0,negative regulation of cellular component organization,cellular component organization or biogenesis
-GO:0051128,16,GO:0071840,0.632,2.7605673438874363,2,regulation of cellular component organization,cellular component organization or biogenesis
-GO:0044093,27,GO:0050790,0.859,2.7605673438874363,0,positive regulation of molecular function,regulation of catalytic activity
-GO:0044087,16,GO:0071840,0.514,2.7605673438874363,3,regulation of cellular component biogenesis,cellular component organization or biogenesis
-GO:0043547,27,GO:0050790,0.776,2.7605673438874363,31,positive regulation of GTPase activity,regulation of catalytic activity
-GO:0043087,27,GO:0050790,0.796,2.7605673438874363,19,regulation of GTPase activity,regulation of catalytic activity
-GO:0043085,27,GO:0050790,0.868,2.7605673438874363,2,positive regulation of catalytic activity,regulation of catalytic activity
-GO:0033043,16,GO:0071840,0.552,2.7605673438874363,0,regulation of organelle organization,cellular component organization or biogenesis
-GO:0032007,18,GO:0010646,0.657,2.7605673438874363,1,negative regulation of TOR signaling,regulation of cell communication
-GO:0032006,18,GO:0010646,0.724,2.7605673438874363,2,regulation of TOR signaling,regulation of cell communication
-GO:0031398,5,GO:0010556,0.388,2.7605673438874363,2,positive regulation of protein ubiquitination,regulation of macromolecule biosynthetic process
-GO:0031345,16,GO:0071840,0.424,2.7605673438874363,1,negative regulation of cell projection organization,cellular component organization or biogenesis
-GO:0031344,16,GO:0071840,0.522,2.7605673438874363,6,regulation of cell projection organization,cellular component organization or biogenesis
-GO:0010639,16,GO:0071840,0.471,2.7605673438874363,0,negative regulation of organelle organization,cellular component organization or biogenesis
-GO:1905952,24,GO:0032879,0.731,2.7605673438874363,0,regulation of lipid localization,regulation of localization
-GO:0051707,6,GO:0051716,0.455,2.7605673438874363,1,response to other organism,cellular response to stimulus
-GO:0048193,12,GO:0051179,0.442,2.7605673438874363,6,Golgi vesicle transport,localization
-GO:0044281,29,GO:0044281,0.953,2.7605673438874363,9,small molecule metabolic process,small molecule metabolic process
-GO:0043436,29,GO:0044281,0.859,2.7605673438874363,0,oxoacid metabolic process,small molecule metabolic process
-GO:0043207,6,GO:0051716,0.455,2.7605673438874363,0,response to external biotic stimulus,cellular response to stimulus
-GO:0019752,29,GO:0044281,0.858,2.7605673438874363,13,carboxylic acid metabolic process,small molecule metabolic process
-GO:0015711,12,GO:0051179,0.441,2.7605673438874363,0,organic anion transport,localization
-GO:0015701,12,GO:0051179,0.318,2.7605673438874363,10,bicarbonate transport,localization
-GO:0010883,24,GO:0032879,0.703,2.7605673438874363,8,regulation of lipid storage,regulation of localization
-GO:0009620,6,GO:0051716,0.315,2.7605673438874363,1,response to fungus,cellular response to stimulus
-GO:0009607,6,GO:0051716,0.455,2.7605673438874363,0,response to biotic stimulus,cellular response to stimulus
-GO:0008015,30,GO:0008015,1,2.7605673438874363,0,blood circulation,blood circulation
-GO:0006890,12,GO:0051179,0.345,2.7605673438874363,22,"retrograde vesicle-mediated transport, Golgi to endoplasmic reticulum",localization
-GO:0006820,12,GO:0051179,0.494,2.7605673438874363,8,anion transport,localization
-GO:0006767,29,GO:0044281,0.539,2.7605673438874363,0,water-soluble vitamin metabolic process,small molecule metabolic process
-GO:0006766,29,GO:0044281,0.539,2.7605673438874363,0,vitamin metabolic process,small molecule metabolic process
-GO:0006082,29,GO:0044281,0.864,2.7605673438874363,39,organic acid metabolic process,small molecule metabolic process
-GO:0005996,31,GO:0005996,0.998,2.7605673438874363,0,monosaccharide metabolic process,monosaccharide metabolic process
-GO:0005975,31,GO:0005996,0.818,2.7605673438874363,164,carbohydrate metabolic process,monosaccharide metabolic process
-GO:0003013,30,GO:0008015,1,2.7605673438874363,0,circulatory system process,blood circulation
-GO:0003008,10,GO:0032501,0.554,2.7605673438874363,0,system process,multicellular organismal process
-GO:1902749,23,GO:1903047,0.598,2.7605673438874363,1,regulation of cell cycle G2/M phase transition,mitotic cell cycle process
-GO:0140056,32,GO:0140056,0.999,2.7605673438874363,0,organelle localization by membrane tethering,organelle localization by membrane tethering
-GO:0120031,16,GO:0071840,0.508,2.7605673438874363,0,plasma membrane bounded cell projection assembly,cellular component organization or biogenesis
-GO:0070925,16,GO:0071840,0.582,2.7605673438874363,0,organelle assembly,cellular component organization or biogenesis
-GO:0060271,16,GO:0071840,0.502,2.7605673438874363,75,cilium assembly,cellular component organization or biogenesis
-GO:0051346,27,GO:0050790,0.84,2.7605673438874363,0,negative regulation of hydrolase activity,regulation of catalytic activity
-GO:0051174,5,GO:0010556,0.548,2.7605673438874363,0,regulation of phosphorus metabolic process,regulation of macromolecule biosynthetic process
-GO:0045936,5,GO:0010556,0.464,2.7605673438874363,0,negative regulation of phosphate metabolic process,regulation of macromolecule biosynthetic process
-GO:0044839,23,GO:1903047,0.603,2.7605673438874363,0,cell cycle G2/M phase transition,mitotic cell cycle process
-GO:0044782,16,GO:0071840,0.523,2.7605673438874363,2,cilium organization,cellular component organization or biogenesis
-GO:0044772,23,GO:1903047,0.839,2.7605673438874363,11,mitotic cell cycle phase transition,mitotic cell cycle process
-GO:0044770,23,GO:1903047,0.724,2.7605673438874363,1,cell cycle phase transition,mitotic cell cycle process
-GO:0044092,27,GO:0050790,0.852,2.7605673438874363,0,negative regulation of molecular function,regulation of catalytic activity
-GO:0044085,16,GO:0071840,0.704,2.7605673438874363,0,cellular component biogenesis,cellular component organization or biogenesis
-GO:0043086,27,GO:0050790,0.865,2.7605673438874363,21,negative regulation of catalytic activity,regulation of catalytic activity
-GO:0035305,5,GO:0010556,0.405,2.7605673438874363,0,negative regulation of dephosphorylation,regulation of macromolecule biosynthetic process
-GO:0035303,5,GO:0010556,0.44,2.7605673438874363,1,regulation of dephosphorylation,regulation of macromolecule biosynthetic process
-GO:0030031,16,GO:0071840,0.51,2.7605673438874363,7,cell projection assembly,cellular component organization or biogenesis
-GO:0022607,16,GO:0071840,0.67,2.7605673438874363,0,cellular component assembly,cellular component organization or biogenesis
-GO:0022406,32,GO:0140056,0.997,2.7605673438874363,0,membrane docking,organelle localization by membrane tethering
-GO:0019220,5,GO:0010556,0.548,2.7605673438874363,0,regulation of phosphate metabolic process,regulation of macromolecule biosynthetic process
-GO:0010923,5,GO:0010556,0.399,2.7605673438874363,1,negative regulation of phosphatase activity,regulation of macromolecule biosynthetic process
-GO:0010921,5,GO:0010556,0.424,2.7605673438874363,0,regulation of phosphatase activity,regulation of macromolecule biosynthetic process
-GO:0010563,5,GO:0010556,0.464,2.7605673438874363,0,negative regulation of phosphorus metabolic process,regulation of macromolecule biosynthetic process
-GO:0010389,23,GO:1903047,0.728,2.7605673438874363,2,regulation of G2/M transition of mitotic cell cycle,mitotic cell cycle process
-GO:0000086,23,GO:1903047,0.733,2.7605673438874363,2,G2/M transition of mitotic cell cycle,mitotic cell cycle process
-GO:1901361,28,GO:0044265,0.733,2.7605673438874363,0,organic cyclic compound catabolic process,cellular macromolecule catabolic process
-GO:0090502,11,GO:1901360,0.401,2.7605673438874363,43,"RNA phosphodiester bond hydrolysis, endonucleolytic",organic cyclic compound metabolic process
-GO:0090501,11,GO:1901360,0.429,2.7605673438874363,11,RNA phosphodiester bond hydrolysis,organic cyclic compound metabolic process
-GO:0090305,11,GO:1901360,0.462,2.7605673438874363,64,nucleic acid phosphodiester bond hydrolysis,organic cyclic compound metabolic process
-GO:0046700,28,GO:0044265,0.74,2.7605673438874363,0,heterocycle catabolic process,cellular macromolecule catabolic process
-GO:0044270,28,GO:0044265,0.739,2.7605673438874363,0,cellular nitrogen compound catabolic process,cellular macromolecule catabolic process
-GO:0043137,28,GO:0044265,0.618,2.7605673438874363,5,"DNA replication, removal of RNA primer",cellular macromolecule catabolic process
-GO:0034655,28,GO:0044265,0.732,2.7605673438874363,1,nucleobase-containing compound catabolic process,cellular macromolecule catabolic process
-GO:0033567,8,GO:2000112,0.321,2.7605673438874363,0,"DNA replication, Okazaki fragment processing",regulation of cellular macromolecule biosynthetic process
-GO:0022616,8,GO:2000112,0.372,2.7605673438874363,0,DNA strand elongation,regulation of cellular macromolecule biosynthetic process
-GO:0019439,28,GO:0044265,0.744,2.7605673438874363,2,aromatic compound catabolic process,cellular macromolecule catabolic process
-GO:0006401,28,GO:0044265,0.867,2.7605673438874363,16,RNA catabolic process,cellular macromolecule catabolic process
-GO:0006298,19,GO:0006974,0.692,2.7605673438874363,16,mismatch repair,cellular response to DNA damage stimulus
-GO:0006273,8,GO:2000112,0.346,2.7605673438874363,4,lagging strand elongation,regulation of cellular macromolecule biosynthetic process
-GO:0006271,8,GO:2000112,0.372,2.7605673438874363,5,DNA strand elongation involved in DNA replication,regulation of cellular macromolecule biosynthetic process
-GO:0006261,8,GO:2000112,0.437,2.7605673438874363,13,DNA-templated DNA replication,regulation of cellular macromolecule biosynthetic process
-GO:0006260,8,GO:2000112,0.461,2.7605673438874363,78,DNA replication,regulation of cellular macromolecule biosynthetic process
-GO:0120039,3,GO:0048856,0.59,2.7605673438874363,0,plasma membrane bounded cell projection morphogenesis,anatomical structure development
-GO:0097485,33,GO:0097485,0.992,2.7605673438874363,0,neuron projection guidance,neuron projection guidance
-GO:0090090,18,GO:0010646,0.705,2.7605673438874363,19,negative regulation of canonical Wnt signaling pathway,regulation of cell communication
-GO:0061564,7,GO:0007399,0.866,2.7605673438874363,3,axon development,nervous system development
-GO:0048858,3,GO:0048856,0.592,2.7605673438874363,12,cell projection morphogenesis,anatomical structure development
-GO:0048812,3,GO:0048856,0.59,2.7605673438874363,15,neuron projection morphogenesis,anatomical structure development
-GO:0048667,3,GO:0048856,0.584,2.7605673438874363,0,cell morphogenesis involved in neuron differentiation,anatomical structure development
-GO:0048666,7,GO:0007399,0.898,2.7605673438874363,28,neuron development,nervous system development
-GO:0042335,7,GO:0007399,0.453,2.7605673438874363,6,cuticle development,nervous system development
-GO:0042330,33,GO:0097485,0.95,2.7605673438874363,1,taxis,neuron projection guidance
-GO:0040011,33,GO:0097485,0.853,2.7605673438874363,108,locomotion,neuron projection guidance
-GO:0035282,7,GO:0007399,0.429,2.7605673438874363,0,segmentation,nervous system development
-GO:0035017,7,GO:0007399,0.336,2.7605673438874363,2,cuticle pattern formation,nervous system development
-GO:0032990,3,GO:0048856,0.593,2.7605673438874363,0,cell part morphogenesis,anatomical structure development
-GO:0032989,3,GO:0048856,0.606,2.7605673438874363,0,cellular component morphogenesis,anatomical structure development
-GO:0031175,7,GO:0007399,0.887,2.7605673438874363,11,neuron projection development,nervous system development
-GO:0030178,18,GO:0010646,0.726,2.7605673438874363,8,negative regulation of Wnt signaling pathway,regulation of cell communication
-GO:0009880,7,GO:0007399,0.447,2.7605673438874363,17,embryonic pattern specification,nervous system development
-GO:0009791,3,GO:0048856,0.641,2.7605673438874363,31,post-embryonic development,anatomical structure development
-GO:0007411,33,GO:0097485,0.992,2.7605673438874363,78,axon guidance,neuron projection guidance
-GO:0007409,3,GO:0048856,0.576,2.7605673438874363,10,axonogenesis,anatomical structure development
-GO:0007367,7,GO:0007399,0.354,2.7605673438874363,4,segment polarity determination,nervous system development
-GO:0007365,7,GO:0007399,0.354,2.7605673438874363,0,periodic partitioning,nervous system development
-GO:0007350,7,GO:0007399,0.429,2.7605673438874363,0,blastoderm segmentation,nervous system development
-GO:0006935,33,GO:0097485,0.955,2.7605673438874363,78,chemotaxis,neuron projection guidance
-GO:0002164,3,GO:0048856,0.632,2.7605673438874363,6,larval development,anatomical structure development
-GO:0000904,3,GO:0048856,0.587,2.7605673438874363,0,cell morphogenesis involved in differentiation,anatomical structure development
-GO:0000902,3,GO:0048856,0.602,2.7605673438874363,13,cell morphogenesis,anatomical structure development
-GO:2000648,22,GO:0042127,0.843,2.7605673438874363,5,positive regulation of stem cell proliferation,regulation of cell population proliferation
-GO:2000026,10,GO:0032501,0.46,2.7605673438874363,0,regulation of multicellular organismal development,multicellular organismal process
-GO:0072091,22,GO:0042127,0.853,2.7605673438874363,0,regulation of stem cell proliferation,regulation of cell population proliferation
-GO:0071542,7,GO:0007399,0.522,2.7605673438874363,2,dopaminergic neuron differentiation,nervous system development
-GO:0061061,34,GO:0061061,0.996,2.7605673438874363,4,muscle structure development,muscle structure development
-GO:0060538,34,GO:0061061,0.762,2.7605673438874363,0,skeletal muscle organ development,muscle structure development
-GO:0060537,15,GO:0009888,0.635,2.7605673438874363,1,muscle tissue development,tissue development
-GO:0060322,7,GO:0007399,0.316,2.7605673438874363,0,head development,nervous system development
-GO:0060284,3,GO:0048856,0.487,2.7605673438874363,1,regulation of cell development,anatomical structure development
-GO:0051962,10,GO:0032501,0.369,2.7605673438874363,0,positive regulation of nervous system development,multicellular organismal process
-GO:0051960,10,GO:0032501,0.394,2.7605673438874363,0,regulation of nervous system development,multicellular organismal process
-GO:0051240,10,GO:0032501,0.482,2.7605673438874363,0,positive regulation of multicellular organismal process,multicellular organismal process
-GO:0051239,10,GO:0032501,0.554,2.7605673438874363,4,regulation of multicellular organismal process,multicellular organismal process
-GO:0051094,3,GO:0048856,0.515,2.7605673438874363,1,positive regulation of developmental process,anatomical structure development
-GO:0050769,10,GO:0032501,0.349,2.7605673438874363,1,positive regulation of neurogenesis,multicellular organismal process
-GO:0050767,10,GO:0032501,0.38,2.7605673438874363,10,regulation of neurogenesis,multicellular organismal process
-GO:0048732,14,GO:0048513,0.683,2.7605673438874363,0,gland development,animal organ development
-GO:0048665,7,GO:0007399,0.621,2.7605673438874363,17,neuron fate specification,nervous system development
-GO:0048663,7,GO:0007399,0.635,2.7605673438874363,0,neuron fate commitment,nervous system development
-GO:0045597,3,GO:0048856,0.429,2.7605673438874363,1,positive regulation of cell differentiation,anatomical structure development
-GO:0045165,7,GO:0007399,0.427,2.7605673438874363,23,cell fate commitment,nervous system development
-GO:0010720,3,GO:0048856,0.454,2.7605673438874363,0,positive regulation of cell development,anatomical structure development
-GO:0007517,34,GO:0061061,0.898,2.7605673438874363,20,muscle organ development,muscle structure development
-GO:0007420,7,GO:0007399,0.55,2.7605673438874363,3,brain development,nervous system development
-GO:0001708,7,GO:0007399,0.412,2.7605673438874363,91,cell fate specification,nervous system development
-GO:1901565,28,GO:0044265,0.807,2.7605673438874363,3,organonitrogen compound catabolic process,cellular macromolecule catabolic process
-GO:1901564,2,GO:0043170,0.456,2.7605673438874363,0,organonitrogen compound metabolic process,macromolecule metabolic process
-GO:0098773,14,GO:0048513,0.548,2.7605673438874363,1,skin epidermis development,animal organ development
-GO:0098662,12,GO:0051179,0.512,2.7605673438874363,4,inorganic cation transmembrane transport,localization
-GO:0098660,12,GO:0051179,0.527,2.7605673438874363,0,inorganic ion transmembrane transport,localization
-GO:0098655,12,GO:0051179,0.523,2.7605673438874363,50,cation transmembrane transport,localization
-GO:0071695,3,GO:0048856,0.457,2.7605673438874363,0,anatomical structure maturation,anatomical structure development
-GO:0070647,2,GO:0043170,0.357,2.7605673438874363,0,protein modification by small protein conjugation or removal,macromolecule metabolic process
-GO:0070588,12,GO:0051179,0.395,2.7605673438874363,39,calcium ion transmembrane transport,localization
-GO:0055085,12,GO:0051179,0.642,2.7605673438874363,462,transmembrane transport,localization
-GO:0051603,28,GO:0044265,0.883,2.7605673438874363,53,proteolysis involved in protein catabolic process,cellular macromolecule catabolic process
-GO:0043632,28,GO:0044265,0.926,2.7605673438874363,0,modification-dependent macromolecule catabolic process,cellular macromolecule catabolic process
-GO:0043588,14,GO:0048513,0.548,2.7605673438874363,0,skin development,animal organ development
-GO:0043412,2,GO:0043170,0.516,2.7605673438874363,3,macromolecule modification,macromolecule metabolic process
-GO:0036211,2,GO:0043170,0.504,2.7605673438874363,19,protein modification process,macromolecule metabolic process
-GO:0034220,12,GO:0051179,0.583,2.7605673438874363,255,ion transmembrane transport,localization
-GO:0032446,2,GO:0043170,0.342,2.7605673438874363,8,protein modification by small protein conjugation,macromolecule metabolic process
-GO:0030163,28,GO:0044265,0.9,2.7605673438874363,26,protein catabolic process,cellular macromolecule catabolic process
-GO:0030001,12,GO:0051179,0.539,2.7605673438874363,17,metal ion transport,localization
-GO:0022404,10,GO:0032501,0.325,2.7605673438874363,2,molting cycle process,multicellular organismal process
-GO:0021700,3,GO:0048856,0.411,2.7605673438874363,0,developmental maturation,anatomical structure development
-GO:0019941,28,GO:0044265,0.921,2.7605673438874363,6,modification-dependent protein catabolic process,cellular macromolecule catabolic process
-GO:0019538,2,GO:0043170,0.592,2.7605673438874363,7,protein metabolic process,macromolecule metabolic process
-GO:0016567,2,GO:0043170,0.333,2.7605673438874363,210,protein ubiquitination,macromolecule metabolic process
-GO:0008544,15,GO:0009888,0.817,2.7605673438874363,9,epidermis development,tissue development
-GO:0006816,12,GO:0051179,0.424,2.7605673438874363,41,calcium ion transport,localization
-GO:0006511,28,GO:0044265,0.919,2.7605673438874363,118,ubiquitin-dependent protein catabolic process,cellular macromolecule catabolic process
-GO:0006508,2,GO:0043170,0.432,2.7605673438874363,415,proteolysis,macromolecule metabolic process
-GO:2000113,8,GO:2000112,0.924,2.6816340614417276,0,negative regulation of cellular macromolecule biosynthetic process,regulation of cellular macromolecule biosynthetic process
-GO:1903507,4,GO:0048518,0.25,2.6816340614417276,0,negative regulation of nucleic acid-templated transcription,positive regulation of biological process
-GO:1902679,4,GO:0048518,0.25,2.6816340614417276,0,negative regulation of RNA biosynthetic process,positive regulation of biological process
-GO:0051253,4,GO:0048518,0.252,2.6816340614417276,0,negative regulation of RNA metabolic process,positive regulation of biological process
-GO:0051151,34,GO:0061061,0.686,2.6816340614417276,1,negative regulation of smooth muscle cell differentiation,muscle structure development
-GO:0051150,34,GO:0061061,0.686,2.6816340614417276,0,regulation of smooth muscle cell differentiation,muscle structure development
-GO:0051148,34,GO:0061061,0.736,2.6816340614417276,2,negative regulation of muscle cell differentiation,muscle structure development
-GO:0051147,34,GO:0061061,0.842,2.6816340614417276,0,regulation of muscle cell differentiation,muscle structure development
-GO:0051093,3,GO:0048856,0.457,2.6816340614417276,3,negative regulation of developmental process,anatomical structure development
-GO:0045934,4,GO:0048518,0.256,2.6816340614417276,0,negative regulation of nucleobase-containing compound metabolic process,positive regulation of biological process
-GO:0045892,4,GO:0048518,0.25,2.6816340614417276,62,negative regulation of DNA-templated transcription,positive regulation of biological process
-GO:0045596,3,GO:0048856,0.395,2.6816340614417276,3,negative regulation of cell differentiation,anatomical structure development
-GO:0031327,4,GO:0048518,0.263,2.6816340614417276,0,negative regulation of cellular biosynthetic process,positive regulation of biological process
-GO:0010629,4,GO:0048518,0.279,2.6816340614417276,66,negative regulation of gene expression,positive regulation of biological process
-GO:0010558,4,GO:0048518,0.261,2.6816340614417276,0,negative regulation of macromolecule biosynthetic process,positive regulation of biological process
-GO:0009890,4,GO:0048518,0.263,2.6816340614417276,1,negative regulation of biosynthetic process,positive regulation of biological process
+GO:0010033,9,GO:0042221,0.797,10.057629630728693,3,response to organic substance,response to chemical
+GO:0009059,1,GO:0044237,0.332,10.057629630728693,0,macromolecule biosynthetic process,cellular metabolic process
+GO:0006810,12,GO:0051179,0.818,10.057629630728693,32,transport,localization
+GO:0009891,4,GO:0048518,0.718,10.057629630728693,0,positive regulation of biosynthetic process,positive regulation of biological process
+GO:0034645,8,GO:2000112,0.774,10.057629630728693,1,cellular macromolecule biosynthetic process,regulation of cellular macromolecule biosynthetic process
+GO:1902680,4,GO:0048518,0.705,10.057629630728693,0,positive regulation of RNA biosynthetic process,positive regulation of biological process
+GO:1903508,4,GO:0048518,0.705,10.057629630728693,0,positive regulation of nucleic acid-templated transcription,positive regulation of biological process
+GO:0051254,4,GO:0048518,0.72,10.057629630728693,0,positive regulation of RNA metabolic process,positive regulation of biological process
+GO:0045893,4,GO:0048518,0.705,10.057629630728693,50,positive regulation of DNA-templated transcription,positive regulation of biological process
+GO:0023051,14,GO:0023051,0.986,10.057629630728693,2,regulation of signaling,regulation of signaling
+GO:0045944,4,GO:0048518,0.687,10.057629630728693,250,positive regulation of transcription by RNA polymerase II,positive regulation of biological process
+GO:0010646,15,GO:0010646,0.986,10.057629630728693,1,regulation of cell communication,regulation of cell communication
+GO:0009888,16,GO:0009888,0.993,10.057629630728693,30,tissue development,tissue development
+GO:0009966,14,GO:0023051,0.956,10.057629630728693,14,regulation of signal transduction,regulation of signaling
+GO:0010628,4,GO:0048518,0.645,10.057629630728693,104,positive regulation of gene expression,positive regulation of biological process
+GO:0001775,17,GO:0001775,1,10.057629630728693,0,cell activation,cell activation
+GO:0002376,18,GO:0002376,0.99,10.057629630728693,24,immune system process,immune system process
+GO:0031324,4,GO:0048518,0.274,10.057629630728693,0,negative regulation of cellular metabolic process,positive regulation of biological process
+GO:0009892,4,GO:0048518,0.308,10.057629630728693,0,negative regulation of metabolic process,positive regulation of biological process
+GO:0044249,1,GO:0044237,0.517,10.057629630728693,5,cellular biosynthetic process,cellular metabolic process
+GO:0016070,1,GO:0044237,0.495,10.057629630728693,19,RNA metabolic process,cellular metabolic process
+GO:0031328,4,GO:0048518,0.718,10.057629630728693,0,positive regulation of cellular biosynthetic process,positive regulation of biological process
+GO:0030182,7,GO:0007399,0.916,10.057629630728693,47,neuron differentiation,nervous system development
+GO:0045935,4,GO:0048518,0.726,10.057629630728693,0,positive regulation of nucleobase-containing compound metabolic process,positive regulation of biological process
+GO:0048513,19,GO:0048513,0.983,10.057629630728693,1,animal organ development,animal organ development
+GO:0009058,1,GO:0044237,0.364,10.057629630728693,31,biosynthetic process,cellular metabolic process
+GO:0007417,7,GO:0007399,0.653,10.057629630728693,10,central nervous system development,nervous system development
+GO:0006974,20,GO:0006974,0.985,10.057629630728693,123,cellular response to DNA damage stimulus,cellular response to DNA damage stimulus
+GO:0045321,17,GO:0001775,0.907,10.057629630728693,1,leukocyte activation,cell activation
+GO:1901576,1,GO:0044237,0.363,10.057629630728693,1,organic substance biosynthetic process,cellular metabolic process
+GO:0051234,12,GO:0051179,0.825,10.057629630728693,0,establishment of localization,localization
+GO:0016043,21,GO:0016043,0.896,10.057629630728693,5,cellular component organization,cellular component organization
+GO:0071840,21,GO:0016043,0.871,10.057629630728693,0,cellular component organization or biogenesis,cellular component organization
+GO:0048583,6,GO:0051716,0.466,10.057629630728693,0,regulation of response to stimulus,cellular response to stimulus
+GO:0048699,7,GO:0007399,0.937,10.057629630728693,2,generation of neurons,nervous system development
+GO:0010557,4,GO:0048518,0.716,10.057629630728693,0,positive regulation of macromolecule biosynthetic process,positive regulation of biological process
+GO:0032879,22,GO:0032879,0.985,7.45018168916798,0,regulation of localization,regulation of localization
+GO:0051246,5,GO:0010556,0.646,7.45018168916798,0,regulation of protein metabolic process,regulation of macromolecule biosynthetic process
+GO:0031399,5,GO:0010556,0.556,7.45018168916798,0,regulation of protein modification process,regulation of macromolecule biosynthetic process
+GO:0006366,1,GO:0044237,0.375,7.45018168916798,19,transcription by RNA polymerase II,cellular metabolic process
+GO:0008284,23,GO:0008284,0.999,7.45018168916798,17,positive regulation of cell population proliferation,positive regulation of cell population proliferation
+GO:1901362,1,GO:0044237,0.313,7.45018168916798,0,organic cyclic compound biosynthetic process,cellular metabolic process
+GO:0060429,16,GO:0009888,0.896,7.45018168916798,1,epithelium development,tissue development
+GO:0010605,4,GO:0048518,0.306,7.45018168916798,0,negative regulation of macromolecule metabolic process,positive regulation of biological process
+GO:0048468,3,GO:0048856,0.67,7.45018168916798,6,cell development,anatomical structure development
+GO:0006996,21,GO:0016043,0.801,7.45018168916798,11,organelle organization,cellular component organization
+GO:0031396,5,GO:0010556,0.398,7.45018168916798,0,regulation of protein ubiquitination,regulation of macromolecule biosynthetic process
+GO:0010564,24,GO:0010564,0.993,7.45018168916798,2,regulation of cell cycle process,regulation of cell cycle process
+GO:0006351,1,GO:0044237,0.423,7.45018168916798,38,DNA-templated transcription,cellular metabolic process
+GO:0031401,5,GO:0010556,0.511,7.45018168916798,0,positive regulation of protein modification process,regulation of macromolecule biosynthetic process
+GO:0071310,9,GO:0042221,0.769,7.45018168916798,0,cellular response to organic substance,response to chemical
+GO:0060828,15,GO:0010646,0.746,7.45018168916798,6,regulation of canonical Wnt signaling pathway,regulation of cell communication
+GO:0044271,1,GO:0044237,0.481,7.45018168916798,0,cellular nitrogen compound biosynthetic process,cellular metabolic process
+GO:0051726,24,GO:0010564,0.954,7.45018168916798,34,regulation of cell cycle,regulation of cell cycle process
+GO:0018130,1,GO:0044237,0.447,7.45018168916798,0,heterocycle biosynthetic process,cellular metabolic process
+GO:0022402,24,GO:0010564,0.834,7.45018168916798,0,cell cycle process,regulation of cell cycle process
+GO:0007154,15,GO:0010646,0.64,7.45018168916798,19,cell communication,regulation of cell communication
+GO:0065008,25,GO:0065008,0.971,7.45018168916798,5,regulation of biological quality,regulation of biological quality
+GO:1901701,9,GO:0042221,0.655,7.45018168916798,0,cellular response to oxygen-containing compound,response to chemical
+GO:0097659,1,GO:0044237,0.423,7.45018168916798,0,nucleic acid-templated transcription,cellular metabolic process
+GO:0051172,4,GO:0048518,0.284,7.45018168916798,0,negative regulation of nitrogen compound metabolic process,positive regulation of biological process
+GO:0009790,3,GO:0048856,0.648,7.45018168916798,62,embryo development,anatomical structure development
+GO:0007049,24,GO:0010564,0.773,7.45018168916798,179,cell cycle,regulation of cell cycle process
+GO:0006811,12,GO:0051179,0.664,7.45018168916798,434,ion transport,localization
+GO:1903047,24,GO:0010564,0.767,7.45018168916798,0,mitotic cell cycle process,regulation of cell cycle process
+GO:0030111,15,GO:0010646,0.771,7.45018168916798,2,regulation of Wnt signaling pathway,regulation of cell communication
+GO:0009653,3,GO:0048856,0.706,7.45018168916798,31,anatomical structure morphogenesis,anatomical structure development
+GO:0007346,24,GO:0010564,0.85,7.45018168916798,8,regulation of mitotic cell cycle,regulation of cell cycle process
+GO:1901700,9,GO:0042221,0.682,7.45018168916798,0,response to oxygen-containing compound,response to chemical
+GO:0070887,9,GO:0042221,0.808,7.45018168916798,0,cellular response to chemical stimulus,response to chemical
+GO:1903320,5,GO:0010556,0.428,7.45018168916798,0,regulation of protein modification by small protein conjugation or removal,regulation of macromolecule biosynthetic process
+GO:0009605,6,GO:0051716,0.516,7.45018168916798,5,response to external stimulus,cellular response to stimulus
+GO:0016192,12,GO:0051179,0.583,7.45018168916798,139,vesicle-mediated transport,localization
+GO:1901990,24,GO:0010564,0.863,7.45018168916798,0,regulation of mitotic cell cycle phase transition,regulation of cell cycle process
+GO:1901987,24,GO:0010564,0.916,7.45018168916798,0,regulation of cell cycle phase transition,regulation of cell cycle process
+GO:0000278,24,GO:0010564,0.694,7.45018168916798,54,mitotic cell cycle,regulation of cell cycle process
+GO:0051247,5,GO:0010556,0.56,7.45018168916798,0,positive regulation of protein metabolic process,regulation of macromolecule biosynthetic process
+GO:0042127,23,GO:0008284,0.943,7.45018168916798,14,regulation of cell population proliferation,positive regulation of cell population proliferation
+GO:0034654,1,GO:0044237,0.443,7.45018168916798,1,nucleobase-containing compound biosynthetic process,cellular metabolic process
+GO:0032774,1,GO:0044237,0.423,7.45018168916798,0,RNA biosynthetic process,cellular metabolic process
+GO:0019438,1,GO:0044237,0.446,7.45018168916798,0,aromatic compound biosynthetic process,cellular metabolic process
+GO:0010467,2,GO:0043170,0.589,7.45018168916798,1,gene expression,macromolecule metabolic process
+GO:0090276,22,GO:0032879,0.591,5.093151036105108,0,regulation of peptide hormone secretion,regulation of localization
+GO:0002791,22,GO:0032879,0.608,5.093151036105108,1,regulation of peptide secretion,regulation of localization
+GO:0042981,26,GO:0042981,0.997,5.093151036105108,15,regulation of apoptotic process,regulation of apoptotic process
+GO:0048729,16,GO:0009888,0.935,5.093151036105108,2,tissue morphogenesis,tissue development
+GO:0007507,7,GO:0007399,0.52,5.093151036105108,4,heart development,nervous system development
+GO:0051046,12,GO:0051179,0.423,5.093151036105108,2,regulation of secretion,localization
+GO:0008285,23,GO:0008284,0.827,5.093151036105108,7,negative regulation of cell population proliferation,positive regulation of cell population proliferation
+GO:0198738,15,GO:0010646,0.431,5.093151036105108,0,cell-cell signaling by wnt,regulation of cell communication
+GO:0050793,3,GO:0048856,0.592,5.093151036105108,4,regulation of developmental process,anatomical structure development
+GO:0042592,25,GO:0065008,0.83,5.093151036105108,1,homeostatic process,regulation of biological quality
+GO:0072331,14,GO:0023051,0.361,5.093151036105108,0,signal transduction by p53 class mediator,regulation of signaling
+GO:0023057,14,GO:0023051,0.879,5.093151036105108,0,negative regulation of signaling,regulation of signaling
+GO:0042593,25,GO:0065008,0.591,5.093151036105108,3,glucose homeostasis,regulation of biological quality
+GO:0051641,12,GO:0051179,0.663,5.093151036105108,0,cellular localization,localization
+GO:0045930,24,GO:0010564,0.808,5.093151036105108,2,negative regulation of mitotic cell cycle,regulation of cell cycle process
+GO:1903532,12,GO:0051179,0.361,5.093151036105108,0,positive regulation of secretion by cell,localization
+GO:0001678,25,GO:0065008,0.576,5.093151036105108,6,cellular glucose homeostasis,regulation of biological quality
+GO:0001944,7,GO:0007399,0.455,5.093151036105108,0,vasculature development,nervous system development
+GO:0090263,15,GO:0010646,0.678,5.093151036105108,12,positive regulation of canonical Wnt signaling pathway,regulation of cell communication
+GO:0090277,25,GO:0065008,0.487,5.093151036105108,0,positive regulation of peptide hormone secretion,regulation of biological quality
+GO:0010001,7,GO:0007399,0.56,5.093151036105108,0,glial cell differentiation,nervous system development
+GO:0009968,14,GO:0023051,0.874,5.093151036105108,13,negative regulation of signal transduction,regulation of signaling
+GO:0023052,14,GO:0023051,0.643,5.093151036105108,4,signaling,regulation of signaling
+GO:2000758,5,GO:0010556,0.367,5.093151036105108,0,positive regulation of peptidyl-lysine acetylation,regulation of macromolecule biosynthetic process
+GO:0051050,22,GO:0032879,0.871,5.093151036105108,0,positive regulation of transport,regulation of localization
+GO:0046887,25,GO:0065008,0.487,5.093151036105108,0,positive regulation of hormone secretion,regulation of biological quality
+GO:0034250,5,GO:0010556,0.443,5.093151036105108,0,positive regulation of cellular amide metabolic process,regulation of macromolecule biosynthetic process
+GO:0010817,25,GO:0065008,0.628,5.093151036105108,0,regulation of hormone levels,regulation of biological quality
+GO:0016055,15,GO:0010646,0.43,5.093151036105108,49,Wnt signaling pathway,regulation of cell communication
+GO:1903530,12,GO:0051179,0.407,5.093151036105108,0,regulation of secretion by cell,localization
+GO:0003002,7,GO:0007399,0.482,5.093151036105108,0,regionalization,nervous system development
+GO:0016331,16,GO:0009888,0.773,5.093151036105108,15,morphogenesis of embryonic epithelium,tissue development
+GO:0008283,23,GO:0008284,0.907,5.093151036105108,1,cell population proliferation,positive regulation of cell population proliferation
+GO:0045786,24,GO:0010564,0.854,5.093151036105108,2,negative regulation of cell cycle,regulation of cell cycle process
+GO:0046883,25,GO:0065008,0.528,5.093151036105108,1,regulation of hormone secretion,regulation of biological quality
+GO:0048646,3,GO:0048856,0.534,5.093151036105108,0,anatomical structure formation involved in morphogenesis,anatomical structure development
+GO:0035556,14,GO:0023051,0.515,5.093151036105108,169,intracellular signal transduction,regulation of signaling
+GO:0010647,15,GO:0010646,0.877,5.093151036105108,0,positive regulation of cell communication,regulation of cell communication
+GO:0051049,22,GO:0032879,0.943,5.093151036105108,2,regulation of transport,regulation of localization
+GO:0010942,26,GO:0042981,0.896,5.093151036105108,0,positive regulation of cell death,regulation of apoptotic process
+GO:0009628,6,GO:0051716,0.436,5.093151036105108,0,response to abiotic stimulus,cellular response to stimulus
+GO:0030330,14,GO:0023051,0.344,5.093151036105108,0,"DNA damage response, signal transduction by p53 class mediator",regulation of signaling
+GO:0001666,6,GO:0051716,0.315,5.093151036105108,31,response to hypoxia,cellular response to stimulus
+GO:0007389,7,GO:0007399,0.502,5.093151036105108,5,pattern specification process,nervous system development
+GO:0048878,25,GO:0065008,0.814,5.093151036105108,0,chemical homeostasis,regulation of biological quality
+GO:0030177,15,GO:0010646,0.694,5.093151036105108,4,positive regulation of Wnt signaling pathway,regulation of cell communication
+GO:0051640,12,GO:0051179,0.497,5.093151036105108,4,organelle localization,localization
+GO:0071333,9,GO:0042221,0.453,5.093151036105108,3,cellular response to glucose stimulus,response to chemical
+GO:0032024,25,GO:0065008,0.487,5.093151036105108,1,positive regulation of insulin secretion,regulation of biological quality
+GO:0050796,22,GO:0032879,0.591,5.093151036105108,0,regulation of insulin secretion,regulation of localization
+GO:1902806,24,GO:0010564,0.762,5.093151036105108,4,regulation of cell cycle G1/S phase transition,regulation of cell cycle process
+GO:0035148,7,GO:0007399,0.354,5.093151036105108,2,tube formation,nervous system development
+GO:0031570,24,GO:0010564,0.854,5.093151036105108,0,DNA integrity checkpoint signaling,regulation of cell cycle process
+GO:0044773,24,GO:0010564,0.783,5.093151036105108,3,mitotic DNA damage checkpoint signaling,regulation of cell cycle process
+GO:0000077,14,GO:0023051,0.382,5.093151036105108,18,DNA damage checkpoint signaling,regulation of signaling
+GO:0070201,22,GO:0032879,0.758,5.093151036105108,0,regulation of establishment of protein localization,regulation of localization
+GO:0043065,26,GO:0042981,0.918,5.093151036105108,23,positive regulation of apoptotic process,regulation of apoptotic process
+GO:0051276,21,GO:0016043,0.601,5.093151036105108,11,chromosome organization,cellular component organization
+GO:2000756,5,GO:0010556,0.388,5.093151036105108,0,regulation of peptidyl-lysine acetylation,regulation of macromolecule biosynthetic process
+GO:1902807,24,GO:0010564,0.727,5.093151036105108,3,negative regulation of cell cycle G1/S phase transition,regulation of cell cycle process
+GO:0050714,22,GO:0032879,0.661,5.093151036105108,6,positive regulation of protein secretion,regulation of localization
+GO:0045727,5,GO:0010556,0.557,5.093151036105108,15,positive regulation of translation,regulation of macromolecule biosynthetic process
+GO:0044774,24,GO:0010564,0.811,5.093151036105108,0,mitotic DNA integrity checkpoint signaling,regulation of cell cycle process
+GO:0009792,3,GO:0048856,0.565,5.093151036105108,319,embryo development ending in birth or egg hatching,anatomical structure development
+GO:0032940,12,GO:0051179,0.466,5.093151036105108,0,secretion by cell,localization
+GO:1903321,5,GO:0010556,0.367,5.093151036105108,0,negative regulation of protein modification by small protein conjugation or removal,regulation of macromolecule biosynthetic process
+GO:0050708,22,GO:0032879,0.696,5.093151036105108,5,regulation of protein secretion,regulation of localization
+GO:0031397,5,GO:0010556,0.355,5.093151036105108,1,negative regulation of protein ubiquitination,regulation of macromolecule biosynthetic process
+GO:0019725,25,GO:0065008,0.786,5.093151036105108,2,cellular homeostasis,regulation of biological quality
+GO:0006955,18,GO:0002376,0.982,5.093151036105108,3,immune response,immune system process
+GO:0002252,18,GO:0002376,0.671,5.093151036105108,0,immune effector process,immune system process
+GO:0048585,6,GO:0051716,0.395,5.093151036105108,0,negative regulation of response to stimulus,cellular response to stimulus
+GO:1905114,15,GO:0010646,0.438,5.093151036105108,0,cell surface receptor signaling pathway involved in cell-cell signaling,regulation of cell communication
+GO:1903317,5,GO:0010556,0.409,5.093151036105108,0,regulation of protein maturation,regulation of macromolecule biosynthetic process
+GO:0098727,3,GO:0048856,0.333,5.093151036105108,0,maintenance of cell number,anatomical structure development
+GO:0072359,7,GO:0007399,0.527,5.093151036105108,0,circulatory system development,nervous system development
+GO:0071326,9,GO:0042221,0.453,5.093151036105108,0,cellular response to monosaccharide stimulus,response to chemical
+GO:0051047,12,GO:0051179,0.378,5.093151036105108,0,positive regulation of secretion,localization
+GO:0009746,9,GO:0042221,0.453,5.093151036105108,0,response to hexose,response to chemical
+GO:0006887,12,GO:0051179,0.433,5.093151036105108,40,exocytosis,localization
+GO:0006812,12,GO:0051179,0.571,5.093151036105108,37,cation transport,localization
+GO:0009057,27,GO:0009057,0.978,5.093151036105108,0,macromolecule catabolic process,macromolecule catabolic process
+GO:0065009,28,GO:0065009,0.983,5.093151036105108,0,regulation of molecular function,regulation of molecular function
+GO:0006281,20,GO:0006974,0.939,5.093151036105108,142,DNA repair,cellular response to DNA damage stimulus
+GO:2000045,24,GO:0010564,0.727,5.093151036105108,0,regulation of G1/S transition of mitotic cell cycle,regulation of cell cycle process
+GO:1903319,5,GO:0010556,0.388,5.093151036105108,0,positive regulation of protein maturation,regulation of macromolecule biosynthetic process
+GO:0060562,7,GO:0007399,0.381,5.093151036105108,9,epithelial tube morphogenesis,nervous system development
+GO:0051248,4,GO:0048518,0.26,5.093151036105108,0,negative regulation of protein metabolic process,positive regulation of biological process
+GO:0035239,7,GO:0007399,0.45,5.093151036105108,0,tube morphogenesis,nervous system development
+GO:0032880,22,GO:0032879,0.864,5.093151036105108,35,regulation of protein localization,regulation of localization
+GO:0031400,5,GO:0010556,0.477,5.093151036105108,0,negative regulation of protein modification process,regulation of macromolecule biosynthetic process
+GO:0023056,14,GO:0023051,0.877,5.093151036105108,0,positive regulation of signaling,regulation of signaling
+GO:0021782,7,GO:0007399,0.497,5.093151036105108,1,glial cell development,nervous system development
+GO:0010941,26,GO:0042981,0.961,5.093151036105108,1,regulation of cell death,regulation of apoptotic process
+GO:0009967,14,GO:0023051,0.841,5.093151036105108,0,positive regulation of signal transduction,regulation of signaling
+GO:0044265,27,GO:0009057,0.946,5.093151036105108,0,cellular macromolecule catabolic process,macromolecule catabolic process
+GO:0010648,15,GO:0010646,0.879,5.093151036105108,0,negative regulation of cell communication,regulation of cell communication
+GO:0045595,3,GO:0048856,0.477,5.093151036105108,9,regulation of cell differentiation,anatomical structure development
+GO:2000134,24,GO:0010564,0.702,5.093151036105108,4,negative regulation of G1/S transition of mitotic cell cycle,regulation of cell cycle process
+GO:1901991,24,GO:0010564,0.836,5.093151036105108,0,negative regulation of mitotic cell cycle phase transition,regulation of cell cycle process
+GO:0071331,9,GO:0042221,0.453,5.093151036105108,0,cellular response to hexose stimulus,response to chemical
+GO:0060070,15,GO:0010646,0.398,5.093151036105108,33,canonical Wnt signaling pathway,regulation of cell communication
+GO:0055082,25,GO:0065008,0.764,5.093151036105108,0,cellular chemical homeostasis,regulation of biological quality
+GO:0051223,22,GO:0032879,0.752,5.093151036105108,1,regulation of protein transport,regulation of localization
+GO:0051222,22,GO:0032879,0.72,5.093151036105108,1,positive regulation of protein transport,regulation of localization
+GO:0048584,6,GO:0051716,0.399,5.093151036105108,0,positive regulation of response to stimulus,cellular response to stimulus
+GO:0048514,7,GO:0007399,0.455,5.093151036105108,0,blood vessel morphogenesis,nervous system development
+GO:0043068,26,GO:0042981,0.913,5.093151036105108,14,positive regulation of programmed cell death,regulation of apoptotic process
+GO:0042770,14,GO:0023051,0.392,5.093151036105108,2,signal transduction in response to DNA damage,regulation of signaling
+GO:0036293,6,GO:0051716,0.317,5.093151036105108,0,response to decreased oxygen levels,cellular response to stimulus
+GO:0034248,5,GO:0010556,0.538,5.093151036105108,0,regulation of cellular amide metabolic process,regulation of macromolecule biosynthetic process
+GO:0033500,25,GO:0065008,0.591,5.093151036105108,0,carbohydrate homeostasis,regulation of biological quality
+GO:0030855,16,GO:0009888,0.798,5.093151036105108,0,epithelial cell differentiation,tissue development
+GO:0019827,3,GO:0048856,0.333,5.093151036105108,2,stem cell population maintenance,anatomical structure development
+GO:0010948,24,GO:0010564,0.908,5.093151036105108,0,negative regulation of cell cycle process,regulation of cell cycle process
+GO:0010608,5,GO:0010556,0.581,5.093151036105108,17,post-transcriptional regulation of gene expression,regulation of macromolecule biosynthetic process
+GO:0007165,14,GO:0023051,0.631,5.093151036105108,543,signal transduction,regulation of signaling
+GO:0007093,24,GO:0010564,0.853,5.093151036105108,2,mitotic cell cycle checkpoint signaling,regulation of cell cycle process
+GO:0001568,7,GO:0007399,0.455,5.093151036105108,0,blood vessel development,nervous system development
+GO:1901575,27,GO:0009057,0.897,5.093151036105108,0,organic substance catabolic process,macromolecule catabolic process
+GO:0044248,27,GO:0009057,0.837,5.093151036105108,2,cellular catabolic process,macromolecule catabolic process
+GO:0009056,27,GO:0009057,0.865,5.093151036105108,0,catabolic process,macromolecule catabolic process
+GO:0051336,28,GO:0065009,0.885,5.093151036105108,0,regulation of hydrolase activity,regulation of molecular function
+GO:0050790,28,GO:0065009,0.97,5.093151036105108,142,regulation of catalytic activity,regulation of molecular function
+GO:0006259,8,GO:2000112,0.532,5.093151036105108,12,DNA metabolic process,regulation of cellular macromolecule biosynthetic process
+GO:1904951,22,GO:0032879,0.727,5.093151036105108,3,positive regulation of establishment of protein localization,regulation of localization
+GO:1901988,24,GO:0010564,0.891,5.093151036105108,0,negative regulation of cell cycle phase transition,regulation of cell cycle process
+GO:1901985,5,GO:0010556,0.367,5.093151036105108,0,positive regulation of protein acetylation,regulation of macromolecule biosynthetic process
+GO:1901983,5,GO:0010556,0.388,5.093151036105108,0,regulation of protein acetylation,regulation of macromolecule biosynthetic process
+GO:0090087,22,GO:0032879,0.661,5.093151036105108,6,regulation of peptide transport,regulation of localization
+GO:0090068,24,GO:0010564,0.87,5.093151036105108,0,positive regulation of cell cycle process,regulation of cell cycle process
+GO:0072175,7,GO:0007399,0.319,5.093151036105108,0,epithelial tube formation,nervous system development
+GO:0071322,9,GO:0042221,0.453,5.093151036105108,0,cellular response to carbohydrate stimulus,response to chemical
+GO:0070482,6,GO:0051716,0.334,5.093151036105108,20,response to oxygen levels,cellular response to stimulus
+GO:0060548,26,GO:0042981,0.891,5.093151036105108,2,negative regulation of cell death,regulation of apoptotic process
+GO:0051606,6,GO:0051716,0.403,5.093151036105108,0,detection of stimulus,cellular response to stimulus
+GO:0050821,25,GO:0065008,0.599,5.093151036105108,14,protein stabilization,regulation of biological quality
+GO:0048598,3,GO:0048856,0.554,5.093151036105108,43,embryonic morphogenesis,anatomical structure development
+GO:0045787,24,GO:0010564,0.832,5.093151036105108,1,positive regulation of cell cycle,regulation of cell cycle process
+GO:0043067,26,GO:0042981,0.983,5.093151036105108,3,regulation of programmed cell death,regulation of apoptotic process
+GO:0042063,7,GO:0007399,0.588,5.093151036105108,0,gliogenesis,nervous system development
+GO:0035295,7,GO:0007399,0.484,5.093151036105108,1,tube development,nervous system development
+GO:0034284,9,GO:0042221,0.453,5.093151036105108,0,response to monosaccharide,response to chemical
+GO:0031647,25,GO:0065008,0.652,5.093151036105108,19,regulation of protein stability,regulation of biological quality
+GO:0009887,19,GO:0048513,0.871,5.093151036105108,20,animal organ morphogenesis,animal organ development
+GO:0009749,9,GO:0042221,0.453,5.093151036105108,0,response to glucose,response to chemical
+GO:0009743,9,GO:0042221,0.453,5.093151036105108,0,response to carbohydrate,response to chemical
+GO:0007267,15,GO:0010646,0.504,5.093151036105108,14,cell-cell signaling,regulation of cell communication
+GO:0007166,14,GO:0023051,0.508,5.093151036105108,11,cell surface receptor signaling pathway,regulation of signaling
+GO:0006417,5,GO:0010556,0.679,5.093151036105108,52,regulation of translation,regulation of macromolecule biosynthetic process
+GO:0003007,7,GO:0007399,0.478,5.093151036105108,2,heart morphogenesis,nervous system development
+GO:0002793,22,GO:0032879,0.563,5.093151036105108,0,positive regulation of peptide secretion,regulation of localization
+GO:0002009,16,GO:0009888,0.869,5.093151036105108,23,morphogenesis of an epithelium,tissue development
+GO:0000075,24,GO:0010564,0.884,5.093151036105108,0,cell cycle checkpoint signaling,regulation of cell cycle process
+GO:0120036,21,GO:0016043,0.652,5.093151036105108,1,plasma membrane bounded cell projection organization,cellular component organization
+GO:0042303,10,GO:0032501,0.418,5.093151036105108,4,molting cycle,multicellular organismal process
+GO:0030030,21,GO:0016043,0.66,5.093151036105108,31,cell projection organization,cellular component organization
+GO:0071702,12,GO:0051179,0.614,5.093151036105108,6,organic substance transport,localization
+GO:0046903,12,GO:0051179,0.477,5.093151036105108,2,secretion,localization
+GO:0045055,12,GO:0051179,0.401,5.093151036105108,2,regulated exocytosis,localization
+GO:2000113,8,GO:2000112,0.924,2.6758860517071015,0,negative regulation of cellular macromolecule biosynthetic process,regulation of cellular macromolecule biosynthetic process
+GO:1905952,22,GO:0032879,0.731,2.6758860517071015,0,regulation of lipid localization,regulation of localization
+GO:1903507,4,GO:0048518,0.25,2.6758860517071015,0,negative regulation of nucleic acid-templated transcription,positive regulation of biological process
+GO:1902749,24,GO:0010564,0.783,2.6758860517071015,1,regulation of cell cycle G2/M phase transition,regulation of cell cycle process
+GO:1902679,4,GO:0048518,0.25,2.6758860517071015,0,negative regulation of RNA biosynthetic process,positive regulation of biological process
+GO:1901565,27,GO:0009057,0.835,2.6758860517071015,3,organonitrogen compound catabolic process,macromolecule catabolic process
+GO:1901564,2,GO:0043170,0.456,2.6758860517071015,0,organonitrogen compound metabolic process,macromolecule metabolic process
+GO:0140056,29,GO:0140056,0.999,2.6758860517071015,0,organelle localization by membrane tethering,organelle localization by membrane tethering
+GO:0120039,3,GO:0048856,0.59,2.6758860517071015,0,plasma membrane bounded cell projection morphogenesis,anatomical structure development
+GO:0120031,21,GO:0016043,0.526,2.6758860517071015,0,plasma membrane bounded cell projection assembly,cellular component organization
+GO:0098773,19,GO:0048513,0.548,2.6758860517071015,1,skin epidermis development,animal organ development
+GO:0098662,12,GO:0051179,0.512,2.6758860517071015,4,inorganic cation transmembrane transport,localization
+GO:0098660,12,GO:0051179,0.527,2.6758860517071015,0,inorganic ion transmembrane transport,localization
+GO:0098655,12,GO:0051179,0.523,2.6758860517071015,50,cation transmembrane transport,localization
+GO:0097485,30,GO:0097485,0.992,2.6758860517071015,0,neuron projection guidance,neuron projection guidance
+GO:0090090,15,GO:0010646,0.705,2.6758860517071015,19,negative regulation of canonical Wnt signaling pathway,regulation of cell communication
+GO:0071695,3,GO:0048856,0.457,2.6758860517071015,0,anatomical structure maturation,anatomical structure development
+GO:0070925,21,GO:0016043,0.602,2.6758860517071015,0,organelle assembly,cellular component organization
+GO:0070828,21,GO:0016043,0.432,2.6758860517071015,1,heterochromatin organization,cellular component organization
+GO:0070647,2,GO:0043170,0.357,2.6758860517071015,0,protein modification by small protein conjugation or removal,macromolecule metabolic process
+GO:0070588,12,GO:0051179,0.395,2.6758860517071015,39,calcium ion transmembrane transport,localization
+GO:0061564,7,GO:0007399,0.866,2.6758860517071015,3,axon development,nervous system development
+GO:0060271,21,GO:0016043,0.52,2.6758860517071015,75,cilium assembly,cellular component organization
+GO:0055085,12,GO:0051179,0.642,2.6758860517071015,462,transmembrane transport,localization
+GO:0051707,6,GO:0051716,0.455,2.6758860517071015,1,response to other organism,cellular response to stimulus
+GO:0051603,27,GO:0009057,0.911,2.6758860517071015,53,proteolysis involved in protein catabolic process,macromolecule catabolic process
+GO:0051346,28,GO:0065009,0.826,2.6758860517071015,0,negative regulation of hydrolase activity,regulation of molecular function
+GO:0051253,4,GO:0048518,0.252,2.6758860517071015,0,negative regulation of RNA metabolic process,positive regulation of biological process
+GO:0051174,5,GO:0010556,0.548,2.6758860517071015,0,regulation of phosphorus metabolic process,regulation of macromolecule biosynthetic process
+GO:0051151,31,GO:0051151,1,2.6758860517071015,1,negative regulation of smooth muscle cell differentiation,negative regulation of smooth muscle cell differentiation
+GO:0051150,31,GO:0051151,1,2.6758860517071015,0,regulation of smooth muscle cell differentiation,negative regulation of smooth muscle cell differentiation
+GO:0051148,31,GO:0051151,0.945,2.6758860517071015,2,negative regulation of muscle cell differentiation,negative regulation of smooth muscle cell differentiation
+GO:0051147,31,GO:0051151,0.834,2.6758860517071015,0,regulation of muscle cell differentiation,negative regulation of smooth muscle cell differentiation
+GO:0051093,3,GO:0048856,0.457,2.6758860517071015,3,negative regulation of developmental process,anatomical structure development
+GO:0048858,3,GO:0048856,0.592,2.6758860517071015,12,cell projection morphogenesis,anatomical structure development
+GO:0048812,3,GO:0048856,0.59,2.6758860517071015,15,neuron projection morphogenesis,anatomical structure development
+GO:0048667,3,GO:0048856,0.584,2.6758860517071015,0,cell morphogenesis involved in neuron differentiation,anatomical structure development
+GO:0048666,7,GO:0007399,0.898,2.6758860517071015,28,neuron development,nervous system development
+GO:0048193,12,GO:0051179,0.442,2.6758860517071015,6,Golgi vesicle transport,localization
+GO:0045936,5,GO:0010556,0.464,2.6758860517071015,0,negative regulation of phosphate metabolic process,regulation of macromolecule biosynthetic process
+GO:0045934,4,GO:0048518,0.256,2.6758860517071015,0,negative regulation of nucleobase-containing compound metabolic process,positive regulation of biological process
+GO:0045892,4,GO:0048518,0.25,2.6758860517071015,62,negative regulation of DNA-templated transcription,positive regulation of biological process
+GO:0045596,3,GO:0048856,0.395,2.6758860517071015,3,negative regulation of cell differentiation,anatomical structure development
+GO:0044839,24,GO:0010564,0.579,2.6758860517071015,0,cell cycle G2/M phase transition,regulation of cell cycle process
+GO:0044782,21,GO:0016043,0.542,2.6758860517071015,2,cilium organization,cellular component organization
+GO:0044772,24,GO:0010564,0.656,2.6758860517071015,11,mitotic cell cycle phase transition,regulation of cell cycle process
+GO:0044770,24,GO:0010564,0.69,2.6758860517071015,1,cell cycle phase transition,regulation of cell cycle process
+GO:0044281,32,GO:0044281,0.953,2.6758860517071015,9,small molecule metabolic process,small molecule metabolic process
+GO:0044092,28,GO:0065009,0.862,2.6758860517071015,0,negative regulation of molecular function,regulation of molecular function
+GO:0044085,21,GO:0016043,0.694,2.6758860517071015,0,cellular component biogenesis,cellular component organization
+GO:0043632,27,GO:0009057,0.889,2.6758860517071015,0,modification-dependent macromolecule catabolic process,macromolecule catabolic process
+GO:0043588,19,GO:0048513,0.548,2.6758860517071015,0,skin development,animal organ development
+GO:0043436,32,GO:0044281,0.859,2.6758860517071015,0,oxoacid metabolic process,small molecule metabolic process
+GO:0043412,2,GO:0043170,0.516,2.6758860517071015,3,macromolecule modification,macromolecule metabolic process
+GO:0043207,6,GO:0051716,0.455,2.6758860517071015,0,response to external biotic stimulus,cellular response to stimulus
+GO:0043086,28,GO:0065009,0.851,2.6758860517071015,21,negative regulation of catalytic activity,regulation of molecular function
+GO:0042335,7,GO:0007399,0.453,2.6758860517071015,6,cuticle development,nervous system development
+GO:0042330,30,GO:0097485,0.95,2.6758860517071015,1,taxis,neuron projection guidance
+GO:0040011,30,GO:0097485,0.853,2.6758860517071015,108,locomotion,neuron projection guidance
+GO:0036211,2,GO:0043170,0.504,2.6758860517071015,19,protein modification process,macromolecule metabolic process
+GO:0035305,5,GO:0010556,0.405,2.6758860517071015,0,negative regulation of dephosphorylation,regulation of macromolecule biosynthetic process
+GO:0035303,5,GO:0010556,0.44,2.6758860517071015,1,regulation of dephosphorylation,regulation of macromolecule biosynthetic process
+GO:0035282,7,GO:0007399,0.429,2.6758860517071015,0,segmentation,nervous system development
+GO:0035017,7,GO:0007399,0.336,2.6758860517071015,2,cuticle pattern formation,nervous system development
+GO:0034220,12,GO:0051179,0.583,2.6758860517071015,255,ion transmembrane transport,localization
+GO:0032990,3,GO:0048856,0.593,2.6758860517071015,0,cell part morphogenesis,anatomical structure development
+GO:0032989,3,GO:0048856,0.606,2.6758860517071015,0,cellular component morphogenesis,anatomical structure development
+GO:0032446,2,GO:0043170,0.342,2.6758860517071015,8,protein modification by small protein conjugation,macromolecule metabolic process
+GO:0031327,4,GO:0048518,0.263,2.6758860517071015,0,negative regulation of cellular biosynthetic process,positive regulation of biological process
+GO:0031175,7,GO:0007399,0.887,2.6758860517071015,11,neuron projection development,nervous system development
+GO:0030178,15,GO:0010646,0.726,2.6758860517071015,8,negative regulation of Wnt signaling pathway,regulation of cell communication
+GO:0030163,27,GO:0009057,0.929,2.6758860517071015,26,protein catabolic process,macromolecule catabolic process
+GO:0030031,21,GO:0016043,0.529,2.6758860517071015,7,cell projection assembly,cellular component organization
+GO:0030001,12,GO:0051179,0.539,2.6758860517071015,17,metal ion transport,localization
+GO:0022607,21,GO:0016043,0.692,2.6758860517071015,0,cellular component assembly,cellular component organization
+GO:0022406,29,GO:0140056,0.997,2.6758860517071015,0,membrane docking,organelle localization by membrane tethering
+GO:0022404,10,GO:0032501,0.325,2.6758860517071015,2,molting cycle process,multicellular organismal process
+GO:0021700,3,GO:0048856,0.411,2.6758860517071015,0,developmental maturation,anatomical structure development
+GO:0019941,27,GO:0009057,0.884,2.6758860517071015,6,modification-dependent protein catabolic process,macromolecule catabolic process
+GO:0019752,32,GO:0044281,0.858,2.6758860517071015,13,carboxylic acid metabolic process,small molecule metabolic process
+GO:0019538,2,GO:0043170,0.592,2.6758860517071015,7,protein metabolic process,macromolecule metabolic process
+GO:0019220,5,GO:0010556,0.548,2.6758860517071015,0,regulation of phosphate metabolic process,regulation of macromolecule biosynthetic process
+GO:0016567,2,GO:0043170,0.333,2.6758860517071015,210,protein ubiquitination,macromolecule metabolic process
+GO:0015711,12,GO:0051179,0.441,2.6758860517071015,0,organic anion transport,localization
+GO:0015701,12,GO:0051179,0.318,2.6758860517071015,10,bicarbonate transport,localization
+GO:0010923,5,GO:0010556,0.399,2.6758860517071015,1,negative regulation of phosphatase activity,regulation of macromolecule biosynthetic process
+GO:0010921,5,GO:0010556,0.424,2.6758860517071015,0,regulation of phosphatase activity,regulation of macromolecule biosynthetic process
+GO:0010883,22,GO:0032879,0.703,2.6758860517071015,8,regulation of lipid storage,regulation of localization
+GO:0010629,4,GO:0048518,0.279,2.6758860517071015,66,negative regulation of gene expression,positive regulation of biological process
+GO:0010563,5,GO:0010556,0.464,2.6758860517071015,0,negative regulation of phosphorus metabolic process,regulation of macromolecule biosynthetic process
+GO:0010558,4,GO:0048518,0.261,2.6758860517071015,0,negative regulation of macromolecule biosynthetic process,positive regulation of biological process
+GO:0010389,24,GO:0010564,0.78,2.6758860517071015,2,regulation of G2/M transition of mitotic cell cycle,regulation of cell cycle process
+GO:0009890,4,GO:0048518,0.263,2.6758860517071015,1,negative regulation of biosynthetic process,positive regulation of biological process
+GO:0009880,7,GO:0007399,0.447,2.6758860517071015,17,embryonic pattern specification,nervous system development
+GO:0009791,3,GO:0048856,0.641,2.6758860517071015,31,post-embryonic development,anatomical structure development
+GO:0009620,6,GO:0051716,0.315,2.6758860517071015,1,response to fungus,cellular response to stimulus
+GO:0009607,6,GO:0051716,0.455,2.6758860517071015,0,response to biotic stimulus,cellular response to stimulus
+GO:0008544,16,GO:0009888,0.817,2.6758860517071015,9,epidermis development,tissue development
+GO:0008015,33,GO:0008015,1,2.6758860517071015,0,blood circulation,blood circulation
+GO:0007411,30,GO:0097485,0.992,2.6758860517071015,78,axon guidance,neuron projection guidance
+GO:0007409,3,GO:0048856,0.576,2.6758860517071015,10,axonogenesis,anatomical structure development
+GO:0007367,7,GO:0007399,0.354,2.6758860517071015,4,segment polarity determination,nervous system development
+GO:0007365,7,GO:0007399,0.354,2.6758860517071015,0,periodic partitioning,nervous system development
+GO:0007350,7,GO:0007399,0.429,2.6758860517071015,0,blastoderm segmentation,nervous system development
+GO:0006935,30,GO:0097485,0.955,2.6758860517071015,78,chemotaxis,neuron projection guidance
+GO:0006890,12,GO:0051179,0.345,2.6758860517071015,22,"retrograde vesicle-mediated transport, Golgi to endoplasmic reticulum",localization
+GO:0006820,12,GO:0051179,0.494,2.6758860517071015,8,anion transport,localization
+GO:0006816,12,GO:0051179,0.424,2.6758860517071015,41,calcium ion transport,localization
+GO:0006767,32,GO:0044281,0.539,2.6758860517071015,0,water-soluble vitamin metabolic process,small molecule metabolic process
+GO:0006766,32,GO:0044281,0.539,2.6758860517071015,0,vitamin metabolic process,small molecule metabolic process
+GO:0006511,27,GO:0009057,0.882,2.6758860517071015,118,ubiquitin-dependent protein catabolic process,macromolecule catabolic process
+GO:0006508,2,GO:0043170,0.432,2.6758860517071015,415,proteolysis,macromolecule metabolic process
+GO:0006325,21,GO:0016043,0.548,2.6758860517071015,68,chromatin organization,cellular component organization
+GO:0006082,32,GO:0044281,0.864,2.6758860517071015,39,organic acid metabolic process,small molecule metabolic process
+GO:0005996,34,GO:0005996,0.998,2.6758860517071015,0,monosaccharide metabolic process,monosaccharide metabolic process
+GO:0005975,34,GO:0005996,0.818,2.6758860517071015,164,carbohydrate metabolic process,monosaccharide metabolic process
+GO:0003013,33,GO:0008015,1,2.6758860517071015,0,circulatory system process,blood circulation
+GO:0003008,10,GO:0032501,0.554,2.6758860517071015,0,system process,multicellular organismal process
+GO:0002164,3,GO:0048856,0.632,2.6758860517071015,6,larval development,anatomical structure development
+GO:0000904,3,GO:0048856,0.587,2.6758860517071015,0,cell morphogenesis involved in differentiation,anatomical structure development
+GO:0000902,3,GO:0048856,0.602,2.6758860517071015,13,cell morphogenesis,anatomical structure development
+GO:0000086,24,GO:0010564,0.577,2.6758860517071015,2,G2/M transition of mitotic cell cycle,regulation of cell cycle process
+GO:1901699,9,GO:0042221,0.641,2.6758860517071015,0,cellular response to nitrogen compound,response to chemical
+GO:1901698,9,GO:0042221,0.68,2.6758860517071015,0,response to nitrogen compound,response to chemical
+GO:0071705,12,GO:0051179,0.583,2.6758860517071015,1,nitrogen compound transport,localization
+GO:0071496,6,GO:0051716,0.314,2.6758860517071015,0,cellular response to external stimulus,cellular response to stimulus
+GO:0071495,6,GO:0051716,0.385,2.6758860517071015,0,cellular response to endogenous stimulus,cellular response to stimulus
+GO:0071466,9,GO:0042221,0.573,2.6758860517071015,0,cellular response to xenobiotic stimulus,response to chemical
+GO:0071417,9,GO:0042221,0.633,2.6758860517071015,0,cellular response to organonitrogen compound,response to chemical
+GO:0071407,9,GO:0042221,0.598,2.6758860517071015,0,cellular response to organic cyclic compound,response to chemical
+GO:0071248,9,GO:0042221,0.573,2.6758860517071015,4,cellular response to metal ion,response to chemical
+GO:0071241,9,GO:0042221,0.583,2.6758860517071015,0,cellular response to inorganic substance,response to chemical
+GO:0046688,9,GO:0042221,0.544,2.6758860517071015,7,response to copper ion,response to chemical
+GO:0042594,6,GO:0051716,0.336,2.6758860517071015,33,response to starvation,cellular response to stimulus
+GO:0031669,6,GO:0051716,0.424,2.6758860517071015,0,cellular response to nutrient levels,cellular response to stimulus
+GO:0031668,6,GO:0051716,0.428,2.6758860517071015,1,cellular response to extracellular stimulus,cellular response to stimulus
+GO:0031667,6,GO:0051716,0.347,2.6758860517071015,0,response to nutrient levels,cellular response to stimulus
+GO:0015695,12,GO:0051179,0.36,2.6758860517071015,1,organic cation transport,localization
+GO:0014070,9,GO:0042221,0.603,2.6758860517071015,1,response to organic cyclic compound,response to chemical
+GO:0010243,9,GO:0042221,0.673,2.6758860517071015,0,response to organonitrogen compound,response to chemical
+GO:0010038,9,GO:0042221,0.656,2.6758860517071015,10,response to metal ion,response to chemical
+GO:0010035,9,GO:0042221,0.683,2.6758860517071015,10,response to inorganic substance,response to chemical
+GO:0009991,6,GO:0051716,0.349,2.6758860517071015,0,response to extracellular stimulus,cellular response to stimulus
+GO:0009719,6,GO:0051716,0.386,2.6758860517071015,0,response to endogenous stimulus,cellular response to stimulus
+GO:0009410,9,GO:0042221,0.606,2.6758860517071015,28,response to xenobiotic stimulus,response to chemical
+GO:0009267,6,GO:0051716,0.424,2.6758860517071015,6,cellular response to starvation,cellular response to stimulus
+GO:0006805,9,GO:0042221,0.573,2.6758860517071015,41,xenobiotic metabolic process,response to chemical
+GO:1901361,27,GO:0009057,0.756,2.6758860517071015,0,organic cyclic compound catabolic process,macromolecule catabolic process
+GO:0090502,11,GO:1901360,0.401,2.6758860517071015,43,"RNA phosphodiester bond hydrolysis, endonucleolytic",organic cyclic compound metabolic process
+GO:0090501,11,GO:1901360,0.429,2.6758860517071015,11,RNA phosphodiester bond hydrolysis,organic cyclic compound metabolic process
+GO:0090305,11,GO:1901360,0.462,2.6758860517071015,64,nucleic acid phosphodiester bond hydrolysis,organic cyclic compound metabolic process
+GO:0046700,27,GO:0009057,0.703,2.6758860517071015,0,heterocycle catabolic process,macromolecule catabolic process
+GO:0044270,27,GO:0009057,0.703,2.6758860517071015,0,cellular nitrogen compound catabolic process,macromolecule catabolic process
+GO:0043137,27,GO:0009057,0.587,2.6758860517071015,5,"DNA replication, removal of RNA primer",macromolecule catabolic process
+GO:0034655,27,GO:0009057,0.74,2.6758860517071015,1,nucleobase-containing compound catabolic process,macromolecule catabolic process
+GO:0033567,8,GO:2000112,0.321,2.6758860517071015,0,"DNA replication, Okazaki fragment processing",regulation of cellular macromolecule biosynthetic process
+GO:0022616,8,GO:2000112,0.372,2.6758860517071015,0,DNA strand elongation,regulation of cellular macromolecule biosynthetic process
+GO:0019439,27,GO:0009057,0.708,2.6758860517071015,2,aromatic compound catabolic process,macromolecule catabolic process
+GO:0006401,27,GO:0009057,0.83,2.6758860517071015,16,RNA catabolic process,macromolecule catabolic process
+GO:0006298,20,GO:0006974,0.692,2.6758860517071015,16,mismatch repair,cellular response to DNA damage stimulus
+GO:0006273,8,GO:2000112,0.346,2.6758860517071015,4,lagging strand elongation,regulation of cellular macromolecule biosynthetic process
+GO:0006271,8,GO:2000112,0.372,2.6758860517071015,5,DNA strand elongation involved in DNA replication,regulation of cellular macromolecule biosynthetic process
+GO:0006261,8,GO:2000112,0.437,2.6758860517071015,13,DNA-templated DNA replication,regulation of cellular macromolecule biosynthetic process
+GO:0006260,8,GO:2000112,0.461,2.6758860517071015,78,DNA replication,regulation of cellular macromolecule biosynthetic process
+GO:1903322,5,GO:0010556,0.398,2.6758860517071015,0,positive regulation of protein modification by small protein conjugation or removal,regulation of macromolecule biosynthetic process
+GO:1902532,14,GO:0023051,0.814,2.6758860517071015,0,negative regulation of intracellular signal transduction,regulation of signaling
+GO:1902531,14,GO:0023051,0.884,2.6758860517071015,2,regulation of intracellular signal transduction,regulation of signaling
+GO:1902116,21,GO:0016043,0.384,2.6758860517071015,0,negative regulation of organelle assembly,cellular component organization
+GO:1902115,21,GO:0016043,0.446,2.6758860517071015,1,regulation of organelle assembly,cellular component organization
+GO:1902018,21,GO:0016043,0.345,2.6758860517071015,0,negative regulation of cilium assembly,cellular component organization
+GO:1902017,21,GO:0016043,0.402,2.6758860517071015,3,regulation of cilium assembly,cellular component organization
+GO:0120035,21,GO:0016043,0.538,2.6758860517071015,0,regulation of plasma membrane bounded cell projection organization,cellular component organization
+GO:0120033,21,GO:0016043,0.354,2.6758860517071015,0,negative regulation of plasma membrane bounded cell projection assembly,cellular component organization
+GO:0120032,21,GO:0016043,0.423,2.6758860517071015,0,regulation of plasma membrane bounded cell projection assembly,cellular component organization
+GO:0090630,28,GO:0065009,0.715,2.6758860517071015,31,activation of GTPase activity,regulation of molecular function
+GO:0070848,9,GO:0042221,0.625,2.6758860517071015,0,response to growth factor,response to chemical
+GO:0060491,21,GO:0016043,0.423,2.6758860517071015,0,regulation of cell projection assembly,cellular component organization
+GO:0051345,28,GO:0065009,0.791,2.6758860517071015,1,positive regulation of hydrolase activity,regulation of molecular function
+GO:0051129,21,GO:0016043,0.516,2.6758860517071015,0,negative regulation of cellular component organization,cellular component organization
+GO:0051128,21,GO:0016043,0.653,2.6758860517071015,2,regulation of cellular component organization,cellular component organization
+GO:0044093,28,GO:0065009,0.869,2.6758860517071015,0,positive regulation of molecular function,regulation of molecular function
+GO:0044087,21,GO:0016043,0.509,2.6758860517071015,3,regulation of cellular component biogenesis,cellular component organization
+GO:0043547,28,GO:0065009,0.763,2.6758860517071015,31,positive regulation of GTPase activity,regulation of molecular function
+GO:0043087,28,GO:0065009,0.782,2.6758860517071015,19,regulation of GTPase activity,regulation of molecular function
+GO:0043085,28,GO:0065009,0.854,2.6758860517071015,2,positive regulation of catalytic activity,regulation of molecular function
+GO:0033043,21,GO:0016043,0.571,2.6758860517071015,0,regulation of organelle organization,cellular component organization
+GO:0032007,15,GO:0010646,0.657,2.6758860517071015,1,negative regulation of TOR signaling,regulation of cell communication
+GO:0032006,15,GO:0010646,0.724,2.6758860517071015,2,regulation of TOR signaling,regulation of cell communication
+GO:0031398,5,GO:0010556,0.388,2.6758860517071015,2,positive regulation of protein ubiquitination,regulation of macromolecule biosynthetic process
+GO:0031345,21,GO:0016043,0.44,2.6758860517071015,1,negative regulation of cell projection organization,cellular component organization
+GO:0031344,21,GO:0016043,0.541,2.6758860517071015,6,regulation of cell projection organization,cellular component organization
+GO:0010639,21,GO:0016043,0.488,2.6758860517071015,0,negative regulation of organelle organization,cellular component organization
+GO:0099003,12,GO:0051179,0.4,2.6758860517071015,0,vesicle-mediated transport in synapse,localization
+GO:0097479,12,GO:0051179,0.369,2.6758860517071015,2,synaptic vesicle localization,localization
+GO:0051656,12,GO:0051179,0.472,2.6758860517071015,0,establishment of organelle localization,localization
+GO:0051650,12,GO:0051179,0.403,2.6758860517071015,0,establishment of vesicle localization,localization
+GO:0051649,12,GO:0051179,0.599,2.6758860517071015,0,establishment of localization in cell,localization
+GO:0051648,12,GO:0051179,0.407,2.6758860517071015,0,vesicle localization,localization
+GO:0048489,12,GO:0051179,0.361,2.6758860517071015,18,synaptic vesicle transport,localization
+GO:0046907,12,GO:0051179,0.569,2.6758860517071015,8,intracellular transport,localization
+GO:2000648,23,GO:0008284,0.898,2.6758860517071015,5,positive regulation of stem cell proliferation,positive regulation of cell population proliferation
+GO:2000026,10,GO:0032501,0.46,2.6758860517071015,0,regulation of multicellular organismal development,multicellular organismal process
+GO:0072091,23,GO:0008284,0.812,2.6758860517071015,0,regulation of stem cell proliferation,positive regulation of cell population proliferation
+GO:0071542,7,GO:0007399,0.522,2.6758860517071015,2,dopaminergic neuron differentiation,nervous system development
+GO:0061061,31,GO:0051151,0.686,2.6758860517071015,4,muscle structure development,negative regulation of smooth muscle cell differentiation
+GO:0060538,31,GO:0051151,0.566,2.6758860517071015,0,skeletal muscle organ development,negative regulation of smooth muscle cell differentiation
+GO:0060537,16,GO:0009888,0.635,2.6758860517071015,1,muscle tissue development,tissue development
+GO:0060322,7,GO:0007399,0.316,2.6758860517071015,0,head development,nervous system development
+GO:0060284,3,GO:0048856,0.487,2.6758860517071015,1,regulation of cell development,anatomical structure development
+GO:0051962,10,GO:0032501,0.369,2.6758860517071015,0,positive regulation of nervous system development,multicellular organismal process
+GO:0051960,10,GO:0032501,0.394,2.6758860517071015,0,regulation of nervous system development,multicellular organismal process
+GO:0051240,10,GO:0032501,0.482,2.6758860517071015,0,positive regulation of multicellular organismal process,multicellular organismal process
+GO:0051239,10,GO:0032501,0.554,2.6758860517071015,4,regulation of multicellular organismal process,multicellular organismal process
+GO:0051094,3,GO:0048856,0.515,2.6758860517071015,1,positive regulation of developmental process,anatomical structure development
+GO:0050769,10,GO:0032501,0.349,2.6758860517071015,1,positive regulation of neurogenesis,multicellular organismal process
+GO:0050767,10,GO:0032501,0.38,2.6758860517071015,10,regulation of neurogenesis,multicellular organismal process
+GO:0048732,19,GO:0048513,0.683,2.6758860517071015,0,gland development,animal organ development
+GO:0048665,7,GO:0007399,0.621,2.6758860517071015,17,neuron fate specification,nervous system development
+GO:0048663,7,GO:0007399,0.635,2.6758860517071015,0,neuron fate commitment,nervous system development
+GO:0045597,3,GO:0048856,0.429,2.6758860517071015,1,positive regulation of cell differentiation,anatomical structure development
+GO:0045165,7,GO:0007399,0.427,2.6758860517071015,23,cell fate commitment,nervous system development
+GO:0010720,3,GO:0048856,0.454,2.6758860517071015,0,positive regulation of cell development,anatomical structure development
+GO:0007517,31,GO:0051151,0.637,2.6758860517071015,20,muscle organ development,negative regulation of smooth muscle cell differentiation
+GO:0007420,7,GO:0007399,0.55,2.6758860517071015,3,brain development,nervous system development
+GO:0001708,7,GO:0007399,0.412,2.6758860517071015,91,cell fate specification,nervous system development
+GO:0071103,21,GO:0016043,0.465,2.6758860517071015,0,DNA conformation change,cellular component organization
+GO:0032508,21,GO:0016043,0.454,2.6758860517071015,38,DNA duplex unwinding,cellular component organization
+GO:0032392,21,GO:0016043,0.455,2.6758860517071015,0,DNA geometric change,cellular component organization
+GO:0006310,8,GO:2000112,0.458,2.6758860517071015,38,DNA recombination,regulation of cellular macromolecule biosynthetic process
+GO:0006302,20,GO:0006974,0.822,2.6758860517071015,18,double-strand break repair,cellular response to DNA damage stimulus
+GO:0000725,8,GO:2000112,0.419,2.6758860517071015,0,recombinational repair,regulation of cellular macromolecule biosynthetic process
+GO:0000724,8,GO:2000112,0.418,2.6758860517071015,43,double-strand break repair via homologous recombination,regulation of cellular macromolecule biosynthetic process
