@@ -30,6 +30,9 @@ editor:
 
 # Background
 ## Inputs
+- reduced terms
+- semantic similarity matrix
+
 ## Outputs
 # Setup
 ```{r setup, include=FALSE}
@@ -49,7 +52,8 @@ knitr::opts_chunk$set(
 ```{r}
 ## CRAN packages-----------
 #install.packages("GOplot")
-#remotes::install_github("mdscheuerell/flexoki")
+#install.packages("plotly")
+#install.packages("tidyverse")
 
 ## Bioconductor packages---------
 #if (!require("BiocManager", quietly = TRUE))
@@ -59,11 +63,10 @@ knitr::opts_chunk$set(
 
 ## Load packages
 ```{r}
-library(rrvgo)
 library(GOplot)
-library(flexoki)
 library(plotly)
 library(tidyverse)
+library(rrvgo)
 ```
 
 ## Load inputs
@@ -73,30 +76,39 @@ library(tidyverse)
 reducedTerms.int <- read_csv("../../output/08_go/reducedTerms_int.csv")
 
 ### Interaction patterns
-reducedTerms.1 <- write_csv("../../output/08_go/reducedTerms_1.csv")
-reducedTerms.2 <- write_csv("../../output/08_go/reducedTerms_2.csv")
-reducedTerms.3 <- write_csv("../../output/08_go/reducedTerms_3.csv")
+reducedTerms.1 <- read_csv("../../output/08_go/reducedTerms_1.csv")
+reducedTerms.2 <- read_csv("../../output/08_go/reducedTerms_2.csv")
+reducedTerms.3 <- read_csv("../../output/08_go/reducedTerms_3.csv")
 
 ### Contrasts
-reducedTerms.lvccl <- write_csv("../../output/08_go/reducedTerms_lvccl.csv")
-reducedTerms.mvccl <- write_csv("../../output/08_go/reducedTerms_mvccl.csv")
-reducedTerms.hvccl <- write_csv("../../output/08_go/reducedTerms_hvccl.csv")
-reducedTerms.hvceg <- write_csv("../../output/08_go/reducedTerms_hvceg.csv")
+reducedTerms.lvccl <- read_csv("../../output/08_go/reducedTerms_lvccl.csv")
+reducedTerms.mvccl <- read_csv("../../output/08_go/reducedTerms_mvccl.csv")
+reducedTerms.hvccl <- read_csv("../../output/08_go/reducedTerms_hvccl.csv")
+reducedTerms.hvceg <- read_csv("../../output/08_go/reducedTerms_hvceg.csv")
 
 ## Similarity matrices
 ### Interaction
-simMatrix.int <- read_csv("../../output/08_go/simMatrix_int.csv")
+simMatrix.int <- read_csv("../../output/08_go/simMatrix_int.csv") %>% 
+  column_to_rownames("GO") %>%  # uses the GO column as rownames
+  as.data.frame()
 
 ### Interaction patterns
-simMatrix.1 <- read_csv("../../output/08_go/simMatrix_1.csv")
-simMatrix.2 <- read_csv("../../output/08_go/simMatrix_2.csv")
-simMatrix.3 <- read_csv("../../output/08_go/simMatrix_3.csv")
+simMatrix.1 <- read_csv("../../output/08_go/simMatrix_1.csv")%>% 
+  column_to_rownames("GO") # uses the GO column as rownames
+simMatrix.2 <- read_csv("../../output/08_go/simMatrix_2.csv")%>% 
+  column_to_rownames("GO") # uses the GO column as rownames
+simMatrix.3 <- read_csv("../../output/08_go/simMatrix_3.csv")%>% 
+  column_to_rownames("GO") # uses the GO column as rownames
 
 ### Contrasts
-simMatrix.lvccl <- read_csv("../../output/08_go/simMatrix_lvccl.csv")
-simMatrix.mvccl <- read_csv("../../output/08_go/simMatrix_mvccl.csv")
-simMatrix.hvccl <- read_csv("../../output/08_go/simMatrix_hvccl.csv")
-simMatrix.hvceg <- read_csv("../../output/08_go/simMatrix_hvceg.csv")
+simMatrix.lvccl <- read_csv("../../output/08_go/simMatrix_lvccl.csv")%>% 
+  column_to_rownames("GO") # uses the GO column as rownames
+simMatrix.mvccl <- read_csv("../../output/08_go/simMatrix_mvccl.csv")%>% 
+  column_to_rownames("GO") # uses the GO column as rownames
+simMatrix.hvccl <- read_csv("../../output/08_go/simMatrix_hvccl.csv")%>% 
+  column_to_rownames("GO") # uses the GO column as rownames
+simMatrix.hvceg <- read_csv("../../output/08_go/simMatrix_hvceg.csv")%>% 
+  column_to_rownames("GO") # uses the GO column as rownames
 ```
 
 
