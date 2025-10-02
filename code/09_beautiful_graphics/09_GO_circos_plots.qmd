@@ -1,0 +1,393 @@
+---
+title: "Gene ontology (GO) enrichment plots"
+subtitle: "We've identified the DEGs... let's visualize what they do!"
+author: "Sarah Tanja"
+date: 2025-09-30
+date-modified: today
+format:
+  docx: default
+  gfm: default 
+  html:
+    theme: journal
+    highlight-style: github
+    page-layout: full
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    reference-location: margin
+    citation-location: margin
+editor: 
+  markdown: 
+    wrap: 72
+---
+
+# Background
+
+Resources: A little help from Grace Crandall's code
+[here](https://github.com/grace-ac/paper-pycno-sswd-2021-2022/blob/main/code/28-chord-plots.Rmd). -
+\[A tutorial using
+`circlize`\](https://bioinfo4all.wordpress.com/2021/03/13/tutorial-7-how-to-do-chord-diagram-using-r/ -
+[Another `circlize`
+example](https://jokergoo.github.io/circlize_book/book/the-chorddiagram-function.html)
+\## Inputs - GO.BP.xx - GO.terms.xx - sig.genes.anno
+
+## Outputs
+
+# Setup
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  fig.align = "center",
+  fig.height=7, 
+  fig.width=9,
+  dpi = 600,
+  echo = TRUE,         # Display code chunks
+  eval = TRUE,        # Evaluate code chunks
+  warning = FALSE,     # Hide warnings
+  message = FALSE,     # Hide messages
+  comment = ""         # Prevents appending '##' to beginning of lines in code output
+)
+```
+
+## Install packages
+
+```{r}
+## CRAN packages-----------
+#install.packages("GOplot")
+#install.packages("plotly")
+#install.packages("tidyverse")
+
+## Bioconductor packages---------
+#if (!require("BiocManager", quietly = TRUE))
+#    install.packages("BiocManager")
+#BiocManager::install("rrvgo")
+```
+
+## Load packages
+
+```{r}
+library(GOplot)
+library(plotly)
+library(tidyverse)
+library(rrvgo)
+library(kableExtra)
+```
+
+# GOplot
+
+## Chord diagram
+
+Using
+[GOplot](https://cran.r-project.org/web/packages/GOplot/vignettes/GOplot_vignette.html)
+
+### Create `circ` object using `circle_dat()`
+
+> `circle_dat()` takes two data frames as an input. The first one
+> contains the results of the functional analysis and should have at
+> least four columns (category, term, genes, adjusted p-value).
+> Additionally, a data frame of the selected genes and their logFC is
+> needed.
+
+Data object for plotting needs two data frame inputs:
+
+1.  **result** of functional analysis with
+    1.  category: GO term annotation type (e.g., "BP", "MF", "CC")
+    2.  ID: GO term identifier (e.g., "GO:0008150")
+    3.  term: GO term description
+    4.  adj_pval: the `bh_adjust` column from the GO enrichment analysis
+
+> The significance of a term is indicated by the adjusted p-value
+> (adj_pval). Terms with an adjusted p-value \< 0.05 are considered as
+> **significantly enriched** and are more likely to provide reliable
+> information.
+
+`GO.BP.int` is the result of our functional analysis...
+
+```{r}
+str(GO.BP.int)
+```
+
+```{r}
+results_circ <- GO.BP.int %>% 
+  rename(ID = category,
+         category = ontology,
+         adj_pval = bh_adjust,
+         count = numInCat) %>% 
+  select(category, ID, term, adj_pval, count)
+```
+
+And even though the vignette doesn't say you need it, you need a column
+of genes for each go term.
+
+```{r}
+terms_circ <- GO.terms.int %>% 
+  rename(ID = GOs,
+         genes = gene_id)
+
+str(terms_circ)
+unique(terms_circ$genes)
+```
+
+So we have to join results_circ to terms_circ
+
+```{r}
+go_circ <- results_circ %>%  
+  full_join(terms_circ, by = "ID") %>% 
+  select(category, ID, term, genes, adj_pval, count)
+
+str(go_circ)
+unique(go_circ$genes)
+```
+
+2.  list of selected **genes** and log2FC from a DESeq2 result
+    1.  ID: (Your gene ID (use your long gene IDs directly))
+    2.  log2FC: from one of the DESeq2 contrasts
+
+::: callout-note
+The Log2FC will be displayed on the chord diagram, and you can add in
+additional values from other contrasts after the initial circ object is
+made. For the time being we're going to select the early gastrula low
+contrast because it had the most DEGs
+:::
+
+sig_genes_anno is the annotated results from DESeq2
+
+```{r}
+genes_circ <- sig_genes_anno %>% 
+  select(ID = gene_id, 
+         logFC = earlygastrula_high_log2FC)
+
+str(genes_circ)
+```
+
+The circle_dat() function will generate a count and a zscore column -
+count: Number of genes per GO term - zscore: GO term z-score, typically
+calculated as (number of upregulated genes minus downregulated
+genes)/sqrt(count) for that term
+
+::: callout-caution
+The `circle_dat()` function expects your gene ids to be named `genes` in
+your GO results dataframe and `ID` in your gene list dataframe... this
+is tricky, watch out!
+:::
+
+The following code checks that the gene id column names are the same in
+the two dataframes with differently named columns
+
+```{r}
+length(intersect(go_circ$genes, genes_circ$ID))
+```
+
+```{r}
+circ <- circle_dat(go_circ, genes_circ)
+```
+
+`circ` is the object that will now be used for plotting!
+
+```{r}
+# circ from circle_dat()
+str(circ)
+```
+
+::: callout-caution
+`circle_dat()` reformatted the gene ids to be all uppercase
+:::
+
+```{r}
+summary(circ$count)
+```
+
+::: callout-caution
+Did not appear to calculate `count` correctly... it isn't counting the
+genes per term but rather the number of times a term is assigned to a
+gene... which is always 1, This also throws off the zscore calculation
+which depends on count.
+:::
+
+### JK Manually create `circ_df`
+
+```{r}
+circ_df <- go_circ %>%  
+  full_join(genes_circ, by = c("genes" = "ID")) %>% 
+  drop_na(term)
+
+circ_df_parent <- circ_df %>% 
+  left_join(reducedTerms.all, by = c("ID" = "go", "term" = "term"))
+```
+
+Add zscore column
+
+```{r}
+circ_dfp <- circ_df_parent %>%
+  group_by(ID) %>%
+  mutate(zscore = (sum(logFC > 0) - sum(logFC < 0)) / sqrt(count)) %>%
+  ungroup()
+```
+
+::: column-margin
+::: callout-note
+### What does the zscore tell us?
+
+The z-score in your gene ontology (GO) analysis context is a statistical
+measure that helps indicate whether a GO term (biological process,
+molecular function, or cellular component) is more likely to be
+biologically increased or decreased based on the direction of gene
+expression changes.
+
+Specifically, your z-score formula $$
+zscore = \frac{(up - down)}{\sqrt(count)}
+$$ means:
+
+-   "up" is the number of genes assigned to that GO term that are
+    up-regulated (logFC \> 0).
+
+-   "down" is the number of genes assigned to that GO term that are
+    down-regulated (logFC \< 0).
+
+-   "count" is the total number of genes assigned to that GO term.
+
+Interpretation of z-scores:
+
+A positive z-score indicates that the GO term has more up-regulated
+genes than down-regulated genes relative to its size and is therefore
+more likely to be biologically increased or activated.
+
+A negative z-score indicates more down-regulated genes and suggests that
+the GO term is more likely to be biologically decreased or inhibited.
+
+The magnitude of the z-score tells you how strong this trend is,
+adjusted for the total number of genes in that GO term.
+
+In your data, z-scores ranging approximately from +2 to -1.73 mean:
+
+Values toward +2 imply that some GO terms show a notable prevalence of
+up-regulated genes, suggesting activation or up-regulation of those
+biological functions or processes.
+
+Values near -1.73 indicate other GO terms have a moderate dominance of
+down-regulated genes, implying suppression or down-regulation.
+
+Typically, a z-score greater than 2 or less than -2 is considered
+significant evidence of activation or inhibition, respectively, though
+borderline values like yours still provide useful directional hints.
+
+This z-score metric provides a simple, normalized way to capture the
+overall regulatory direction of each GO term based on the gene
+expression data from your DESeq2 contrast, giving you an intuitive
+measure to prioritize and visualize the biological processes likely
+impacted in your dataset.
+
+Thus, in your chord diagram or other visualizations, z-score can be used
+to color or weight GO terms and gene links to quickly highlight
+activated vs. repressed functions.
+
+*Generated via perplexity AI on 15AUG2025*
+:::
+:::
+
+```{r}
+# Select and arrange columns to match GOplot 'circ' format
+circ_dfp <- circ_dfp %>%
+  select(!term) %>% # remove term colunm
+  mutate(term = parentTerm) %>% # replace it with the parent term column
+  select(category,
+         ID,
+         term,
+         count,
+         genes,
+         logFC,
+         adj_pval,
+         zscore) %>% 
+  as.data.frame()
+```
+
+### Create binary matrix using `chord_dat()`
+
+::: callout-caution
+`chord_dat()` expects the `genes =` to have genes in a column named `ID`
+with a `logFC` column The matrix should be: genes as rows, terms as
+columns (binary matrix), and one column named "logFC".
+:::
+
+```{r}
+circ_genes <- circ_dfp %>% 
+  select(genes, logFC) %>% 
+  rename(ID = genes) %>% 
+  distinct()
+```
+
+```{r binary-matrix-chord_dat}
+chord <- chord_dat(
+  data = circ_dfp,
+  genes = circ_genes,
+  process = c("regulation of RNA metabolic process", 
+              "positive regulation of biological process", 
+              "cellular metabolic process", 
+              "response to stress", 
+              "response to chemical",
+              "cell differentiation",
+              "regulation of signaling",
+              "organonitrogen compound metabolic process"))
+```
+
+### Plot chord diagram
+
+```{r}
+library(viridis)
+library(RColorBrewer)
+```
+
+```{r}
+display.brewer.all()
+```
+
+viridis magma plasma inferno cividis mako rocket turbo
+
+```{r}
+library(scales)
+show_col(turbo(5))
+```
+
+```{r}
+ribbons <- turbo(5)
+ribbons_viridis <- viridis(5)
+ribbons_pastel <- brewer.pal(5, "Pastel2")
+```
+
+```{r plot-chord, fig.height=10, fig.width=9}
+chordplot <- GOChord(chord, 
+                     gene.order = "logFC",
+                     border.size = 0.2,
+                     gene.size = 3,
+                     title = "Enriched GO terms across significantly different interaction genes",
+                     process.label = 10,
+                     space = 0.02,
+                     gene.space = 0.25)
+chordplot
+```
+
+```{r}
+ggsave("../../output/07_go/chord_plot.png", width = 12, height = 12, dpi = 600 )
+```
+
+> Therefore, if you want to include more than one logFC value per gene.
+> To adjust to this situation you should use the nlfc argument. It is a
+> numeric value and it defines the number of logFC columns within your
+> binary membership matrix. The default is '1' assuming that most of the
+> time you just have one contrast and one logFC value per gene.
+
+## GOHeat heatmap
+
+```{r}
+GOHeat(chord, nlfc = 1, fill.col = c('red', 'white', 'blue'))
+```
+
+# Circos plot

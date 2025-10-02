@@ -5,6 +5,7 @@ author: "Sarah Tanja"
 date: 2025-09-30
 date-modified: today
 format:
+  docx: default
   gfm: default 
   html:
     theme: journal
@@ -38,8 +39,8 @@ editor:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   fig.align = "center",
-  fig.height=4, 
-  fig.width=6,
+  fig.height=7, 
+  fig.width=9,
   dpi = 600,
   echo = TRUE,         # Display code chunks
   eval = TRUE,        # Evaluate code chunks
@@ -67,50 +68,53 @@ library(GOplot)
 library(plotly)
 library(tidyverse)
 library(rrvgo)
+library(kableExtra)
 ```
 
 ## Load inputs
 ```{r}
 ## Reduced Terms
 ### Interaction
-reducedTerms.int <- read_csv("../../output/08_go/reducedTerms_int.csv")
+reducedTerms.int <- read.csv("../../output/08_go/reducedTerms_int.csv")
 
 ### Interaction patterns
-reducedTerms.1 <- read_csv("../../output/08_go/reducedTerms_1.csv")
-reducedTerms.2 <- read_csv("../../output/08_go/reducedTerms_2.csv")
-reducedTerms.3 <- read_csv("../../output/08_go/reducedTerms_3.csv")
+reducedTerms.1 <- read.csv("../../output/08_go/reducedTerms_1.csv")
+reducedTerms.2 <- read.csv("../../output/08_go/reducedTerms_2.csv")
+reducedTerms.3 <- read.csv("../../output/08_go/reducedTerms_3.csv")
 
 ### Contrasts
-reducedTerms.lvccl <- read_csv("../../output/08_go/reducedTerms_lvccl.csv")
-reducedTerms.mvccl <- read_csv("../../output/08_go/reducedTerms_mvccl.csv")
-reducedTerms.hvccl <- read_csv("../../output/08_go/reducedTerms_hvccl.csv")
-reducedTerms.hvceg <- read_csv("../../output/08_go/reducedTerms_hvceg.csv")
+reducedTerms.lvccl <- read.csv("../../output/08_go/reducedTerms_lvccl.csv")
+reducedTerms.mvccl <- read.csv("../../output/08_go/reducedTerms_mvccl.csv")
+reducedTerms.hvccl <- read.csv("../../output/08_go/reducedTerms_hvccl.csv")
+reducedTerms.hvceg <- read.csv("../../output/08_go/reducedTerms_hvceg.csv")
 
 ## Similarity matrices
 ### Interaction
 simMatrix.int <- read_csv("../../output/08_go/simMatrix_int.csv") %>% 
-  column_to_rownames("GO") %>%  # uses the GO column as rownames
-  as.data.frame()
+  column_to_rownames("GO") %>% as.matrix()  # uses the GO column as rownames
+  
 
 ### Interaction patterns
 simMatrix.1 <- read_csv("../../output/08_go/simMatrix_1.csv")%>% 
-  column_to_rownames("GO") # uses the GO column as rownames
+  column_to_rownames("GO") %>% as.matrix()  # uses the GO column as rownames
 simMatrix.2 <- read_csv("../../output/08_go/simMatrix_2.csv")%>% 
-  column_to_rownames("GO") # uses the GO column as rownames
+  column_to_rownames("GO") %>% as.matrix() # uses the GO column as rownames
 simMatrix.3 <- read_csv("../../output/08_go/simMatrix_3.csv")%>% 
-  column_to_rownames("GO") # uses the GO column as rownames
+  column_to_rownames("GO") %>% as.matrix() # uses the GO column as rownames
 
 ### Contrasts
 simMatrix.lvccl <- read_csv("../../output/08_go/simMatrix_lvccl.csv")%>% 
-  column_to_rownames("GO") # uses the GO column as rownames
+  column_to_rownames("GO") %>% as.matrix() # uses the GO column as rownames
 simMatrix.mvccl <- read_csv("../../output/08_go/simMatrix_mvccl.csv")%>% 
-  column_to_rownames("GO") # uses the GO column as rownames
+  column_to_rownames("GO") %>% as.matrix() # uses the GO column as rownames
 simMatrix.hvccl <- read_csv("../../output/08_go/simMatrix_hvccl.csv")%>% 
-  column_to_rownames("GO") # uses the GO column as rownames
+  column_to_rownames("GO") %>% as.matrix() # uses the GO column as rownames
 simMatrix.hvceg <- read_csv("../../output/08_go/simMatrix_hvceg.csv")%>% 
-  column_to_rownames("GO") # uses the GO column as rownames
+  column_to_rownames("GO") %>% as.matrix() # uses the GO column as rownames
 ```
 
+
+> The rows of simMatrix.xxx should correspond (in order and identity) to the rows of reducedTerms.xxx. Ensure that the go column is character, not factor. Ensure simMatrix.xxx is a data.frame or matrix, and reducedTerms.xxx is a data.frame, not a tibble!*which is why we load it wirh read.csv, (which loads a data.frame) and not read_csv (which loads a tibble).
 
 # Plotting & interpretation
 
@@ -183,17 +187,44 @@ scatterPlot(simMatrix.2, reducedTerms.2,
             addLabel = TRUE,
             labelSize = 4)
 ```
-
+### Expression pattern 3
 ```{r}
 scatterPlot(simMatrix.3, reducedTerms.3,
             onlyParents = FALSE,
             addLabel = TRUE,
             labelSize = 4)
 ```
+### Low vs control: cleavage
+```{r}
+scatterPlot(simMatrix.lvccl, reducedTerms.lvccl,
+            onlyParents = FALSE,
+            addLabel = TRUE,
+            labelSize = 4)
+```
+### Mid vs control: cleavage
+```{r}
+scatterPlot(simMatrix.mvccl, reducedTerms.mvccl,
+            onlyParents = FALSE,
+            addLabel = TRUE,
+            labelSize = 4)
+```
+### High vs control: cleavage
+```{r}
+scatterPlot(simMatrix.hvccl, reducedTerms.hvccl,
+            onlyParents = FALSE,
+            addLabel = TRUE,
+            labelSize = 4)
+```
+### High vs control: early gastrula
+```{r}
+scatterPlot(simMatrix.hvceg, reducedTerms.hvceg,
+            onlyParents = FALSE,
+            addLabel = TRUE,
+            labelSize = 4)
+```
 
-
-### Cluster summaries
-I want a dataframe that groups my GO terms based on these 5 main
+## Interaction "5 clusters" summary
+I want a dataframe that groups my GO terms based on the 5 main
 clusters displayed in this PCA. The scatterPlot uses a dimensionality
 reduction (PCoA) approach to project GO terms into 2D space and then
 visually groups the points into a smaller number of major clusters.
@@ -209,13 +240,13 @@ scatterPlot clusters rather than the original fine-grained clusters.
 
 ```{r}
 # Distance from similarity matrix
-dist <- as.dist(1 - simMatrix.all)
+dist <- as.dist(1 - simMatrix.int)
 
 # PCoA to 2 dimensions
 coord <- cmdscale(dist, k = 2)
 
 # Convert to dataframe with GO terms
-df_coords <- data.frame(go = rownames(simMatrix.all), Dim1 = coord[,1], Dim2 = coord[,2])
+df_coords <- data.frame(go = rownames(simMatrix.int), Dim1 = coord[,1], Dim2 = coord[,2])
 
 ```
 
@@ -232,7 +263,7 @@ Combine cluster info with other GO term data Merge this dataframe with
 your reducedTerms or other GO annotation information as needed.
 
 ```{r}
-final_df <- merge(df_coords, reducedTerms.all, by.x = "go", by.y = "go")
+final_df <- merge(df_coords, reducedTerms.int, by.x = "go", by.y = "go")
 ```
 
 This dataframe `final_df` will now include each GO term, its 2D
@@ -256,7 +287,7 @@ ggplot(final_df, aes(Dim1, Dim2, color = parentTerm, size = score)) +
   labs(color = "Parent Term", title = "GO terms clustered in PCoA space") +
   theme_minimal(base_size = 12)
 ```
-
+### Interactive plot
 ```{r}
 p <- ggplot(final_df, aes(
     Dim1, Dim2,
@@ -349,6 +380,7 @@ categories don't always line up with semantic neighborhoods.
 :::
 :::
 
+### Table of top terms
 ```{r}
 # Summarize cluster content by parent term
 cluster_summary <- final_df %>%
@@ -367,7 +399,44 @@ top_terms_by_cluster <- cluster_summary %>%
   slice_max(order_by = n_terms, n = 5) %>% # top 5 terms for each of the 5 clusters
   arrange(cluster.x, desc(n_terms))
 
-top_terms_by_cluster
+knitr::kable(top_terms_by_cluster)
+```
+::: callout-note
+Based on frequency of enriched terms, the clusters can be described:
+- 1 : Developmental, cellular, nuclear division
+- 2 : Regulation of metabolic processes
+- 3 : cellular stress response , response to chemical
+- 4 : metabolic / catabolic process
+- 5 : regulation cell cycle communication 
+:::
+
+### Table of top scores
+```{r}
+# For each cluster, show top 5 parent terms by count (or max score)
+top_score_by_cluster <- cluster_summary %>%
+  group_by(cluster.x) %>%
+  slice_max(order_by = mean_score, n = 5) %>% # top 5 terms for each of the 5 clusters
+  arrange(cluster.x, desc(mean_score))
+
+knitr::kable(top_score_by_cluster)
+```
+```{r}
+tbl_min <- top_score_by_cluster %>%
+  transmute(
+    Cluster = cluster.x,
+    `Parent term` = parentTerm,
+    n = as.integer(n_terms),
+    `Mean score` = round(mean_score, 1),
+    `Max score` = round(max_score, 1)
+  ) %>%
+  arrange(Cluster, desc(`Mean score`), desc(`Max score`))
+
+kable(
+  tbl_min,
+  format = "pipe",                            # <- Pandoc table -> native Word/Docs
+  align  = c("r", "l", "r", "r", "r"),
+  caption = "Top GO terms by cluster"
+)
 ```
 
 ## Treemap plot
@@ -378,411 +447,53 @@ the term is proportional to the score. Treemaps can help with the
 interpretation of the summarized results and also comparing different
 sets of GO terms.
 
+### Interactions
 ```{r}
 treemapPlot(reducedTerms.int)
 ```
-
+#### pattern 1
 ```{r}
 treemapPlot(reducedTerms.1)
 ```
 
+#### pattern 2
 ```{r}
 treemapPlot(reducedTerms.2)
 ```
-
+#### pattern 3
 ```{r}
 treemapPlot(reducedTerms.3)
 ```
-
+### Contrasts
+#### Low vs control: cleavage
 ```{r}
 treemapPlot(reducedTerms.lvccl)
 ```
-
+#### Mid vs control: cleavage
 ```{r}
 treemapPlot(reducedTerms.mvccl)
 ```
 
+#### High vs control: cleavage
 ```{r}
 treemapPlot(reducedTerms.hvccl)
 ```
 
+#### High vs control: early gastrula
 ```{r}
 treemapPlot(reducedTerms.hvceg)
 ```
 
-## Word cloud
-
-Word clouds are visualizations which reproduce a text putting emphasis
-to words which appear frequently in a text. They can help to identify
-processes and functions that happen more commonly in a set of enriched
-GO terms, as well as comparing between different sets.
-
-```{r}
-wordcloudPlot(reducedTerms.int, min.freq=1, colors="black")
-```
-```{r}
-wordcloudPlot(reducedTerms.1, min.freq=1, colors="black")
-```
-```{r}
-wordcloudPlot(reducedTerms.2, min.freq=1, colors="black")
-```
-```{r}
-wordcloudPlot(reducedTerms.3, min.freq=1, colors="black")
-```
-```{r}
-wordcloudPlot(reducedTerms.lvccl, min.freq=1, colors="black")
-```
-```{r}
-wordcloudPlot(reducedTerms.mvccl, min.freq=1, colors="black")
-```
-```{r}
-wordcloudPlot(reducedTerms.hvccl, min.freq=1, colors="black")
-```
-```{r}
-wordcloudPlot(reducedTerms.hvceg, min.freq=1, colors="black")
-```
-
-## Chord diagram
-
-Using
-[GOplot](https://cran.r-project.org/web/packages/GOplot/vignettes/GOplot_vignette.html)
-
-### Create `circ` object using `circle_dat()`
-
-> `circle_dat()` takes two data frames as an input. The first one
-> contains the results of the functional analysis and should have at
-> least four columns (category, term, genes, adjusted p-value).
-> Additionally, a data frame of the selected genes and their logFC is
-> needed.
-
-Data object for plotting needs two data frame inputs:
-
-1.  **result** of functional analysis with
-    1.  category: GO term annotation type (e.g., "BP", "MF", "CC")
-    2.  ID: GO term identifier (e.g., "GO:0008150")
-    3.  term: GO term description
-    4.  adj_pval: the `bh_adjust` column from the GO enrichment analysis
-
-> The significance of a term is indicated by the adjusted p-value
-> (adj_pval). Terms with an adjusted p-value \< 0.05 are considered as
-> **significantly enriched** and are more likely to provide reliable
-> information.
-
-`GO.BP.all` is the result of our functional analysis...
-
-```{r}
-str(GO.BP.all)
-```
-
-```{r}
-results_circ <- GO.BP.all %>% 
-  rename(ID = category,
-         category = ontology,
-         adj_pval = bh_adjust,
-         count = numInCat) %>% 
-  select(category, ID, term, adj_pval, count)
-```
-
-And even though the vignette doesn't say you need it, you need a column
-of genes for each go term.
-
-```{r}
-terms_circ <- GO.terms.all %>% 
-  rename(ID = GOs,
-         genes = gene_id)
-
-str(terms_circ)
-unique(terms_circ$genes)
-```
-
-So we have to join results_circ to terms_circ
-
-```{r}
-go_circ <- results_circ %>%  
-  full_join(terms_circ, by = "ID") %>% 
-  select(category, ID, term, genes, adj_pval, count)
-
-str(go_circ)
-unique(go_circ$genes)
-```
-
-2.  list of selected **genes** and log2FC from a DESeq2 result
-    1.  ID: (Your gene ID (use your long gene IDs directly))
-    2.  log2FC: from one of the DESeq2 contrasts
-
-::: callout-note
-The Log2FC will be displayed on the chord diagram, and you can add in
-additional values from other contrasts after the initial circ object is
-made. For the time being we're going to select the early gastrula low
-contrast because it had the most DEGs
-:::
-
-```{r}
-genes_circ <- sig_genes_anno %>% 
-  select(ID = gene_id, 
-         logFC = earlygastrula_low_log2FC)
-
-str(genes_circ)
-```
-
-The circle_dat() function will generate a count and a zscore column -
-count: Number of genes per GO term - zscore: GO term z-score, typically
-calculated as (number of upregulated genes minus downregulated
-genes)/sqrt(count) for that term
-
-::: callout-caution
-The `circle_dat()` function expects your gene ids to be named `genes` in
-your GO results dataframe and `ID` in your gene list dataframe... this
-is tricky, watch out!
-:::
-
-The following code checks that the gene id column names are the same in
-the two dataframes with differently named columns
-
-```{r}
-length(intersect(go_circ$genes, genes_circ$ID))
-```
-
-```{r}
-circ <- circle_dat(go_circ, genes_circ)
-```
-
-`circ` is the object that will now be used for plotting!
-
-```{r}
-# circ from circle_dat()
-str(circ)
-```
-
-::: callout-caution
-`circle_dat()` reformatted the gene ids to be all uppercase
-:::
-
-```{r}
-summary(circ$count)
-```
-
-::: callout-caution
-Did not appear to calculate `count` correctly... it isn't counting the
-genes per term but rather the number of times a term is assigned to a
-gene... which is always 1, This also throws off the zscore calculation
-which depends on count.
-:::
-
-### JK Manually create `circ_df`
-
-```{r}
-circ_df <- go_circ %>%  
-  full_join(genes_circ, by = c("genes" = "ID")) %>% 
-  drop_na(term)
-
-circ_df_parent <- circ_df %>% 
-  left_join(reducedTerms.all, by = c("ID" = "go", "term" = "term"))
-```
-
-Add zscore column
-
-```{r}
-circ_dfp <- circ_df_parent %>%
-  group_by(ID) %>%
-  mutate(zscore = (sum(logFC > 0) - sum(logFC < 0)) / sqrt(count)) %>%
-  ungroup()
-```
-
-::: column-margin
-::: callout-note
-### What does the zscore tell us?
-
-The z-score in your gene ontology (GO) analysis context is a statistical
-measure that helps indicate whether a GO term (biological process,
-molecular function, or cellular component) is more likely to be
-biologically increased or decreased based on the direction of gene
-expression changes.
-
-Specifically, your z-score formula $$
-zscore = \frac{(up - down)}{\sqrt(count)}
-$$ means:
-
--   "up" is the number of genes assigned to that GO term that are
-    up-regulated (logFC \> 0).
-
--   "down" is the number of genes assigned to that GO term that are
-    down-regulated (logFC \< 0).
-
--   "count" is the total number of genes assigned to that GO term.
-
-Interpretation of z-scores:
-
-A positive z-score indicates that the GO term has more up-regulated
-genes than down-regulated genes relative to its size and is therefore
-more likely to be biologically increased or activated.
-
-A negative z-score indicates more down-regulated genes and suggests that
-the GO term is more likely to be biologically decreased or inhibited.
-
-The magnitude of the z-score tells you how strong this trend is,
-adjusted for the total number of genes in that GO term.
-
-In your data, z-scores ranging approximately from +2 to -1.73 mean:
-
-Values toward +2 imply that some GO terms show a notable prevalence of
-up-regulated genes, suggesting activation or up-regulation of those
-biological functions or processes.
-
-Values near -1.73 indicate other GO terms have a moderate dominance of
-down-regulated genes, implying suppression or down-regulation.
-
-Typically, a z-score greater than 2 or less than -2 is considered
-significant evidence of activation or inhibition, respectively, though
-borderline values like yours still provide useful directional hints.
-
-This z-score metric provides a simple, normalized way to capture the
-overall regulatory direction of each GO term based on the gene
-expression data from your DESeq2 contrast, giving you an intuitive
-measure to prioritize and visualize the biological processes likely
-impacted in your dataset.
-
-Thus, in your chord diagram or other visualizations, z-score can be used
-to color or weight GO terms and gene links to quickly highlight
-activated vs. repressed functions.
-
-*Generated via perplexity AI on 15AUG2025*
-:::
-:::
-
-```{r}
-# Select and arrange columns to match GOplot 'circ' format
-circ_dfp <- circ_dfp %>%
-  select(!term) %>% # remove term colunm
-  mutate(term = parentTerm) %>% # replace it with the parent term column
-  select(category,
-         ID,
-         term,
-         count,
-         genes,
-         logFC,
-         adj_pval,
-         zscore) %>% 
-  as.data.frame()
-```
-
-### Create binary matrix using `chord_dat()`
-
-::: callout-caution
-`chord_dat()` expects the `genes =` to have genes in a column named `ID`
-with a `logFC` column The matrix should be: genes as rows, terms as
-columns (binary matrix), and one column named "logFC".
-:::
-
-```{r}
-circ_genes <- circ_dfp %>% 
-  select(genes, logFC) %>% 
-  rename(ID = genes) %>% 
-  distinct()
-```
-
-```{r binary-matrix-chord_dat}
-chord <- chord_dat(
-  data = circ_dfp,
-  genes = circ_genes,
-  process = c("regulation of RNA metabolic process", 
-              "positive regulation of biological process", 
-              "cellular metabolic process", 
-              "response to stress", 
-              "response to chemical",
-              "cell differentiation",
-              "regulation of signaling",
-              "organonitrogen compound metabolic process"))
-```
-
-### Plot chord diagram
-
-```{r}
-library(viridis)
-library(RColorBrewer)
-```
-
-```{r}
-display.brewer.all()
-```
-
-viridis magma plasma inferno cividis mako rocket turbo
-
-```{r}
-library(scales)
-show_col(turbo(5))
-```
-
-```{r}
-ribbons <- turbo(5)
-ribbons_viridis <- viridis(5)
-ribbons_pastel <- brewer.pal(5, "Pastel2")
-```
-
-```{r plot-chord, fig.height=10, fig.width=9}
-chordplot <- GOChord(chord, 
-                     gene.order = "logFC",
-                     border.size = 0.2,
-                     gene.size = 3,
-                     title = "Enriched GO terms across significantly different interaction genes",
-                     process.label = 10,
-                     space = 0.02,
-                     gene.space = 0.25)
-chordplot
-```
-
-```{r}
-ggsave("../../output/07_go/chord_plot.png", width = 12, height = 12, dpi = 600 )
-```
-
-> Therefore, if you want to include more than one logFC value per gene.
-> To adjust to this situation you should use the nlfc argument. It is a
-> numeric value and it defines the number of logFC columns within your
-> binary membership matrix. The default is '1' assuming that most of the
-> time you just have one contrast and one logFC value per gene.
-
-# GOHeat
-
-```{r}
-GOHeat(chord, nlfc = 1, fill.col = c('red', 'white', 'blue'))
-```
 
 # Summary & next steps
 
-Inputs: - List of 44 genes significant in the leachate × stage
-interaction test. - Montipora capitata genome FASTA and GFF3
-annotation. - EggNog and KEGG functional annotation files.
-
-Setup: - Installed and loaded R packages (goseq, rrvgo, GOplot, flexoki,
-etc.). - Imported gene count data, annotation tables, and genome
-sequences. - Extracted FASTA sequences of the 44 significant genes.
-
-Annotation: - Mapped 37 of 44 significant genes to EggNog/KEGG
-functional annotations. - Linked each gene to transcript length
-information from the GFF3 file. - Formatted GO term columns for
-downstream use.
-
-Enrichment Analysis: - Used goseq to perform GO enrichment (biological
-process level) while correcting for gene length bias. - Significance was
-assessed with Wallenius' distribution and Benjamini--Hochberg FDR
-correction (padj \< 0.05). - Identified enriched biological process
-terms.
-
-Redundancy Reduction & Visualization: - Applied rrvgo to cluster
-semantically similar GO terms and reduce redundancy.
-
 Produced visualizations: - Heatmap of GO term similarity. - Scatter plot
-grouping GO terms into 5 major clusters. - Treemap, word cloud, and
-chord diagrams to summarize enriched functions. - Calculated z-scores
-per GO term to indicate whether functions were enriched for upregulated
-or downregulated genes.
-
+grouping GO terms into 5 major clusters. - Treemap to summarize enriched functions. 
 Outputs:
 
 -   Tables of enriched GO terms, reduced clusters, semantic similarity
     matrices, and gene-to-term assignments.
--   Multiple graphical summaries (heatmap, PCA scatter, treemap, word
-    cloud, chord plot)
+-   Multiple graphical summaries (heatmap, PCA scatter, treemap)
     
 ```{r}
 sessionInfo()

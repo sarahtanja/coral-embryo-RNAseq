@@ -375,10 +375,17 @@ sig_hvc_eg_af <- sig_hvc_eg_annofilt %>% left_join(lengths, by = "gene_id")
 ## Add interaction deg pattern clusters
 
 Add column indicating deg pattern (1-4)
-
+a = annotated, f = filtered, p = patterns
 ```{r, deg-pattern-annotation}
 sig_genes_afp <- inner_join(sig_genes_af, int_deg_patterns, by = "gene_id")
 str(sig_genes_afp)
+```
+
+```{r}
+write_csv(sig_genes_afp, "../../output/08_go/sig_genes_int.csv")
+write_csv(sig_genes_afp, "../../output/08_go/sig_genes_int.csv")
+write_csv(sig_genes_afp, "../../output/08_go/sig_genes_int.csv")
+
 ```
 
 Subset annotated dataframe to each deg pattern (1-4)
@@ -427,11 +434,12 @@ closely with the others in pattern 3.
 JK can't do it with 1 gene! Have to simply report functional annotation. 
 :::
 
-# Get annotation for ONE gene
+# Get annotation for ONE gene in pattern 4
 ```{r}
 # Print nicely
 knitr::kable(t(sig_genes_af4), col.names = c("Annotation"))
 ```
+
 ```{r}
 cat(paste(
   "Gene", sig_genes_af4$gene_id, "is described as", sig_genes_af4$Description, ".",
@@ -498,12 +506,13 @@ knitr::kable(go_map[!is.na(go_map$GO_Name), ])  # Exclude unmapped for pretty di
 ```{r}
 cat(paste(na.omit(go_names), collapse = "; "))
 ```
+
 ```{r}
 write_csv(go_map, "../../output/08_go/functional_annotation_Montipora_capitata_HIv3___TS.g15697.t1.csv")
 ```
 
 ::: column-margin
-# How do you report functional annotation of 1 gene?
+How do you report functional annotation of 1 gene?
 
 To summarize and report the functional annotation of a single gene, you should focus on clearly presenting all available annotation information for that gene, rather than attempting any statistical enrichment. 
 - Tips for Reporting
@@ -692,6 +701,20 @@ GO.terms.lvccl <- split_go(GO.terms.lvccl)
 GO.terms.mvccl <- split_go(GO.terms.mvccl)
 GO.terms.hvccl <- split_go(GO.terms.hvccl)
 GO.terms.hvceg <- split_go(GO.terms.hvceg)
+```
+
+Save GO.terms.xx files
+```{r}
+write_csv(GO.terms.int, "../../output/08_go/GO.terms.int.csv")
+
+write_csv(GO.terms.1, "../../output/08_go/GO.terms.1.csv")
+write_csv(GO.terms.2, "../../output/08_go/GO.terms.2.csv")
+write_csv(GO.terms.3, "../../output/08_go/GO.terms.3.csv")
+
+write_csv(GO.terms.lvccl, "../../output/08_go/GO.terms.lvccl.csv")
+write_csv(GO.terms.mvccl, "../../output/08_go/GO.terms.mvccl.csv")
+write_csv(GO.terms.hvccl, "../../output/08_go/GO.terms.hvccl.csv")
+write_csv(GO.terms.hvceg, "../../output/08_go/GO.terms.hvceg.csv")
 ```
 
 Get vector of gene lengths
