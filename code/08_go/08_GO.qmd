@@ -139,7 +139,7 @@ sig_seqs <- all_seqs[names(all_seqs) %in% sig_genes]
 
 ```{r, eval=FALSE}
 # Save to new FASTA file
-writeXStringSet(sig_seqs, "../../output/08_go/significant_genes.fasta")
+#writeXStringSet(sig_seqs, "../../output/08_go/significant_genes.fasta")
 ```
 
 Download annotation & enrichment files
@@ -149,10 +149,10 @@ Only need to do this once!
 :::
 
 ```{r, engine='bash', eval=FALSE}
-cd ../../input/annotations
+#cd ../../input/annotations
 
-wget http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.EggNog_results.txt.gz
-wget http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.KEGG_results.txt.gz
+#wget http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.EggNog_results.txt.gz
+#wget http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.KEGG_results.txt.gz
 ```
 
 Unzip
@@ -162,8 +162,8 @@ Only need to do this once!
 :::
 
 ```{r, engine='bash', eval=FALSE}
-cd ../../input/annotations
-gunzip *.gz
+#cd ../../input/annotations
+#gunzip *.gz
 ```
 
 Import EggNog to R environment
@@ -340,7 +340,7 @@ which was a category that made biological sense to the leachate
 pollution exposure.
 :::
 
-## Get gene lengths
+## Add gene lengths
 
 ```{r}
 #import file
@@ -383,9 +383,10 @@ str(sig_genes_afp)
 
 ```{r}
 write_csv(sig_genes_afp, "../../output/08_go/sig_genes_int.csv")
-write_csv(sig_genes_afp, "../../output/08_go/sig_genes_int.csv")
-write_csv(sig_genes_afp, "../../output/08_go/sig_genes_int.csv")
-
+write_csv(sig_lvc_cl_af, "../../output/08_go/sig_genes_lvccl.csv")
+write_csv(sig_mvc_cl_af, "../../output/08_go/sig_genes_mvccl.csv")
+write_csv(sig_hvc_cl_af, "../../output/08_go/sig_genes_hvccl.csv")
+write_csv(sig_hvc_eg_af, "../../output/08_go/sig_genes_hvceg.csv")
 ```
 
 Subset annotated dataframe to each deg pattern (1-4)
@@ -522,8 +523,6 @@ If multiple genes must be reported, use a table; if just one, a narrative or sim
 Summary:
 When you have just one gene, simply report all its functional annotation fields clearly—no statistics or enrichment. This helps readers understand what is known about the gene’s possible roles.
 :::
-
-## Annotate contrast DEG lists
 
 # Functional enrichment
 
@@ -821,7 +820,7 @@ pwf.hvceg <- nullp(gene.vector.hvceg, bias.data = LENGTH.vector)
 > higher DE probability. If it\'s flat, length bias is minimal (fine!).
 > If it\'s erratic, check inputs.
 
-## GO enrichment
+## GO BP enrichment
 
 ```{r}
 # Run GO enrichment for biological process terms
@@ -970,25 +969,25 @@ Write to csv
 ```{r}
 # Interactions 
 write_csv(GO.BP.int, 
-          file = "../../output/08_go/functional_enrichment_goseq_44int.csv")
+          file = "../../output/08_go/GO.BP.int.csv")
 
 # Interaction patterns
 write_csv(GO.BP.1, 
-          file = "../../output/08_go/functional_enrichment_goseq_44intclust1.csv")
+          file = "../../output/08_go/GO.BP.1.csv")
 write_csv(GO.BP.2, 
-          file = "../../output/08_go/functional_enrichment_goseq_44intclust2.csv")
+          file = "../../output/08_go/GO.BP.2.csv")
 write_csv(GO.BP.3, 
-          file = "../../output/08_go/functional_enrichment_goseq_44intclust3.csv")
+          file = "../../output/08_go/GO.BP.3.csv")
 
 # Contrasts
 write_csv(GO.BP.lvccl, 
-          file = "../../output/08_go/functional_enrichment_goseq_lvc_cl.csv")
+          file = "../../output/08_go/GO.BP.lvccl.csv")
 write_csv(GO.BP.mvccl, 
-          file = "../../output/08_go/functional_enrichment_goseq_mvc_cl.csv")
+          file = "../../output/08_go/GO.BP.mvccl.csv")
 write_csv(GO.BP.hvccl, 
-          file = "../../output/08_go/functional_enrichment_goseq_hvc_cl.csv")
+          file = "../../output/08_go/GO.BP.hvccl.csv")
 write_csv(GO.BP.hvceg, 
-          file = "../../output/08_go/functional_enrichment_goseq_hvc_eg.csv")
+          file = "../../output/08_go/GO.BP.hvceg.csv")
 ```
 
 ::: column-margin

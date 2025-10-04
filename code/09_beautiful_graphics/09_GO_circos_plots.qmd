@@ -31,13 +31,84 @@ editor:
 
 # Background
 
-Resources: A little help from Grace Crandall's code
-[here](https://github.com/grace-ac/paper-pycno-sswd-2021-2022/blob/main/code/28-chord-plots.Rmd). -
-\[A tutorial using
-`circlize`\](https://bioinfo4all.wordpress.com/2021/03/13/tutorial-7-how-to-do-chord-diagram-using-r/ -
-[Another `circlize`
-example](https://jokergoo.github.io/circlize_book/book/the-chorddiagram-function.html)
-\## Inputs - GO.BP.xx - GO.terms.xx - sig.genes.anno
+Resources: A lot of help from Grace Crandall's code
+[here](https://github.com/grace-ac/paper-pycno-sswd-2021-2022/blob/main/code/28-chord-plots.Rmd).
+
+-   [A tutorial using
+    `circlize`](https://bioinfo4all.wordpress.com/2021/03/13/tutorial-7-how-to-do-chord-diagram-using-r/)
+
+-   [Another `circlize`
+    example](https://jokergoo.github.io/circlize_book/book/the-chorddiagram-function.html)
+
+## Inputs
+
+-   GO.BP.xx
+
+```{r}
+# Interactions 
+GO.BP.int <- read_csv("../../output/08_go/GO.BP.int.csv")
+
+# Interaction patterns
+GO.BP.1 <- read_csv("../../output/08_go/GO.BP.1.csv")
+GO.BP.2 <- read_csv("../../output/08_go/GO.BP.2.csv")
+GO.BP.3 <- read_csv("../../output/08_go/GO.BP.3.csv")
+
+# Contrasts
+GO.BP.lvccl <- read_csv("../../output/08_go/GO.BP.lvccl.csv")
+GO.BP.mvccl <- read_csv("../../output/08_go/GO.BP.mvccl.csv")
+GO.BP.hvccl <- read_csv("../../output/08_go/GO.BP.hvccl.csv")
+GO.BP.hvceg <- read_csv("../../output/08_go/GO.BP.hvceg.csv")
+```
+
+-   GO.terms.xx
+
+```{r}
+# Interactions 
+GO.terms.int <- read_csv("../../output/08_go/GO.terms.int.csv")
+
+GO.terms.1 <- read_csv("../../output/08_go/GO.terms.1.csv")
+GO.terms.2 <- read_csv("../../output/08_go/GO.terms.2.csv")
+GO.terms.3 <- read_csv("../../output/08_go/GO.terms.3.csv")
+
+# Contrasts
+GO.terms.lvccl <- read_csv("../../output/08_go/GO.terms.lvccl.csv")
+GO.terms.mvccl <- read_csv("../../output/08_go/GO.terms.mvccl.csv")
+GO.terms.hvccl <- read_csv("../../output/08_go/GO.terms.hvccl.csv")
+GO.terms.hvceg <- read_csv("../../output/08_go/GO.terms.hvceg.csv")
+```
+
+-   sig_genes_xx
+
+```{r}
+# Interactions 
+sig_genes_afp <- read_csv("../../output/08_go/sig_genes_int.csv")
+
+# Contrasts
+sig_lvc_cl_af <- read_csv("../../output/08_go/sig_genes_lvccl.csv")
+sig_mvc_cl_af <- read_csv("../../output/08_go/sig_genes_mvccl.csv")
+sig_hvc_cl_af <- read_csv("../../output/08_go/sig_genes_hvccl.csv")
+sig_hvc_eg_af <- read_csv("../../output/08_go/sig_genes_hvceg.csv")
+```
+
+-   reducedTerms.xx
+
+```{r}
+## Reduced Terms
+### Interaction
+reducedTerms.int <- read.csv("../../output/08_go/reducedTerms_int.csv")
+
+### Interaction patterns
+reducedTerms.1 <- read.csv("../../output/08_go/reducedTerms_1.csv")
+reducedTerms.2 <- read.csv("../../output/08_go/reducedTerms_2.csv")
+reducedTerms.3 <- read.csv("../../output/08_go/reducedTerms_3.csv")
+
+### Contrasts
+reducedTerms.lvccl <- read.csv("../../output/08_go/reducedTerms_lvccl.csv")
+reducedTerms.mvccl <- read.csv("../../output/08_go/reducedTerms_mvccl.csv")
+reducedTerms.hvccl <- read.csv("../../output/08_go/reducedTerms_hvccl.csv")
+reducedTerms.hvceg <- read.csv("../../output/08_go/reducedTerms_hvceg.csv")
+
+```
 
 ## Outputs
 
@@ -64,6 +135,8 @@ knitr::opts_chunk$set(
 #install.packages("GOplot")
 #install.packages("plotly")
 #install.packages("tidyverse")
+#install.packages("RColorBrewer")
+#install.packages("circlize")
 
 ## Bioconductor packages---------
 #if (!require("BiocManager", quietly = TRUE))
@@ -74,11 +147,12 @@ knitr::opts_chunk$set(
 ## Load packages
 
 ```{r}
-library(GOplot)
 library(plotly)
 library(tidyverse)
-library(rrvgo)
-library(kableExtra)
+library(RColorBrewer)
+library(viridis)
+library(circlize)
+library(GOplot)
 ```
 
 # GOplot
@@ -158,10 +232,10 @@ made. For the time being we're going to select the early gastrula low
 contrast because it had the most DEGs
 :::
 
-sig_genes_anno is the annotated results from DESeq2
+sig_genes_afp is the annotated-filtered-pattern results from DESeq2
 
 ```{r}
-genes_circ <- sig_genes_anno %>% 
+genes_circ <- sig_genes_afp %>% 
   select(ID = gene_id, 
          logFC = earlygastrula_high_log2FC)
 
@@ -212,7 +286,7 @@ gene... which is always 1, This also throws off the zscore calculation
 which depends on count.
 :::
 
-### JK Manually create `circ_df`
+### So...  We have to manually create `circ_df`
 
 ```{r}
 circ_df <- go_circ %>%  
@@ -220,7 +294,7 @@ circ_df <- go_circ %>%
   drop_na(term)
 
 circ_df_parent <- circ_df %>% 
-  left_join(reducedTerms.all, by = c("ID" = "go", "term" = "term"))
+  left_join(reducedTerms.int, by = c("ID" = "go", "term" = "term"))
 ```
 
 Add zscore column
@@ -328,33 +402,16 @@ circ_genes <- circ_dfp %>%
 chord <- chord_dat(
   data = circ_dfp,
   genes = circ_genes,
-  process = c("regulation of RNA metabolic process", 
-              "positive regulation of biological process", 
-              "cellular metabolic process", 
-              "response to stress", 
-              "response to chemical",
-              "cell differentiation",
-              "regulation of signaling",
-              "organonitrogen compound metabolic process"))
+  process = c("regulation of cellular metabolic process", 
+              "system development", 
+              "cellular developmental process", 
+              "cellular response to stress", 
+              "response to chemical"))
 ```
 
 ### Plot chord diagram
 
-```{r}
-library(viridis)
-library(RColorBrewer)
-```
-
-```{r}
-display.brewer.all()
-```
-
-viridis magma plasma inferno cividis mako rocket turbo
-
-```{r}
-library(scales)
-show_col(turbo(5))
-```
+viridis options: magma plasma inferno cividis mako rocket turbo
 
 ```{r}
 ribbons <- turbo(5)
@@ -364,13 +421,7 @@ ribbons_pastel <- brewer.pal(5, "Pastel2")
 
 ```{r plot-chord, fig.height=10, fig.width=9}
 chordplot <- GOChord(chord, 
-                     gene.order = "logFC",
-                     border.size = 0.2,
-                     gene.size = 3,
-                     title = "Enriched GO terms across significantly different interaction genes",
-                     process.label = 10,
-                     space = 0.02,
-                     gene.space = 0.25)
+                     gene.order = "logFC")
 chordplot
 ```
 
