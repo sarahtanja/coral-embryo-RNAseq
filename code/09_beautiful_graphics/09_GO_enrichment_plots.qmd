@@ -167,20 +167,21 @@ applying a PCoA to the (di)similarity matrix. Size of the point
 represents the provided scores or, in its absence, the number of genes
 the GO term contains.
 
+### Interaction
 ```{r}
 scatterPlot(simMatrix.int, reducedTerms.int,
             onlyParents = FALSE,
             addLabel = TRUE,
             labelSize = 4)
 ```
-
+### Expression pattern 1
 ```{r}
 scatterPlot(simMatrix.1, reducedTerms.1,
             onlyParents = FALSE,
             addLabel = TRUE,
             labelSize = 4)
 ```
-
+### Expression pattern 2
 ```{r}
 scatterPlot(simMatrix.2, reducedTerms.2,
             onlyParents = FALSE,

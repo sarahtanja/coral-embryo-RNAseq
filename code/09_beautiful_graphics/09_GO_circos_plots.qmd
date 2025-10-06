@@ -147,11 +147,11 @@ knitr::opts_chunk$set(
 ## Load packages
 
 ```{r}
-library(plotly)
+#library(plotly)
 library(tidyverse)
 library(RColorBrewer)
 library(viridis)
-library(circlize)
+#library(circlize)
 library(GOplot)
 ```
 
@@ -286,7 +286,7 @@ gene... which is always 1, This also throws off the zscore calculation
 which depends on count.
 :::
 
-### So...  We have to manually create `circ_df`
+### So... We have to manually create `circ_df`
 
 ```{r}
 circ_df <- go_circ %>%  
@@ -420,9 +420,32 @@ ribbons_pastel <- brewer.pal(5, "Pastel2")
 ```
 
 ```{r plot-chord, fig.height=10, fig.width=9}
-chordplot <- GOChord(chord, 
+chordplot <- GOplot::GOChord(chord, 
                      gene.order = "logFC")
 chordplot
+
+
+```
+
+::: callout-warning
+https://github.com/copilot/share/c8711336-0260-88b7-b052-024700c240ca
+:::
+
+```{r}
+chordplot <- chordplot + theme(
+  axis.title.x = element_blank(),
+  axis.title.y = element_blank(),
+  axis.text.x = element_blank(),
+  axis.text.y = element_blank(),
+  axis.ticks = element_blank(),
+  axis.line = element_blank(),
+  panel.background = element_blank(),
+  panel.border = element_blank(),
+  panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  plot.background = element_blank()
+)
+print(chordplot)
 ```
 
 ```{r}
