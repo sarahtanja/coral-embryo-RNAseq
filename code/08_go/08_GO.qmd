@@ -325,19 +325,19 @@ paste("GO annotated high vs control early gastrula:",
 
 
 ::: callout-important
-23 of the 44 significant genes were annotated with GO terms! The
-annotation file `sig_genes_annofilt` dataframe now only contains genes
+These dataframes now only contain genes
 that were significant *and* have GO annotation information.
 
-Previously I didn't filter out the genes with NA GO terms and my results
-were different... not sure why that is as I select only the GOs in the
-mapping step. I think it's because I included genes without GOs in the
-universe for bias correction. I've changed this so that I filter out any
-that lack GO terms.
+Can we do enrichment with the numbers of annotated genes we have?
 
-One bummer about this is the category 'response to chemical' dropped...
-which was a category that made biological sense to the leachate
-pollution exposure.
+< 10 genes:
+Very small. Statistical power is extremely limited, and enrichment results are unreliable or can’t be computed at all.
+10–30 genes:
+Small. You may see odd statistical artifacts—like p-values of 0, ties, or unstable FDR corrections. Results can be meaningful but must be interpreted with caution. Enriched terms may be driven by just a few genes.
+30–100 genes:
+Moderate. This is more typical for focused DEG lists. Results are more stable, but still sensitive to outliers and list composition.
+100+ genes:
+Ideal for most GO tools. Enrichment statistics are most stable and reliable.
 :::
 
 ## Add gene lengths
@@ -1044,7 +1044,7 @@ What is a semantic similarity matrix?
 > fewer groups, and the threshold should be read as the minimum
 > similarity between group representatives.
 
-Calculate semantic similarity matrix
+# Calculate semantic similarity matrix
 ```{r}
 # Interaction
 simMatrix.int <- calculateSimMatrix(
@@ -1111,7 +1111,7 @@ simMatrix.hvceg <- calculateSimMatrix(
 
 ```
 
-Create named scores vectors
+# Create named scores vectors
 
 ::: callout-caution
 The first time I ran this as:

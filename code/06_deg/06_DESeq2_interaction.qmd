@@ -60,26 +60,26 @@ Here we are looking at a multifactorial differential gene expression analysis fo
 
 ```{r, eval=FALSE}
 # CRAN packages
-install.packages(c(
-  "tidyverse",
-  "viridis",
-  "plotly",
-  "cowplot",
-  "pheatmap",
-  "vsn",
-  "ashr",
-  "remotes"  # required for GitHub installs
-))
+#install.packages(c(
+#  "tidyverse",
+#  "viridis",
+#  "plotly",
+#  "cowplot",
+#  "pheatmap",
+#  "vsn",
+#  "ashr",
+#  "remotes"  # required for GitHub installs
+#))
 
-install.packages("ComplexUpset")    # ggplot2-based, prettier
+#install.packages("ComplexUpset")    # ggplot2-based, prettier
 # GitHub package
-remotes::install_github("mdscheuerell/flexoki")
+#remotes::install_github("mdscheuerell/flexoki")
 
 # Bioconductor
-if (!"BiocManager" %in% rownames(installed.packages())) {
-  install.packages("BiocManager")
-}
-BiocManager::install(c("DESeq2", "DEGreport"))
+#if (!"BiocManager" %in% rownames(installed.packages())) {
+#  install.packages("BiocManager")
+#}
+#BiocManager::install(c("DESeq2", "DEGreport"))
 ```
 
 ## Load packages
@@ -106,7 +106,7 @@ In this count matrix, each row represents a gene, each column a sequenced RNA li
 -   `check.names = FALSE` removed the 'X' from in front of sample id's in the column headers
 
 ```{r, eval=TRUE}
-gcm_filtor <- read.csv("../../output/05_explore/gcm_filtor.csv", row.names="gene_id", check.names=FALSE)
+gcm_filtor <- read.csv("../../output/05_explore/gcm_filtor.csv", row.names="gene_id", check.names=FALSE) 
 head(gcm_filtor)
 ```
 
@@ -467,48 +467,189 @@ resultsNames(dds_wald)
 
 Each of the above interaction terms tells us the extra effect of the leachate level at a stage (vs the additive sum of the stage and leachate effects) in comparison to a control baseline count. For the interaction terms, we are trying to get the "difference of the differences". For this analysis, we are interested in genes that are differentially expressed in treatment conditions, but not in the control condition (ie. genes uniquely changing in a stage due to treatment).
 
-### Summarize interactions
-
+### Prawnchip
 ```{r}
-# Get the interaction Wald results
-res_high_pc <- results(dds_wald, name = "stageprawnchip.leachatehigh")
-res_mid_pc  <- results(dds_wald, name = "stageprawnchip.leachatemid")
-res_low_pc  <- results(dds_wald, name = "stageprawnchip.leachatelow")
-res_high_eg <- results(dds_wald, name = "stageearlygastrula.leachatehigh")
-res_mid_eg  <- results(dds_wald, name = "stageearlygastrula.leachatemid")
-res_low_eg  <- results(dds_wald, name = "stageearlygastrula.leachatelow")
+res_h_int_pc <- results(dds_wald, name = "stageprawnchip.leachatehigh", alpha = 0.05)
+summary(res_h_int_pc)
 ```
 
 ```{r}
-summary(res_high_pc)
+res_m_int_pc  <- results(dds_wald, name = "stageprawnchip.leachatemid", alpha = 0.05)
+summary(res_m_int_pc)
 ```
 
 ```{r}
-summary(res_mid_pc)
+res_l_int_pc  <- results(dds_wald, name = "stageprawnchip.leachatelow", alpha = 0.05)
+summary(res_l_int_pc)
+```
+### Early gastrula
+```{r}
+res_h_int_eg <- results(dds_wald, name = "stageearlygastrula.leachatehigh", alpha = 0.05)
+summary(res_h_int_eg)
 ```
 
 ```{r}
-summary(res_low_pc)
+res_m_int_eg  <- results(dds_wald, name = "stageearlygastrula.leachatemid", alpha = 0.05)
+summary(res_m_int_eg)
 ```
 
 ```{r}
-summary(res_high_eg)
+res_l_int_eg  <- results(dds_wald, name = "stageearlygastrula.leachatelow", alpha = 0.05)
+summary(res_l_int_eg)
 ```
+
+## Contrasts 
+
+See [A guide to designs and contrasts in DESeq2](https://www.atakanekiz.com/technical/a-guide-to-designs-and-contrasts-in-DESeq2/) by Dr. Atakan Ekiz
 
 ```{r}
-summary(res_mid_eg)
+resultsNames(dds_wald)
 ```
+
+## low leachate vs control (lvc)
+
+for cleavage (baseline stage)
 
 ```{r}
-summary(res_low_eg)
+res_lvc_cl <- results(dds_wald, name = "leachate_low_vs_control", alpha = 0.05)
+summary(res_lvc_cl)
 ```
 
+::: callout-note
+39 genes were found to be significantly differentially expressed (adjusted p value \< 0.05) at the cleavage stage in the low leachate treatment compared to the control. 14 LFC \> 0 & 25 LFC \< 0.
+:::
+
+```{r}
+sig_lvc_cl <- as.data.frame(subset(res_lvc_cl, padj<0.05))
+sig_lvc_cl <- sig_lvc_cl %>% rownames_to_column(., var = "gene_id") 
+write_csv(sig_lvc_cl, "../../output/06_deg/contrasts/sig_lvc_cl.csv")
+```
+
+for prawnchip
+
+```{r}
+res_lvc_pc <- results(dds_wald, contrast = list(c("leachate_low_vs_control",
+                                                  "stageprawnchip.leachatelow")), 
+                      alpha = 0.05)
+summary(res_lvc_pc)
+```
+
+::: callout-note
+0 genes differentially expressed (adjusted p value \< 0.05) at the prawn chip stage in the low leachate treatment when compared to the control.
+:::
+
+for early gastrula
+
+```{r}
+res_lvc_eg <- results(dds_wald, contrast = list(c("leachate_low_vs_control",
+                                                 "stageearlygastrula.leachatelow")),
+                      alpha = 0.05)
+summary(res_lvc_eg)
+```
+
+::: callout-note
+0 genes differentially expressed (adjusted p value \< 0.05) at the early gatrula stage in the low leachate treatment when compared to the control.
+:::
+
+## mid leachate vs. control (mvc)
+
+for cleavage
+
+```{r}
+res_mvc_cl <- results(dds_wald, name = "leachate_mid_vs_control", alpha = 0.05)
+summary(res_mvc_cl)
+```
+
+::: callout-note
+77 genes were found to be significantly differentially expressed (adjusted p value \< 0.05) at the cleavage stage in the mid leachate treatment compared to the control. 77 LFC \> 0. These 77 genes were all found in more abundance compared to the controls. 
+:::
+
+```{r}
+sig_mvc_cl <- as.data.frame(subset(res_mvc_cl, padj<0.05))
+sig_mvc_cl <- sig_mvc_cl %>% rownames_to_column(., var = "gene_id")
+write_csv(sig_mvc_cl, "../../output/06_deg/contrasts/sig_mvc_cl.csv")
+```
+
+for prawnchip
+
+```{r}
+res_mvc_pc <- results(dds_wald, contrast = list(c("leachate_mid_vs_control",
+                                                  "stageprawnchip.leachatemid")))
+summary(res_mvc_pc)
+```
+
+::: callout-note
+0 genes differentially expressed (adjusted p value \< 0.05) at the prawn chip stage in the mid leachate treatment when compared to the control.
+:::
+
+for early gastrula
+
+```{r}
+res_mvc_eg <- results(dds_wald, contrast = list(c("leachate_mid_vs_control",
+                                                  "stageearlygastrula.leachatemid")))
+summary(res_mvc_eg)
+```
+
+::: callout-note
+0 genes differentially expressed (adjusted p value \< 0.05) at the early gastrula stage in the mid leachate treatment when compared to the control.
+:::
+
+## high leachate vs. control (hvc)
+
+for cleavage
+
+```{r}
+res_hvc_cl <- results(dds_wald, name = "leachate_high_vs_control")
+summary(res_hvc_cl)
+```
+
+::: callout-note
+24 genes were found to be significantly differentially expressed (adjusted p value \< 0.05) at the cleavage stage in the high leachate treatment compared to the control. 8 LFC \> 0 , 16 LFC \<0.
+:::
+
+```{r}
+sig_hvc_cl <- as.data.frame(subset(res_hvc_cl, padj<0.05))
+sig_hvc_cl <- sig_hvc_cl %>% rownames_to_column(., var = "gene_id")
+write_csv(sig_hvc_cl, "../../output/06_deg/contrasts/sig_hvc_cl.csv")
+```
+
+for prawnchip
+
+```{r}
+res_hvc_pc <- results(dds_wald, contrast = list(c("leachate_high_vs_control",
+                                                  "stageprawnchip.leachatehigh")))
+summary(res_hvc_pc)
+```
+
+::: callout-note
+0 genes differentially expressed (adjusted p value \< 0.05) at the prawn chip stage in the high leachate treatment when compared to the control.
+:::
+
+for early gastrula
+
+```{r}
+res_hvc_eg <- results(dds_wald, contrast = list(c("leachate_high_vs_control",
+                                                  "stageearlygastrula.leachatehigh")))
+summary(res_hvc_eg)
+```
+
+::: callout-note
+32 genes were found to be significantly differentially expressed (adjusted p value \< 0.05) at the early gastrula stage in the high leachate treatment compared to the control. 32 LFC \> 0 .
+:::
+
+```{r}
+sig_hvc_eg <- as.data.frame(subset(res_hvc_eg, padj<0.05))
+sig_hvc_eg <- sig_hvc_eg %>% rownames_to_column(., var = "gene_id")
+write_csv(sig_hvc_eg, "../../output/06_deg/contrasts/sig_hvc_eg.csv")
+```
+
+# Combine results
 ```{r}
 # Combine into a summary
 int_wald_df <- data.frame(
   gene_id = rownames(res_high_pc),
-  prawnchip_high_log2FC = res_high_pc$log2FoldChange,
-  prawnchip_high_padj = res_high_pc$padj,
+  pc_h_log2FC = res_high_pc$log2FoldChange,
+  pc_high_padj = res_high_pc$padj,
   prawnchip_mid_log2FC = res_mid_pc$log2FoldChange,
   prawnchip_mid_padj = res_mid_pc$padj,
   prawnchip_low_log2FC = res_low_pc$log2FoldChange,
@@ -655,150 +796,6 @@ PCA_sig <- ggplot(pca_sig, aes(PC1, PC2, color = stage, shape = leachate, label 
 ggplotly(PCA_sig, tooltip = "label")
 ```
 
-# Contrasts (vs.)
-
-See [A guide to designs and contrasts in DESeq2](https://www.atakanekiz.com/technical/a-guide-to-designs-and-contrasts-in-DESeq2/) by Dr. Atakan Ekiz
-
-```{r}
-resultsNames(dds_wald)
-```
-
-## low leachate vs control (lvc)
-
-for cleavage (baseline stage)
-
-```{r}
-res_lvc_cl <- results(dds_wald, name = "leachate_low_vs_control", alpha = 0.05)
-summary(res_lvc_cl)
-```
-
-::: callout-note
-39 genes were found to be significantly differentially expressed (adjusted p value \< 0.05) at the cleavage stage in the low leachate treatment compared to the control. 14 LFC \> 0 & 25 LFC \< 0.
-:::
-
-```{r}
-sig_lvc_cl <- as.data.frame(subset(res_lvc_cl, padj<0.05))
-sig_lvc_cl <- sig_lvc_cl %>% rownames_to_column(., var = "gene_id") 
-write_csv(sig_lvc_cl, "../../output/06_deg/contrasts/sig_lvc_cl.csv")
-```
-
-for prawnchip
-
-```{r}
-res_lvc_pc <- results(dds_wald, contrast = list(c("leachate_low_vs_control",
-                                                  "stageprawnchip.leachatelow")), 
-                      alpha = 0.05)
-summary(res_lvc_pc)
-```
-
-::: callout-note
-0 genes differentially expressed (adjusted p value \< 0.05) at the prawn chip stage in the low leachate treatment when compared to the control.
-:::
-
-for early gastrula
-
-```{r}
-res_lvc_eg <- results(dds_wald, contrast = list(c("leachate_low_vs_control",
-                                                 "stageearlygastrula.leachatelow")),
-                      alpha = 0.05)
-summary(res_lvc_eg)
-```
-
-::: callout-note
-0 genes differentially expressed (adjusted p value \< 0.05) at the early gatrula stage in the low leachate treatment when compared to the control.
-:::
-
-## mid leachate vs. control (mvc)
-
-for cleavage
-
-```{r}
-res_mvc_cl <- results(dds_wald, name = "leachate_mid_vs_control", alpha = 0.05)
-summary(res_mvc_cl)
-```
-
-::: callout-note
-77 genes were found to be significantly differentially expressed (adjusted p value \< 0.05) at the cleavage stage in the mid leachate treatment compared to the control. 77 LFC \> 0 .
-:::
-
-```{r}
-sig_mvc_cl <- as.data.frame(subset(res_mvc_cl, padj<0.05))
-sig_mvc_cl <- sig_mvc_cl %>% rownames_to_column(., var = "gene_id")
-write_csv(sig_mvc_cl, "../../output/06_deg/contrasts/sig_mvc_cl.csv")
-```
-
-for prawnchip
-
-```{r}
-res_mvc_pc <- results(dds_wald, contrast = list(c("leachate_mid_vs_control",
-                                                  "stageprawnchip.leachatemid")))
-summary(res_mvc_pc)
-```
-
-::: callout-note
-0 genes differentially expressed (adjusted p value \< 0.05) at the prawn chip stage in the mid leachate treatment when compared to the control.
-:::
-
-for early gastrula
-
-```{r}
-res_mvc_eg <- results(dds_wald, contrast = list(c("leachate_mid_vs_control",
-                                                  "stageearlygastrula.leachatemid")))
-summary(res_mvc_eg)
-```
-
-::: callout-note
-0 genes differentially expressed (adjusted p value \< 0.05) at the early gastrula stage in the mid leachate treatment when compared to the control.
-:::
-
-## high leachate vs. control (hvc)
-
-for cleavage
-
-```{r}
-res_hvc_cl <- results(dds_wald, name = "leachate_high_vs_control")
-summary(res_hvc_cl)
-```
-
-::: callout-note
-24 genes were found to be significantly differentially expressed (adjusted p value \< 0.05) at the cleavage stage in the high leachate treatment compared to the control. 8 LFC \> 0 , 16 LFC \<0.
-:::
-
-```{r}
-sig_hvc_cl <- as.data.frame(subset(res_hvc_cl, padj<0.05))
-sig_hvc_cl <- sig_hvc_cl %>% rownames_to_column(., var = "gene_id")
-write_csv(sig_hvc_cl, "../../output/06_deg/contrasts/sig_hvc_cl.csv")
-```
-
-for prawnchip
-
-```{r}
-res_hvc_pc <- results(dds_wald, contrast = list(c("leachate_high_vs_control",
-                                                  "stageprawnchip.leachatehigh")))
-summary(res_hvc_pc)
-```
-
-::: callout-note
-0 genes differentially expressed (adjusted p value \< 0.05) at the prawn chip stage in the high leachate treatment when compared to the control.
-:::
-
-for early gastrula
-
-```{r}
-res_hvc_eg <- results(dds_wald, contrast = list(c("leachate_high_vs_control",
-                                                  "stageearlygastrula.leachatehigh")))
-summary(res_hvc_eg)
-```
-
-::: callout-note
-32 genes were found to be significantly differentially expressed (adjusted p value \< 0.05) at the early gastrula stage in the high leachate treatment compared to the control. 32 LFC \> 0 .
-:::
-
-```{r}
-sig_hvc_eg <- as.data.frame(subset(res_hvc_eg, padj<0.05))
-sig_hvc_eg <- sig_hvc_eg %>% rownames_to_column(., var = "gene_id")
-write_csv(sig_hvc_eg, "../../output/06_deg/contrasts/sig_hvc_eg.csv")
-```
 
 # Save gene lists
 

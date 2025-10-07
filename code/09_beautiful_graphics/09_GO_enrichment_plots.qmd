@@ -159,7 +159,7 @@ heatmapPlot(simMatrix.3,
 ```
 
 
-## Scatter plot
+## `rrvgo` scatter plots
 
 Plot GO terms as scattered points. Distances between points represent
 the similarity between terms, and axes are the first 2 components of
@@ -223,7 +223,7 @@ scatterPlot(simMatrix.hvceg, reducedTerms.hvceg,
             addLabel = TRUE,
             labelSize = 4)
 ```
-
+# Custom PCA scatter plots
 ## Interaction "5 clusters" summary
 I want a dataframe that groups my GO terms based on the 5 main
 clusters displayed in this PCA. The scatterPlot uses a dimensionality
@@ -248,7 +248,6 @@ coord <- cmdscale(dist, k = 2)
 
 # Convert to dataframe with GO terms
 df_coords <- data.frame(go = rownames(simMatrix.int), Dim1 = coord[,1], Dim2 = coord[,2])
-
 ```
 
 Cluster the terms visually in 2D space Use k-means clustering on the 2D
@@ -271,24 +270,8 @@ This dataframe `final_df` will now include each GO term, its 2D
 coordinates used for visualization, and its assigned cluster
 corresponding to the 5 major groups in the scatterPlot.
 
-```{r}
-# 5) Quick visual check (should resemble your scatterPlot clusters)
-ggplot(final_df, aes(Dim1, Dim2, color = cluster.x, size = score, alpha = 0.4)) +
-  geom_point() +
-  coord_equal() +
-  labs(color = "Cluster (k=5)", title = "GO terms clustered in PCoA space") +
-  theme_minimal(base_size = 12)
-```
-
-```{r, fig.height=10, fig.width=15}
-# 5) Quick visual check (should resemble your scatterPlot clusters)
-ggplot(final_df, aes(Dim1, Dim2, color = parentTerm, size = score)) +
-  geom_point(alpha = 0.5) +
-  coord_equal() +
-  labs(color = "Parent Term", title = "GO terms clustered in PCoA space") +
-  theme_minimal(base_size = 12)
-```
 ### Interactive plot
+For exploration
 ```{r}
 p <- ggplot(final_df, aes(
     Dim1, Dim2,
@@ -310,6 +293,102 @@ p <- ggplot(final_df, aes(
 
 ggplotly(p, tooltip = "text")
 ```
+### Table of top parent terms
+```{r}
+# Summarize cluster content by parent term
+cluster_summary <- final_df %>%
+  group_by(cluster.x, parentTerm) %>%
+  summarise(
+    n_terms = n(),                     # how many GO terms in this parent within cluster
+    mean_score = mean(score, na.rm = TRUE),  # average enrichment strength
+    max_score = max(score, na.rm = TRUE),    # strongest term in that parent
+    .groups = "drop"
+  ) %>%
+  arrange(cluster.x, desc(n_terms))
+
+# For each cluster, show top 5 parent terms by count (or max score)
+top_parent_terms_by_cluster <- cluster_summary %>%
+  group_by(cluster.x) %>%
+  slice_max(order_by = n_terms, n = 5) %>% # top 5 terms for each of the 5 clusters
+  arrange(cluster.x, desc(n_terms))
+
+knitr::kable(top_parent_terms_by_cluster)
+```
+### Table of top terms
+```{r}
+# Summarize cluster content by parent term
+cluster_summary <- final_df %>%
+  group_by(cluster.x, term) %>%
+  summarise(
+    n_terms = n(),                     # how many GO terms in this parent within cluster
+    mean_score = mean(score, na.rm = TRUE),  # average enrichment strength
+    max_score = max(score, na.rm = TRUE),    # strongest term in that parent
+    .groups = "drop"
+  ) %>%
+  arrange(cluster.x, desc(n_terms))
+
+# For each cluster, show top 5 terms by count (or max score)
+top_terms_by_cluster <- cluster_summary %>%
+  group_by(cluster.x) %>%
+  slice_max(order_by = n_terms, n = 5) %>% # top 5 terms for each of the 5 clusters
+  arrange(cluster.x, desc(n_terms))
+
+knitr::kable(top_terms_by_cluster)
+```
+
+### Table of top scores
+```{r}
+# For each cluster, show top 5 parent terms by count (or max score)
+top_score_by_cluster <- cluster_summary %>%
+  group_by(cluster.x) %>%
+  slice_max(order_by = mean_score, n = 5) %>% # top 5 terms for each of the 5 clusters
+  arrange(cluster.x, desc(mean_score))
+
+knitr::kable(top_score_by_cluster)
+```
+
+
+## Manuscript plots
+```{r}
+# 5) Quick visual check (should resemble your scatterPlot clusters)
+ggplot(final_df, aes(Dim1, Dim2, size = score, alpha = 0.4)) +
+  geom_point() +
+  coord_equal() +
+  labs(color = "Cluster (k=5)", title = "GO terms clustered in PCoA space") +
+  theme_minimal(base_size = 12)
+```
+
+```{r, fig.height=10, fig.width=15}
+# 5) Quick visual check (should resemble your scatterPlot clusters)
+ggplot(final_df, aes(Dim1, Dim2, color = parentTerm, size = score)) +
+  geom_jitter(alpha = 0.5)+
+  coord_equal() +
+  labs(color = "Parent Term", title = "GO parent terms clustered in PCoA space") +
+  theme_minimal(base_size = 12)+
+  theme(legend.position = "bottom",
+        legend.box = "vertical",
+        legend.text = element_text(size = 8),
+        legend.title = element_text(size = 9))
+```
+
+```{r, fig.height=17}
+ggplot(final_df, aes(Dim1, Dim2, color = term, size = score)) +
+  geom_point(alpha = 0.5) +
+  coord_equal() +
+  labs(color = "Parent Term", title = "GO terms clustered in PCoA space") +
+  theme_minimal(base_size = 12) +
+  theme(
+    legend.position = "bottom",      # move below
+    legend.box = "vertical",         # stack if multiple guides
+    legend.text = element_text(size = 8),
+    legend.title = element_text(size = 9)
+  ) +
+  guides(                                  # hide size legend (optional)
+    color = guide_legend(nrow = 40, byrow = TRUE)     # wrap legend into rows
+  )
+```
+
+
 
 ::: column-margin
 ::: callout-note
@@ -381,27 +460,7 @@ categories don't always line up with semantic neighborhoods.
 :::
 :::
 
-### Table of top terms
-```{r}
-# Summarize cluster content by parent term
-cluster_summary <- final_df %>%
-  group_by(cluster.x, parentTerm) %>%
-  summarise(
-    n_terms = n(),                     # how many GO terms in this parent within cluster
-    mean_score = mean(score, na.rm = TRUE),  # average enrichment strength
-    max_score = max(score, na.rm = TRUE),    # strongest term in that parent
-    .groups = "drop"
-  ) %>%
-  arrange(cluster.x, desc(n_terms))
 
-# For each cluster, show top 5 parent terms by count (or max score)
-top_terms_by_cluster <- cluster_summary %>%
-  group_by(cluster.x) %>%
-  slice_max(order_by = n_terms, n = 5) %>% # top 5 terms for each of the 5 clusters
-  arrange(cluster.x, desc(n_terms))
-
-knitr::kable(top_terms_by_cluster)
-```
 ::: callout-note
 Based on frequency of enriched terms, the clusters can be described:
 - 1 : Developmental, cellular, nuclear division
@@ -411,16 +470,7 @@ Based on frequency of enriched terms, the clusters can be described:
 - 5 : regulation cell cycle communication 
 :::
 
-### Table of top scores
-```{r}
-# For each cluster, show top 5 parent terms by count (or max score)
-top_score_by_cluster <- cluster_summary %>%
-  group_by(cluster.x) %>%
-  slice_max(order_by = mean_score, n = 5) %>% # top 5 terms for each of the 5 clusters
-  arrange(cluster.x, desc(mean_score))
 
-knitr::kable(top_score_by_cluster)
-```
 ```{r}
 tbl_min <- top_score_by_cluster %>%
   transmute(
