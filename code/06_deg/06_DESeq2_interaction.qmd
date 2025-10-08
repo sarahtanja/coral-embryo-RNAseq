@@ -125,7 +125,7 @@ head(gcm_filtor)
 metadata_or <- read_csv("../../metadata/metadata_or.csv")
 str(metadata_or)
 ```
-
+### Reorder metadata factors
 ```{r, eval=TRUE}
 # Reorder factors
 metadata_or$stage <- as.factor(metadata_or$stage)
@@ -181,8 +181,8 @@ dds_con <- DESeqDataSetFromMatrix(countData = gcm_filtor,
 > Does modeling leachate as a factor vs. a continuous dose better explain gene expression changes across stages?
 
 ```{r, eval=TRUE}
-dds_cat <- DESeq(dds_cat, test = "LRT", reduced = ~ stage + leachate)
-dds_con <- DESeq(dds_con, test = "LRT", reduced = ~ stage + leachate_mgL)
+dds_cat_LRT <- DESeq(dds_cat, test = "LRT", reduced = ~ stage + leachate)
+dds_con_LRT <- DESeq(dds_con, test = "LRT", reduced = ~ stage + leachate_mgL)
 ```
 
 | Model         | Full model                                  | Reduced model          | LRT tests...                                               |
@@ -192,16 +192,20 @@ dds_con <- DESeq(dds_con, test = "LRT", reduced = ~ stage + leachate_mgL)
 
 ## Results
 
-Plot dispersion
+Plot dispersion estimates
 
 ```{r}
-plotDispEsts(dds_cat)
-plotDispEsts(dds_con)
+plotDispEsts(dds_cat_LRT)
+plotDispEsts(dds_con_LRT)
 ```
 
 ::: callout-note
-Categorical model has less dispersion than the continuous model! Pay attention to the scale of the Y axis when comparing them.
+The categorical model has less dispersion (.01 - 1) than the continuous model (.005 - 2)! Pay attention to the scale of the Y axis when comparing them. This is an indicator that the categorical model fits our data better. 
 :::
+
+```{r}
+resultsNames(dds_cat_LRT)
+```
 
 View summary
 
@@ -234,12 +238,12 @@ The 2 overlapping genes are well-modeled by a linear trend in leachate (i.e., a 
 ## Save significant genes
 
 ```{r}
-LRT_sig_genes <- res_cat %>%
+sig_LRT <- res_cat %>%
   as.data.frame() %>%
   filter(padj < 0.05) %>% 
   rownames_to_column(var = "gene_id")
 
-write.csv(LRT_sig_genes, "../../output/06_deg/interactions/LRT_sig_genes.csv")
+write.csv(sig_LRT, "../../output/06_deg/interactions/sig_LRT.csv")
 ```
 
 ::: callout-note
@@ -252,14 +256,18 @@ write.csv(sig_cat, "../../output/06_deg/interactions/sig_interaction_genes.csv")
 
 > Of the 44 genes showing significant stage-specific responses to leachate (based on the categorical model), only 2 also show a significant linear dose-response interaction with stage (based on the continuous model). This suggests that while stage modulates leachate response broadly, most genes (42/44) exhibit nonlinear or non-monotonic patterns, rather than a simple linear trend across leachate levels. keep.order = TRUE)
 
+## Variance-stabilize counts
 ```{r, eval=TRUE}
-vsd <- assay(vst(dds_cat))
+vsd_LRT <- assay(vst(dds_cat))
+```
 
+## Pivot longer for plots
+```{r}
 # make long expression dataframe of significant interaction genes
-sig_long <- vsd[sig_cat, ] %>% 
+sig_long <- vsd_LRT[sig_cat, ] %>% 
   as.data.frame() %>% 
   rownames_to_column("gene_id") %>%
-  pivot_longer(-gene_id, names_to = "sample_id", values_to = "expression")
+  pivot_longer(-gene_id, names_to = "sample_id", values_to = "vsd_expression")
 
 # add metadata
 sig_long <- sig_long %>% left_join(metadata_or, by = "sample_id")
@@ -275,49 +283,68 @@ gene_order <- sig_long %>%
 
 # Join back to sig_long
 sig_long <- sig_long %>%
-  left_join(gene_order %>% select(gene_id, padj_rank), by = "gene_id")
+  left_join(gene_order %>% dplyr::select(gene_id, padj_rank), by = "gene_id")
 
-sig_long %>% select(gene_id, padj, padj_rank) %>% distinct() %>% arrange(padj)
+# View the structure of the long form dataset 
+str(sig_long %>% distinct() %>% arrange(padj))
 ```
 
 How many samples are in each treatment for each significant gene?
 
+This bit of code lets us see how many samples are contributing to the mean expression of a gene broken down by group (aka condition ... leachate x stage) 
 ```{r}
 sample_counts <- sig_long %>% 
-  count(gene_id, group) %>%   # count rows per gene_id + group
+  dplyr::count(gene_id, group) %>%   # count rows per gene_id + group
   pivot_wider(names_from = group,              # make each group a column
               values_from = n, 
               values_fill = 0)                 # fill missing group-gene combos with 0
 
-any(as.matrix(sample_counts[, 2:13]) < 4)
+summary(sample_counts)
 ```
 
 ::: callout-note
-At least 4 samples representing in each group per significant gene.
+At least 4 samples represent each group per significant gene. Most groups are represented by 5 samples... some have 4, 6, and 1 group has 7 samples.
+This is important to check because we want to be able to compare the groups, but if they have vastly different sample sizes that could be problematic. This confirms that the sample sizes are reasonably similar for comparisons.  
 :::
-
-```{r}
-sig_long %>%
-  group_by(gene_id, leachate, stage) %>%
-  summarise(n = n_distinct(sample_id), .groups = "drop") %>%
-  filter(n < 4)
-```
-
-Top 3 genes with significant interaction between `stage` x `leachate`
-
-```{r}
-top_genes <- sig_long %>%
-  select(gene_id, padj, padj_rank) %>% 
-  distinct() %>%
-  arrange(padj) %>%
-  slice_head(n = 3) 
-  
-top_genes
-```
 
 ## Plots
 
-### Top 3 Significant Genes
+### Top Significant Gene
+```{r}
+gene_df_1 <- sig_long %>% filter(padj_rank == 1)
+
+p <- ggplot(gene_df_1, aes(x = leachate, y = expression, color = stage, label = sample_id)) +
+    geom_point(
+      size = 2, 
+      alpha = 0.9,
+      position = position_jitter(width = 0.05, height = 0),
+      show.legend = FALSE
+      ) +
+    geom_smooth(
+      aes(group = stage, color = stage, fill = stage),
+      method = "loess",
+      se = TRUE,
+      alpha = 0.5,
+      show.legend = FALSE
+    ) +
+    labs(title = paste0("Gene ", padj_rank, ":", gene, " (padj = ", padj_val, ")")) +
+    guides(stage=FALSE) +
+    theme_minimal()
+
+p
+```
+
+Top 4 genes with significant interaction between `stage` x `leachate`
+
+```{r}
+top_genes <- sig_long %>%
+  dplyr::select(gene_id, padj, padj_rank) %>% 
+  distinct() %>%
+  arrange(padj) %>%
+  slice_head(n = 4) 
+  
+top_genes
+```
 
 ```{r}
 top_info <- sig_long %>%
@@ -355,16 +382,13 @@ for (i in 1:nrow(top_info)) {
     guides(stage=FALSE) +
     theme_minimal()
 
-  print(ggplotly(p))
+  print(p)
   
-  # Save plotly plots to plot list
-  plot_top4[[i]] <- ggplotly(p)
+  # Save plots to plot list
+  plot_top4[[i]] <- p
 }
 ```
 
-```{r}
-print(plot_top4[[1]])
-```
 
 ```{r}
 plotly::subplot(plot_top4, nrows = 2, margin = 0.05) %>% 
@@ -437,15 +461,24 @@ Next step: 👉 Use Wald tests to dig into which interactions (e.g., stage × le
 | Specific interaction term significant?                              | Wald           | `results(dds, name = "stageX.leachateY")`                                     |
 | Total effect of a leachate treatment at a specific stage vs control | Wald contrasts | `results(dds, conrtast = list(c("leachateY_vs_control", "stageX.leachateY"))` |
 
+
+Run the Wald test on the categorical dds object.
 ```{r}
-dds <- DESeqDataSetFromMatrix(countData = gcm_filtor,
-                              colData = metadata_or,
-                              design = formula( ~ stage + leachate + stage:leachate))
+dds_wald <- DESeq(dds_cat, test = "Wald")
 ```
 
+## Variance-stabilize counts
 ```{r}
-dds_wald <- DESeq(dds, test = "Wald")
+vsd_wald <- assay(vst(dds_wald))
 ```
+
+
+Is VSD LRT the same as VSD Wald?
+
+```{r}
+identical(vsd_LRT, vsd_wald)
+```
+The underlying counts are the same... the only difference is the test that is done on them (Wald vs LRT)... so test statistics are different but underlying counts are the same. 
 
 ## Interaction terms
 
@@ -469,9 +502,41 @@ Each of the above interaction terms tells us the extra effect of the leachate le
 
 ### Prawnchip
 ```{r}
-res_h_int_pc <- results(dds_wald, name = "stageprawnchip.leachatehigh", alpha = 0.05)
-summary(res_h_int_pc)
+pch <- results(dds_wald, name = "stageprawnchip.leachatehigh", alpha = 0.05)
+summary(pch)
 ```
+
+```{r}
+sig_pch <- pch %>%
+  as.data.frame() %>%
+  filter(padj < 0.05) %>% 
+  rownames_to_column(var = "gene_id")
+```
+
+```{r}
+# make long expression dataframe of significant interaction genes
+sig_long <- vsd[sig_cat, ] %>% 
+  as.data.frame() %>% 
+  rownames_to_column("gene_id") %>%
+  pivot_longer(-gene_id, names_to = "sample_id", values_to = "vsd_expression")
+
+# add metadata
+sig_long <- sig_long %>% left_join(metadata_or, by = "sample_id")
+# add padj
+sig_long <- sig_long %>% left_join(LRT_sig_genes, by = "gene_id")
+
+# Assign numbers to genes by min padj
+gene_order <- sig_long %>%
+  group_by(gene_id) %>%
+  summarise(min_padj = min(padj, na.rm = TRUE), .groups = "drop") %>%
+  arrange(min_padj) %>%
+  mutate(padj_rank = row_number())
+
+# Join back to sig_long
+sig_long <- sig_long %>%
+  left_join(gene_order %>% dplyr::select(gene_id, padj_rank), by = "gene_id")
+```
+
 
 ```{r}
 res_m_int_pc  <- results(dds_wald, name = "stageprawnchip.leachatemid", alpha = 0.05)
@@ -498,7 +563,7 @@ res_l_int_eg  <- results(dds_wald, name = "stageearlygastrula.leachatelow", alph
 summary(res_l_int_eg)
 ```
 
-## Contrasts 
+## vc. Control contrasts 
 
 See [A guide to designs and contrasts in DESeq2](https://www.atakanekiz.com/technical/a-guide-to-designs-and-contrasts-in-DESeq2/) by Dr. Atakan Ekiz
 
