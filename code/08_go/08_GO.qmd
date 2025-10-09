@@ -33,7 +33,11 @@ editor:
 We identified 44 genes that were broadly impacted by leachate across all
 stages (meaning transcript abundance of those genes were significantly
 different in at least one dose of leachate compared to the control in at
-least one stage). Here we want to know what those genes do!
+least one stage). 
+
+We further identified that these 44 genes fit into 1 of 4 gene expression patterns.
+
+
 
 We do this using the R package `goseq`. Why is `goseq` different from
 other enrichment tools? Typical enrichment methods (like Fisher's exact

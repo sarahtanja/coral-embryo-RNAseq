@@ -101,7 +101,9 @@ library(ggplotify)
 library(patchwork)   # for wrap_plots(...)
 library(cowplot)     # for plot_grid & get_legend
 library(dplyr)
-library(grid)     
+library(grid) 
+library(purrr)
+library(forcats)
 ```
 
 ## Import filtered gene count matrix
@@ -207,7 +209,7 @@ dds_con_LRT <- DESeq(dds_con, test = "LRT", reduced = ~0 + stage + leachate_mgL)
 ```
 
 | Model         | Full model                                       | Reduced model               | LRT tests...                                               |
-|---------------|--------------------------------------------------|-----------------------------|------------------------------------------------------------|
+|-----------------|-----------------|-----------------|--------------------|
 | `dds_cat_LRT` | `~0 + stage + leachate + stage:leachate`         | `~0 + stage + leachate`     | Are there **stage-specific effects of leachate (factor)**? |
 | `dds_con_LRT` | `~0 + stage + leachate_mgL + stage:leachate_mgL` | `~0 + stage + leachate_mgL` | Are there **stage-specific trends** in dose response?      |
 
@@ -255,23 +257,203 @@ mcols(res_cat_LRT, use.names = TRUE)
 summary(res_cat_LRT)
 ```
 
-> We can plot the counts for the groups over time using [*ggplot2*](https://cran.r-project.org/package=ggplot2), for the gene with the smallest adjusted *p* value, testing for condition-dependent time profile and accounting for differences at time 0 (figure below). Keep in mind that the interaction terms are the *difference* between the two groups at a given time after accounting for the difference at time 0.
+Save significant genes
 
 ```{r}
-catlrt <- plotCounts(dds_cat_LRT, which.min(res_cat_LRT$padj), 
+sig_cat_LRT <- res_cat_LRT %>%
+  as.data.frame() %>%
+  filter(padj < 0.05) %>% 
+  rownames_to_column(var = "gene_id")
+```
+
+> We can plot the counts for the groups over time using [*ggplot2*](https://cran.r-project.org/package=ggplot2), for the gene with the smallest adjusted *p* value, testing for condition-dependent time profile and accounting for differences at time 0 (figure below). Keep in mind that the interaction terms are the *difference* between the two groups at a given time after accounting for the difference at time 0.
+
+#### Plot significant gene counts
+> you don’t need VST for these plots.
+plotCounts() (and the data you’re using from it) already returns size-factor–normalized counts by default. That’s the right scale for single-gene “per sample” plots.
+VST/rlog are mainly for multi-gene visualizations and distance/PCA/heatmaps, where you want to stabilize variance across the mean. They’re not necessary (and can even be confusing) for a single gene’s counts across samples.
+
+#### Top significant gene
+
+```{r, fig.width=4.5, fig.height=4}
+catlrt <- plotCounts(dds_cat_LRT, which.min(sig_cat_LRT$padj), 
                    intgroup = c("stage","leachate"), returnData = TRUE)
 
 ggplot(catlrt, aes(x = leachate, y = count, color = stage, group = stage)) +
-  geom_jitter(width = 0.1)+
-  #stat_summary(fun.y=mean)+
-  geom_smooth(
-      aes(group = stage, color = stage, fill = stage),
-      method = "loess",
-      se = TRUE,
-      alpha = 0.3,
-      show.legend = FALSE
-    )+
-  theme_minimal()
+  geom_jitter(width = 0.1, alpha = 0.6) +
+  geom_smooth(aes(fill = stage), method = "loess", se = TRUE, alpha = 0.25, show.legend = FALSE)+ 
+  ylab("Size-factor-normalized gene counts")+
+  xlab("PVC leachate dose")+
+  scale_x_discrete(expand = expansion(mult = c(0, 0)))+
+  coord_cartesian(clip = "off") +
+  theme_minimal() +
+  theme(
+    panel.grid.major = element_blank(),
+    plot.margin = margin(t = 5, r = 30, b = 5, l = 5), # allow overflow
+    legend.position = "bottom"                           
+  )
+```
+#### Facet of all 44 significant genes
+`map_dfr(sig_ids, get_counts)`: loops over every gene ID in `sig_ids`, runs your `get_counts(gene)` helper (which calls `plotCounts(..., returnData=TRUE)` and adds the gene label), and row-binds all results into one data frame (`counts_all`). Think \"many genes → one tall tibble.\"
+
+```{r}
+# --- pick your significant genes (adjust the filter as you like) ---
+sig_ids <- sig_cat_LRT$gene_id
+
+
+# --- pull plotCounts for every gene and bind rows ---
+get_counts <- function(gene) {
+  pc <- plotCounts(dds_cat_LRT, gene = gene, intgroup = c("stage","leachate"), returnData = TRUE)
+  pc$gene <- gene
+  pc
+}
+
+# --- make one long tibble of per sample gene counts
+counts_all <- map_dfr(sig_ids, get_counts)
+```
+
+```{r}
+# --- label positions: rightmost leachate per stage *within each gene* ---
+labels_df <- counts_all %>%
+  group_by(gene, stage, leachate) %>%
+  summarise(y = mean(count, na.rm = TRUE), .groups = "drop") %>%
+  group_by(gene, stage) %>%
+  slice_max(order_by = as.integer(leachate), n = 1, with_ties = FALSE) %>%
+  ungroup()
+```
+
+```{r, fig.height=40}
+# --- faceted plot ---
+p_facets <- ggplot(counts_all, aes(x = leachate, y = count, color = stage, group = stage)) +
+  geom_jitter(width = 0.1, alpha = 0.6) +
+  geom_smooth(aes(fill = stage), method = "loess", se = TRUE, alpha = 0.25, show.legend = FALSE) +
+  scale_x_discrete(expand = expansion(mult = c(0.02, 0.25))) +
+  coord_cartesian(clip = "off") +
+  theme_minimal(base_size = 24) +
+  theme(
+    panel.grid.major = element_blank(),
+    plot.margin = margin(t = 5, r = 30, b = 5, l = 5),
+    legend.position = "bottom",
+    strip.text = element_text(size = 9)
+  ) +
+  facet_wrap(~ gene, scales = "free_y", ncol = 8)
+
+p_facets
+# ggsave("counts_faceted.pdf", p_facets, width = 14, height = 10)
+
+```
+
+```{r}
+library(ggforce)
+
+n_cols <- 3
+n_rows <- 3
+per_page <- n_cols * n_rows
+n_pages <- ceiling(dplyr::n_distinct(counts_all$gene) / per_page)
+
+base <- ggplot(counts_all, aes(leachate, count, color = stage, group = stage)) +
+  geom_jitter(width = 0.1, alpha = 0.6) +
+  geom_smooth(aes(fill = stage), method = "loess", se = TRUE, alpha = 0.25, show.legend = FALSE) +
+  scale_x_discrete(expand = expansion(mult = c(0.02, 0.25))) +
+  coord_cartesian(clip = "off") +
+  theme_minimal(base_size = 12) +
+  theme(panel.grid.major = element_blank(),
+        legend.position = "bottom")   # put legend back since we removed labels
+
+pdf("counts_facets_paginated.pdf", width = 11, height = 8.5)
+for (i in seq_len(n_pages)) {
+  p_i <- base +
+    facet_wrap_paginate(~ gene, ncol = n_cols, nrow = n_rows,
+                        scales = "free_y", page = i)
+  print(p_i)
+}
+dev.off()
+```
+
+Pivot longer to loop plots
+
+```{r}
+vsd_cat_LRT <- assay(vst(dds_cat_LRT))
+
+# make long expression dataframe of significant interaction genes
+sig_long <- vsd_cat_LRT %>% 
+  as.data.frame() %>% 
+  rownames_to_column("gene_id") %>%
+  semi_join(sig_cat_LRT %>% mutate(gene_id = as.character(gene_id)),
+            by = "gene_id") %>% 
+  pivot_longer(-gene_id, names_to = "sample_id", values_to = "vst_expression")
+
+# add metadata
+sig_long <- sig_long %>% left_join(metadata_or, by = "sample_id")
+# add padj
+sig_long <- sig_long %>% left_join(sig_cat_LRT, by = "gene_id")
+
+# Assign numbers to genes by min padj
+gene_order <- sig_long %>%
+  group_by(gene_id) %>%
+  summarise(min_padj = min(padj, na.rm = TRUE), .groups = "drop") %>%
+  arrange(min_padj) %>%
+  mutate(padj_rank = row_number())
+
+# Join back to sig_long
+sig_long <- sig_long %>%
+  left_join(gene_order %>% dplyr::select(gene_id, padj_rank), by = "gene_id")
+
+# View the structure of the long form dataset 
+str(sig_long %>% distinct() %>% arrange(padj))
+```
+
+Combine all gene plots into one big panel (patchwork or cowplot) Assumes `sig_long` and `all_info` (or same structure) are available as in your qmd: - sig_long: long dataframe with gene_id, sample_id, expression, stage, leachate, padj, padj_rank - all_info: data.frame with gene_id ordered by padj (as in your existing code)
+
+```{r}
+padj_cat_LRT <- sig_cat_LRT %>% 
+  group_by(gene_id) %>%
+  summarise(min_padj = min(padj, na.rm = TRUE), .groups = "drop") %>%
+  arrange(min_padj) %>%
+  mutate(padj_rank = row_number())
+
+sig_xxx_LRT <- sig_cat_LRT %>%
+  arrange(padj) %>%
+  mutate(padj_rank = min_rank(min_padj))
+```
+
+```{r}
+# Build list of ggplot objects (static ggplots)
+plots_gg <- vector("list", length = nrow(sig_cat_LRT))
+
+for (i in seq_len(nrow(sig_cat_LRT))) {
+  gene <- all_info$gene_id[i]
+  padj_val <- signif(all_info$min_padj[i], 3)
+  gene_df <- sig_long %>% filter(gene_id == gene)
+  padj_rank <- unique(gene_df$padj_rank)
+  
+  p <- ggplot(gene_df, aes(x = leachate, y = expression, color = stage, label = sample_id)) +
+    geom_point(size = 2,
+               alpha = 0.9,
+               position = position_jitter(width = 0.05, height = 0),
+               show.legend = TRUE) +
+    geom_smooth(aes(group = stage, color = stage, fill = stage),
+                method = "loess",
+                se = TRUE,
+                alpha = 0.35,
+                linewidth = 0.4,
+                show.legend = FALSE) +
+    labs(title = paste0("Gene ", padj_rank, ": ", gene),
+         subtitle = paste0("padj = ", padj_val),
+         x = NULL, y = "VST expression") +
+    theme_minimal() +
+    theme(
+      plot.title = element_text(size = 9),
+      plot.subtitle = element_text(size = 7),
+      axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+      axis.text.y = element_text(size = 6),
+      legend.title = element_blank(),
+      legend.text = element_text(size = 7),
+      legend.key.size = unit(0.25, "cm")
+    )
+  
+  plots_gg[[i]] <- p
+}
 ```
 
 ### continuous
@@ -302,6 +484,8 @@ ggplot(conlrt, aes(x = leachate, y = count, color = stage, group = stage)) +
   theme_minimal()
 ```
 
+## Save significant LRT genes
+
 ```{r}
 sig_cat_LRT <- res_cat_LRT %>%
   as.data.frame() %>%
@@ -329,8 +513,6 @@ This means that 2 out of 44 significant genes may have a linear relationship (co
 
 The 2 overlapping genes are well-modeled by a linear trend in leachate (i.e., a slope, not just group differences). The 42 other genes show non-linear or non-monotonic behavior --- meaning their response does not follow a consistent increase/decrease with dose. Instead, they respond differently to each specific leachate level depending on the stage (e.g., they might increase at 0.1 mg/L but decrease at 1 mg/L, or vice versa).
 :::
-
-## Save significant LRT genes
 
 ```{r}
 write.csv(sig_cat_LRT, "../../output/06_deg/interactions/sig_cat_LRT.csv")
@@ -655,7 +837,7 @@ Next step: 👉 Use Wald tests to dig into which interactions (e.g., stage × le
 > Wald tests on interaction terms assess whether the interaction coefficient **differs significantly from 0** --- i.e., whether the combined effect of that `hpf` and `leachate` level deviates from what would be expected by the additive effects alone.
 
 | What You Want to Know                                               | Use            | Explanation                                                                   |
-|---------------------------------------------------------------------|----------------|-------------------------------------------------------------------------------|
+|-------------------------|------------------|-----------------------------|
 | Specific interaction term significant?                              | Wald           | `results(dds, name = "stageX.leachateY")`                                     |
 | Total effect of a leachate treatment at a specific stage vs control | Wald contrasts | `results(dds, contrast = list(c("leachateY_vs_control", "stageX.leachateY"))` |
 
@@ -674,7 +856,7 @@ vsd_wald <- assay(vst(dds_wald))
 Is VSD LRT the same as VSD Wald?
 
 ```{r}
-identical(vsd_LRT, vsd_wald)
+identical(vsd_cat_LRT, vsd_wald)
 ```
 
 The underlying counts are the same... the only difference is the test that is done on them (Wald vs LRT)... so test statistics are different but underlying counts are the same.

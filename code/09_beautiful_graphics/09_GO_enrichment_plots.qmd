@@ -30,12 +30,16 @@ editor:
 ---
 
 # Background
+
 ## Inputs
-- reduced terms
-- semantic similarity matrix
+
+-   reduced terms
+-   semantic similarity matrix
 
 ## Outputs
+
 # Setup
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   fig.align = "center",
@@ -49,7 +53,9 @@ knitr::opts_chunk$set(
   comment = ""         # Prevents appending '##' to beginning of lines in code output
 )
 ```
+
 ## Install packages
+
 ```{r}
 ## CRAN packages-----------
 #install.packages("GOplot")
@@ -63,6 +69,7 @@ knitr::opts_chunk$set(
 ```
 
 ## Load packages
+
 ```{r}
 library(GOplot)
 library(plotly)
@@ -72,6 +79,7 @@ library(kableExtra)
 ```
 
 ## Load inputs
+
 ```{r}
 ## Reduced Terms
 ### Interaction
@@ -113,8 +121,12 @@ simMatrix.hvceg <- read_csv("../../output/08_go/simMatrix_hvceg.csv")%>%
   column_to_rownames("GO") %>% as.matrix() # uses the GO column as rownames
 ```
 
-
-> The rows of simMatrix.xxx should correspond (in order and identity) to the rows of reducedTerms.xxx. Ensure that the go column is character, not factor. Ensure simMatrix.xxx is a data.frame or matrix, and reducedTerms.xxx is a data.frame, not a tibble!*which is why we load it wirh read.csv, (which loads a data.frame) and not read_csv (which loads a tibble).
+> The rows of simMatrix.xxx should correspond (in order and identity) to
+> the rows of reducedTerms.xxx. Ensure that the go column is character,
+> not factor. Ensure simMatrix.xxx is a data.frame or matrix, and
+> reducedTerms.xxx is a data.frame, not a tibble!\*which is why we load
+> it wirh read.csv, (which loads a data.frame) and not read_csv (which
+> loads a tibble).
 
 # Plotting & interpretation
 
@@ -158,7 +170,6 @@ heatmapPlot(simMatrix.3,
             fontsize=6)
 ```
 
-
 ## `rrvgo` scatter plots
 
 Plot GO terms as scattered points. Distances between points represent
@@ -168,69 +179,87 @@ represents the provided scores or, in its absence, the number of genes
 the GO term contains.
 
 ### Interaction
+
 ```{r}
 scatterPlot(simMatrix.int, reducedTerms.int,
             onlyParents = FALSE,
             addLabel = TRUE,
             labelSize = 4)
 ```
+
 ### Expression pattern 1
+
 ```{r}
 scatterPlot(simMatrix.1, reducedTerms.1,
             onlyParents = FALSE,
             addLabel = TRUE,
             labelSize = 4)
 ```
+
 ### Expression pattern 2
+
 ```{r}
 scatterPlot(simMatrix.2, reducedTerms.2,
             onlyParents = FALSE,
             addLabel = TRUE,
             labelSize = 4)
 ```
+
 ### Expression pattern 3
+
 ```{r}
 scatterPlot(simMatrix.3, reducedTerms.3,
             onlyParents = FALSE,
             addLabel = TRUE,
             labelSize = 4)
 ```
+
 ### Low vs control: cleavage
+
 ```{r}
 scatterPlot(simMatrix.lvccl, reducedTerms.lvccl,
             onlyParents = FALSE,
             addLabel = TRUE,
             labelSize = 4)
 ```
+
 ### Mid vs control: cleavage
+
 ```{r}
 scatterPlot(simMatrix.mvccl, reducedTerms.mvccl,
             onlyParents = FALSE,
             addLabel = TRUE,
             labelSize = 4)
 ```
+
 ### High vs control: cleavage
+
 ```{r}
 scatterPlot(simMatrix.hvccl, reducedTerms.hvccl,
             onlyParents = FALSE,
             addLabel = TRUE,
             labelSize = 4)
 ```
+
 ### High vs control: early gastrula
+
 ```{r}
 scatterPlot(simMatrix.hvceg, reducedTerms.hvceg,
             onlyParents = FALSE,
             addLabel = TRUE,
             labelSize = 4)
 ```
+
 # Custom PCA scatter plots
+
 ## Interaction "5 clusters" summary
-I want a dataframe that groups my GO terms based on the 5 main
-clusters displayed in this PCA. The scatterPlot uses a dimensionality
-reduction (PCoA) approach to project GO terms into 2D space and then
-visually groups the points into a smaller number of major clusters.
-These visual clusters are typically broader groupings, which correspond
-to higher-level semantic similarity rather than the narrow clusters from
+
+I want a dataframe that groups my GO terms based on the 5 main clusters
+displayed in this PCA. The scatterPlot uses a dimensionality reduction
+(PCoA) approach to project GO terms into 2D space and then visually
+groups the points into a smaller number of major clusters. These visual
+clusters are typically broader groupings, which correspond to
+higher-level semantic similarity rather than the narrow clusters from
 the cut tree. A possible approach if you want to create a cluster
 assignment dataframe matching the 5 visual clusters is to: - Extract the
 2D coordinates from the scatterPlot dimensionality reduction output, -
@@ -271,7 +300,9 @@ coordinates used for visualization, and its assigned cluster
 corresponding to the 5 major groups in the scatterPlot.
 
 ### Interactive plot
+
 For exploration
+
 ```{r}
 p <- ggplot(final_df, aes(
     Dim1, Dim2,
@@ -293,7 +324,9 @@ p <- ggplot(final_df, aes(
 
 ggplotly(p, tooltip = "text")
 ```
+
 ### Table of top parent terms
+
 ```{r}
 # Summarize cluster content by parent term
 cluster_summary <- final_df %>%
@@ -314,7 +347,9 @@ top_parent_terms_by_cluster <- cluster_summary %>%
 
 knitr::kable(top_parent_terms_by_cluster)
 ```
+
 ### Table of top terms
+
 ```{r}
 # Summarize cluster content by parent term
 cluster_summary <- final_df %>%
@@ -337,6 +372,7 @@ knitr::kable(top_terms_by_cluster)
 ```
 
 ### Table of top scores
+
 ```{r}
 # For each cluster, show top 5 parent terms by count (or max score)
 top_score_by_cluster <- cluster_summary %>%
@@ -347,8 +383,8 @@ top_score_by_cluster <- cluster_summary %>%
 knitr::kable(top_score_by_cluster)
 ```
 
-
 ## Manuscript plots
+
 ```{r}
 # 5) Quick visual check (should resemble your scatterPlot clusters)
 ggplot(final_df, aes(Dim1, Dim2, size = score, alpha = 0.4)) +
@@ -387,8 +423,6 @@ ggplot(final_df, aes(Dim1, Dim2, color = term, size = score)) +
     color = guide_legend(nrow = 40, byrow = TRUE)     # wrap legend into rows
   )
 ```
-
-
 
 ::: column-margin
 ::: callout-note
@@ -460,16 +494,15 @@ categories don't always line up with semantic neighborhoods.
 :::
 :::
 
-
 ::: callout-note
-Based on frequency of enriched terms, the clusters can be described:
-- 1 : Developmental, cellular, nuclear division
-- 2 : Regulation of metabolic processes
-- 3 : cellular stress response , response to chemical
-- 4 : metabolic / catabolic process
-- 5 : regulation cell cycle communication 
-:::
 
+Based on frequency of enriched terms, the clusters can be described: - 1
+
+:   Developmental, cellular, nuclear division - 2 : Regulation of
+    metabolic processes - 3 : cellular stress response , response to
+    chemical - 4 : metabolic / catabolic process - 5 : regulation cell
+    cycle communication
+:::
 
 ```{r}
 tbl_min <- top_score_by_cluster %>%
@@ -499,54 +532,65 @@ interpretation of the summarized results and also comparing different
 sets of GO terms.
 
 ### Interactions
+
 ```{r}
 treemapPlot(reducedTerms.int)
 ```
+
 #### pattern 1
+
 ```{r}
 treemapPlot(reducedTerms.1)
 ```
 
 #### pattern 2
+
 ```{r}
 treemapPlot(reducedTerms.2)
 ```
+
 #### pattern 3
+
 ```{r}
 treemapPlot(reducedTerms.3)
 ```
+
 ### Contrasts
+
 #### Low vs control: cleavage
+
 ```{r}
 treemapPlot(reducedTerms.lvccl)
 ```
+
 #### Mid vs control: cleavage
+
 ```{r}
 treemapPlot(reducedTerms.mvccl)
 ```
 
 #### High vs control: cleavage
+
 ```{r}
 treemapPlot(reducedTerms.hvccl)
 ```
 
 #### High vs control: early gastrula
+
 ```{r}
 treemapPlot(reducedTerms.hvceg)
 ```
 
-
 # Summary & next steps
 
 Produced visualizations: - Heatmap of GO term similarity. - Scatter plot
-grouping GO terms into 5 major clusters. - Treemap to summarize enriched functions. 
-Outputs:
+grouping GO terms into 5 major clusters. - Treemap to summarize enriched
+functions. Outputs:
 
 -   Tables of enriched GO terms, reduced clusters, semantic similarity
     matrices, and gene-to-term assignments.
 -   Multiple graphical summaries (heatmap, PCA scatter, treemap)
-    
+
 ```{r}
 sessionInfo()
 ```
-
