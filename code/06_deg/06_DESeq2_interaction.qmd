@@ -93,10 +93,15 @@ library(DEGreport)
 library(ashr)
 library(flexoki)
 library(plotly)
-library(cowplot)
 library(vsn)
 library(pheatmap)
 library(ComplexUpset)
+library(ggplot2)
+library(ggplotify)
+library(patchwork)   # for wrap_plots(...)
+library(cowplot)     # for plot_grid & get_legend
+library(dplyr)
+library(grid)     
 ```
 
 ## Import filtered gene count matrix
@@ -125,7 +130,9 @@ head(gcm_filtor)
 metadata_or <- read_csv("../../metadata/metadata_or.csv")
 str(metadata_or)
 ```
+
 ### Reorder metadata factors
+
 ```{r, eval=TRUE}
 # Reorder factors
 metadata_or$stage <- as.factor(metadata_or$stage)
@@ -143,54 +150,66 @@ str(metadata_or)
 
 # LRT
 
+> [Likelihood ratio test](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#likelihood-ratio-test:~:text=seq%20workflow.-,Likelihood%20ratio%20test,-DESeq2%20offers%20two): DESeq2 offers two kinds of hypothesis tests: the Wald test, where we use the estimated standard error of a log2 fold change to test if it is equal to zero, and the likelihood ratio test (LRT). The LRT examines two models for the counts, a full model with a certain number of terms and a reduced model, in which some of the terms of the full model are removed. The test determines if the increased likelihood of the data using the extra terms in the full model is more than expected if those extra terms are truly zero. The LRT is therefore useful for testing multiple terms at once, for example testing 3 or more levels of a factor at once, or all interactions between two variables. The LRT for count data is conceptually similar to an analysis of variance (ANOVA) calculation in linear regression, except that in the case of the Negative Binomial GLM, we use an analysis of deviance (ANODEV), where the deviance captures the difference in likelihood between a full and a reduced model. The likelihood ratio test can be performed by specifying test="LRT" when using the DESeq function, and providing a reduced design formula, e.g. one in which a number of terms from design(dds) are removed. The degrees of freedom for the test is obtained from the difference between the number of parameters in the two models.
+
+> For a control and treatment time series, one can use a design formula containing the condition factor, the time factor, and the interaction of the two. *In this case, using the likelihood ratio test with a reduced model which does not contain the interaction terms will test whether the condition induces a change in gene expression at any time point after the reference level time point (time 0). An example of the later analysis is provided in our [RNA-seq workflow](https://master.bioconductor.org/packages/release/workflows/vignettes/rnaseqGene/inst/doc/rnaseqGene.html)*.
+
 This compares:
 
-Full model: \~ stage + leachate + stage:leachate
+-   full model: `~ stage + leachate + stage:leachate`
 
-Reduced model: \~ stage + leachate
+-   reduced model: `~ stage + leachate`
 
-This tells you: Is there any interaction effect between stage and leachate?
+This tells you if there are any interaction effects between stage and leachate, but it won't tell you which interaction is significant, or in which direction --- you need Wald contrasts for that.
 
-But it won't tell you which interaction is significant, or in which direction --- you need Wald contrasts for that.
+::: callout-caution
+Order matters! The first term (`stage`) is what the model controls for, and the second term (`leachate`) is the main effect. Meaning the model adjusts for stage first and then assesses the leachate effect.
+:::
 
-## Continuous vs categorical
+# Categorical vs. continuous
 
-Embryonic stage should be treated as a categorical variable because DESeq2 will estimate expression differences between stages, rather than assuming a linear progression from 4 → 14 hpf. It will fit different intercepts for each stage (i.e., different baseline expression levels). If you encode stage as numeric, the model would assume a linear change in expression per hour of development, which is biologically risky unless you expect linearity (note: we do not).
+Stage & Leachate will be treated as categorical variables
 
-Whether leachate is treated as a factor or a numeric (continuous) variable radically changes the interpretation of both the main effect and the interaction. If a variable is numeric, DESeq2 treats it as a continuous covariate. This fits a regression slope, estimating the change in gene expression per unit increase in the variable.
+When embryonic `stage` is treated as a categorical variable DESeq2 will estimate expression differences between stages, rather than assuming a linear progression from 4 → 14 hpf. DESeq2 will fit different intercepts for each stage (i.e., different baseline expression levels). If you encode stage as a continuous numeric, the model would assume a linear change in expression per hour of development, which is biologically risky unless you expect linearity (note: we do not).
 
-Coding `leachate` as a categorical factor allows each stage to have its own independent leachate effect. ✅ Use this if you expect nonlinear, stage-specific effects of exposure (note: we do).
+::: callout-note
+`stage` will be treated as a categorical variable
+:::
+
+Whether `leachate` is treated as a factor or a numeric (continuous) variable radically changes the interpretation of both the main effect and the interaction. If a variable is numeric, DESeq2 treats it as a continuous covariate. This fits a regression slope, estimating the change in gene expression per unit increase in the variable. Coding `leachate` as a categorical factor allows each stage to have its own independent leachate effect. ✅ Use this if you expect nonlinear, stage-specific effects of exposure (note: we do).
 
 ```{r, eval=TRUE}
 
 dds_cat <- DESeqDataSetFromMatrix(countData = gcm_filtor,
                               colData = metadata_or,
-                              design = formula( ~ stage + leachate + stage:leachate))
+                              design = formula( ~0 + stage + leachate + stage:leachate))
 ```
 
-Coding `leachate_mgL` as a continuous numeric tests for a change in expression per unit increase in leachate, and the interaction term tests whether the slope of the dose-response differs depending on stage. ✅ Use this if you expect a linear or dose-dependent trend, and want to ask if the strength or direction of the trend varies by stage.
+Coding `leachate_mgL` as a continuous numeric tests for a change in expression per unit increase in leachate, and the interaction term tests whether the slope of the dose-response differs depending on stage. ✅ Use this if you expect a linear or dose-dependent trend, and want to ask if the strength or direction of the trend varies by stage (exploring if this is the case).
 
 ```{r, eval=TRUE}
 dds_con <- DESeqDataSetFromMatrix(countData = gcm_filtor,
                               colData = metadata_or,
-                              design = formula( ~ stage + leachate_mgL + stage:leachate_mgL))
+                              design = formula( ~0 + stage + leachate_mgL + stage:leachate_mgL))
 ```
 
 ## Run DESeq LRT Tests
 
 > Does modeling leachate as a factor vs. a continuous dose better explain gene expression changes across stages?
 
+::: callout-note
+\~0 zero-intercept model
+:::
+
 ```{r, eval=TRUE}
-dds_cat_LRT <- DESeq(dds_cat, test = "LRT", reduced = ~ stage + leachate)
-dds_con_LRT <- DESeq(dds_con, test = "LRT", reduced = ~ stage + leachate_mgL)
+dds_cat_LRT <- DESeq(dds_cat, test = "LRT", reduced = ~0 + stage + leachate)
+dds_con_LRT <- DESeq(dds_con, test = "LRT", reduced = ~0 + stage + leachate_mgL)
 ```
 
-| Model         | Full model                                  | Reduced model          | LRT tests...                                               |
-|--------------|------------------|--------------|--------------------------|
-| `dds_cat_LRT` | `stage + leachate + stage:leachate`         | `stage + leachate`     | Are there **stage-specific effects of leachate (factor)**? |
-| `dds_con_LRT` | `stage + leachate_mgL + stage:leachate_mgL` | `stage + leachate_mgL` | Are there **stage-specific trends** in dose response?      |
-
-## Results
+| Model         | Full model                                       | Reduced model               | LRT tests...                                               |
+|---------------|--------------------------------------------------|-----------------------------|------------------------------------------------------------|
+| `dds_cat_LRT` | `~0 + stage + leachate + stage:leachate`         | `~0 + stage + leachate`     | Are there **stage-specific effects of leachate (factor)**? |
+| `dds_con_LRT` | `~0 + stage + leachate_mgL + stage:leachate_mgL` | `~0 + stage + leachate_mgL` | Are there **stage-specific trends** in dose response?      |
 
 Plot dispersion estimates
 
@@ -200,33 +219,109 @@ plotDispEsts(dds_con_LRT)
 ```
 
 ::: callout-note
-The categorical model has less dispersion (.01 - 1) than the continuous model (.005 - 2)! Pay attention to the scale of the Y axis when comparing them. This is an indicator that the categorical model fits our data better. 
+What does the categorical models dispersion (.01 - 1) vs the continuous model (.005 - 0.5) show?! Pay attention to the scale of the Y axis when comparing them.
 :::
+
+## Results
+
+> When one performs a likelihood ratio test, the *p* values and the test statistic (the `stat` column) are values for the test that removes all of the variables which are present in the full design and not in the reduced design. This tests the null hypothesis that all the coefficients from these variables and levels of these factors are equal to zero.
+>
+> The likelihood ratio test *p* values therefore represent a test of *all the variables and all the levels of factors* which are among these variables. However, the results table only has space for one column of log fold change, so a single variable and a single comparison is shown (among the potentially multiple log fold changes which were tested in the likelihood ratio test). This is indicated at the top of the results table with the text, e.g., log2 fold change (MLE): condition C vs A, followed by, LRT p-value: '\~ batch + condition' vs '\~ batch'. This indicates that the *p* value is for the likelihood ratio test of *all the variables and all the levels*, while the log fold change is a single comparison from among those variables and levels. See the help page for *results* for more details.
+
+```{r}
+?results
+```
+
+> [Building the results table](https://master.bioconductor.org/packages/release/workflows/vignettes/rnaseqGene/inst/doc/rnaseqGene.html#multiple-testing:~:text=5.2-,Building%20the%20results%20table,-Calling%20results%20without): Calling results without any arguments will extract the estimated log2 fold changes and p values for the last variable in the design formula. If there are more than 2 levels for this variable, results will extract the results table for a comparison of the last level over the first level.
+>
+> Genes with small *p* values from the LRT test are those which at one or more time points after time 0 showed a strain-specific effect. Note therefore that this will not give small *p* values to genes that moved up or down over time in the same way in both strains.
+
+### categorical
 
 ```{r}
 resultsNames(dds_cat_LRT)
 ```
 
-View summary
-
 ```{r, eval=TRUE}
-res_cat <- results(dds_cat, alpha = 0.05)
-summary(res_cat)
+res_cat_LRT <- results(dds_cat_LRT, alpha = 0.05)
+res_cat_LRT
+```
+
+```{r}
+mcols(res_cat_LRT, use.names = TRUE)
+```
+
+```{r}
+summary(res_cat_LRT)
+```
+
+> We can plot the counts for the groups over time using [*ggplot2*](https://cran.r-project.org/package=ggplot2), for the gene with the smallest adjusted *p* value, testing for condition-dependent time profile and accounting for differences at time 0 (figure below). Keep in mind that the interaction terms are the *difference* between the two groups at a given time after accounting for the difference at time 0.
+
+```{r}
+catlrt <- plotCounts(dds_cat_LRT, which.min(res_cat_LRT$padj), 
+                   intgroup = c("stage","leachate"), returnData = TRUE)
+
+ggplot(catlrt, aes(x = leachate, y = count, color = stage, group = stage)) +
+  geom_jitter(width = 0.1)+
+  #stat_summary(fun.y=mean)+
+  geom_smooth(
+      aes(group = stage, color = stage, fill = stage),
+      method = "loess",
+      se = TRUE,
+      alpha = 0.3,
+      show.legend = FALSE
+    )+
+  theme_minimal()
+```
+
+### continuous
+
+```{r}
+resultsNames(dds_con_LRT)
 ```
 
 ```{r, eval=TRUE}
-res_con <- results(dds_con, alpha = 0.05)
-summary(res_con)
+res_con_LRT <- results(dds_con_LRT, alpha = 0.05)
+summary(res_con_LRT)
 ```
 
-```{r, eval=TRUE}
-sig_cat <- rownames(results(dds_cat, alpha = 0.05)[which(results(dds_cat)$padj < 0.05), ])
-sig_con <- rownames(results(dds_con, alpha = 0.05)[which(results(dds_con)$padj < 0.05), ])
-length(intersect(sig_cat, sig_con))
+```{r}
+conlrt <- plotCounts(dds_con_LRT, which.min(res_con_LRT$padj), 
+                   intgroup = c("stage","leachate"), returnData = TRUE)
+
+ggplot(conlrt, aes(x = leachate, y = count, color = stage, group = stage)) +
+  geom_jitter(width = 0.1)+
+  #stat_summary(fun.y=mean)+
+  geom_smooth(
+      aes(group = stage, color = stage, fill = stage),
+      method = "loess",
+      se = TRUE,
+      alpha = 0.3,
+      show.legend = FALSE
+    )+
+  theme_minimal()
+```
+
+```{r}
+sig_cat_LRT <- res_cat_LRT %>%
+  as.data.frame() %>%
+  filter(padj < 0.05) %>% 
+  rownames_to_column(var = "gene_id")
+
+sig_con_LRT <- res_con_LRT %>%
+  as.data.frame() %>%
+  filter(padj < 0.05) %>% 
+  rownames_to_column(var = "gene_id")
+
+overlap_ids <- intersect(sig_cat_LRT$gene_id, sig_con_LRT$gene_id)
+length(overlap_ids)        # how many
+overlap_ids                # which ones
 ```
 
 ::: callout-note
-2 out of 44 genes have a linear relationship (compared to a non-linear one!) as we look at the interactions between leachate and stage. All 44 of these genes respond to leachate differently depending on stage.
+The 2 significant genes found using leachate as a continuous factor are also included in the 44 significant genes found when leachate was coded as a categorical factor.
+
+This means that 2 out of 44 significant genes may have a linear relationship (compared to a non-linear one!) as we look at the interactions between leachate and stage. **All 44 of these genes respond to leachate differently depending on stage. Response to leachate pollution differs by embryonic stage.**
 
 44 genes show significant stage-by-leachate interaction when leachate is treated categorically → meaning the response to leachate varies by stage, but not necessarily in a linear/dose-dependent way.
 
@@ -235,36 +330,29 @@ length(intersect(sig_cat, sig_con))
 The 2 overlapping genes are well-modeled by a linear trend in leachate (i.e., a slope, not just group differences). The 42 other genes show non-linear or non-monotonic behavior --- meaning their response does not follow a consistent increase/decrease with dose. Instead, they respond differently to each specific leachate level depending on the stage (e.g., they might increase at 0.1 mg/L but decrease at 1 mg/L, or vice versa).
 :::
 
-## Save significant genes
+## Save significant LRT genes
 
 ```{r}
-sig_LRT <- res_cat %>%
-  as.data.frame() %>%
-  filter(padj < 0.05) %>% 
-  rownames_to_column(var = "gene_id")
-
-write.csv(sig_LRT, "../../output/06_deg/interactions/sig_LRT.csv")
+write.csv(sig_cat_LRT, "../../output/06_deg/interactions/sig_cat_LRT.csv")
 ```
 
 ::: callout-note
-`sig_cat` is the list of the names of the 44 genes that show any significant interactions across stage and leachate!
+`sig_cat_LRT` is the DESeq LRT result that shows 44 genes with significant interactions across stage and leachate!
 :::
 
-```{r}
-write.csv(sig_cat, "../../output/06_deg/interactions/sig_interaction_genes.csv")
-```
-
-> Of the 44 genes showing significant stage-specific responses to leachate (based on the categorical model), only 2 also show a significant linear dose-response interaction with stage (based on the continuous model). This suggests that while stage modulates leachate response broadly, most genes (42/44) exhibit nonlinear or non-monotonic patterns, rather than a simple linear trend across leachate levels. keep.order = TRUE)
+> Of the 44 genes showing significant stage-specific responses to leachate (based on the categorical model), only 2 also show a significant linear dose-response interaction with stage (based on the continuous model). This suggests that while stage modulates leachate response broadly, most genes (42/44) exhibit nonlinear or non-monotonic patterns, rather than a simple linear trend across leachate levels.
 
 ## Variance-stabilize counts
+
 ```{r, eval=TRUE}
-vsd_LRT <- assay(vst(dds_cat))
+vsd_LRT <- assay(vst(dds_cat_LRT))
 ```
 
 ## Pivot longer for plots
+
 ```{r}
 # make long expression dataframe of significant interaction genes
-sig_long <- vsd_LRT[sig_cat, ] %>% 
+sig_long <- vsd_LRT[sig_cat_LRT, ] %>% 
   as.data.frame() %>% 
   rownames_to_column("gene_id") %>%
   pivot_longer(-gene_id, names_to = "sample_id", values_to = "vsd_expression")
@@ -291,7 +379,8 @@ str(sig_long %>% distinct() %>% arrange(padj))
 
 How many samples are in each treatment for each significant gene?
 
-This bit of code lets us see how many samples are contributing to the mean expression of a gene broken down by group (aka condition ... leachate x stage) 
+This bit of code lets us see how many samples are contributing to the mean expression of a gene broken down by group (aka condition ... leachate x stage)
+
 ```{r}
 sample_counts <- sig_long %>% 
   dplyr::count(gene_id, group) %>%   # count rows per gene_id + group
@@ -303,13 +392,123 @@ summary(sample_counts)
 ```
 
 ::: callout-note
-At least 4 samples represent each group per significant gene. Most groups are represented by 5 samples... some have 4, 6, and 1 group has 7 samples.
-This is important to check because we want to be able to compare the groups, but if they have vastly different sample sizes that could be problematic. This confirms that the sample sizes are reasonably similar for comparisons.  
+At least 4 samples represent each group per significant gene. Most groups are represented by 5 samples... some have 4, 6, and 1 group has 7 samples. This is important to check because we want to be able to compare the groups, but if they have vastly different sample sizes that could be problematic. This confirms that the sample sizes are reasonably similar for comparisons.
 :::
 
 ## Plots
 
+Combine all gene plots into one big panel (patchwork or cowplot) Assumes `sig_long` and `all_info` (or same structure) are available as in your qmd: - sig_long: long dataframe with gene_id, sample_id, expression, stage, leachate, padj, padj_rank - all_info: data.frame with gene_id ordered by padj (as in your existing code)
+
+```{r}
+# Build list of ggplot objects (static ggplots)
+plots_gg <- vector("list", length = nrow(all_info))
+
+for (i in seq_len(nrow(all_info))) {
+  gene <- all_info$gene_id[i]
+  padj_val <- signif(all_info$min_padj[i], 3)
+  gene_df <- sig_long %>% filter(gene_id == gene)
+  padj_rank <- unique(gene_df$padj_rank)
+  
+  p <- ggplot(gene_df, aes(x = leachate, y = expression, color = stage, label = sample_id)) +
+    geom_point(size = 2,
+               alpha = 0.9,
+               position = position_jitter(width = 0.05, height = 0),
+               show.legend = TRUE) +
+    geom_smooth(aes(group = stage, color = stage, fill = stage),
+                method = "loess",
+                se = TRUE,
+                alpha = 0.35,
+                linewidth = 0.4,
+                show.legend = FALSE) +
+    labs(title = paste0("Gene ", padj_rank, ": ", gene),
+         subtitle = paste0("padj = ", padj_val),
+         x = NULL, y = "VST expression") +
+    theme_minimal() +
+    theme(
+      plot.title = element_text(size = 9),
+      plot.subtitle = element_text(size = 7),
+      axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+      axis.text.y = element_text(size = 6),
+      legend.title = element_blank(),
+      legend.text = element_text(size = 7),
+      legend.key.size = unit(0.25, "cm")
+    )
+  
+  plots_gg[[i]] <- p
+}
+```
+
+```{r}
+# Choose layout: 4 columns x 11 rows (4 * 11 = 44)
+ncol <- 4
+nrow <- 11
+```
+
+```{r}
+# --------- Option A: patchwork (collect a single legend) ----------
+combined_patchwork <- wrap_plots(plots_gg, ncol = ncol, guides = "collect") &
+  theme(legend.position = "bottom",
+        legend.direction = "horizontal")
+```
+
+```{r}
+# --------- Option B: cowplot (extract single legend, then plot grid) ----------
+legend <- cowplot::get_legend(
+  plots_gg[[1]] + theme(legend.position = "bottom", legend.direction = "horizontal")
+)
+
+# Remove legends from tiles
+plots_no_leg <- lapply(plots_gg, function(x) x + theme(legend.position = "none"))
+
+# Combine tiles into grid
+grid_tiles <- cowplot::plot_grid(plotlist = plots_no_leg, ncol = ncol, align = "hv")
+
+# Add legend below
+final_cow <- cowplot::plot_grid(grid_tiles, legend, ncol = 1, rel_heights = c(1, 0.03))
+```
+
+#### Save plots
+
+```{r}
+# Save patchwork panel (PNG + PDF)
+ggsave(
+  filename = "../../output/06_deg/interactions/all_genes_panel_patchwork.png",
+  plot = combined_patchwork,
+  width = 16,
+  height = 11 * 1.6,
+  units = "in",
+  dpi = 300
+)
+
+ggsave(
+  filename = "../../output/06_deg/interactions/all_genes_panel_patchwork.pdf",
+  plot = combined_patchwork,
+  width = 16,
+  height = 11 * 1.6,
+  units = "in"
+)
+
+
+
+# Save cowplot panel (PNG + PDF)
+cowplot::save_plot(
+  filename = "../../output/06_deg/interactions/all_genes_panel_cowplot.png",
+  plot = final_cow,
+  base_width = 16,
+  base_height = 11 * 1.6,
+  dpi = 300
+)
+
+cowplot::save_plot(
+  filename = "../../output/06_deg/interactions/all_genes_panel_cowplot.pdf",
+  plot = final_cow,
+  base_width = 16,
+  base_height = 11 * 1.6
+)
+```
+
 ### Top Significant Gene
+
 ```{r}
 gene_df_1 <- sig_long %>% filter(padj_rank == 1)
 
@@ -389,7 +588,6 @@ for (i in 1:nrow(top_info)) {
 }
 ```
 
-
 ```{r}
 plotly::subplot(plot_top4, nrows = 2, margin = 0.05) %>% 
   layout(title = 'Top 4 genes', shareX = T, showlegend=FALSE)
@@ -457,28 +655,29 @@ Next step: 👉 Use Wald tests to dig into which interactions (e.g., stage × le
 > Wald tests on interaction terms assess whether the interaction coefficient **differs significantly from 0** --- i.e., whether the combined effect of that `hpf` and `leachate` level deviates from what would be expected by the additive effects alone.
 
 | What You Want to Know                                               | Use            | Explanation                                                                   |
-|--------------------------|---------------|-------------------------------|
+|---------------------------------------------------------------------|----------------|-------------------------------------------------------------------------------|
 | Specific interaction term significant?                              | Wald           | `results(dds, name = "stageX.leachateY")`                                     |
-| Total effect of a leachate treatment at a specific stage vs control | Wald contrasts | `results(dds, conrtast = list(c("leachateY_vs_control", "stageX.leachateY"))` |
-
+| Total effect of a leachate treatment at a specific stage vs control | Wald contrasts | `results(dds, contrast = list(c("leachateY_vs_control", "stageX.leachateY"))` |
 
 Run the Wald test on the categorical dds object.
+
 ```{r}
 dds_wald <- DESeq(dds_cat, test = "Wald")
 ```
 
 ## Variance-stabilize counts
+
 ```{r}
 vsd_wald <- assay(vst(dds_wald))
 ```
-
 
 Is VSD LRT the same as VSD Wald?
 
 ```{r}
 identical(vsd_LRT, vsd_wald)
 ```
-The underlying counts are the same... the only difference is the test that is done on them (Wald vs LRT)... so test statistics are different but underlying counts are the same. 
+
+The underlying counts are the same... the only difference is the test that is done on them (Wald vs LRT)... so test statistics are different but underlying counts are the same.
 
 ## Interaction terms
 
@@ -501,6 +700,7 @@ resultsNames(dds_wald)
 Each of the above interaction terms tells us the extra effect of the leachate level at a stage (vs the additive sum of the stage and leachate effects) in comparison to a control baseline count. For the interaction terms, we are trying to get the "difference of the differences". For this analysis, we are interested in genes that are differentially expressed in treatment conditions, but not in the control condition (ie. genes uniquely changing in a stage due to treatment).
 
 ### Prawnchip
+
 ```{r}
 pch <- results(dds_wald, name = "stageprawnchip.leachatehigh", alpha = 0.05)
 summary(pch)
@@ -537,7 +737,6 @@ sig_long <- sig_long %>%
   left_join(gene_order %>% dplyr::select(gene_id, padj_rank), by = "gene_id")
 ```
 
-
 ```{r}
 res_m_int_pc  <- results(dds_wald, name = "stageprawnchip.leachatemid", alpha = 0.05)
 summary(res_m_int_pc)
@@ -547,7 +746,9 @@ summary(res_m_int_pc)
 res_l_int_pc  <- results(dds_wald, name = "stageprawnchip.leachatelow", alpha = 0.05)
 summary(res_l_int_pc)
 ```
+
 ### Early gastrula
+
 ```{r}
 res_h_int_eg <- results(dds_wald, name = "stageearlygastrula.leachatehigh", alpha = 0.05)
 summary(res_h_int_eg)
@@ -563,7 +764,7 @@ res_l_int_eg  <- results(dds_wald, name = "stageearlygastrula.leachatelow", alph
 summary(res_l_int_eg)
 ```
 
-## vc. Control contrasts 
+## vc. Control contrasts
 
 See [A guide to designs and contrasts in DESeq2](https://www.atakanekiz.com/technical/a-guide-to-designs-and-contrasts-in-DESeq2/) by Dr. Atakan Ekiz
 
@@ -626,7 +827,7 @@ summary(res_mvc_cl)
 ```
 
 ::: callout-note
-77 genes were found to be significantly differentially expressed (adjusted p value \< 0.05) at the cleavage stage in the mid leachate treatment compared to the control. 77 LFC \> 0. These 77 genes were all found in more abundance compared to the controls. 
+77 genes were found to be significantly differentially expressed (adjusted p value \< 0.05) at the cleavage stage in the mid leachate treatment compared to the control. 77 LFC \> 0. These 77 genes were all found in more abundance compared to the controls.
 :::
 
 ```{r}
@@ -709,6 +910,7 @@ write_csv(sig_hvc_eg, "../../output/06_deg/contrasts/sig_hvc_eg.csv")
 ```
 
 # Combine results
+
 ```{r}
 # Combine into a summary
 int_wald_df <- data.frame(
@@ -860,7 +1062,6 @@ PCA_sig <- ggplot(pca_sig, aes(PC1, PC2, color = stage, shape = leachate, label 
 # Convert to interactive plot
 ggplotly(PCA_sig, tooltip = "label")
 ```
-
 
 # Save gene lists
 
