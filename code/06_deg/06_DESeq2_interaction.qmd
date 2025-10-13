@@ -104,6 +104,7 @@ library(dplyr)
 library(grid) 
 library(purrr)
 library(forcats)
+library(ggforce)   # for facet_wrap_paginate
 ```
 
 ## Import filtered gene count matrix
@@ -344,32 +345,24 @@ Check to see that there are 44 unique genes in the `norm_long_sigLRT` dataframe
 unique(norm_long_sigLRT$gene_id)
 ```
 
-
+Add additional columns to the long form dataframe 
 ```{r}
-# make long expression dataframe of significant interaction genes
-sig_long <- dds_cat_LRT %>% 
-  as.data.frame() %>% 
-  rownames_to_column("gene_id") %>%
-  pivot_longer(-gene_id, names_to = "sample_id", values_to = "vsd_expression")
-
-# add metadata
-sig_long <- sig_long %>% left_join(metadata_or, by = "sample_id")
 # add padj
-sig_long <- sig_long %>% left_join(LRT_sig_genes, by = "gene_id")
+norm_long_sigLRT <- norm_long_sigLRT %>% left_join(sig_cat_LRT, by = "gene_id")
 
 # Assign numbers to genes by min padj
-gene_order <- sig_long %>%
+gene_order <- norm_long_sigLRT %>%
   group_by(gene_id) %>%
   summarise(min_padj = min(padj, na.rm = TRUE), .groups = "drop") %>%
   arrange(min_padj) %>%
   mutate(padj_rank = row_number())
 
-# Join back to sig_long
-sig_long <- sig_long %>%
+# Join back to norm_long_sigLRT
+norm_long_sigLRT <- norm_long_sigLRT %>%
   left_join(gene_order %>% dplyr::select(gene_id, padj_rank), by = "gene_id")
 
 # View the structure of the long form dataset 
-str(sig_long %>% distinct() %>% arrange(padj))
+str(norm_long_sigLRT %>% distinct() %>% arrange(padj))
 ```
 
 How many samples are in each treatment for each significant gene?
@@ -377,7 +370,7 @@ How many samples are in each treatment for each significant gene?
 This bit of code lets us see how many samples are contributing to the mean expression of a gene broken down by group (aka condition ... leachate x stage)
 
 ```{r}
-sample_counts <- sig_long %>% 
+sample_counts <- norm_long_sigLRT %>% 
   dplyr::count(gene_id, group) %>%   # count rows per gene_id + group
   pivot_wider(names_from = group,              # make each group a column
               values_from = n, 
@@ -390,254 +383,129 @@ summary(sample_counts)
 At least 4 samples represent each group per significant gene. Most groups are represented by 5 samples... some have 4, 6, and 1 group has 7 samples. This is important to check because we want to be able to compare the groups, but if they have vastly different sample sizes that could be problematic. This confirms that the sample sizes are reasonably similar for comparisons.
 :::
 
-
-
-Combine all gene plots into one big panel (patchwork or cowplot) Assumes `sig_long` and `all_info` (or same structure) are available as in your qmd: - sig_long: long dataframe with gene_id, sample_id, expression, stage, leachate, padj, padj_rank - all_info: data.frame with gene_id ordered by padj (as in your existing code)
-
+### Gene plot and print values
 ```{r}
-# Build list of ggplot objects (static ggplots)
-plots_gg <- vector("list", length = nrow(all_info))
+# Parameters: change if your column names differ
+df <- norm_long_sigLRT         # your long dataframe
+expr_var <- "expression"       # or "vsd_expression"
+stage_col <- "stage"
+leachate_col <- "leachate"
+sample_col <- "sample_id"
 
-for (i in seq_len(nrow(all_info))) {
-  gene <- all_info$gene_id[i]
-  padj_val <- signif(all_info$min_padj[i], 3)
-  gene_df <- sig_long %>% filter(gene_id == gene)
-  padj_rank <- unique(gene_df$padj_rank)
+# paginate print values
+ncol <- 3
+nrow <- 3
+per_page <- ncol * nrow
+```
+
+### Plot function
+```{r, plot-function}
+
+
+# Plot function: returns a ggplot object
+make_gene_plot <- function(gene, 
+                           data = df, 
+                           expr = expr_var,
+                           stage = stage_col, 
+                           leach = leachate_col, 
+                           sample = sample_col,
+                           loess = TRUE,
+                           title = TRUE, 
+                           show_legend = TRUE) {
+  gene_df <- data %>% filter(.data$gene_id == gene)
+  if (nrow(gene_df) == 0) stop("No rows for gene: ", gene)
   
-  p <- ggplot(gene_df, aes(x = leachate, y = expression, color = stage, label = sample_id)) +
-    geom_point(size = 2,
-               alpha = 0.9,
-               position = position_jitter(width = 0.05, height = 0),
-               show.legend = TRUE) +
-    geom_smooth(aes(group = stage, color = stage, fill = stage),
-                method = "loess",
-                se = TRUE,
-                alpha = 0.35,
-                linewidth = 0.4,
-                show.legend = FALSE) +
-    labs(title = paste0("Gene ", padj_rank, ": ", gene),
-         subtitle = paste0("padj = ", padj_val),
-         x = NULL, y = "VST expression") +
+  p <- ggplot(gene_df, aes_string(x = leach,
+                                  y = expr, 
+                                  color = stage, 
+                                  label = sample)) +
+    geom_point(size = 2, 
+               position = position_jitter(width = 0.05), 
+               alpha = 0.9) +
+    labs(x = NULL, y = "Normalized Expression", color = NULL) +
+    scale_x_discrete(expand = expansion(add = c(0.08, 0.08))) +  # shrink horizontal padding (left/right)
     theme_minimal() +
     theme(
-      plot.title = element_text(size = 9),
-      plot.subtitle = element_text(size = 7),
-      axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
-      axis.text.y = element_text(size = 6),
-      legend.title = element_blank(),
-      legend.text = element_text(size = 7),
-      legend.key.size = unit(0.25, "cm")
-    )
+      plot.title = element_text(size = 10),
+      plot.subtitle = element_text(size = 8),
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank()
+      )
   
-  plots_gg[[i]] <- p
+  if (loess) {
+    p <- p + geom_smooth(aes(group = stage, 
+                             fill = stage, 
+                             color = stage),
+                         method = "loess", 
+                         se = TRUE, 
+                         alpha = 0.35, 
+                         linewidth = 0.4, 
+                         show.legend = FALSE)
+  }
+  
+  if (title) {
+    # include padj if available in df or in a separate table; here we try to grab padj if present
+    padj_val <- unique(gene_df$padj)
+    subtitle <- if (!all(is.na(padj_val))) paste0("padj = ", signif(min(padj_val, na.rm = TRUE), 3)) else NULL
+    p <- p + ggtitle(paste0("Gene: ", gene), subtitle = subtitle)
+  }
+  
+  if (!show_legend) p <- p + theme(legend.position = "none")
+  p
+}
+```
+
+### Plot preview
+```{r, preview-plot, fig.width=6}
+# --- Examples: preview one plot inline ---
+
+# 1) Preview the first gene in your dataset
+genes <- df %>% distinct(gene_id) %>% arrange(gene_id) %>% pull(gene_id)
+p1 <- make_gene_plot(genes[1])
+print(p1)        # prints inline in R/Quarto/RStudio
+
+# 2) Preview a specific gene by id (replace with a real id)
+# p2 <- make_gene_plot("Montipora_capitata_HIv3___RNAseq.g11129.t1")
+# print(p2)
+
+# 3) If you want an interactive preview (zoom/hover), use plotly:
+# library(plotly)
+# ggplotly(p1)
+
+# 4) Save the single preview to file
+# ggsave("preview_gene1.png", plot = p1, width = 8, height = 4, dpi = 300)
+```
+### Paginate facet wrap
+```{r, paginate-wrap}
+for(page in seq_len(n_pages)) {
+  p_page <- p_base +
+    ggforce::facet_wrap_paginate(~ gene_id, ncol = ncol, nrow = nrow, page = page, scales = "free_y")
+  out_file <- file.path(out_dir, sprintf("all_genes_page_%02d.png", page))
+  ggsave(out_file, plot = p_page, width = 16, height = 11 * 1.6, units = "in", dpi = 300)
+  message("Saved page ", page, " / ", n_pages, " -> ", out_file)
 }
 ```
 
 ```{r}
-# Choose layout: 4 columns x 11 rows (4 * 11 = 44)
-ncol <- 4
-nrow <- 11
-```
-
-```{r}
-# --------- Option A: patchwork (collect a single legend) ----------
-combined_patchwork <- wrap_plots(plots_gg, ncol = ncol, guides = "collect") &
-  theme(legend.position = "bottom",
-        legend.direction = "horizontal")
-```
-
-```{r}
-# --------- Option B: cowplot (extract single legend, then plot grid) ----------
-legend <- cowplot::get_legend(
-  plots_gg[[1]] + theme(legend.position = "bottom", legend.direction = "horizontal")
-)
-
-# Remove legends from tiles
-plots_no_leg <- lapply(plots_gg, function(x) x + theme(legend.position = "none"))
-
-# Combine tiles into grid
-grid_tiles <- cowplot::plot_grid(plotlist = plots_no_leg, ncol = ncol, align = "hv")
-
-# Add legend below
-final_cow <- cowplot::plot_grid(grid_tiles, legend, ncol = 1, rel_heights = c(1, 0.03))
-```
-
-#### Save plots
-
-```{r}
-# Save patchwork panel (PNG + PDF)
-ggsave(
-  filename = "../../output/06_deg/interactions/all_genes_panel_patchwork.png",
-  plot = combined_patchwork,
-  width = 16,
-  height = 11 * 1.6,
-  units = "in",
-  dpi = 300
-)
-
-ggsave(
-  filename = "../../output/06_deg/interactions/all_genes_panel_patchwork.pdf",
-  plot = combined_patchwork,
-  width = 16,
-  height = 11 * 1.6,
-  units = "in"
-)
-
-
-
-# Save cowplot panel (PNG + PDF)
-cowplot::save_plot(
-  filename = "../../output/06_deg/interactions/all_genes_panel_cowplot.png",
-  plot = final_cow,
-  base_width = 16,
-  base_height = 11 * 1.6,
-  dpi = 300
-)
-
-cowplot::save_plot(
-  filename = "../../output/06_deg/interactions/all_genes_panel_cowplot.pdf",
-  plot = final_cow,
-  base_width = 16,
-  base_height = 11 * 1.6
-)
-```
-
-### Top Significant Gene
-
-```{r}
-gene_df_1 <- sig_long %>% filter(padj_rank == 1)
-
-p <- ggplot(gene_df_1, aes(x = leachate, y = expression, color = stage, label = sample_id)) +
-    geom_point(
-      size = 2, 
-      alpha = 0.9,
-      position = position_jitter(width = 0.05, height = 0),
-      show.legend = FALSE
-      ) +
-    geom_smooth(
-      aes(group = stage, color = stage, fill = stage),
-      method = "loess",
-      se = TRUE,
-      alpha = 0.5,
-      show.legend = FALSE
-    ) +
-    labs(title = paste0("Gene ", padj_rank, ":", gene, " (padj = ", padj_val, ")")) +
-    guides(stage=FALSE) +
-    theme_minimal()
-
-p
-```
-
-Top 4 genes with significant interaction between `stage` x `leachate`
-
-```{r}
-top_genes <- sig_long %>%
-  dplyr::select(gene_id, padj, padj_rank) %>% 
-  distinct() %>%
-  arrange(padj) %>%
-  slice_head(n = 4) 
-  
-top_genes
-```
-
-```{r}
-top_info <- sig_long %>%
-  group_by(gene_id) %>%
-  summarise(min_padj = min(padj, na.rm = TRUE)) %>%
-  arrange(min_padj) %>%
-  slice_head(n = 4)
-```
-
-```{r}
-plot_top4 <- list()
-
-for (i in 1:nrow(top_info)) {
-  gene <- top_info$gene_id[i]
-  padj_val <- signif(top_info$min_padj[i], 4)
-
-  gene_df <- sig_long %>% filter(gene_id == gene)
-  padj_rank <- unique(gene_df$padj_rank)
-
-  p <- ggplot(gene_df, aes(x = leachate, y = expression, color = stage, label = sample_id)) +
-    geom_point(
-      size = 2, 
-      alpha = 0.9,
-      position = position_jitter(width = 0.05, height = 0),
-      show.legend = FALSE
-      ) +
-    geom_smooth(
-      aes(group = stage, color = stage, fill = stage),
-      method = "loess",
-      se = TRUE,
-      alpha = 0.5,
-      show.legend = FALSE
-    ) +
-    labs(title = paste0("Gene ", padj_rank, ":", gene, " (padj = ", padj_val, ")")) +
-    guides(stage=FALSE) +
-    theme_minimal()
-
-  print(p)
-  
-  # Save plots to plot list
-  plot_top4[[i]] <- p
+# Display paginated PNGs in GFM-friendly format (collapsible <details> blocks)
+# Run this chunk after the PNGs have been generated by the previous chunk.
+files <- list.files("../../output/06_deg/interactions/gene_panels", pattern = "^all_genes_page_\\d+\\.png$", full.names = FALSE)
+if (length(files) == 0) {
+  cat("No paginated images found in the output folder. Run the generation chunk first.")
+} else {
+  # print a short intro
+  cat("\n**Paginated gene panels** — click a page to expand the image.\n\n")
+  # Print each image inside a collapsible details block (GFM-friendly)
+  for (f in sort(files)) {
+    # path used in Markdown should be the relative path from the rendered .md file location to the image file
+    img_path <- file.path("output/06_deg/interactions/gene_panels", f)  # adjust if your site layout differs
+    # Emit collapsible block
+    cat(sprintf("<details>\n<summary>%s</summary>\n\n![](%s)\n\n</details>\n\n", f, img_path))
+  }
 }
 ```
 
-```{r}
-plotly::subplot(plot_top4, nrows = 2, margin = 0.05) %>% 
-  layout(title = 'Top 4 genes', shareX = T, showlegend=FALSE)
-```
-
-### Loop plots of all significant interaction genes
-
-```{r}
-all_info <- sig_long %>%
-  group_by(gene_id) %>%
-  summarise(min_padj = min(padj, na.rm = TRUE)) %>%
-  arrange(min_padj)
-
-plots <- list()
-
-for (i in 1:nrow(all_info)) {
-  gene <- all_info$gene_id[i]
-  padj_val <- signif(all_info$min_padj[i], 3)
-
-  gene_df <- sig_long %>% filter(gene_id == gene)
-  padj_rank <- unique(gene_df$padj_rank)
-
-  p <- ggplot(gene_df, aes(x = leachate, y = expression, color = stage, label = sample_id)) +
-    geom_point(
-      size = 2, 
-      alpha = 0.9,
-      position = position_jitter(width = 0.05, height = 0),
-      show.legend = FALSE
-      ) +
-    geom_smooth(
-      aes(group = stage, color = stage, fill = stage),
-      method = "loess",
-      se = TRUE,
-      alpha = 0.5
-    ) +
-    labs(title = paste0("Gene ", padj_rank, ":", gene, " (padj = ", padj_val, ")")) +
-    theme_minimal()
-
-  # Save plotly plots to plot list
-  plots[[i]] <- ggplotly(p)
-  
-    # Save to PNG
-  ggsave(
-    filename = paste0("../../output/06_deg/interactions/gene_plots/", padj_rank, ".png"),
-    plot = p, width = 8, height = 4, dpi = 600
-  )
-}
-
-```
-
-### Gene Expression Interaction Plots
-
-::: {.grid layout-ncol="4"}
-![](../../output/06_deg/interactions/gene_plots/1.png) ![](../../output/06_deg/interactions/gene_plots/2.png) ![](../../output/06_deg/interactions/gene_plots/3.png) ![](../../output/06_deg/interactions/gene_plots/4.png) ![](../../output/06_deg/interactions/gene_plots/5.png) ![](../../output/06_deg/interactions/gene_plots/6.png) ![](../../output/06_deg/interactions/gene_plots/7.png) ![](../../output/06_deg/interactions/gene_plots/8.png) ![](../../output/06_deg/interactions/gene_plots/9.png) ![](../../output/06_deg/interactions/gene_plots/10.png) ![](../../output/06_deg/interactions/gene_plots/11.png) ![](../../output/06_deg/interactions/gene_plots/12.png) ![](../../output/06_deg/interactions/gene_plots/13.png) ![](../../output/06_deg/interactions/gene_plots/14.png) ![](../../output/06_deg/interactions/gene_plots/15.png) ![](../../output/06_deg/interactions/gene_plots/16.png) ![](../../output/06_deg/interactions/gene_plots/17.png) ![](../../output/06_deg/interactions/gene_plots/18.png) ![](../../output/06_deg/interactions/gene_plots/19.png) ![](../../output/06_deg/interactions/gene_plots/20.png) ![](../../output/06_deg/interactions/gene_plots/21.png) ![](../../output/06_deg/interactions/gene_plots/22.png) ![](../../output/06_deg/interactions/gene_plots/23.png) ![](../../output/06_deg/interactions/gene_plots/24.png) ![](../../output/06_deg/interactions/gene_plots/25.png) ![](../../output/06_deg/interactions/gene_plots/26.png) ![](../../output/06_deg/interactions/gene_plots/27.png) ![](../../output/06_deg/interactions/gene_plots/28.png) ![](../../output/06_deg/interactions/gene_plots/29.png) ![](../../output/06_deg/interactions/gene_plots/30.png) ![](../../output/06_deg/interactions/gene_plots/31.png) ![](../../output/06_deg/interactions/gene_plots/32.png) ![](../../output/06_deg/interactions/gene_plots/33.png) ![](../../output/06_deg/interactions/gene_plots/34.png) ![](../../output/06_deg/interactions/gene_plots/35.png) ![](../../output/06_deg/interactions/gene_plots/36.png) ![](../../output/06_deg/interactions/gene_plots/37.png) ![](../../output/06_deg/interactions/gene_plots/38.png) ![](../../output/06_deg/interactions/gene_plots/39.png) ![](../../output/06_deg/interactions/gene_plots/40.png) ![](../../output/06_deg/interactions/gene_plots/41.png) ![](../../output/06_deg/interactions/gene_plots/42.png) ![](../../output/06_deg/interactions/gene_plots/43.png) ![](../../output/06_deg/interactions/gene_plots/44.png)
-:::
 
 ::: callout-note
 We have 44 genes with significant interaction effects overall.
@@ -660,26 +528,12 @@ Run the Wald test on the categorical dds object.
 dds_wald <- DESeq(dds_cat, test = "Wald")
 ```
 
-## Variance-stabilize counts
-
-```{r}
-vsd_wald <- assay(vst(dds_wald))
-```
-
-Is VSD LRT the same as VSD Wald?
-
-```{r}
-identical(vsd_cat_LRT, vsd_wald)
-```
-
-The underlying counts are the same... the only difference is the test that is done on them (Wald vs LRT)... so test statistics are different but underlying counts are the same.
-
-## Interaction terms
 
 ```{r}
 resultsNames(dds_wald)
 ```
 
+## Interaction terms
 -   "stageprawnchip.leachatelow"
 
 -   "stageearlygastrula.leachatelow"
