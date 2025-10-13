@@ -326,20 +326,24 @@ sig_LRT <- as.character(sig_cat_LRT$gene_id)
 
 
 # 2. convert -> long tidy dataframe
-norm_long_LRT <- as.data.frame(norm_mat_LRT) %>%
+norm_long_sigLRT <- as.data.frame(norm_mat_LRT) %>%
   rownames_to_column("gene_id") %>%
   pivot_longer(
     cols = -gene_id,
     names_to = "sample_id",
     values_to = "expression"
-  )
+  ) %>% 
+  filter(gene_id %in% sig_LRT)
 
 # 3. join sample metadata
-coldata_df <- as.data.frame(SummarizedExperiment::colData(dds)) %>%
-  rownames_to_column("sample_id")
-
-norm_long <- norm_long %>% left_join(coldata_df, by = "sample_id")
+norm_long_sigLRT <- norm_long_sigLRT %>% left_join(metadata_or, by = "sample_id")
 ```
+
+Check to see that there are 44 unique genes in the `norm_long_sigLRT` dataframe
+```{r}
+unique(norm_long_sigLRT$gene_id)
+```
+
 
 ```{r}
 # make long expression dataframe of significant interaction genes
