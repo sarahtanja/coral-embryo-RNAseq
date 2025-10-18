@@ -1,0 +1,71 @@
+┌─────────────────────────────────────────────────────────────────────┐
+│                    DESeq2 Leachate Effects Flow                      │
+└─────────────────────────────────────────────────────────────────────┘
+
+                          EXISTING ANALYSES
+                                  │
+          ┌──────────────────────┼──────────────────────┐
+          │                      │                      │
+          ▼                      ▼                      ▼
+    ┌─────────┐          ┌──────────────┐      ┌─────────────┐
+    │   LRT   │          │ Interaction  │      │Main Effects │
+    │  Tests  │          │    Terms     │      │(vs Control) │
+    └────┬────┘          └──────┬───────┘      └──────┬──────┘
+         │                      │                     │
+         │ sig_cat_LRT          │ 6 comparisons       │ 9 comparisons
+         │ (44 genes)           │ (prawnchip x 3,     │ (3 stages x 3
+         │                      │  early gast x 3)    │  leachate levels)
+         │                      │                     │
+         └──────────────────────┴─────────────────────┘
+                                │
+                    NEW SECTION: "Summarize Leachate Effects"
+                                │
+         ┌──────────────────────┴──────────────────────┐
+         │                                              │
+         ▼                                              ▼
+┌──────────────────┐                         ┌──────────────────┐
+│ Extract & Format │                         │  Summary Stats   │
+│  Significant     │                         │  & Overlaps      │
+│    Results       │                         └──────────────────┘
+└────────┬─────────┘
+         │
+         │ • sig_LRT_summary (LRT results)
+         │ • sig_int_* (6 interaction dataframes)
+         │ • sig_main_* (9 main effect dataframes)
+         │
+         ▼
+┌──────────────────────────────────────────────────────────────┐
+│              LEFT JOIN ALL BY gene_id                         │
+│                                                               │
+│  Start with all unique genes significant in any test         │
+│  Join LRT → Join Interactions → Join Main Effects            │
+│  NA = not significant for that test                          │
+└───────────────────────────┬──────────────────────────────────┘
+                            │
+                            ▼
+              ┌─────────────────────────┐
+              │ combined_leachate_effects│
+              │  (comprehensive df)      │
+              │                          │
+              │ • gene_id (1 col)        │
+              │ • LRT results (4 cols)   │
+              │ • Interactions (18 cols) │
+              │ • Main effects (27 cols) │
+              │ = 50 columns total       │
+              └────────────┬─────────────┘
+                           │
+                           ▼
+            ┌──────────────────────────────┐
+            │  Save to CSV                  │
+            │  combined_leachate_effects.csv│
+            └──────────────────────────────┘
+
+                    DOWNSTREAM USES
+                           │
+      ┌────────────────────┼────────────────────┐
+      │                    │                    │
+      ▼                    ▼                    ▼
+┌──────────┐        ┌──────────┐        ┌──────────┐
+│ Heatmaps │        │  Filter  │        │Functional│
+│          │        │ Subsets  │        │Enrichment│
+└──────────┘        └──────────┘        └──────────┘
