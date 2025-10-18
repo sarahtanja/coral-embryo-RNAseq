@@ -325,6 +325,10 @@ The 2 overlapping genes are well-modeled by a linear trend in leachate (i.e., a 
 Because the 2 genes that are captured in the continuous model are also caputured in the categorical model we will just save the significant categorical list
 ```{r}
 write.csv(sig_cat_LRT, "../../output/06_deg/interactions/sig_cat_LRT.csv")
+
+# Create aliases for clarity in later sections
+LRT_sig_genes <- sig_cat_LRT
+sig_cat <- sig_cat_LRT$gene_id  # character vector of gene IDs
 ```
 
 ::: callout-note
@@ -562,6 +566,9 @@ Run the Wald test on the categorical dds object.
 
 ```{r}
 dds_wald <- DESeq(dds_cat, test = "Wald")
+
+# Create variance-stabilized transformation for later use
+vsd <- varianceStabilizingTransformation(dds_wald)
 ```
 
 ## Long data for plotting
@@ -784,11 +791,11 @@ plot_sig_genes(norm_count_long, sig_prawnchip_mid.int, gene_col = "gene_id", pad
 
 #### low
 ```{r}
-summary(pcl)
+summary(res_prawnchip_low.int)
 ```
 
 ```{r}
-sig_pcl <- pcl %>%
+sig_prawnchip_low.int <- res_prawnchip_low.int %>%
   as.data.frame() %>%
   filter(padj < 0.05) %>% 
   rownames_to_column(var = "gene_id")
@@ -801,7 +808,7 @@ summary(res_earlygastrula_high.int)
 ```
 
 ```{r}
-sig_earlygastrula_high.int_egh <- res_earlygastrula_high.int %>%
+sig_earlygastrula_high.int <- res_earlygastrula_high.int %>%
   as.data.frame() %>%
   filter(padj < 0.05) %>% 
   rownames_to_column(var = "gene_id")
@@ -879,6 +886,9 @@ sig_cleavage_low.vs.control <- res_cleavage_low.vs.control %>%
   rownames_to_column(var = "gene_id")
 
 write_csv(sig_cleavage_low.vs.control, "../../output/06_deg/contrasts/sig_cleavage_low.vs.control.csv")
+
+# Create alias for consistency with later code
+sig_lvc_cl <- sig_cleavage_low.vs.control
 ```
 
 for prawnchip
@@ -972,7 +982,7 @@ write_csv(sig_hvc_cl, "../../output/06_deg/contrasts/sig_hvc_cl.csv")
 for prawnchip
 
 ```{r}
-res_hvc_pc <- results(dds_wald, contrast = list(c("leachate_high_vs_control",
+res_hvc_pc <- results(dds_wald, contrast = list(c("leachatehigh",
                                                   "stageprawnchip.leachatehigh")))
 summary(res_hvc_pc)
 ```
@@ -984,7 +994,7 @@ summary(res_hvc_pc)
 for early gastrula
 
 ```{r}
-res_hvc_eg <- results(dds_wald, contrast = list(c("leachate_high_vs_control",
+res_hvc_eg <- results(dds_wald, contrast = list(c("leachatehigh",
                                                   "stageearlygastrula.leachatehigh")))
 summary(res_hvc_eg)
 ```
@@ -999,74 +1009,329 @@ sig_hvc_eg <- sig_hvc_eg %>% rownames_to_column(., var = "gene_id")
 write_csv(sig_hvc_eg, "../../output/06_deg/contrasts/sig_hvc_eg.csv")
 ```
 
-# Summarize results
+# Summarize Leachate Effects
+
+This section organizes all DESeq2 results for leachate effects into three categories:
+1. **LRT Results**: Overall test for stage-by-leachate interactions
+2. **Interaction Terms**: Specific stage-by-leachate interaction effects
+3. **Main Leachate Effects**: Leachate effects at each stage vs control
+
+## Extract all significant results
+
+First, let's extract all significant results (padj < 0.05) for each test type:
+
+### LRT Significant Genes
 
 ```{r}
-# helper to standardize any DESeqResults into a tidy df
-as_tbl <- function(res, name){
-  as.data.frame(res) %>%
-    rownames_to_column("gene_id") %>%
-    transmute(
-      gene_id,
-      result_name = name,
-      log2FC      = log2FoldChange,
-      pval        = pvalue,
-      padj        = padj
-    )
-}
+# LRT significant genes (already extracted above as sig_cat_LRT)
+# These are genes with significant stage-by-leachate interactions
+sig_LRT_summary <- sig_cat_LRT %>%
+  dplyr::select(gene_id, baseMean, log2FoldChange, pvalue, padj) %>%
+  rename(
+    LRT_baseMean = baseMean,
+    LRT_log2FC = log2FoldChange,
+    LRT_pvalue = pvalue,
+    LRT_padj = padj
+  )
+
+cat("LRT significant genes:", nrow(sig_LRT_summary), "\n")
 ```
 
+### Interaction Terms Significant Genes
+
 ```{r}
-# EXAMPLE: replace the ... with your actual DESeqResults objects
-res_list <- list(
-  # Wald main effects at reference stage (cleavage)
-  leachate_low  = results(dds_wald, name = "leachatelow"),
-  leachate_mid  = results(dds_wald, name = "leachatemid"),
-  leachate_high = results(dds_wald, name = "leachatehigh"),
+# Extract significant interaction terms for each stage x leachate combination
+sig_int_prawnchip_low <- res_prawnchip_low.int %>%
+  as.data.frame() %>%
+  filter(padj < 0.05) %>%
+  rownames_to_column(var = "gene_id") %>%
+  dplyr::select(gene_id, log2FoldChange, pvalue, padj) %>%
+  rename(
+    int_prawnchip_low_log2FC = log2FoldChange,
+    int_prawnchip_low_pvalue = pvalue,
+    int_prawnchip_low_padj = padj
+  )
 
-  # Stage-specific low/mid/high (additive + interaction)
-  prawn_low  = results(dds_wald, contrast = list(c("leachatelow",  "stageprawnchip.leachatelow"))),
-  prawn_mid  = results(dds_wald, contrast = list(c("leachatemid",  "stageprawnchip.leachatemid"))),
-  prawn_high = results(dds_wald, contrast = list(c("leachatehigh", "stageprawnchip.leachatehigh"))),
+sig_int_prawnchip_mid <- res_prawnchip_mid.int %>%
+  as.data.frame() %>%
+  filter(padj < 0.05) %>%
+  rownames_to_column(var = "gene_id") %>%
+  dplyr::select(gene_id, log2FoldChange, pvalue, padj) %>%
+  rename(
+    int_prawnchip_mid_log2FC = log2FoldChange,
+    int_prawnchip_mid_pvalue = pvalue,
+    int_prawnchip_mid_padj = padj
+  )
 
-  eg_low  = results(dds_wald, contrast = list(c("leachatelow",  "stageearlygastrula.leachatelow"))),
-  eg_mid  = results(dds_wald, contrast = list(c("leachatemid",  "stageearlygastrula.leachatemid"))),
-  eg_high = results(dds_wald, contrast = list(c("leachatehigh", "stageearlygastrula.leachatehigh"))),
+sig_int_prawnchip_high <- res_prawnchip_high.int %>%
+  as.data.frame() %>%
+  filter(padj < 0.05) %>%
+  rownames_to_column(var = "gene_id") %>%
+  dplyr::select(gene_id, log2FoldChange, pvalue, padj) %>%
+  rename(
+    int_prawnchip_high_log2FC = log2FoldChange,
+    int_prawnchip_high_pvalue = pvalue,
+    int_prawnchip_high_padj = padj
+  )
 
-  # Pure interaction terms (differences of effects vs cleavage)
-  int_prwn_low  = results(dds_wald, name = "stageprawnchip.leachatelow"),
-  sig_prwn_mid  = results(dds_wald, name = "stageprawnchip.leachatemid"),
-  int_prwn_high = results(dds_wald, name = "stageprawnchip.leachatehigh"),
-  int_eg_low    = results(dds_wald, name = "stageearlygastrula.leachatelow"),
-  int_eg_mid   
-  int_eg_high  
+sig_int_earlygastrula_low <- res_earlygastrula_low.int %>%
+  as.data.frame() %>%
+  filter(padj < 0.05) %>%
+  rownames_to_column(var = "gene_id") %>%
+  dplyr::select(gene_id, log2FoldChange, pvalue, padj) %>%
+  rename(
+    int_earlygastrula_low_log2FC = log2FoldChange,
+    int_earlygastrula_low_pvalue = pvalue,
+    int_earlygastrula_low_padj = padj
+  )
 
-  # LRT (e.g., test of interaction block or full vs reduced)
-  sig_cat_LRT
-)
+sig_int_earlygastrula_mid <- res_earlygastrula_mid.int %>%
+  as.data.frame() %>%
+  filter(padj < 0.05) %>%
+  rownames_to_column(var = "gene_id") %>%
+  dplyr::select(gene_id, log2FoldChange, pvalue, padj) %>%
+  rename(
+    int_earlygastrula_mid_log2FC = log2FoldChange,
+    int_earlygastrula_mid_pvalue = pvalue,
+    int_earlygastrula_mid_padj = padj
+  )
+
+sig_int_earlygastrula_high <- res_earlygastrula_high.int %>%
+  as.data.frame() %>%
+  filter(padj < 0.05) %>%
+  rownames_to_column(var = "gene_id") %>%
+  dplyr::select(gene_id, log2FoldChange, pvalue, padj) %>%
+  rename(
+    int_earlygastrula_high_log2FC = log2FoldChange,
+    int_earlygastrula_high_pvalue = pvalue,
+    int_earlygastrula_high_padj = padj
+  )
+
+# Summary of interaction terms
+cat("Interaction term significant genes:\n")
+cat("  Prawnchip x Low:", nrow(sig_int_prawnchip_low), "\n")
+cat("  Prawnchip x Mid:", nrow(sig_int_prawnchip_mid), "\n")
+cat("  Prawnchip x High:", nrow(sig_int_prawnchip_high), "\n")
+cat("  Early Gastrula x Low:", nrow(sig_int_earlygastrula_low), "\n")
+cat("  Early Gastrula x Mid:", nrow(sig_int_earlygastrula_mid), "\n")
+cat("  Early Gastrula x High:", nrow(sig_int_earlygastrula_high), "\n")
 ```
 
+### Main Leachate Effects Significant Genes
 
 ```{r}
-# Combine into a summary
-int_wald_df <- data.frame(
-  gene_id = rownames(res_high_pc),
-  pc_h_log2FC = res_high_pc$log2FoldChange,
-  pc_high_padj = res_high_pc$padj,
-  prawnchip_mid_log2FC = res_mid_pc$log2FoldChange,
-  prawnchip_mid_padj = res_mid_pc$padj,
-  prawnchip_low_log2FC = res_low_pc$log2FoldChange,
-  prawnchip_low_padj = res_low_pc$padj,
-  earlygastrula_high_log2FC = res_high_eg$log2FoldChange,
-  earlygastrula_high_padj = res_high_eg$padj,
-  earlygastrula_mid_log2FC = res_mid_eg$log2FoldChange,
-  earlygastrula_mid_padj = res_mid_eg$padj,
-  earlygastrula_low_log2FC = res_low_eg$log2FoldChange,
-  earlygastrula_low_padj = res_low_eg$padj
-)
+# Main leachate effects at each stage (vs control)
+# Cleavage stage (reference)
+sig_main_cleavage_low <- sig_cleavage_low.vs.control %>%
+  dplyr::select(gene_id, log2FoldChange, pvalue, padj) %>%
+  rename(
+    main_cleavage_low_log2FC = log2FoldChange,
+    main_cleavage_low_pvalue = pvalue,
+    main_cleavage_low_padj = padj
+  )
 
-# Focus on the 44 genes
-int_wald_df_sig <- int_wald_df[int_wald_df$gene_id %in% LRT_sig_genes$gene_id, ]
+sig_main_cleavage_mid <- sig_mvc_cl %>%
+  dplyr::select(gene_id, log2FoldChange, pvalue, padj) %>%
+  rename(
+    main_cleavage_mid_log2FC = log2FoldChange,
+    main_cleavage_mid_pvalue = pvalue,
+    main_cleavage_mid_padj = padj
+  )
+
+sig_main_cleavage_high <- sig_hvc_cl %>%
+  dplyr::select(gene_id, log2FoldChange, pvalue, padj) %>%
+  rename(
+    main_cleavage_high_log2FC = log2FoldChange,
+    main_cleavage_high_pvalue = pvalue,
+    main_cleavage_high_padj = padj
+  )
+
+# Prawnchip stage effects (extracted above but not saved as significant)
+sig_main_prawnchip_low <- res_prawnchip_low.vs.control %>%
+  as.data.frame() %>%
+  filter(padj < 0.05) %>%
+  rownames_to_column(var = "gene_id") %>%
+  dplyr::select(gene_id, log2FoldChange, pvalue, padj) %>%
+  rename(
+    main_prawnchip_low_log2FC = log2FoldChange,
+    main_prawnchip_low_pvalue = pvalue,
+    main_prawnchip_low_padj = padj
+  )
+
+sig_main_prawnchip_mid <- res_prawnchip_mid.vs.control %>%
+  as.data.frame() %>%
+  filter(padj < 0.05) %>%
+  rownames_to_column(var = "gene_id") %>%
+  dplyr::select(gene_id, log2FoldChange, pvalue, padj) %>%
+  rename(
+    main_prawnchip_mid_log2FC = log2FoldChange,
+    main_prawnchip_mid_pvalue = pvalue,
+    main_prawnchip_mid_padj = padj
+  )
+
+sig_main_prawnchip_high <- res_prawnchip_high.vs.control %>%
+  as.data.frame() %>%
+  filter(padj < 0.05) %>%
+  rownames_to_column(var = "gene_id") %>%
+  dplyr::select(gene_id, log2FoldChange, pvalue, padj) %>%
+  rename(
+    main_prawnchip_high_log2FC = log2FoldChange,
+    main_prawnchip_high_pvalue = pvalue,
+    main_prawnchip_high_padj = padj
+  )
+
+# Early gastrula stage effects
+sig_main_earlygastrula_low <- res_earlygastrula_low.vs.control %>%
+  as.data.frame() %>%
+  filter(padj < 0.05) %>%
+  rownames_to_column(var = "gene_id") %>%
+  dplyr::select(gene_id, log2FoldChange, pvalue, padj) %>%
+  rename(
+    main_earlygastrula_low_log2FC = log2FoldChange,
+    main_earlygastrula_low_pvalue = pvalue,
+    main_earlygastrula_low_padj = padj
+  )
+
+sig_main_earlygastrula_mid <- res_earlygastrula_mid.vs.control %>%
+  as.data.frame() %>%
+  filter(padj < 0.05) %>%
+  rownames_to_column(var = "gene_id") %>%
+  dplyr::select(gene_id, log2FoldChange, pvalue, padj) %>%
+  rename(
+    main_earlygastrula_mid_log2FC = log2FoldChange,
+    main_earlygastrula_mid_pvalue = pvalue,
+    main_earlygastrula_mid_padj = padj
+  )
+
+sig_main_earlygastrula_high <- sig_hvc_eg %>%
+  dplyr::select(gene_id, log2FoldChange, pvalue, padj) %>%
+  rename(
+    main_earlygastrula_high_log2FC = log2FoldChange,
+    main_earlygastrula_high_pvalue = pvalue,
+    main_earlygastrula_high_padj = padj
+  )
+
+# Summary of main effects
+cat("Main leachate effects significant genes:\n")
+cat("  Cleavage x Low:", nrow(sig_main_cleavage_low), "\n")
+cat("  Cleavage x Mid:", nrow(sig_main_cleavage_mid), "\n")
+cat("  Cleavage x High:", nrow(sig_main_cleavage_high), "\n")
+cat("  Prawnchip x Low:", nrow(sig_main_prawnchip_low), "\n")
+cat("  Prawnchip x Mid:", nrow(sig_main_prawnchip_mid), "\n")
+cat("  Prawnchip x High:", nrow(sig_main_prawnchip_high), "\n")
+cat("  Early Gastrula x Low:", nrow(sig_main_earlygastrula_low), "\n")
+cat("  Early Gastrula x Mid:", nrow(sig_main_earlygastrula_mid), "\n")
+cat("  Early Gastrula x High:", nrow(sig_main_earlygastrula_high), "\n")
+```
+
+## Combined Leachate Effects Dataframe
+
+Now combine all three types of significant leachate effects (LRT, interaction terms, and main effects) into a single comprehensive dataframe:
+
+```{r}
+# Start with all unique gene_ids from any significant test
+all_sig_genes <- unique(c(
+  sig_LRT_summary$gene_id,
+  sig_int_prawnchip_low$gene_id,
+  sig_int_prawnchip_mid$gene_id,
+  sig_int_prawnchip_high$gene_id,
+  sig_int_earlygastrula_low$gene_id,
+  sig_int_earlygastrula_mid$gene_id,
+  sig_int_earlygastrula_high$gene_id,
+  sig_main_cleavage_low$gene_id,
+  sig_main_cleavage_mid$gene_id,
+  sig_main_cleavage_high$gene_id,
+  sig_main_prawnchip_low$gene_id,
+  sig_main_prawnchip_mid$gene_id,
+  sig_main_prawnchip_high$gene_id,
+  sig_main_earlygastrula_low$gene_id,
+  sig_main_earlygastrula_mid$gene_id,
+  sig_main_earlygastrula_high$gene_id
+))
+
+# Create base dataframe with all significant genes
+combined_leachate_effects <- data.frame(gene_id = all_sig_genes)
+
+# Join LRT results
+combined_leachate_effects <- combined_leachate_effects %>%
+  left_join(sig_LRT_summary, by = "gene_id")
+
+# Join interaction terms
+combined_leachate_effects <- combined_leachate_effects %>%
+  left_join(sig_int_prawnchip_low, by = "gene_id") %>%
+  left_join(sig_int_prawnchip_mid, by = "gene_id") %>%
+  left_join(sig_int_prawnchip_high, by = "gene_id") %>%
+  left_join(sig_int_earlygastrula_low, by = "gene_id") %>%
+  left_join(sig_int_earlygastrula_mid, by = "gene_id") %>%
+  left_join(sig_int_earlygastrula_high, by = "gene_id")
+
+# Join main effects
+combined_leachate_effects <- combined_leachate_effects %>%
+  left_join(sig_main_cleavage_low, by = "gene_id") %>%
+  left_join(sig_main_cleavage_mid, by = "gene_id") %>%
+  left_join(sig_main_cleavage_high, by = "gene_id") %>%
+  left_join(sig_main_prawnchip_low, by = "gene_id") %>%
+  left_join(sig_main_prawnchip_mid, by = "gene_id") %>%
+  left_join(sig_main_prawnchip_high, by = "gene_id") %>%
+  left_join(sig_main_earlygastrula_low, by = "gene_id") %>%
+  left_join(sig_main_earlygastrula_mid, by = "gene_id") %>%
+  left_join(sig_main_earlygastrula_high, by = "gene_id")
+
+# Display summary
+cat("\n=== COMBINED LEACHATE EFFECTS SUMMARY ===\n")
+cat("Total unique genes with significant leachate effects:", nrow(combined_leachate_effects), "\n\n")
+
+cat("Breakdown by test type:\n")
+cat("  Genes with significant LRT:", sum(!is.na(combined_leachate_effects$LRT_padj)), "\n")
+cat("  Genes with significant interaction terms:", 
+    sum(rowSums(!is.na(combined_leachate_effects[, grep("^int_.*_padj$", names(combined_leachate_effects))])) > 0), "\n")
+cat("  Genes with significant main effects:", 
+    sum(rowSums(!is.na(combined_leachate_effects[, grep("^main_.*_padj$", names(combined_leachate_effects))])) > 0), "\n")
+
+# Preview the dataframe
+head(combined_leachate_effects)
+```
+
+### Save combined results
+
+```{r}
+# Save the combined dataframe
+write_csv(combined_leachate_effects, "../../output/06_deg/interactions/combined_leachate_effects.csv")
+
+cat("\nCombined leachate effects saved to: output/06_deg/interactions/combined_leachate_effects.csv\n")
+```
+
+::: callout-note
+**Understanding the Combined Dataframe:**
+
+- **gene_id**: Gene identifier
+- **LRT columns**: Results from the Likelihood Ratio Test (tests for any stage-by-leachate interaction)
+- **int_ columns**: Interaction term results (stage-specific deviations from main leachate effects)
+- **main_ columns**: Main leachate effect results (leachate vs control at each stage)
+
+NA values indicate the gene was not significant (padj >= 0.05) for that particular test.
+:::
+
+## Summary Statistics
+
+```{r}
+# Create a summary table showing which genes are significant in which tests
+summary_table <- combined_leachate_effects %>%
+  mutate(
+    has_LRT = !is.na(LRT_padj),
+    has_interaction = rowSums(!is.na(select(., matches("^int_.*_padj$")))) > 0,
+    has_main_effect = rowSums(!is.na(select(., matches("^main_.*_padj$")))) > 0,
+    test_count = has_LRT + has_interaction + has_main_effect
+  )
+
+cat("Distribution of genes by test type significance:\n")
+table(summary_table$test_count) %>% print()
+
+cat("\n\nGenes significant in multiple test types:\n")
+cat("  LRT + Interaction:", sum(summary_table$has_LRT & summary_table$has_interaction), "\n")
+cat("  LRT + Main Effect:", sum(summary_table$has_LRT & summary_table$has_main_effect), "\n")
+cat("  Interaction + Main Effect:", sum(summary_table$has_interaction & summary_table$has_main_effect), "\n")
+cat("  All three:", sum(summary_table$has_LRT & summary_table$has_interaction & summary_table$has_main_effect), "\n")
 ```
 
 ### Plot heatmap
@@ -1074,10 +1339,16 @@ int_wald_df_sig <- int_wald_df[int_wald_df$gene_id %in% LRT_sig_genes$gene_id, ]
 ```{r}
 library(pheatmap)
 
-# Step 1: Order and extract log2FC values
+# Create a dataframe with interaction terms for heatmap from combined dataframe
+# Filter to genes that have LRT significance (the 44 interaction genes)
+int_wald_df_sig <- combined_leachate_effects %>%
+  filter(!is.na(LRT_padj)) %>%
+  dplyr::select(gene_id, matches("^int_.*_(log2FC|padj)$"))
+
+# Step 1: Order and extract log2FC values for interaction terms
 log2fc_cols <- c(
-  "prawnchip_low_log2FC", "prawnchip_mid_log2FC", "prawnchip_high_log2FC",
-  "earlygastrula_low_log2FC", "earlygastrula_mid_log2FC", "earlygastrula_high_log2FC"
+  "int_prawnchip_low_log2FC", "int_prawnchip_mid_log2FC", "int_prawnchip_high_log2FC",
+  "int_earlygastrula_low_log2FC", "int_earlygastrula_mid_log2FC", "int_earlygastrula_high_log2FC"
 )
 
 mat <- as.matrix(int_wald_df_sig[, log2fc_cols])
@@ -1098,8 +1369,8 @@ rownames(annotation_col) <- colnames(mat)
 
 # Step 4: Prepare significance (padj < 0.05) annotation matrix
 padj_cols <- c(
-  "prawnchip_low_padj", "prawnchip_mid_padj", "prawnchip_high_padj",
-  "earlygastrula_low_padj", "earlygastrula_mid_padj", "earlygastrula_high_padj"
+  "int_prawnchip_low_padj", "int_prawnchip_mid_padj", "int_prawnchip_high_padj",
+  "int_earlygastrula_low_padj", "int_earlygastrula_mid_padj", "int_earlygastrula_high_padj"
 )
 padj_mat <- as.matrix(int_wald_df_sig[, padj_cols])
 rownames(padj_mat) <- int_wald_df_sig$gene_id
@@ -1131,7 +1402,10 @@ pheatmap(mat,
 Interpretation notes: \> 🧬 What does the heatmap show? Each cell in the heatmap shows the scaled log2 fold change for a gene in a specific interaction condition. \> \> ✅ Scaling Because you set scale = "row", each gene's values are z-scored across the six interaction conditions \> \> Blue = low relative expression change in that condition \> \> Red = high relative expression change in that condition \> \> The actual color scale is relative within each row, not across the whole matrix. \> \> This helps visualize patterns of expression changes across conditions for each gene, regardless of absolute size. \> \> 📊 What can you learn from this? Are there groups of genes responding similarly? Row clustering may reveal gene modules with similar interaction response profiles. \> \> Which stage + leachate condition drives the interaction? Column patterns (e.g., lots of red in prawnchip_high_log2FC) suggest strong interaction effects in that condition. \> \> Which genes have the strongest differential interactions? Genes with high contrast (strong red/blue) have more dynamic interaction effects. \> \> 🧠 Interpretation Reminder These log2 fold changes are interaction effects --- they reflect how gene expression at a specific `stage` & `leachate` level deviates from the expected additive effect of `stage` and `leachate` alone. \> \> So, a large positive log2FC means: \> \> "At this `stage` and `leachate` level, this gene is more highly expressed than we would expect based on `stage` and `leachate` effects individually." \> \> Likewise, a large negative value = stronger-than-expected suppression.
 
 ```{r}
+# Check which genes have at least one significant interaction term
 int_wald_df_sig$any_sig <- apply(int_wald_df_sig[, grepl("padj", names(int_wald_df_sig))], 1, function(p) any(p < 0.05, na.rm = TRUE))
+
+cat("Genes with at least one significant interaction term:", sum(int_wald_df_sig$any_sig), "\n")
 ```
 
 ### PCA of significant genes only
@@ -1285,6 +1559,7 @@ upset_plot
 ```
 
 ```{r}
+# Save the interaction terms dataframe (for the 44 LRT significant genes)
 Wald_sig_genes <- int_wald_df_sig
 
 write_csv(Wald_sig_genes, "../../output/06_deg/interactions/Wald_sig_genes.csv")
