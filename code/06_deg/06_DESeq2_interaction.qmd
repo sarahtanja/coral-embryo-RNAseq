@@ -1012,9 +1012,14 @@ write_csv(sig_hvc_eg, "../../output/06_deg/contrasts/sig_hvc_eg.csv")
 # Summarize Leachate Effects
 
 This section organizes all DESeq2 results for leachate effects into three categories:
-1. **LRT Results**: Overall test for stage-by-leachate interactions
-2. **Interaction Terms**: Specific stage-by-leachate interaction effects
-3. **Main Leachate Effects**: Leachate effects at each stage vs control
+
+| Test Type | Description | Purpose |
+|-----------|-------------|---------|
+| **LRT Results** | Overall test for stage-by-leachate interactions | Identifies genes where leachate response varies by developmental stage |
+| **Interaction Terms** | Specific stage-by-leachate interaction effects (Wald tests) | Tests whether specific stage × leachate combinations show effects beyond additive |
+| **Main Leachate Effects** | Leachate effects at each stage vs control (Wald contrasts) | Identifies genes differentially expressed in leachate vs control at each stage |
+
+The output of this section is a comprehensive dataframe (`combined_leachate_effects`) that contains all significant leachate-responsive genes with their test statistics across all three test types.
 
 ## Extract all significant results
 
@@ -1397,6 +1402,8 @@ pheatmap(mat,
          fontsize_number = 8,
          angle_col = 45,
          border_color = NA)
+
+dev.off()
 ```
 
 Interpretation notes: \> 🧬 What does the heatmap show? Each cell in the heatmap shows the scaled log2 fold change for a gene in a specific interaction condition. \> \> ✅ Scaling Because you set scale = "row", each gene's values are z-scored across the six interaction conditions \> \> Blue = low relative expression change in that condition \> \> Red = high relative expression change in that condition \> \> The actual color scale is relative within each row, not across the whole matrix. \> \> This helps visualize patterns of expression changes across conditions for each gene, regardless of absolute size. \> \> 📊 What can you learn from this? Are there groups of genes responding similarly? Row clustering may reveal gene modules with similar interaction response profiles. \> \> Which stage + leachate condition drives the interaction? Column patterns (e.g., lots of red in prawnchip_high_log2FC) suggest strong interaction effects in that condition. \> \> Which genes have the strongest differential interactions? Genes with high contrast (strong red/blue) have more dynamic interaction effects. \> \> 🧠 Interpretation Reminder These log2 fold changes are interaction effects --- they reflect how gene expression at a specific `stage` & `leachate` level deviates from the expected additive effect of `stage` and `leachate` alone. \> \> So, a large positive log2FC means: \> \> "At this `stage` and `leachate` level, this gene is more highly expressed than we would expect based on `stage` and `leachate` effects individually." \> \> Likewise, a large negative value = stronger-than-expected suppression.
