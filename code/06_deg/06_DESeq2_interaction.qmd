@@ -693,6 +693,7 @@ sig_prawnchip_mid.int <- res_prawnchip_mid.int %>%
   rownames_to_column(var = "gene_id")
 ```
 
+# Gene plotting function
 ```{r}
 library(dplyr)
 library(ggplot2)
