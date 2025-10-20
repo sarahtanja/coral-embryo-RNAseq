@@ -1,27 +1,199 @@
-# Packages
+# Background
+
+## Inputs
+
+## Outputs
+
+## Load packages
+
+```{r}
 library(DESeq2)
 library(vegan)
 library(tidyverse)
+```
 
-# inputs you have:
-# counts: genes x samples raw counts (matrix or data.frame)
-# meta:   data.frame with one row per sample and columns like leachate, stage, etc.
-# Ensure column order matches: colnames(counts) == rownames(meta)
+## Load inputs
 
-## 1) transform counts (variance-stabilizing; keeps nonnegative scale roughly)
-dds <- DESeqDataSetFromMatrix(countData = round(as.matrix(counts)),
-                              colData   = meta,
-                              design    = ~ 1)
-vst_mat <- assay(vst(dds, blind = TRUE))           # genes x samples (real-valued)
+```{r, eval=TRUE}
+gcm_filtor <- read.csv("../../output/05_explore/gcm_filtor.csv", row.names="gene_id", check.names=FALSE) 
+head(gcm_filtor)
+```
 
-## 2) (optional) rescale to nonnegative for Bray–Curtis
-# Bray–Curtis expects nonnegative. If vst yields negatives, shift up:
-shift <- -min(vst_mat)
-if (shift > 0) vst_mat <- vst_mat + shift
+```{r, eval=TRUE}
+# Load metadata (outliers removed)
+metadata_or <- read_csv("../../metadata/metadata_or.csv")
 
-## 3) compute distance between samples (rows = samples)
-bc <- vegdist(t(vst_mat), method = "bray")
+# Reorder factors
+metadata_or$stage <- as.factor(metadata_or$stage)
+metadata_or$stage <- fct_relevel(metadata_or$stage, "cleavage", "prawnchip", "earlygastrula")
+ 
+metadata_or$leachate <- as.factor(metadata_or$leachate)
+metadata_or$leachate <- fct_relevel(metadata_or$leachate, "control", "low", "mid", "high")
 
-## 4) PERMANOVA
-set.seed(1)
-adonis2(bc ~ leachate * stage, data = meta, permutations = 999, by = "terms")
+str(metadata_or)
+```
+
+# Make DESeqData Object
+
+```{r}
+dds_cat <- DESeqDataSetFromMatrix(countData = gcm_filtor,
+                              colData = metadata_or,
+                              design = formula( ~0 + stage + leachate + stage:leachate))
+```
+
+# Estimate size factors
+
+check that they are all less than 4 (should return TRUE)
+
+```{r}
+dds_cat <- estimateSizeFactors(dds_cat)
+hist(sizeFactors(dds_cat))
+all(sizeFactors(dds_cat))<4
+```
+
+# Apply a variance stabilizing transformation (VST)
+
+We apply a variance stabilizing transformation to minimize effects of small counts and normalize for library size
+
+Note: t() transposes. With DESeq2's VST:
+
+t(assay(vst(dds_cat, blind = TRUE))) flips it to samples × genes.
+
+Why it matters:
+
+Functions like vegan::vegdist() and adonis2() expect rows = samples, columns = features.
+
+Use the transposed version for PERMANOVA: rows (samples) will match your meta data frame.
+
+```{r}
+# extract variance stabilized count matrix
+vst_mat <- assay(vst(dds_cat, blind = TRUE))
+
+# transpose
+vst_t_mat <- t(vst_mat)
+str(vst_t_mat)
+```
+
+# Compute distance between samples
+
+```{r}
+eu_dist <- vegdist((vst_t_mat), method = "eu")
+```
+
+# Run `adonis2` to build PERMANOVA model
+
+::: callout-note
+Because adonis2() uses random permutations to get p-values. Without fixing the seed, each run draws a different set/order of permutations, which results in tiny differences in F-stats/p-values. By adding `set.seed(1)` the permutation stream is reproducible so you (and future you) get the same numbers.
+:::
+
+```{r}
+adonis2(eu_dist ~ leachate * stage, 
+        data = metadata_or,     
+        permutations = 999,
+        by = "terms")
+```
+
+```{r}
+adonis2(eu_dist ~ leachate * stage, 
+        data = metadata_or,
+        permutations = 999,
+        strata = metadata_or$parents, # <-- control for parental cross
+        by = "terms") 
+```
+
+::: callout-note
+A PERMANOVA with 999 permutations (permutations restricted within parental cross) revealed that developmental stage explained the majority of variation in multivariate gene-expression profiles ($F_{2,49} = 45.0$, $R^2 = 0.613$, $p = 0.001$). Neither leachate concentration ($F_{3,49} = 1.09$, $R^2 = 0.022$, $p = 0.375$) nor the leachate,×,stage interaction ($F_{6,49} = 0.78$, $R^2 = 0.032$, $p = 0.697$) had a significant effect. Overall, the model explained 66.7% of the variance in gene-expression dissimilarity, with stage accounting for nearly all of the explained variation.
+
+These results indicate that transcriptomic profiles differed strongly among developmental stages but not across leachate concentrations or their interaction, suggesting that developmental processes dominate gene-expression variation in this dataset.
+:::
+
+Why does the permanova say `leachate` and `leachate:stage` is insignificant but `DESeq2` results return significantly differentially expressed genes for those terms?
+
+**PERMANOVA** is a **single** multivariate test on a distance among **samples**
+
+It asks whether group **centroids** differ (and a bit of spread, depending on dispersion). If `leachate` shifts are modest, bidirectional, or limited to a subset of genes, the overall centroid shift can be tiny → non-sig.
+
+**Dominant developmental stage signal**
+
+Your term table shows **`stage`** explains \~61% of variance; that can swamp smaller `leachate` signals. After blocking by parents, the residual degrees of freedom and variability left to detect `leachate` are limited.
+
+Your DESeq2 results might be **stage-specific** contrasts (e.g., leachate within stage), while your PERMANOVA tested a **single global** leachate and interaction term. The global test can be ns even if **some stages** have effects.
+
+## Global heatmap
+
+```{r}
+pak::pak("mdscheuerell/flexoki") # installs flexoki
+library(flexoki) # load the version from mdscheuerell
+
+# Specify colors
+# Assign specific colors to each hpf
+hpf_colors <- c(
+  "4" = flex("cyan", sat=500),
+  "9" = flex("green", sat =500),
+  "14" = flex("yellow", sat=500)
+)
+
+# Assign specific colors to each leachate level
+leachate_colors <- c(
+  "control" = flex("blue", sat=400),
+  "low" = flex("magenta", sat =500),
+  "mid" = flex("magenta", sat=700),
+  "high" = flex("magenta", sat=950)
+)
+
+# Annotation colors for pheatmap
+ann_colors = list(
+  leachate = leachate_colors,
+  hpf = hpf_colors
+)
+
+# Indicate leachate level by saturation (alpha)
+leachate_alpha_map <- c("control" = 0.5, "low" = 0.6, "mid" = 0.7, "high" = 0.9)
+pca_500$alpha_val <- leachate_alpha_map[pca_500$leachate]
+```
+
+```{r}
+# Extract the annotation dataframe
+df <- colData(vst_mat)[ , c("leachate", "hpf")]
+
+legend_names_col = colnames(vst_mat)
+names(df)<- c("leachate", "hpf")
+rownames(df) <- legend_names_col
+
+# Specify colors
+#leachate
+# Assign specific colors to each hpf
+leachate_colors <- c(
+  "control" = flex("blue", sat=400),
+  "low" = flex("magenta", sat =500),
+  "mid" = flex("magenta", sat=700),
+  "high" = flex("magenta", sat=950)
+)
+
+ann_colors = list(
+  leachate = leachate_colors,
+  hpf = hpf_colors
+)
+
+levels(df$leachate) 
+levels(df$hpf)
+
+```
+
+```{r}
+pheatmap(
+  vst_mat, 
+  cluster_rows=TRUE, 
+  show_rownames=FALSE, 
+  color=inferno(10), 
+  show_colnames=FALSE, 
+  fontsize_row=3, 
+  scale="row", 
+  cluster_cols=TRUE, 
+  annotation_col=df, 
+  annotation_colors = ann_colors, 
+  labels_col=legend_names_col, 
+  clustering_distance_rows = "euclidean", 
+  clustering_distance_cols = "euclidean", 
+  cutree_rows = 3)
+```

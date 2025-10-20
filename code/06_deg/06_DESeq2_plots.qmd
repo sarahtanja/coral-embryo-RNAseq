@@ -84,6 +84,7 @@ for (i in seq_along(files)) {
 Metadata
 ```{r}
 metadata_or <- read.csv("../../metadata/metadata_or.csv")
+str(metadata_or)
 ```
 
 ## Outputs
@@ -121,7 +122,11 @@ library(ggforce)   # for facet_wrap_paginate
 ```{r}
 # convert -> long tidy dataframe
 norm_count_long <- as.data.frame(norm_count_mat) %>%
-  rownames_to_column("gene_id") %>%
+  rownames_to_column("gene_id") 
+
+
+
+%>%
   pivot_longer(
     cols = -gene_id,
     names_to = "sample_id",

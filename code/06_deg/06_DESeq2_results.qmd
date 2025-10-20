@@ -188,6 +188,7 @@ When embryonic `stage` is treated as a categorical variable DESeq2 will estimate
 
 Whether `leachate` is treated as a factor or a numeric (continuous) variable radically changes the interpretation of both the main effect and the interaction. If a variable is numeric, DESeq2 treats it as a continuous covariate. This fits a regression slope, estimating the change in gene expression per unit increase in the variable. Coding `leachate` as a categorical factor allows each stage to have its own independent leachate effect. ✅ Use this if you expect nonlinear, stage-specific effects of exposure (note: we do).
 
+# Make DESeqDataSet
 ```{r, eval=TRUE}
 
 dds_cat <- DESeqDataSetFromMatrix(countData = gcm_filtor,
@@ -202,7 +203,6 @@ dds_con <- DESeqDataSetFromMatrix(countData = gcm_filtor,
                               colData = metadata_or,
                               design = formula( ~0 + stage + leachate_mgL + stage:leachate_mgL))
 ```
-
 
 ## Run DESeq LRT Tests
 
@@ -309,7 +309,7 @@ The 2 overlapping genes are well-modeled by a linear trend in leachate (i.e., a 
 
 Because the 2 genes that are captured in the continuous model are also caputured in the categorical model we will just save the significant categorical list
 ```{r}
-write.csv(sig_cat_LRT, file.path(output,"sig_cat_LRT.csv"))
+write_csv(sig_cat_LRT, file.path(output,"sig_cat_LRT.csv"))
 ```
 
 ::: callout-note
@@ -361,11 +361,13 @@ identical(norm_count_mat_LRT, norm_count_mat_Wald)
 Ok so just save one normalized count matrix
 ```{r}
 # 1. extract normalized counts (matrix)
-norm_count_mat <- counts(dds_wald, normalized = TRUE)
+norm_count_mat <- counts(dds_wald, normalized = TRUE) %>% 
+  as.data.frame() %>% 
+  rownames_to_column(var = "gene_id")
 # column ids are sample_id from metadata_or
 # rownames are gene_id
 
-write.csv(norm_count_mat, file.path(output,"norm_count_mat.csv"), row.names = TRUE)
+write_csv(norm_count_mat, file.path(output,"norm_count_mat.csv"))
 ```
 
 
@@ -424,7 +426,7 @@ Only one gene showed a significant stage × leachate interaction in the prawnchi
 
 Save significant gene list
 ```{r}
-write.csv(sig_prawnchip_high.int, file.path(output, "sig_prawnchip_high.int.csv"))
+write_csv(sig_prawnchip_high.int, file.path(output, "sig_prawnchip_high.int.csv"))
 ```
 
 ::: column-margin
@@ -447,7 +449,7 @@ sig_prawnchip_mid.int <- res_prawnchip_mid.int %>%
   filter(padj < 0.05) %>% 
   rownames_to_column(var = "gene_id")
 
-write.csv(sig_prawnchip_mid.int, file.path(output, "sig_prawnchip_mid.int.csv"))
+write_csv(sig_prawnchip_mid.int, file.path(output, "sig_prawnchip_mid.int.csv"))
 ```
 
 ##### low
@@ -464,7 +466,7 @@ sig_prawnchip_low.int <- res_prawnchip_low.int %>%
   filter(padj < 0.05) %>% 
   rownames_to_column(var = "gene_id")
 
-write.csv(sig_prawnchip_low.int, file.path(output, "sig_prawnchip_low.int.csv"))
+write_csv(sig_prawnchip_low.int, file.path(output, "sig_prawnchip_low.int.csv"))
 ```
 #### Early gastrula
 ##### high
@@ -481,7 +483,7 @@ sig_earlygastrula_high.int <- res_earlygastrula_high.int %>%
   filter(padj < 0.05) %>% 
   rownames_to_column(var = "gene_id")
 
-write.csv(sig_earlygastrula_high.int, file.path(output, "sig_earlygastrula_high.int.csv"))
+write_csv(sig_earlygastrula_high.int, file.path(output, "sig_earlygastrula_high.int.csv"))
 ```
 
 ##### mid
@@ -712,14 +714,13 @@ sig_lists <- list(
 sig_summary <- bind_rows(sig_lists, .id = "list") %>%
   relocate(list, gene_id)
 
-write.csv(sig_summary, file.path(output, "sig_summary.csv"))
+write_csv(sig_summary, file.path(output, "sig_summary.csv"))
 
 # Quick sanity check of counts you reported
 sig_counts <- sig_summary %>% count(list, name = "n_genes")
 sig_counts
 ```
 
-# PERMANOVA
 
 # Next steps
 - I'd simply like an easy absence/presence heatmap that shows all the genes, and which lists they are significant in. 

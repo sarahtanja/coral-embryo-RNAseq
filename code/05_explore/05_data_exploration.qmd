@@ -678,6 +678,7 @@ PCA_500 <- ggplot(pca_500, aes(PC1, PC2, color = hpf, label = name, alpha = alph
 ggplotly(PCA_500, tooltip = "label")
 
 ```
+
 ```{r}
 # Original ggplot with a tooltip aesthetic
 PCA_500 <- ggplot(pca_500, aes(PC1, PC2, color = hpf, label = name, alpha = alpha_val)) +
