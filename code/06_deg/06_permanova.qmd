@@ -1,0 +1,27 @@
+# Packages
+library(DESeq2)
+library(vegan)
+library(tidyverse)
+
+# inputs you have:
+# counts: genes x samples raw counts (matrix or data.frame)
+# meta:   data.frame with one row per sample and columns like leachate, stage, etc.
+# Ensure column order matches: colnames(counts) == rownames(meta)
+
+## 1) transform counts (variance-stabilizing; keeps nonnegative scale roughly)
+dds <- DESeqDataSetFromMatrix(countData = round(as.matrix(counts)),
+                              colData   = meta,
+                              design    = ~ 1)
+vst_mat <- assay(vst(dds, blind = TRUE))           # genes x samples (real-valued)
+
+## 2) (optional) rescale to nonnegative for Bray–Curtis
+# Bray–Curtis expects nonnegative. If vst yields negatives, shift up:
+shift <- -min(vst_mat)
+if (shift > 0) vst_mat <- vst_mat + shift
+
+## 3) compute distance between samples (rows = samples)
+bc <- vegdist(t(vst_mat), method = "bray")
+
+## 4) PERMANOVA
+set.seed(1)
+adonis2(bc ~ leachate * stage, data = meta, permutations = 999, by = "terms")
