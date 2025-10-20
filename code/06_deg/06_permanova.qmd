@@ -128,17 +128,17 @@ library(flexoki) # load the version from mdscheuerell
 # Specify colors
 # Assign specific colors to each hpf
 hpf_colors <- c(
-  "4" = flex("cyan", sat=500),
-  "9" = flex("green", sat =500),
-  "14" = flex("yellow", sat=500)
+  "4" = flexoki::flex("cyan", sat=500),
+  "9" = flexoki::flex("green", sat =500),
+  "14" = flexoki::flex("yellow", sat=500)
 )
 
 # Assign specific colors to each leachate level
 leachate_colors <- c(
-  "control" = flex("blue", sat=400),
-  "low" = flex("magenta", sat =500),
-  "mid" = flex("magenta", sat=700),
-  "high" = flex("magenta", sat=950)
+  "control" = flexoki::flex("blue", sat=400),
+  "low" = flexoki::flex("magenta", sat =500),
+  "mid" = flexoki::flex("magenta", sat=700),
+  "high" = flexoki::flex("magenta", sat=950)
 )
 
 # Annotation colors for pheatmap
@@ -164,10 +164,10 @@ rownames(df) <- legend_names_col
 #leachate
 # Assign specific colors to each hpf
 leachate_colors <- c(
-  "control" = flex("blue", sat=400),
-  "low" = flex("magenta", sat =500),
-  "mid" = flex("magenta", sat=700),
-  "high" = flex("magenta", sat=950)
+  "control" = flexoki::flex("blue", sat=400),
+  "low" = flexoki::flex("magenta", sat =500),
+  "mid" = flexoki::flex("magenta", sat=700),
+  "high" = flexoki::flex("magenta", sat=950)
 )
 
 ann_colors = list(
