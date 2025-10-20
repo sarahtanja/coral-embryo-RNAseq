@@ -109,6 +109,8 @@ library(vsn)
 library(pheatmap)
 library(plotly)
 library(flexoki) 
+# Note: We use flexoki::flex() with explicit namespace notation throughout
+# this document to avoid conflicts with the CRAN 'flex' package
 ```
 
 ## Load inputs

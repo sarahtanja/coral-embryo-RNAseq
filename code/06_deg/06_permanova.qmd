@@ -124,6 +124,8 @@ Your DESeq2 results might be **stage-specific** contrasts (e.g., leachate within
 ```{r}
 pak::pak("mdscheuerell/flexoki") # installs flexoki
 library(flexoki) # load the version from mdscheuerell
+# Note: We use flexoki::flex() with explicit namespace notation throughout
+# this document to avoid conflicts with the CRAN 'flex' package
 
 # Specify colors
 # Assign specific colors to each hpf
