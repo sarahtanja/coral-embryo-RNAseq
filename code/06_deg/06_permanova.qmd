@@ -1,8 +1,56 @@
+---
+title: "PERMANOVA of RNA-seq gene counts"
+subtitle: "A statistical measure to answer 'are the differences between groups bigger than distances within groups?'"
+author: "Sarah Tanja"
+date: 2024-12-02
+date-modified: today
+format:
+  gfm: 
+    toc: true
+    number-sections: true
+  html:
+    theme: journal
+    highlight-style: github
+    page-layout: article
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    number-sections: true
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    reference-location: margin
+    citation-location: margin
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, # Display code chunks
+  eval = TRUE, # Evaluate code chunks
+  warning = FALSE, # Hide warnings
+  message = FALSE, # Hide messages
+  comment = "", # Prevents appending '##' to beginning of lines in code output)
+  dev = "jpeg",
+  dpi = 600,
+  fig.retina = 2)        
+```
+
 # Background
 
 ## Inputs
+- metadata `metadata_or`
+- filtered gene count matrix `gcm_filtor`
+- list of all significantly expressed genes `sig_all`
 
 ## Outputs
+```{r}
+output <- "../../output/06_deg/permanova/"
+```
+
 
 ## Load packages
 
@@ -13,6 +61,10 @@ library(tidyverse)
 ```
 
 ## Load inputs
+
+```{r}
+sig_all <- read_csv("../../output/06_deg/results/sig_all.csv")
+```
 
 ```{r, eval=TRUE}
 gcm_filtor <- read.csv("../../output/05_explore/gcm_filtor.csv", row.names="gene_id", check.names=FALSE) 
@@ -41,7 +93,9 @@ dds_cat <- DESeqDataSetFromMatrix(countData = gcm_filtor,
                               design = formula( ~0 + stage + leachate + stage:leachate))
 ```
 
-# Estimate size factors
+# Full PERMANOVA
+
+## Estimate size factors
 
 check that they are all less than 4 (should return TRUE)
 
@@ -51,7 +105,7 @@ hist(sizeFactors(dds_cat))
 all(sizeFactors(dds_cat))<4
 ```
 
-# Apply a variance stabilizing transformation (VST)
+## Apply a variance stabilizing transformation (VST)
 
 We apply a variance stabilizing transformation to minimize effects of small counts and normalize for library size
 
@@ -74,13 +128,13 @@ vst_t_mat <- t(vst_mat)
 str(vst_t_mat)
 ```
 
-# Compute distance between samples
+## Compute distance between samples
 
 ```{r}
 eu_dist <- vegdist((vst_t_mat), method = "eu")
 ```
 
-# Run `adonis2` to build PERMANOVA model
+## Run `adonis2` to build PERMANOVA model
 
 ::: callout-note
 Because adonis2() uses random permutations to get p-values. Without fixing the seed, each run draws a different set/order of permutations, which results in tiny differences in F-stats/p-values. By adding `set.seed(1)` the permutation stream is reproducible so you (and future you) get the same numbers.
@@ -119,81 +173,63 @@ Your term table shows **`stage`** explains \~61% of variance; that can swamp sma
 
 Your DESeq2 results might be **stage-specific** contrasts (e.g., leachate within stage), while your PERMANOVA tested a **single global** leachate and interaction term. The global test can be ns even if **some stages** have effects.
 
-## Global heatmap
+# DEG PERMANOVA
 
 ```{r}
-pak::pak("mdscheuerell/flexoki") # installs flexoki
-library(flexoki) # load the version from mdscheuerell
-
-# Specify colors
-# Assign specific colors to each hpf
-hpf_colors <- c(
-  "4" = flex("cyan", sat=500),
-  "9" = flex("green", sat =500),
-  "14" = flex("yellow", sat=500)
-)
-
-# Assign specific colors to each leachate level
-leachate_colors <- c(
-  "control" = flex("blue", sat=400),
-  "low" = flex("magenta", sat =500),
-  "mid" = flex("magenta", sat=700),
-  "high" = flex("magenta", sat=950)
-)
-
-# Annotation colors for pheatmap
-ann_colors = list(
-  leachate = leachate_colors,
-  hpf = hpf_colors
-)
-
-# Indicate leachate level by saturation (alpha)
-leachate_alpha_map <- c("control" = 0.5, "low" = 0.6, "mid" = 0.7, "high" = 0.9)
-pca_500$alpha_val <- leachate_alpha_map[pca_500$leachate]
+head(rownames(dds_cat))
 ```
 
 ```{r}
-# Extract the annotation dataframe
-df <- colData(vst_mat)[ , c("leachate", "hpf")]
-
-legend_names_col = colnames(vst_mat)
-names(df)<- c("leachate", "hpf")
-rownames(df) <- legend_names_col
-
-# Specify colors
-#leachate
-# Assign specific colors to each hpf
-leachate_colors <- c(
-  "control" = flex("blue", sat=400),
-  "low" = flex("magenta", sat =500),
-  "mid" = flex("magenta", sat=700),
-  "high" = flex("magenta", sat=950)
-)
-
-ann_colors = list(
-  leachate = leachate_colors,
-  hpf = hpf_colors
-)
-
-levels(df$leachate) 
-levels(df$hpf)
-
+ head(sig_all)
 ```
+
+## Subset DESeqDataSet by significant gene list `sig_all`
 
 ```{r}
-pheatmap(
-  vst_mat, 
-  cluster_rows=TRUE, 
-  show_rownames=FALSE, 
-  color=inferno(10), 
-  show_colnames=FALSE, 
-  fontsize_row=3, 
-  scale="row", 
-  cluster_cols=TRUE, 
-  annotation_col=df, 
-  annotation_colors = ann_colors, 
-  labels_col=legend_names_col, 
-  clustering_distance_rows = "euclidean", 
-  clustering_distance_cols = "euclidean", 
-  cutree_rows = 3)
+dds_mat <- counts(dds_cat) 
+
+write_csv(dds_mat, file.path(output, "dds_mat.csv"))
+
+keep <-  rownames(dds_mat) %in% sig_all$gene_id
+
+dds_deg <- dds_cat[keep, , drop = FALSE]  
 ```
+
+## Estimate size factors
+
+```{r}
+dds_deg <- estimateSizeFactors(dds_deg)
+hist(sizeFactors(dds_deg))
+all(sizeFactors(dds_cat))<4
+```
+
+## Apply variance stabilizing transformation 
+
+```{r}
+# extract variance stabilized count matrix
+vst_deg <- assay(varianceStabilizingTransformation(dds_deg, blind = TRUE, fitType = "local"))
+
+# transpose
+vst_t_deg <- t(vst_deg)
+str(vst_t_deg)
+```
+
+## Compute distances between samples
+
+```{r}
+eu_dist_deg <- vegdist((vst_t_deg), method = "eu")
+```
+
+## Run adonis2 to build PERMANOVA model
+
+```{r}
+adonis2(eu_dist_deg ~ leachate * stage, 
+        data = metadata_or,
+        permutations = 999,
+        strata = metadata_or$parents, # <-- control for parental cross
+        by = "terms") 
+```
+
+::: callout-note
+Using PERMANOVA on Euclidean distances calculated from the 151 differentially expressed genes (DEGs) (n = 61 samples; 999 permutations; stratified by parental cross), we detected a strong effect of developmental stage and smaller but significant effects of leachate and their interaction. Stage explained R² = 0.680 of the variance and was highly significant (Df = 2, F = 76.83, p = 0.001). Leachate explained R² = 0.039 (Df = 3, F = 2.96, p = 0.034), and the leachate × stage interaction explained R² = 0.063 (Df = 6, F = 2.38, p = 0.023). Residual variation accounted for R² = 0.217.
+:::

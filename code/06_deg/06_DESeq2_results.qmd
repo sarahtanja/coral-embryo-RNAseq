@@ -720,7 +720,12 @@ write_csv(sig_summary, file.path(output, "sig_summary.csv"))
 sig_counts <- sig_summary %>% count(list, name = "n_genes")
 sig_counts
 ```
-
+```{r}
+sig_all <- dplyr::distinct(sig_summary, gene_id)
+nrow(sig_all)
+write_csv(sig_all, file.path(output, "sig_all.csv"))
+```
+There are 151 total DEGs 
 
 # Next steps
 - I'd simply like an easy absence/presence heatmap that shows all the genes, and which lists they are significant in. 
