@@ -110,9 +110,9 @@ gene_clusters <- read.csv("../../output/07_cluster/gene_clusters.csv")
 all_genes <- read.csv("../../output/06_deg/interactions/all_genes.csv")
 ```
 
-Import fasta
+Import fasta (optional - for reference only)
 
-```{r}
+```{r, eval=FALSE}
 # Load transcriptome
 all_seqs <- readDNAStringSet("../../input/genome/Montipora_capitata_HIv3.assembly.fasta")
 
@@ -159,21 +159,35 @@ paste("GO annotated genes:",
 
 ## Add gene lengths
 
+::: callout-note
+Gene lengths are required for goseq bias correction. If genome files are not available, this section can be skipped initially and added later when the files are downloaded.
+:::
+
 ```{r}
-# Import GFF file
-gff <- rtracklayer::import("../../input/genome/Montipora_capitata_HIv3.genes_fixed.gff3")
+# Import GFF file to get gene lengths
+# Check if file exists before importing
+gff_file <- "../../input/genome/Montipora_capitata_HIv3.genes_fixed.gff3"
 
-transcripts <- subset(gff, type == "transcript")
-
-transcripts_gr <- makeGRangesFromDataFrame(transcripts, keep.extra.columns=TRUE)
-
-transcript_lengths <- width(transcripts_gr)
-
-gene_id <- transcripts_gr$ID
-
-lengths <- cbind(gene_id, transcript_lengths)
-
-lengths <- as.data.frame(lengths)
+if (file.exists(gff_file)) {
+  gff <- rtracklayer::import(gff_file)
+  
+  transcripts <- subset(gff, type == "transcript")
+  
+  transcripts_gr <- makeGRangesFromDataFrame(transcripts, keep.extra.columns=TRUE)
+  
+  transcript_lengths <- width(transcripts_gr)
+  
+  gene_id <- transcripts_gr$ID
+  
+  lengths <- cbind(gene_id, transcript_lengths)
+  
+  lengths <- as.data.frame(lengths)
+  
+  paste("Gene lengths extracted for", nrow(lengths), "transcripts")
+} else {
+  warning("GFF file not found. Gene length bias correction will not be available.")
+  lengths <- data.frame(gene_id = character(), transcript_lengths = integer())
+}
 ```
 
 Add length to the annotation dataframe
@@ -291,12 +305,21 @@ write_csv(GO.terms.c3, "../../output/08_go/GO.terms.cluster3.csv")
 Get vector of gene lengths
 
 ```{r}
-lengths_anno <- lengths %>% 
-  dplyr::filter(gene_id %in% all_genes$gene_id) %>% 
-  dplyr::filter(gene_id %in% EggNog_anno$gene_id)
-
-LENGTH.vector <- as.integer(lengths_anno$transcript_length)
-names(LENGTH.vector) <- ALL.vector
+# Only proceed if we have length information
+if (nrow(lengths) > 0) {
+  lengths_anno <- lengths %>% 
+    dplyr::filter(gene_id %in% all_genes$gene_id) %>% 
+    dplyr::filter(gene_id %in% EggNog_anno$gene_id)
+  
+  LENGTH.vector <- as.integer(lengths_anno$transcript_length)
+  names(LENGTH.vector) <- ALL.vector
+  
+  use_length_bias <- TRUE
+  paste("Length bias correction enabled with", length(LENGTH.vector), "genes")
+} else {
+  use_length_bias <- FALSE
+  warning("Gene lengths not available. Proceeding without length bias correction.")
+}
 ```
 
 Make gene vector function
@@ -342,20 +365,30 @@ gene.vector.c3 <- make_gene_vector(ALL.vector, ID.vector.c3, "cluster 3")
 
 ## Null probability weighting function (bias for gene length)
 
-```{r}
-# LENGTH.vector must be a named numeric vector with names == gene IDs
-stopifnot(is.numeric(LENGTH.vector), !is.null(names(LENGTH.vector)))
-
-# Keep only genes present in ALL.vector and align the order
-LENGTH.vector <- LENGTH.vector[ALL.vector]
-stopifnot(identical(names(LENGTH.vector), ALL.vector))
-```
+::: callout-note
+Gene length bias correction accounts for the fact that longer genes are more likely to be detected as differentially expressed in RNA-seq data simply because they accumulate more reads. If length data is not available, goseq can still run but without this correction.
+:::
 
 ```{r}
-# Calculate probability weighting function for each cluster
-pwf.c1 <- nullp(gene.vector.c1, bias.data = LENGTH.vector)
-pwf.c2 <- nullp(gene.vector.c2, bias.data = LENGTH.vector)
-pwf.c3 <- nullp(gene.vector.c3, bias.data = LENGTH.vector)
+# Only do length bias correction if we have length data
+if (use_length_bias) {
+  # LENGTH.vector must be a named numeric vector with names == gene IDs
+  stopifnot(is.numeric(LENGTH.vector), !is.null(names(LENGTH.vector)))
+  
+  # Keep only genes present in ALL.vector and align the order
+  LENGTH.vector <- LENGTH.vector[ALL.vector]
+  stopifnot(identical(names(LENGTH.vector), ALL.vector))
+  
+  # Calculate probability weighting function for each cluster
+  pwf.c1 <- nullp(gene.vector.c1, bias.data = LENGTH.vector)
+  pwf.c2 <- nullp(gene.vector.c2, bias.data = LENGTH.vector)
+  pwf.c3 <- nullp(gene.vector.c3, bias.data = LENGTH.vector)
+} else {
+  # Without length bias correction
+  pwf.c1 <- nullp(gene.vector.c1, bias.data = NULL)
+  pwf.c2 <- nullp(gene.vector.c2, bias.data = NULL)
+  pwf.c3 <- nullp(gene.vector.c3, bias.data = NULL)
+}
 ```
 
 ## GO BP enrichment
