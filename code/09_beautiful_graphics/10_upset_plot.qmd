@@ -1,0 +1,197 @@
+---
+title: "Upset Plot: Overlap of Significant DEGs"
+subtitle: "Visualizing overlap between LRT, interaction, and main leachate effects"
+author: "Sarah Tanja"
+date: 2024-12-02
+date-modified: today
+format:
+  gfm: 
+    toc: true
+    number-sections: true
+  html:
+    theme: journal
+    highlight-style: github
+    page-layout: article
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    number-sections: true
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,       # Display code chunks
+  eval = TRUE,       # Evaluate code chunks
+  warning = FALSE,   # Hide warnings
+  message = FALSE,   # Hide messages
+  comment = "",      # Prevents appending '##' to beginning of lines in code output
+  dev = "png",
+  dpi = 300,
+  fig.retina = 2)        
+```
+
+# Background
+
+This analysis creates an upset plot to visualize the overlap of significant genes identified across different DESeq2 analyses:
+
+1. **LRT (Likelihood Ratio Test)**: Tests for any genes with differential expression across the full model
+2. **Interaction Effects**: Genes showing significant interaction between developmental stage and leachate concentration
+3. **Main Leachate Effects**: Genes showing significant main effect of leachate concentration
+
+# Setup
+
+## Install packages
+
+```{r install, eval=FALSE}
+# Install UpSetR if not already installed
+if (!require("UpSetR", quietly = TRUE)) {
+  install.packages("UpSetR")
+}
+
+if (!require("tidyverse", quietly = TRUE)) {
+  install.packages("tidyverse")
+}
+```
+
+## Load packages
+
+```{r load}
+library(tidyverse)
+library(UpSetR)
+```
+
+# Load Data
+
+## Load significant gene lists
+
+```{r load-data}
+# LRT significant genes (genes with any DE across full model)
+lrt_genes <- read_csv("../../output/06_deg/interactions/LRT_sig_genes.csv") %>%
+  pull(gene_id)
+
+# Interaction effect genes
+interaction_genes <- read_csv("../../output/06_deg/interactions/sig_interaction_genes.csv") %>%
+  pull(x)
+
+# Main leachate effect genes
+leachate_genes <- read_csv("../../output/09_deg_multifactorial/sig_leachate.csv") %>%
+  pull(gene)
+
+# Print counts
+cat("Number of LRT significant genes:", length(lrt_genes), "\n")
+cat("Number of interaction effect genes:", length(interaction_genes), "\n")
+cat("Number of main leachate effect genes:", length(leachate_genes), "\n")
+```
+
+# Prepare Data for Upset Plot
+
+```{r prepare-upset-data}
+# Create a list for UpSetR
+gene_list <- list(
+  LRT = lrt_genes,
+  Interaction = interaction_genes,
+  Leachate = leachate_genes
+)
+
+# Summary of set sizes
+cat("Set sizes:\n")
+cat("LRT:", length(lrt_genes), "\n")
+cat("Interaction:", length(interaction_genes), "\n")
+cat("Leachate:", length(leachate_genes), "\n")
+
+# Get all unique genes
+all_genes <- unique(c(lrt_genes, interaction_genes, leachate_genes))
+cat("Total unique genes:", length(all_genes), "\n")
+```
+
+# Create Upset Plot
+
+```{r upset-plot, fig.width=10, fig.height=6}
+# Create the upset plot using UpSetR
+upset_plot <- upset(
+  fromList(gene_list),
+  nsets = 3,
+  order.by = "freq",
+  sets = c("Leachate", "Interaction", "LRT"),
+  keep.order = TRUE,
+  point.size = 3.5,
+  line.size = 1.5,
+  mainbar.y.label = "Intersection Size",
+  sets.x.label = "Set Size",
+  text.scale = c(1.5, 1.3, 1.2, 1.2, 1.5, 1.2),
+  mb.ratio = c(0.6, 0.4)
+)
+
+print(upset_plot)
+```
+
+# Save Plot
+
+```{r save-plot}
+# Save as PNG
+png(
+  filename = "../../output/09_deg_multifactorial/upset_plot_deg_overlap.png",
+  width = 10,
+  height = 6,
+  units = "in",
+  res = 300,
+  bg = "white"
+)
+
+upset(
+  fromList(gene_list),
+  nsets = 3,
+  order.by = "freq",
+  sets = c("Leachate", "Interaction", "LRT"),
+  keep.order = TRUE,
+  point.size = 3.5,
+  line.size = 1.5,
+  mainbar.y.label = "Intersection Size",
+  sets.x.label = "Set Size",
+  text.scale = c(1.5, 1.3, 1.2, 1.2, 1.5, 1.2),
+  mb.ratio = c(0.6, 0.4)
+)
+
+dev.off()
+
+cat("Upset plot saved to: output/09_deg_multifactorial/upset_plot_deg_overlap.png\n")
+```
+
+# Summary
+
+```{r summary}
+# Calculate overlaps using fromList
+upset_data_matrix <- fromList(gene_list)
+
+# Calculate set operations
+lrt_only <- sum(upset_data_matrix$LRT == 1 & upset_data_matrix$Interaction == 0 & upset_data_matrix$Leachate == 0)
+interaction_only <- sum(upset_data_matrix$LRT == 0 & upset_data_matrix$Interaction == 1 & upset_data_matrix$Leachate == 0)
+leachate_only <- sum(upset_data_matrix$LRT == 0 & upset_data_matrix$Interaction == 0 & upset_data_matrix$Leachate == 1)
+lrt_interaction <- sum(upset_data_matrix$LRT == 1 & upset_data_matrix$Interaction == 1 & upset_data_matrix$Leachate == 0)
+lrt_leachate <- sum(upset_data_matrix$LRT == 1 & upset_data_matrix$Interaction == 0 & upset_data_matrix$Leachate == 1)
+interaction_leachate <- sum(upset_data_matrix$LRT == 0 & upset_data_matrix$Interaction == 1 & upset_data_matrix$Leachate == 1)
+all_three <- sum(upset_data_matrix$LRT == 1 & upset_data_matrix$Interaction == 1 & upset_data_matrix$Leachate == 1)
+
+cat("Overlap summary:\n")
+cat("LRT only:", lrt_only, "\n")
+cat("Interaction only:", interaction_only, "\n")
+cat("Leachate only:", leachate_only, "\n")
+cat("LRT & Interaction:", lrt_interaction, "\n")
+cat("LRT & Leachate:", lrt_leachate, "\n")
+cat("Interaction & Leachate:", interaction_leachate, "\n")
+cat("All three:", all_three, "\n")
+```
+
+# Session Info
+
+```{r session-info}
+sessionInfo()
+```
