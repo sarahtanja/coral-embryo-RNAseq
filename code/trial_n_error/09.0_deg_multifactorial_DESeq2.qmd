@@ -174,9 +174,9 @@ pca_500 <- merge(pca_500, metadata_filt, by.x = "name", by.y = "sample_name", al
 
 # Assign specific colors to each hpf
 hpf_colors <- c(
-  "4" = flex("cyan", sat=500),
-  "9" = flex("green", sat =500),
-  "14" = flex("yellow", sat=500)
+  "4" = flexoki::flex("cyan", sat=500),
+  "9" = flexoki::flex("green", sat =500),
+  "14" = flexoki::flex("yellow", sat=500)
 )
 
 # Plot PCAs

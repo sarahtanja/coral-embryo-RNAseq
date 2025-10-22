@@ -767,9 +767,9 @@ pca_sig <- merge(pca_sig, metadata_or, by.x = "name", by.y = "sample_id", all.x 
 
 # Assign specific colors to each hpf
 hpf_colors <- c(
-  "cleavage" = flex("cyan", sat=500),
-  "prawnchip" = flex("green", sat =500),
-  "earlygastrula" = flex("yellow", sat=500)
+  "cleavage" = flexoki::flex("cyan", sat=500),
+  "prawnchip" = flexoki::flex("green", sat =500),
+  "earlygastrula" = flexoki::flex("yellow", sat=500)
 )
 
 pca_sig$label <- paste0("sample: ", pca_sig$sample_id,

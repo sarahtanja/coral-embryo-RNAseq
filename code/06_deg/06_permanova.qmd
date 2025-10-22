@@ -180,6 +180,26 @@ head(rownames(dds_cat))
 ```
 
 ```{r}
+pak::pak("mdscheuerell/flexoki") # installs flexoki
+library(flexoki) # load the version from mdscheuerell
+# Note: We use flexoki::flex() with explicit namespace notation throughout
+# this document to avoid conflicts with the CRAN 'flex' package
+
+# Specify colors
+# Assign specific colors to each hpf
+hpf_colors <- c(
+  "4" = flexoki::flex("cyan", sat=500),
+  "9" = flexoki::flex("green", sat =500),
+  "14" = flexoki::flex("yellow", sat=500)
+)
+
+# Assign specific colors to each leachate level
+leachate_colors <- c(
+  "control" = flexoki::flex("blue", sat=400),
+  "low" = flexoki::flex("magenta", sat =500),
+  "mid" = flexoki::flex("magenta", sat=700),
+  "high" = flexoki::flex("magenta", sat=950)
+)
  head(sig_all)
 ```
 
@@ -204,7 +224,6 @@ all(sizeFactors(dds_cat))<4
 ```
 
 ## Apply variance stabilizing transformation 
-
 ```{r}
 # extract variance stabilized count matrix
 vst_deg <- assay(varianceStabilizingTransformation(dds_deg, blind = TRUE, fitType = "local"))
