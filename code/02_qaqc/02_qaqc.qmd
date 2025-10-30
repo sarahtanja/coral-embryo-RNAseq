@@ -3,7 +3,6 @@ title: "Step 2: QAQC RNA sequences"
 subtitle: "Use `FastQC`, `MultiQC`, and `Fastp` to clean up sequences"
 author: "Sarah Tanja"
 date: 10/10/2024
-date-format: long
 date-modified: today
 format:
   gfm: 
@@ -12,7 +11,7 @@ format:
   html:
     theme: journal
     highlight-style: github
-    page-layout: full
+    page-layout: article
     code-background: true
     code-tools: 
       source: true
@@ -28,6 +27,15 @@ format:
     reference-location: margin
     citation-location: margin
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, # Display code chunks
+  eval = TRUE, # Evaluate code chunks
+  warning = FALSE, # Hide warnings
+  message = FALSE, # Hide messages
+  comment = "", # Prevents appending '##' to beginning of lines in code output))        
+```
 
 # Background
 
@@ -66,18 +74,6 @@ How to do a [for loop in bash](https://stackoverflow.com/questions/9612090/how-t
 ::: {.callout-tip appearance="minimal"}
 Instead of \``git add –all` execute `find . -type f -size -104M -exec git add {} +` in terminal before making a git commit to only track files that are under the git size limit of 10MB.
 :::
-
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(
-  fig.align = "center",
-  echo = TRUE,         # Display code chunks
-  eval = FALSE,        # Evaluate code chunks
-  warning = FALSE,     # Hide warnings
-  message = FALSE,     # Hide messages
-  comment = ""         # Prevents appending '##' to beginning of lines in code output
-)
-```
 
 
 # Create a Bash variables file

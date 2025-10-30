@@ -34,10 +34,7 @@ knitr::opts_chunk$set(
   eval = TRUE, # Evaluate code chunks
   warning = FALSE, # Hide warnings
   message = FALSE, # Hide messages
-  comment = "", # Prevents appending '##' to beginning of lines in code output)
-  dev = "jpeg",
-  dpi = 600,
-  fig.retina = 2)        
+  comment = "", # Prevents appending '##' to beginning of lines in code output))        
 ```
 
 # Background

@@ -11,7 +11,7 @@ format:
   html:
     theme: journal
     highlight-style: github
-    page-layout: full
+    page-layout: article
     code-background: true
     code-tools: 
       source: true
@@ -27,6 +27,16 @@ format:
     reference-location: margin
     citation-location: margin
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, # Display code chunks
+  eval = TRUE, # Evaluate code chunks
+  warning = FALSE, # Hide warnings
+  message = FALSE, # Hide messages
+  comment = "", # Prevents appending '##' to beginning of lines in code output))        
+```
+
 # Background
 
 Here we are looking at a multifactorial differential gene expression analysis for developing coral embryos at 3 developmental stages (4 hours post fertilization , 9 hours post fertilization, and 14 hours post fertiliation). Embryos at each stage were exposed to either a control, low, mid, or high concentration of PVC leachate. This work aims to understand sublethal effects of microplastic pollution on coral reefs.
@@ -41,20 +51,6 @@ Here we are looking at a multifactorial differential gene expression analysis fo
 -   `volcano_facet.png`
 
 # Setup
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(
-  fig.width = 12,
-  fig.height = 8,
-  fig.align = "center",
-  dpi = 600,
-  echo = TRUE,         # Display code chunks
-  eval = TRUE,        # Evaluate code chunks
-  warning = FALSE,     # Hide warnings
-  message = FALSE,     # Hide messages
-  comment = ""         # Prevents appending '##' to beginning of lines in code output
-)
-```
 
 ## Install packages
 
