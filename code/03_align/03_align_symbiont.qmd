@@ -3,15 +3,39 @@ title: "Step 4: Align sequence reads to annotated *M. capitata* genome"
 subtitle: "Using `HISAT2`"
 author: "Sarah Tanja"
 date: 10/21/2024
+date-modified: today
 format:
-  gfm: default  # or html if you want to render in HTML
-toc: true
-toc-depth: 3
-link-external-icon: true
-link-external-newwindow: true
-reference-location: margin
-citation-location: margin
+  gfm: 
+    toc: true
+    number-sections: true
+  html:
+    theme: journal
+    highlight-style: github
+    page-layout: article
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    number-sections: true
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    reference-location: margin
+    citation-location: margin
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, # Display code chunks
+  eval = TRUE, # Evaluate code chunks
+  warning = FALSE, # Hide warnings
+  message = FALSE, # Hide messages
+  comment = "", # Prevents appending '##' to beginning of lines in code output))        
+```
 
 This notebook will align trimmed M. capitata RNA-seq data to the M. capitata genome using hierarchical indexing for spliced alignment of transcripts HISAT2 [@zhang_rapid_2021]. Followed by StringTie (Pertea et al. 2016, 2015) for transcript assembly/identification and count matrices for downstream expression analysis with DESeq2.
 

@@ -24,18 +24,17 @@ format:
     smooth-scroll: true
     link-external-icon: true
     link-external-newwindow: true
+    reference-location: margin
+    citation-location: margin
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
-  echo = TRUE,       # Display code chunks
-  eval = TRUE,       # Evaluate code chunks
-  warning = FALSE,   # Hide warnings
-  message = FALSE,   # Hide messages
-  comment = "",      # Prevents appending '##' to beginning of lines in code output
-  dev = "png",
-  dpi = 300,
-  fig.retina = 2)        
+  echo = TRUE, # Display code chunks
+  eval = TRUE, # Evaluate code chunks
+  warning = FALSE, # Hide warnings
+  message = FALSE, # Hide messages
+  comment = "", # Prevents appending '##' to beginning of lines in code output))        
 ```
 
 # Background

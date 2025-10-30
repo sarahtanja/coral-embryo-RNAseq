@@ -2,7 +2,6 @@
 title: "Step 2: Get Sequence Data from Azenta through `sftp`"
 author: "Sarah Tanja"
 date: 10/09/2024
-date-format: long
 date-modified: today
 format:
   gfm: 
@@ -11,7 +10,7 @@ format:
   html:
     theme: journal
     highlight-style: github
-    page-layout: full
+    page-layout: article
     code-background: true
     code-tools: 
       source: true
@@ -24,19 +23,17 @@ format:
     smooth-scroll: true
     link-external-icon: true
     link-external-newwindow: true
-    bibliography: "../../references.bib"
     reference-location: margin
     citation-location: margin
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
-  echo = TRUE,         # Display code chunks
-  eval = FALSE,        # Evaluate code chunks
-  warning = FALSE,     # Hide warnings
-  message = FALSE,     # Hide messages
-  comment = ""         # Prevents appending '##' to beginning of lines in code output
-)
+  echo = TRUE, # Display code chunks
+  eval = TRUE, # Evaluate code chunks
+  warning = FALSE, # Hide warnings
+  message = FALSE, # Hide messages
+  comment = "", # Prevents appending '##' to beginning of lines in code output))        
 ```
 
 # Overview

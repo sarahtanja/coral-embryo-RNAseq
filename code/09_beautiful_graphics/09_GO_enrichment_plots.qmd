@@ -5,12 +5,13 @@ author: "Sarah Tanja"
 date: 2025-09-30
 date-modified: today
 format:
-  docx: default
-  gfm: default 
+  gfm: 
+    toc: true
+    number-sections: true
   html:
     theme: journal
     highlight-style: github
-    page-layout: full
+    page-layout: article
     code-background: true
     code-tools: 
       source: true
@@ -18,16 +19,23 @@ format:
     toc: true
     toc-depth: 2
     toc-location: left
+    number-sections: true
     df-print: kable
     smooth-scroll: true
     link-external-icon: true
     link-external-newwindow: true
     reference-location: margin
     citation-location: margin
-editor: 
-  markdown: 
-    wrap: 72
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, # Display code chunks
+  eval = TRUE, # Evaluate code chunks
+  warning = FALSE, # Hide warnings
+  message = FALSE, # Hide messages
+  comment = "", # Prevents appending '##' to beginning of lines in code output))        
+```
 
 # Background
 
@@ -39,20 +47,6 @@ editor:
 ## Outputs
 
 # Setup
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(
-  fig.align = "center",
-  fig.height=7, 
-  fig.width=9,
-  dpi = 600,
-  echo = TRUE,         # Display code chunks
-  eval = TRUE,        # Evaluate code chunks
-  warning = FALSE,     # Hide warnings
-  message = FALSE,     # Hide messages
-  comment = ""         # Prevents appending '##' to beginning of lines in code output
-)
-```
 
 ## Install packages
 
