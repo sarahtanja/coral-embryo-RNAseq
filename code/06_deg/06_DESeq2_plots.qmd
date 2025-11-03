@@ -859,6 +859,57 @@ Montipora_capitata_HIv3\_\_\_TS.g50653.t2" is the only gene common across cleava
 :::
 
 # Gene set overlap: Venn Diagram
+## Venn Diagram with ComplexUpset
+
+```{r}
+genes1 <- sig_lvc_cl$gene_id
+genes2 <- sig_mvc_cl$gene_id
+genes3 <- sig_hvc_cl$gene_id
+genes4 <- sig_hvc_eg$gene_id
+genes5 <- LRT_sig_genes$gene_id
+```
+
+Upset requires a binary membership table (presence/absence dataframe)
+
+```{r}
+all_genes <- unique(c(genes1, genes2, genes3, genes4, genes5))
+
+upset_data <- data.frame(
+  gene_id = all_genes,
+  LVC_CL  = all_genes %in% genes1,
+  MVC_CL  = all_genes %in% genes2,
+  HVC_CL  = all_genes %in% genes3,
+  HVC_EG  = all_genes %in% genes4,
+  LRT     = all_genes %in% genes5
+)
+```
+
+```{r}
+install.packages("ComplexUpset")
+```
+
+```{r}
+ComplexUpset::upset(
+  upset_data,
+    intersect = c("LVC_CL", "MVC_CL", "HVC_CL", "HVC_EG", "LRT"),
+    base_annotations = list('Intersection size'= 
+                              ComplexUpset::intersection_size(counts = TRUE)))
+
+```
+
+## Gene set overlaps with `UpSetR`
+
+```{r}
+# install.packages("UpSetR")  # if needed
+library(UpSetR)
+sets <- c("LVC_CL","MVC_CL","HVC_CL","HVC_EG","LRT")
+
+df_up <- upset_data
+df_up[sets] <- lapply(df_up[sets], function(x) as.integer(as.logical(x)))
+
+UpSetR::upset(df_up, sets = sets, keep.order = TRUE)
+
+```
 
 ```{r}
 genes1 <- sig_lvc_cl$gene_id

@@ -34,21 +34,22 @@ knitr::opts_chunk$set(
   eval = TRUE, # Evaluate code chunks
   warning = FALSE, # Hide warnings
   message = FALSE, # Hide messages
-  comment = "", # Prevents appending '##' to beginning of lines in code output))        
+  comment = "") # Prevents appending '##' to beginning of lines in code output))        
 ```
 
 # Background
 
 ## Inputs
-- metadata `metadata_or`
-- filtered gene count matrix `gcm_filtor`
-- list of all significantly expressed genes `sig_all`
+
+-   metadata `metadata_or`
+-   filtered gene count matrix `gcm_filtor`
+-   list of all significantly expressed genes `sig_all`
 
 ## Outputs
+
 ```{r}
 output <- "../../output/06_deg/permanova/"
 ```
-
 
 ## Load packages
 
@@ -220,6 +221,7 @@ dds_deg <- estimateSizeFactors(dds_deg)
 hist(sizeFactors(dds_deg))
 all(sizeFactors(dds_cat))<4
 ```
+
 
 ## Apply variance stabilizing transformation 
 ```{r}
