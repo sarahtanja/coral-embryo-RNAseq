@@ -34,7 +34,7 @@ knitr::opts_chunk$set(
   eval = TRUE, # Evaluate code chunks
   warning = FALSE, # Hide warnings
   message = FALSE, # Hide messages
-  comment = "", # Prevents appending '##' to beginning of lines in code output))        
+  comment = "") # Prevents appending '##' to beginning of lines in code output))        
 ```
 
 # Background
@@ -152,7 +152,7 @@ str(metadata_or)
 ```
 
 ::: callout-note
-`metadata_or` contains metadata for 61 samples (*o*utliers *r*emoved) with explanatory variables: - `stage` is a factor with 3 levels (cleavage, prawnchip, earlygastrula) - `hpf` is a discrete numerical variable representing the hours post fertilization 4, 9, and 14 (corresponding to `stage`) - `leachate` is a factor with 4 levels (control, low, mid, high) - `leachate_mgL` is a continuous numerical variable representing leachate concentrations in mg/L with values 0 , 0.01 , 0.1 , and 1 (corresponding to `leachate`)
+`metadata_or` contains metadata for 61 samples (*o*utliers *r*emoved) with explanatory variables: - `stage` is a factor with 3 levels (cleavage, prawnchip, earlygastrula) - `hpf` is a numerical variable representing the hours post fertilization 4, 9, and 14 (corresponding to `stage`) - `leachate` is a factor with 4 levels (control, low, mid, high) - `leachate_mgL` is a continuous numerical variable representing leachate concentrations in mg/L with values 0 , 0.01 , 0.1 , and 1 (corresponding to `leachate`)
 :::
 
 # LRT
@@ -315,7 +315,7 @@ write_csv(sig_cat_LRT, file.path(output,"sig_cat_LRT.csv"))
 
 > Of the 44 genes showing significant stage-specific responses to leachate (based on the categorical model), only 2 also show a significant linear dose-response interaction with stage (based on the continuous model). This suggests that while stage modulates leachate response broadly, most genes (42/44) exhibit nonlinear or non-monotonic patterns, rather than a simple linear trend across leachate levels.
 
-### Save LRT test normalized count matrix
+### Save normalized count matrix
 ```{r}
 # 1. extract normalized counts (matrix)
 norm_count_mat_LRT <- counts(dds_cat_LRT, normalized = TRUE)
@@ -355,6 +355,7 @@ Are the underlying normalized counts for the Wald and LRT the same?
 ```{r}
 identical(norm_count_mat_LRT, norm_count_mat_Wald)
 ```
+
 Ok so just save one normalized count matrix
 ```{r}
 # 1. extract normalized counts (matrix)
@@ -717,6 +718,7 @@ write_csv(sig_summary, file.path(output, "sig_summary.csv"))
 sig_counts <- sig_summary %>% count(list, name = "n_genes")
 sig_counts
 ```
+
 ```{r}
 sig_all <- dplyr::distinct(sig_summary, gene_id)
 nrow(sig_all)

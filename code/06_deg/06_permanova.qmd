@@ -39,6 +39,8 @@ knitr::opts_chunk$set(
 
 # Background
 
+# Setup
+
 ## Inputs
 
 -   metadata `metadata_or`
@@ -47,8 +49,11 @@ knitr::opts_chunk$set(
 
 ## Outputs
 
+## Set paths
 ```{r}
-output <- "../../output/06_deg/permanova/"
+metadata_path <- "../../metadata/metadata_or.csv"
+output_path <- "../../output/06_deg/permanova/"
+input_path <- "../../output/06_deg/spawnnight/"
 ```
 
 ## Load packages
@@ -62,100 +67,91 @@ library(tidyverse)
 ## Load inputs
 
 ```{r}
-sig_all <- read_csv("../../output/06_deg/results/sig_all.csv")
+
+files <- file.path(input_path, c("vst_mat_df.csv", "vst_mat_130_df.csv"))
+
+nm <- make.names(tools::file_path_sans_ext(basename(files)), unique = TRUE)
+
+for (i in seq_along(files)) {
+  assign(nm[i], readr::read_csv(files[i]), envir = .GlobalEnv)
+}
 ```
 
+### Metadata
 ```{r, eval=TRUE}
-gcm_filtor <- read.csv("../../output/05_explore/gcm_filtor.csv", row.names="gene_id", check.names=FALSE) 
-head(gcm_filtor)
-```
+# Load metadata (outlier samples removed, 61 samples remain)
+metadata_or <- read_csv(metadata_path)
 
-```{r, eval=TRUE}
-# Load metadata (outliers removed)
-metadata_or <- read_csv("../../metadata/metadata_or.csv")
+# set factors
+metadata_or <- metadata_or %>% 
+  mutate(
+    collection_date = as.Date(collection_date, format = "%d-%b-%Y"),
+    stage    = factor(stage,    levels = c("cleavage", "prawnchip", "earlygastrula")),
+    leachate = factor(leachate, levels = c("control", "low", "mid", "high")),
+    spawn_night = factor(spawn_night, levels  = c("July_6th", "July_7th", "July_8th"))
+    )
 
-# Reorder factors
-metadata_or$stage <- as.factor(metadata_or$stage)
-metadata_or$stage <- fct_relevel(metadata_or$stage, "cleavage", "prawnchip", "earlygastrula")
- 
-metadata_or$leachate <- as.factor(metadata_or$leachate)
-metadata_or$leachate <- fct_relevel(metadata_or$leachate, "control", "low", "mid", "high")
-
+# View metadata structure
 str(metadata_or)
 ```
 
-# Make DESeqData Object
+# Data prep
+
+### Turn the data.frames back to matrices
 
 ```{r}
-dds_cat <- DESeqDataSetFromMatrix(countData = gcm_filtor,
-                              colData = metadata_or,
-                              design = formula( ~0 + stage + leachate + stage:leachate))
+vst_mat <- vst_mat_df %>% 
+  column_to_rownames(var = "gene_id")
+
+vst_mat_130 <- vst_mat_130_df %>% 
+  column_to_rownames(var = "gene_id")
 ```
 
-# Full PERMANOVA
 
-## Estimate size factors
+### Transpose count matrices
 
-check that they are all less than 4 (should return TRUE)
-
-```{r}
-dds_cat <- estimateSizeFactors(dds_cat)
-hist(sizeFactors(dds_cat))
-all(sizeFactors(dds_cat))<4
-```
-
-## Apply a variance stabilizing transformation (VST)
-
-We apply a variance stabilizing transformation to minimize effects of small counts and normalize for library size
-
-Note: t() transposes. With DESeq2's VST:
-
-t(assay(vst(dds_cat, blind = TRUE))) flips it to samples × genes.
-
-Why it matters:
-
-Functions like vegan::vegdist() and adonis2() expect rows = samples, columns = features.
-
-Use the transposed version for PERMANOVA: rows (samples) will match your meta data frame.
+The variance stabilizing transformation (vst) minimized effects of small counts and normalized for library size.
+Note: `t()` transposes. The code `t()` flips the matrix to samples as rows × genes as columns. Functions like `vegan::vegdist()` and `adonis2()` expect rows = samples, columns = features. Use the transposed matrix for PERMANOVA such that rows are samples ordered to match the sample names in our metadata. 
 
 ```{r}
-# extract variance stabilized count matrix
-vst_mat <- assay(vst(dds_cat, blind = TRUE))
-
 # transpose
-vst_t_mat <- t(vst_mat)
-str(vst_t_mat)
+## Full set of genes
+t_vst_mat <- t(vst_mat) # rows are samples, columns are genes
+dim(t_vst_mat)
+
+## DEGs only
+t_vst_mat_130 <- t(vst_mat_130) # rows are samples, columns are genes
+dim(t_vst_mat_130)
 ```
 
-## Compute distance between samples
+### Compute Euclidean distance between samples
 
 ```{r}
-eu_dist <- vegdist((vst_t_mat), method = "eu")
+eu_dist_full <- vegdist((t_vst_mat), method = "eu")
+
+eu_dist_deg <- vegdist((t_vst_mat_130), method = "eu")
 ```
 
-## Run `adonis2` to build PERMANOVA model
+# Run PERMANOVA
+
+Run `adonis2` to build PERMANOVA model
 
 ::: callout-note
-Because adonis2() uses random permutations to get p-values. Without fixing the seed, each run draws a different set/order of permutations, which results in tiny differences in F-stats/p-values. By adding `set.seed(1)` the permutation stream is reproducible so you (and future you) get the same numbers.
+Because adonis2() uses random permutations to get p-values. Without fixing the seed, each run draws a different set/order of permutations, which results in tiny differences in F-stats/p-values. By adding `set.seed(###)` the permutation stream is reproducible so you (and future you) get the same numbers.
 :::
 
+## Full gene set
 ```{r}
-adonis2(eu_dist ~ leachate * stage, 
-        data = metadata_or,     
-        permutations = 999,
-        by = "terms")
-```
-
-```{r}
-adonis2(eu_dist ~ leachate * stage, 
+set.seed(11052025)
+adonis2(eu_dist_full ~ leachate * stage, 
         data = metadata_or,
         permutations = 999,
-        strata = metadata_or$parents, # <-- control for parental cross
+        strata = metadata_or$spawn_night, # <-- control for spawn night
         by = "terms") 
 ```
 
 ::: callout-note
-A PERMANOVA with 999 permutations (permutations restricted within parental cross) revealed that developmental stage explained the majority of variation in multivariate gene-expression profiles ($F_{2,49} = 45.0$, $R^2 = 0.613$, $p = 0.001$). Neither leachate concentration ($F_{3,49} = 1.09$, $R^2 = 0.022$, $p = 0.375$) nor the leachate,×,stage interaction ($F_{6,49} = 0.78$, $R^2 = 0.032$, $p = 0.697$) had a significant effect. Overall, the model explained 66.7% of the variance in gene-expression dissimilarity, with stage accounting for nearly all of the explained variation.
+A PERMANOVA with 999 permutations (permutations restricted within spawn night) revealed that developmental stage explained the majority of variation in multivariate gene-expression profiles ($F_{2,49} = 45.0$, $R^2 = 0.613$, $p = 0.001$). Neither leachate concentration ($F_{3,49} = 1.09$, $R^2 = 0.022$, $p = 0.375$) nor the leachate,×,stage interaction ($F_{6,49} = 0.78$, $R^2 = 0.032$, $p = 0.697$) had a significant effect. Overall, the model explained 66.7% of the variance in gene-expression dissimilarity, with stage accounting for nearly all of the explained variation.
 
 These results indicate that transcriptomic profiles differed strongly among developmental stages but not across leachate concentrations or their interaction, suggesting that developmental processes dominate gene-expression variation in this dataset.
 :::
@@ -172,83 +168,20 @@ Your term table shows **`stage`** explains \~61% of variance; that can swamp sma
 
 Your DESeq2 results might be **stage-specific** contrasts (e.g., leachate within stage), while your PERMANOVA tested a **single global** leachate and interaction term. The global test can be ns even if **some stages** have effects.
 
-# DEG PERMANOVA
-
-```{r}
-head(rownames(dds_cat))
-```
-
-```{r}
-pak::pak("mdscheuerell/flexoki") # installs flexoki
-library(flexoki) # load the version from mdscheuerell
-# Note: We use flexoki::flex() with explicit namespace notation throughout
-# this document to avoid conflicts with the CRAN 'flex' package
-
-# Specify colors
-# Assign specific colors to each hpf
-hpf_colors <- c(
-  "4" = flexoki::flex("cyan", sat=500),
-  "9" = flexoki::flex("green", sat =500),
-  "14" = flexoki::flex("yellow", sat=500)
-)
-
-# Assign specific colors to each leachate level
-leachate_colors <- c(
-  "control" = flexoki::flex("blue", sat=400),
-  "low" = flexoki::flex("magenta", sat =500),
-  "mid" = flexoki::flex("magenta", sat=700),
-  "high" = flexoki::flex("magenta", sat=950)
-)
- head(sig_all)
-```
-
-## Subset DESeqDataSet by significant gene list `sig_all`
-
-```{r}
-dds_mat <- counts(dds_cat) 
-
-write_csv(dds_mat, file.path(output, "dds_mat.csv"))
-
-keep <-  rownames(dds_mat) %in% sig_all$gene_id
-
-dds_deg <- dds_cat[keep, , drop = FALSE]  
-```
-
-## Estimate size factors
-
-```{r}
-dds_deg <- estimateSizeFactors(dds_deg)
-hist(sizeFactors(dds_deg))
-all(sizeFactors(dds_cat))<4
-```
-
-
-## Apply variance stabilizing transformation 
-```{r}
-# extract variance stabilized count matrix
-vst_deg <- assay(varianceStabilizingTransformation(dds_deg, blind = TRUE, fitType = "local"))
-
-# transpose
-vst_t_deg <- t(vst_deg)
-str(vst_t_deg)
-```
-
-## Compute distances between samples
-
-```{r}
-eu_dist_deg <- vegdist((vst_t_deg), method = "eu")
-```
-
-## Run adonis2 to build PERMANOVA model
+## DEGs
 
 ```{r}
 adonis2(eu_dist_deg ~ leachate * stage, 
         data = metadata_or,
         permutations = 999,
-        strata = metadata_or$parents, # <-- control for parental cross
+        strata = metadata_or$spawn_night, # <-- control for spawn_night
         by = "terms") 
 ```
 
 ::: callout-note
-Using PERMANOVA on Euclidean distances calculated from the 151 differentially expressed genes (DEGs) (n = 61 samples; 999 permutations; stratified by parental cross), we detected a strong effect of developmental stage and smaller but significant effects of leachate and their interaction. Stage explained R² = 0.680 of the variance and was highly significant (Df = 2, F = 76.83, p = 0.001). Leachate explained R² = 0.039 (Df = 3, F = 2.96, p = 0.034), and the leachate × stage interaction explained R² = 0.063 (Df = 6, F = 2.38, p = 0.023). Residual variation accounted for R² = 0.217.
+Using PERMANOVA on Euclidean distances calculated from the 130 differentially expressed genes (DEGs) (n = 61 samples; 999 permutations; stratified by parental cross), we detected a strong effect of developmental stage and smaller but significant effects of leachate and their interaction. Stage explained R² = 0.680 of the variance and was highly significant (Df = 2, F = 76.83, p = 0.001). Leachate explained R² = 0.039 (Df = 3, F = 2.96, p = 0.034), and the leachate × stage interaction explained R² = 0.063 (Df = 6, F = 2.38, p = 0.023). Residual variation accounted for R² = 0.217.
 :::
+
+# PCAs
+## Full gene set
+## DEGs
