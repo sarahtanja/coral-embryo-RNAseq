@@ -34,7 +34,7 @@ knitr::opts_chunk$set(
   eval = TRUE, # Evaluate code chunks
   warning = FALSE, # Hide warnings
   message = FALSE, # Hide messages
-  comment = "", # Prevents appending '##' to beginning of lines in code output))        
+  comment = "") # Prevents appending '##' to beginning of lines in code output))        
 ```
 
 # Background
@@ -64,12 +64,11 @@ This totals 151 unique DE genes.
 
 ## Outputs
 ```{r}
-output <- "../../output/07_cluster/"
+output_path <- "../../output/07_cluster/"
 ```
 
 # Setup
 
-## Install packages
 ## Load packages
 ```{r}
 library(ComplexUpset)
@@ -81,8 +80,8 @@ library(DEGreport)
 ## Load inputs
 
 ```{r}
-path <- "../../output/06_deg/results/"
-files <- list.files(path, pattern = "\\.csv$", full.names = TRUE)
+input_path <- "../../output/06_deg/results/"
+files <- list.files(input_path, pattern = "\\.csv$", full.names = TRUE)
 nm    <- make.names(tools::file_path_sans_ext(basename(files)), unique = TRUE)
 
 for (i in seq_along(files)) {
