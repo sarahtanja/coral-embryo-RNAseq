@@ -1,10 +1,11 @@
-# Step 6: Data Exploration of Count Matrix
+# Step 5: Initial Exploration of Count Matrix
 Sarah Tanja
 2024-11-18
 
 - [<span class="toc-section-number">1</span> Background](#background)
 - [<span class="toc-section-number">2</span> Goals](#goals)
-  - [<span class="toc-section-number">2.1</span> Outputs](#outputs)
+  - [<span class="toc-section-number">2.1</span> Inputs](#inputs)
+  - [<span class="toc-section-number">2.2</span> Outputs](#outputs)
 - [<span class="toc-section-number">3</span> Setup](#setup)
   - [<span class="toc-section-number">3.1</span> Install
     packages](#install-packages)
@@ -12,22 +13,26 @@ Sarah Tanja
     packages](#load-packages)
   - [<span class="toc-section-number">3.3</span> Load
     inputs](#load-inputs)
+    - [<span class="toc-section-number">3.3.1</span>
+      Metadata](#metadata)
+    - [<span class="toc-section-number">3.3.2</span> Gene count
+      matrix](#gene-count-matrix)
 - [<span class="toc-section-number">4</span> Check order](#check-order)
-- [<span class="toc-section-number">5</span> Filtering](#filtering)
-  - [<span class="toc-section-number">5.0.1</span> Plot distribution of
-    unfiltered reads](#plot-distribution-of-unfiltered-reads)
-  - [<span class="toc-section-number">5.1</span>
-    Pre-filtering](#pre-filtering)
+- [<span class="toc-section-number">5</span> Pre-filter
+  reads](#pre-filter-reads)
 - [<span class="toc-section-number">6</span> Make DESeq Dataset
   Object](#make-deseq-dataset-object)
-  - [<span class="toc-section-number">6.1</span> Plot
-    distribution](#plot-distribution)
-  - [<span class="toc-section-number">6.2</span> Factor
-    levels](#factor-levels)
-  - [<span class="toc-section-number">6.3</span> Count
-    transformations](#count-transformations)
-- [<span class="toc-section-number">7</span> Exploratory
-  PCA](#exploratory-pca)
+  - [<span class="toc-section-number">6.1</span> Check factor
+    levels](#check-factor-levels)
+  - [<span class="toc-section-number">6.2</span> Estimate size
+    factors](#estimate-size-factors)
+  - [<span class="toc-section-number">6.3</span> Apply a variance
+    stabilizing transformation
+    (VST)](#apply-a-variance-stabilizing-transformation-vst)
+  - [<span class="toc-section-number">6.4</span> Plot distribution of
+    VST counts](#plot-distribution-of-vst-counts)
+- [<span class="toc-section-number">7</span> Perform exploratory
+  PCA](#perform-exploratory-pca)
   - [<span class="toc-section-number">7.1</span> Identify
     outliers](#identify-outliers)
   - [<span class="toc-section-number">7.2</span> Remove the
@@ -42,11 +47,21 @@ Sarah Tanja
   Object](#remake-deseq-object)
   - [<span class="toc-section-number">8.1</span> Redo count
     transformations](#redo-count-transformations)
-- [<span class="toc-section-number">9</span> PCA](#pca)
-- [<span class="toc-section-number">10</span> Heatmap](#heatmap)
-- [<span class="toc-section-number">11</span> Results](#results)
-- [<span class="toc-section-number">12</span> Summary & Next
-  Steps](#summary--next-steps)
+  - [<span class="toc-section-number">8.2</span> Remake
+    PCA](#remake-pca)
+- [<span class="toc-section-number">9</span> Examine for batch
+  effects](#examine-for-batch-effects)
+  - [<span class="toc-section-number">9.1</span> betadispr](#betadispr)
+    - [<span class="toc-section-number">9.1.1</span> night](#night)
+    - [<span class="toc-section-number">9.1.2</span>
+      leachate](#leachate)
+    - [<span class="toc-section-number">9.1.3</span> stage](#stage)
+    - [<span class="toc-section-number">9.1.4</span> leachate x
+      stage](#leachate-x-stage)
+- [<span class="toc-section-number">10</span> PERMANOVA](#permanova)
+- [<span class="toc-section-number">11</span> Heatmap](#heatmap)
+- [<span class="toc-section-number">12</span> Summary](#summary)
+- [<span class="toc-section-number">13</span> Next steps](#next-steps)
 
 # Background
 
@@ -54,18 +69,39 @@ Sarah Tanja
 
 # Goals
 
-- Create initial DESeq Dataset Objects to use in exploratory data
-  visualizations
+- Filter gene count matrix to remove low gene counts across samples
 
-- Identify & remove any outliers \## Inputs
+- Create initial DESeq Dataset Object with `DESeq2` to use in
+  exploratory data visualizations
 
-- unfiltered gene count matrix
+- Explore how samples cluster with PCA plots
+
+- Identify & remove any outliers
+
+- Explore batch effects
+
+- Examine dispersion with `betadispr`
+
+- Run a PERMANOVA with `vegan::adonis2`
+
+- Understand broad patterns across samples
+
+## Inputs
+
+- `output/04_count/gene_count_matrix.csv` unfiltered gene count matrix
+- `metadata/metadata.csv` sample metadata
 
 ## Outputs
 
-- exploratory principle component analysis (PCA)
-
-- filtered metadata removing outlier samples
+- `output/05_explore/gcm_filtor.csv` filtered gene count matrix with
+  outlier samples removed
+- `metadata/metadata_or.csv`filtered metadata with outlier samples
+  removed
+- `output/05_explore/pca.png` exploratory principle component analysis
+  (PCA) plot
+- `output/05_explore/zscore_heatmap.png` exploratory heatmap
+- `output/05_explore/permanova_result_fullgeneset.csv` result table of
+  PERMANOVA test on
 
 Resources:
 
@@ -75,65 +111,92 @@ workflow](https://master.bioconductor.org/packages/release/workflows/vignettes/r
 [DESeq2
 Vignette](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html)
 
+(Love, Huber, and Anders 2014)
+
 # Setup
+
+``` r
+# Specify colors
+leachate_colors <- c("grey60", "#C994C7", "#980043", "#67001F")
+stage_colors <- c("red", "blue", "green")
+
+# Annotation colors for pheatmap
+ann_colors = list(
+  leachate = leachate_colors,
+  stage = stage_colors
+)
+```
 
 ## Install packages
 
 ``` r
-if ("tidyverse" %in% rownames(installed.packages()) == 'FALSE') install.packages('tidyverse')
-if ("RColorBrewer" %in% rownames(installed.packages()) == 'FALSE') install.packages('RColorBrewer')
-if ("viridis" %in% rownames(installed.packages()) == 'FALSE') install.packages('viridis')
-if ("pheatmap" %in% rownames(installed.packages()) == 'FALSE') install.packages('pheatmap')
-if ("vsn" %in% rownames(installed.packages()) == 'FALSE') install.packages('vsn')
-if ("pak" %in% rownames(installed.packages()) == 'FALSE') install.packages('pak')
-if ("plotly" %in% rownames(installed.packages()) == 'FALSE') install.packages('plotly')
+# Install pak itself if not already installed
+#if (!"pak" %in% rownames(installed.packages())) {
+#  install.packages("pak")
+#}
 
-if (!require("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-BiocManager::install("DESeq2")
-BiocManager::install("ComplexHeatmap")
+# Use pak to install CRAN packages
+#pak::pak(c(
+#  "tidyverse",
+#  "viridis",
+#  "pheatmap",
+#  "vsn",
+#  "plotly",
+#  "ggrepel",
+#  "vegan"
+#))
+
+# Install Bioconductor packages using pak (prefix with "bioc::")
+#pak::pak(c(
+#  "bioc::DESeq2"
+#))
 ```
 
 ## Load packages
 
 ``` r
 library(tidyverse)
-library(RColorBrewer)
 library(viridis)
 library(DESeq2)
 library(vsn)
 library(pheatmap)
-library(ComplexHeatmap)
 library(plotly)
-pak::pak("mdscheuerell/flexoki") # installs flexoki
-library(flexoki) # loads the version from pak mdscheuerell
+library(ggrepel)
+library(vegan)
 ```
 
 ## Load inputs
 
-metadata and gene count matrix
+### Metadata
 
 ``` r
-metadata <- read.csv("../../metadata/metadata.csv")
+metadata <- read_csv("../../metadata/metadata.csv")
 
-# Make leachate and hpf factors
-metadata$leachate <- as.factor(metadata$leachate)
-metadata$leachate <- fct_relevel(metadata$leachate, "control", "low", "mid", "high")
+# set factors
+metadata <- metadata %>% 
+  mutate(
+    collection_date = as.Date(collection_date, format = "%d-%b-%Y"),
+    stage    = factor(stage,    levels = c("cleavage", "prawnchip", "earlygastrula")),
+    leachate = factor(leachate, levels = c("control", "low", "mid", "high")),
+    spawn_night = factor(spawn_night, levels  = c("July 6th", "July 7th", "July 8th"))
+    )
 
-metadata$hpf <- as.factor(metadata$hpf)
-metadata$hpf <- fct_relevel(metadata$hpf, "4", "9", "14")
-
+# View metadata structure
 str(metadata)
 ```
 
-    'data.frame':   63 obs. of  7 variables:
-     $ sample_id      : chr  "101112C14" "101112C4" "101112C9" "101112H14" ...
-     $ parents        : int  101112 101112 101112 101112 101112 101112 101112 101112 101112 101112 ...
-     $ group          : chr  "C14" "C4" "C9" "H14" ...
-     $ hpf            : Factor w/ 3 levels "4","9","14": 3 1 2 3 1 2 3 1 2 3 ...
-     $ embryonic_stage: chr  "earlygastrula" "cleavage" "prawnchip" "earlygastrula" ...
+    tibble [63 × 9] (S3: tbl_df/tbl/data.frame)
+     $ sample_id      : chr [1:63] "101112C14" "101112C4" "101112C9" "101112H14" ...
+     $ collection_date: Date[1:63], format: "2024-07-08" "2024-07-08" ...
+     $ parents        : num [1:63] 101112 101112 101112 101112 101112 ...
+     $ group          : chr [1:63] "C14" "C4" "C9" "H14" ...
+     $ hpf            : num [1:63] 14 4 9 14 4 9 14 4 9 14 ...
+     $ stage          : Factor w/ 3 levels "cleavage","prawnchip",..: 3 1 2 3 1 2 3 1 2 3 ...
      $ leachate       : Factor w/ 4 levels "control","low",..: 1 1 1 4 4 4 2 2 2 3 ...
-     $ leachate_mgL   : num  0 0 0 1 1 1 0.01 0.01 0.01 0.1 ...
+     $ leachate_mgL   : num [1:63] 0 0 0 1 1 1 0.01 0.01 0.01 0.1 ...
+     $ spawn_night    : Factor w/ 3 levels "July 6th","July 7th",..: 3 3 3 3 3 3 3 3 3 3 ...
+
+### Gene count matrix
 
 ``` r
 gcm <- read.csv("../../output/04_count/gene_count_matrix.csv", row.names="gene_id", check.names = FALSE)
@@ -165,9 +228,7 @@ all(metadata$sample_id == colnames(gcm))
 > Our samples are listed in the same order down our `metadata` rows and
 > across our `gcm` columns
 
-# Filtering
-
-### Plot distribution of unfiltered reads
+# Pre-filter reads
 
 ``` r
 ggplot(data = data.frame(rowMeans(gcm)),
@@ -188,8 +249,6 @@ ggplot(data = data.frame(rowMeans(gcm)),
 > As you can see in the above plot, the raw distribution of all read
 > counts takes on a left-skewed negative binomial distribution.
 
-## Pre-filtering
-
 From the `DESeq2` vignette on
 [Pre-filtering](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#pre-filtering:~:text=cell%20…%20Sample%20BioSample-,Pre%2Dfiltering,-While%20it%20is):
 
@@ -201,27 +260,29 @@ From the `DESeq2` vignette on
 > features with no information for differential expression are not
 > plotted in dispersion plots or MA-plots.
 >
-> Here we perform pre-filtering to keep only rows that have a count of
-> at least 10 for a minimal number of samples. The count of 10 is a
-> reasonable choice for bulk RNA-seq. A recommendation for the minimal
-> number of samples is to specify the smallest group size, e.g. here
-> there are 3 treated samples. If there are not discrete groups, one can
-> use the minimal number of samples where non-zero counts would be
-> considered interesting. One can also omit this step entirely and just
-> rely on the independent filtering procedures available in `results()`,
-> either *IHW* or *genefilter*. See [independent
-> filtering](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#indfilt)
-> section.
+> A recommendation for the minimal number of samples is to specify the
+> smallest group size… or the minimal number of samples where non-zero
+> counts would be considered interesting.
+
+In our experimental design, our smallest group is ~5 samples out of 60
+(5/60 = 0.08). It would be interesting if 8% of the samples differed,
+representing a treatment group.
 
 ``` r
-# Filter rows where at least 75% of the columns have a raw count of ~15
+# Filter rows where at least 85% of the columns have a raw count of ~15
 gcm_filt <- gcm %>%
-  filter(rowSums(across(everything(), ~ . > 15)) >= 0.75 * ncol(gcm))
+  filter(rowSums(across(everything(), ~ . > 15)) >= 0.85 * ncol(gcm))
 
+nrow(gcm)
+```
+
+    [1] 54384
+
+``` r
 nrow(gcm_filt)
 ```
 
-    [1] 12229
+    [1] 11250
 
 # Make DESeq Dataset Object
 
@@ -283,49 +344,10 @@ From the `RNA-seq-workflow`
 #Set DESeq2 design for 2 factors and their interaction
 dds <- DESeqDataSetFromMatrix(countData = gcm_filt,
                               colData = metadata,
-                              design = ~ hpf +  leachate + hpf:leachate)
+                              design = ~ stage + leachate + stage:leachate)
 ```
 
-## Plot distribution
-
-``` r
-# Extract VST-transformed expression matrix
-vsd_mat <- assay(vst(dds))
-
-# Flatten it into a vector
-vsd_vals <- as.vector(vsd_mat)
-
-# Create a dataframe for ggplot
-df_vsd <- data.frame(vsd_count = vsd_vals)
-
-# Plot
-ggplot(df_vsd, aes(x = vsd_count)) +
-  geom_histogram(fill = "grey") +
-  theme_classic() +
-  labs(
-    title = "Histogram of Variance-Stabilized Counts",
-    x = "VST-transformed read count",
-    y = "Frequency"
-  )
-```
-
-![](05_data_exploration_files/figure-commonmark/unnamed-chunk-8-1.png)
-
-> [!CAUTION]
->
-> This should look broadly like a normal distribution! If it doesn’t,
-> make your filter stricter to remove more low reads. You can do this by
-> increasing the percent of samples that have to have the minimum count,
-> and/or increase the minimum count back in the pre-filtering step. VST
-> compresses the high-end of the count distribution and expands the
-> low-end, making the variance roughly constant across the range. The
-> resulting values are on an approximate log2 scale but not exact
-> log2(count + 1) — VST is more nuanced, especially for low counts. A
-> range of 5 to 15 corresponds roughly to raw counts ranging from 2³² to
-> 2¹⁵ ≈ 32 to 32,000, so it’s realistic for RNA-seq gene expression
-> data.
-
-## Factor levels
+## Check factor levels
 
 From the `DESeq2` vignette [Note on factor
 levels](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#note-on-factor-levels):
@@ -341,64 +363,41 @@ levels](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/D
 > reflected in the results names, you need to either run `DESeq` or
 > `nbinomWaldTest`/`nbinomLRT` after the re-leveling operation.
 
-Set levels for both the `leachate` and `hpf` variables
+When we read in our metadata we set levels for both the `leachate` and
+`stage` variables
 
-- `pvc_leachate_level` (4 levels)
+- `leachate` (4 levels)
   1.  `control`
   2.  `low`
   3.  `mid`
   4.  `high`
-- `hpf` (3 levels)
-  1.  `4`
-  2.  `9`
-  3.  `14`
+- `stage` (3 levels)
+  1.  `cleavage`
+  2.  `prawnchip`
+  3.  `earlygastrula`
+
+The following code can confirm that DESeq2 sees the levels:
 
 ``` r
-dds$leachate <- factor(dds$leachate, levels = c("control","low", "mid", "high"))
-dds$hpf <- factor(dds$hpf, levels = c(4, 9, 14))
 levels(dds$leachate)
 ```
 
     [1] "control" "low"     "mid"     "high"   
 
 ``` r
-levels(dds$hpf)
+levels(dds$stage)
 ```
 
-    [1] "4"  "9"  "14"
+    [1] "cleavage"      "prawnchip"     "earlygastrula"
 
-## Count transformations
+## Estimate size factors
 
-> In order to test for differential expression, we operate on raw counts
-> and use discrete distributions… However for visualization or
-> clustering – it might be useful to work with transformed versions of
-> the count data.
->
-> **Which transformation to choose?** The VST is much faster to compute
-> and is less sensitive to high count outliers than the rlog. The rlog
-> tends to work well on small datasets (n \< 30), potentially
-> outperforming the VST when there is a wide range of sequencing depth
-> across samples (an order of magnitude difference). We therefore
-> recommend the VST for medium-to-large datasets (n \> 30). You can
-> perform both transformations and compare the `meanSdPlot` or PCA plots
-> generated…
+In DESeq2, size factors account for differences in sequencing depth
+(library size) between samples by scaling the per-sample counts to the
+geometric mean ., making gene expression levels comparable across
+samples before modeling biological effects.
 
-> First we are going to log-transform the data using a variance
-> stabilizing transforamtion (VST). This is only for visualization
-> purposes. Essentially, this is roughly similar to putting the data on
-> the log2 scale. It will deal with the sampling variability of low
-> counts by calculating within-group variability (if blind=FALSE).
-> Importantly, it does not use the design to remove variation in the
-> data, and so can be used to examine if there may be any variability do
-> to technical factors such as extraction batch effects.
->
-> To do this we first need to calculate the size factors of our samples.
-> This is a rough estimate of how many reads each sample contains
-> compared to the others. In order to use VST (the faster log2
-> transforming process) to log-transform our data, the size factors need
-> to be less than 4. - <a
-> href="https://github.com/AHuffmyer/EarlyLifeHistory_Energetics/blob/07ef97f446e4383b95bbcc78e5d0e8df1736d51e/Mcap2020/Scripts/TagSeq/DESeq2_Mcap_V3.Rmd#L206"
-> style="font-size: 11.4pt;">A.Huffmyer Early Life History Energetics</a>
+Display histogram of size factors
 
 ``` r
 dds <- estimateSizeFactors(dds)
@@ -406,6 +405,30 @@ hist(sizeFactors(dds))
 ```
 
 ![](05_data_exploration_files/figure-commonmark/unnamed-chunk-10-1.png)
+
+If size factors differ by a large amount (e.g. \>4-fold between smallest
+and largest sample), the VST can over- or under-correct counts, leading
+to distorted variance patterns or spurious clustering in PCA plots.
+
+From (Love, Huber, and Anders 2014):
+
+> …while the VST is also effective at stabilizing variance, it does not
+> directly take into account differences in size factors; and in
+> datasets with large variation in sequencing depth (dynamic range of
+> size factors 4) we observed undesirable artifacts in the performance
+> of the VST
+
+From <a
+href="https://github.com/AHuffmyer/EarlyLifeHistory_Energetics/blob/07ef97f446e4383b95bbcc78e5d0e8df1736d51e/Mcap2020/Scripts/TagSeq/DESeq2_Mcap_V3.Rmd#L206"
+style="font-size: 11.4pt;">A.Huffmyer Early Life History Energetics</a>
+:
+
+> … calculate the size factors of our samples. This is a rough estimate
+> of how many reads each sample contains compared to the others. In
+> order to use VST (the faster log2 transforming process) to
+> log-transform our data, the size factors need to be less than 4.
+
+Check that size factors are all less than 4 (should return TRUE)
 
 ``` r
 all(sizeFactors(dds))<4
@@ -415,25 +438,45 @@ all(sizeFactors(dds))<4
 
 > [!NOTE]
 >
-> **From DESeq vignette on [Blind dispersion
-> estimation](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#contrasts:~:text=Anders%202014).-,Blind%20dispersion%20estimation,-The%20two%20functions)
-> :**
->
-> The two functions, *vst* and *rlog* have an argument `blind`, for
-> whether the transformation should be blind to the sample information
-> specified by the design formula. When `blind` equals `TRUE` (the
-> default), the functions will re-estimate the dispersions using only an
-> intercept. This setting should be used in order to compare samples in
-> a manner wholly unbiased by the information about experimental groups,
-> for example to perform sample QA (quality assurance) as demonstrated
-> below.
+> Great! All size factors are less than 4, so we can proceed with using
+> the variance stabilizing transformation.
+
+## Apply a variance stabilizing transformation (VST)
+
+> In order to test for differential expression, we operate on raw
+> counts… However for visualization or clustering – it might be useful
+> to work with transformed versions of the count data. - [DESeq2
+> Vignette](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html)
+
+> First we are going to log-transform the data using a variance
+> stabilizing transformation (VST). This is only for visualization
+> purposes. Importantly, it does not use the design to remove variation
+> in the data, and so can be used to examine if there may be any
+> variability do to technical factors such as extraction batch
+> effects. - [DESeq2
+> Vignette](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html)
+
+Here we apply a variance stabilizing transformation (vst) to minimize
+effects of small counts and normalize for library size to improve
+visualizations.
+
+[Blind dispersion
+estimation](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#blind-dispersion-estimation)
+
+> … *vst* \[has\] an argument `blind`, for whether the transformation
+> should be blind to the sample information specified by the design
+> formula. When `blind` equals `TRUE` (the default), the functions will
+> re-estimate the dispersions using only an intercept. This setting
+> should be used in order to compare samples in a manner wholly unbiased
+> by the information about experimental groups, for example to perform
+> sample QA (quality assurance) as demonstrated below.
 >
 > However, blind dispersion estimation is not the appropriate choice if
-> one expects that many or the majority of genes (rows) will have large
-> differences in counts which are explainable by the experimental
-> design, and one wishes to transform the data for downstream analysis.
-> In this case, using blind dispersion estimation will lead to large
-> estimates of dispersion, as it attributes differences due to
+> **one expects that many or the majority of genes (rows) will have
+> large differences in counts which are explainable by the experimental
+> design**, and one wishes to transform the data for downstream
+> analysis. In this case, using blind dispersion estimation will lead to
+> large estimates of dispersion, as it attributes differences due to
 > experimental design as unwanted *noise*, and will result in overly
 > shrinking the transformed values towards each other. **By setting
 > `blind` to `FALSE`, the dispersions already estimated will be used to
@@ -443,14 +486,59 @@ all(sizeFactors(dds))<4
 > transformation (the global dependence of dispersion on mean for the
 > entire experiment). So setting `blind` to `FALSE` is still for the
 > most part not using the information about which samples were in which
-> experimental group in applying the transformation.**
+> experimental group in applying the transformation.** - <a
+> href="https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html"
+> style="background-color: transparent; font-size: 11.4pt;">DESeq2
+> Vignette</a>
 
-We chose to set `blind = FALSE` because we expect large differences
-between embryonic stages (hpf).
+We choose to set `blind = FALSE` because we expect large differences in
+expression between embryonic stages.
 
 ``` r
+# transform via variance stabilizing transformation
 vsd <- vst(dds, blind=FALSE)
+# extract variance stabilized count matrix
+vst_gcm <- assay(vsd)
 ```
+
+## Plot distribution of VST counts
+
+``` r
+# Create a dataframe for ggplot
+vst_long <- as_tibble(vst_gcm, rownames = "gene_id")  %>% 
+  pivot_longer(-gene_id, names_to = "sample", values_to = "count") 
+  
+# Plot
+ggplot(vst_long, aes(x = count)) +
+  geom_histogram(fill = "grey") +
+  theme_classic() +
+  labs(
+    title = "Histogram of Variance-Stabilized Counts",
+    x = "VST-transformed read counts",
+    y = "Frequency"
+  )
+```
+
+![](05_data_exploration_files/figure-commonmark/unnamed-chunk-13-1.png)
+
+This should look broadly like a normal distribution! If it doesn’t, make
+the filter stricter to remove more low reads by increasing the percent
+of samples that have to have the minimum count, and/or increase the
+minimum count back in the pre-filtering step. VST compresses the
+high-end of the count distribution and expands the low-end, making the
+variance roughly constant across the range. The resulting values are on
+an approximate log2 scale but not exact log2(count + 1) — VST is more
+nuanced, especially for low counts. A range of 5 to 15 corresponds
+roughly to raw counts ranging from 2³² to 2¹⁵ ≈ 32 to 32,000, so it’s
+realistic for RNA-seq gene expression data.
+
+> [!IMPORTANT]
+>
+> The remaining spike of low counts in the context of embryonic
+> development is biologically relevant, because we expect many genes to
+> be used only in a specific stage but not in another… leading to chunks
+> of samples from one embryonic stage having zero counts in certain
+> genes that are abundant in other stages.
 
 [Effects of transformations on the
 variance](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#effects-of-transformations-on-the-variance)
@@ -458,33 +546,19 @@ variance](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc
 > To show the effect of the transformation, in the figure below we plot
 > the first sample against the second, first simply using the *log2*
 > function (after adding 1, to avoid taking the log of zero), and then
-> using the VST and rlog-transformed values. For the *log2* approach, we
-> need to first estimate *size factors* to account for sequencing depth,
-> and then specify `normalized=TRUE`. Sequencing depth correction is
-> done automatically for the *vst* and *rlog*.
-
-> The figures below plot the standard deviation of the transformed data,
-> across samples, against the mean, using the shifted logarithm
-> transformation, the regularized log transformation and the variance
-> stabilizing transformation. The shifted logarithm has elevated
-> standard deviation in the lower count range, and the regularized log
-> to a lesser extent, while for the variance stabilized data the
-> standard deviation is roughly constant along the whole dynamic range.
->
-> Note that the vertical axis in such plots is the square root of the
-> variance over all samples, so including the variance due to the
-> experimental conditions. While a flat curve of the square root of
-> variance over the mean may seem like the goal of such transformations,
-> this may be unreasonable in the case of datasets with many true
-> differences due to the experimental conditions.
+> using the VST. For the *log2* approach, we need to first estimate
+> *size factors* to account for sequencing depth, and then specify
+> `normalized=TRUE`. Sequencing depth correction is done automatically
+> for the *vst*. - <a
+> href="https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html"
+> style="background-color: transparent; font-size: 11.4pt;">DESeq2
+> Vignette</a>
 
 ``` r
-dds <- estimateSizeFactors(dds)
-
 df <- bind_rows(
   as.data.frame(log2(counts(dds, normalized=TRUE)[, 1:2]+1)) %>%
          mutate(transformation = "log2(x + 1)"),
-  as.data.frame(assay(vsd)[, 1:2]) %>% mutate(transformation = "vst"))
+  as.data.frame(vst_gcm[, 1:2]) %>% mutate(transformation = "vst"))
   
 colnames(df)[1:2] <- c("x", "y")  
 
@@ -495,23 +569,43 @@ ggplot(df, aes(x = x, y = y)) +
   geom_hex(bins = 80) +
   coord_fixed() +
   facet_grid(. ~ transformation) +
-  ggtitle("All Samples Interaction design (4, 9 & 14 hpf) Count Transformation Comparisons")
+  ggtitle("Count Transformation Comparisons")
 ```
 
-![](05_data_exploration_files/figure-commonmark/unnamed-chunk-12-1.png)
+![](05_data_exploration_files/figure-commonmark/unnamed-chunk-14-1.png)
+
+About the `meanSdPlot` :
+
+> The figure below plots the standard deviation of the transformed data,
+> across samples, against the mean, using the … variance stabilizing
+> transformation. … for the variance stabilized data the standard
+> deviation is roughly constant along the whole dynamic range. - <a
+> href="https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html"
+> style="background-color: transparent; font-size: 11.4pt;">DESeq2
+> Vignette</a>
 
 ``` r
-meanSdPlot(assay(vsd))
+meanSdPlot(vst_gcm)
 ```
 
-![](05_data_exploration_files/figure-commonmark/unnamed-chunk-13-1.png)
+![](05_data_exploration_files/figure-commonmark/unnamed-chunk-15-1.png)
 
-# Exploratory PCA
+> Note that the vertical axis in such plots is the square root of the
+> variance over all samples, so including the variance due to the
+> experimental conditions. While a flat curve of the square root of
+> variance over the mean may seem like the goal of such transformations,
+> this may be unreasonable in the case of datasets with many true
+> differences due to the experimental conditions. - <a
+> href="https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html"
+> style="background-color: transparent; font-size: 11.4pt;">DESeq2
+> Vignette</a>
 
-> A principal components analysis (PCA) plot shows the samples in the 2D
-> plane spanned by their first two principal components. This type of
-> plot is useful for visualizing the overall effect of experimental
-> covariates and batch effects.
+# Perform exploratory PCA
+
+A principal components analysis (PCA) plot shows the samples in the 2D
+plane spanned by their first two principal components. This type of plot
+is useful for visualizing outliers, the overall effect of experimental
+covariates, and batch effects.
 
 ``` r
 # Get PCA data (top 500 DEGs by default)
@@ -520,84 +614,86 @@ percentVar_500 <- round(100*attr(pca_500, "percentVar"))
 
 # Merge with metadata
 pca_500 <- merge(pca_500, metadata, by.x = "name", by.y = "sample_id", all.x = TRUE)
+```
 
-
+``` r
 # Assign specific colors to each hpf
-hpf_colors <- c(
-  "4" = flex("cyan", sat=500),
-  "9" = flex("green", sat =500),
-  "14" = flex("yellow", sat=500)
-)
+stage_colors <- c("red", "blue", "green")
 
-pca_500$label <- paste0("Sample: ", pca_500$sample_id,
-                        "\nHPF: ", pca_500$hpf,
-                        "\nLeachate: ", pca_500$leachate)
 
-# Indicate leachate level by saturation (alpha)
-leachate_alpha_map <- c("control" = 0.5, "low" = 0.6, "mid" = 0.7, "high" = 0.9)
-pca_500$alpha_val <- leachate_alpha_map[pca_500$leachate]
+pca_500$label <- paste0(pca_500$name)
 
-# Original ggplot with a tooltip aesthetic
-PCA_500 <- ggplot(pca_500, aes(PC1, PC2, color = hpf, label = name, alpha = alpha_val)) +
-  geom_point(size = 1,  stroke = 1) +
+
+# Plot PCA
+PCA_500 <- ggplot(pca_500, aes(PC1, PC2, color = stage, shape = leachate, label = label)) +
+  geom_point(size = 1) +
   ggtitle("M.cap embryos exposed to pvc leachate, top 500 most variable genes") +
   xlab(paste0("PC1: ", percentVar_500[1], "% variance")) +
   ylab(paste0("PC2: ", percentVar_500[2], "% variance")) + 
   coord_fixed() +
-  scale_color_manual(values = hpf_colors) +
-  stat_ellipse() + 
-  guides(alpha = "none") +  # hide alpha legend (optional)
-  theme_minimal()
+  scale_color_manual(values = stage_colors) +
+  theme_minimal()+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
 
-# Convert to interactive plot
-ggplotly(PCA_500, tooltip = "label")
+PCA_500
 ```
 
-![](05_data_exploration_files/figure-commonmark/unnamed-chunk-14-1.png)
+![](05_data_exploration_files/figure-commonmark/unnamed-chunk-17-1.png)
+
+From this we can visually detect that 131415L4 and 789C4 may be outliers
+
+``` r
+#label the outliers
+
+labels_to_show <- c("131415L4", "789C4")   # the two names to label
+
+PCA_500 + geom_text_repel(
+    data = pca_500 %>% filter(name %in% labels_to_show),
+    aes(label = name),
+    seed = 123,                # reproducible placement
+    show.legend = FALSE
+  )
+```
+
+![](05_data_exploration_files/figure-commonmark/unnamed-chunk-19-1.png)
 
 ## Identify outliers
 
 > … we usually identify any sample that falls outside the main group of
 > samples by a magnitude (along PC1) of greater than 3 standard
 > deviations. Mathematically, all that you need to do is convert your
-> PC1 values to Z-scores and then check for those \>\|3\|. In R, get
-> these by using prcomp() and then accessing the ‘x’ variable of the
+> PC1 values to Z-scores and then check for those greater than 3. In R,
+> get these by using prcomp() and then accessing the ‘x’ variable of the
 > returned object, e.g., `pca <- prcomp(t(rna.data); pca$x`… –Kevin
 > Blighe on [biostars forum](https://www.biostars.org/p/281767/)
 
 ``` r
-# Extract PC1 values
+# Extract PC values
 pca_scores <- pca_500[ , c("PC1", "PC2", "name")]
 
-# Convert PC1 scores to Z-scores
+# Convert PC scores to Z-scores
 pca_scores$zpc1 <- scale(pca_scores$PC1)
 pca_scores$zpc2 <- scale(pca_scores$PC2)
 
-# Get samples with Z-score > |3|
-pc1_outliers <- pca_scores$zpc1[abs(pca_scores$zpc1) > 3]
-pc2_outliers <- pca_scores$zpc2[abs(pca_scores$zpc1) > 3]
-
-# Show them
-pc1_outliers
+# Show samples with Z-score > |3|
+pca_scores %>%
+  filter(abs(zpc1) > 2.5 | abs(zpc2) > 2.5)
 ```
 
-    numeric(0)
-
-``` r
-pc2_outliers
-```
-
-    numeric(0)
+           PC1        PC2     name     zpc1      zpc2
+    1 57.96956 -111.00403 131415L4 1.905257 -5.810661
+    2 88.54156  -63.93661    789C4 2.910052 -3.346851
 
 > [!IMPORTANT]
 >
-> Although their z-scores are not greater than 3 standard deviations
-> from the group, visually samples `131415L4` and `789C4`may be outliers
-> in the cleavage phase, as they have the greatest spread from the
-> centroid of hpf 4, and also from the rest of the samples. The hpf 4
-> data is expected to be the least consistent because at 4 hpf, the eggs
-> were just on the cusp of beginning initial cleavage, meaning many of
-> the embryos still appeared as an undivided blastocyle, and we could
+> Their z-scores are greater than 3 standard deviations from the group,
+> and visually samples `131415L4` and `789C4`may be outliers in the
+> cleavage phase, as they have the greatest spread from the centroid of
+> hpf 4, and also from the rest of the samples. The hpf 4 data is
+> expected to be the least consistent because at 4 hpf, the eggs were
+> just on the cusp of beginning initial cleavage, meaning many of the
+> embryos still appeared as an undivided blastocyle, and we could
 > therefore not determine if the egg was fertilized and about to
 > initiate cleavage, or unfertilized and inviable.
 
@@ -617,31 +713,35 @@ metadata_or <- metadata %>%
 gcm_or <- gcm %>% 
   dplyr::select(-`131415L4`, -`789C4`)
 
-nrow(gcm_or)
+dim(gcm_or)
 ```
 
-    [1] 54384
+    [1] 54384    61
 
 ### Refilter
 
 ``` r
-# Filter rows where at least (3/60) = .05% of the columns have a value greater than 10
+# Filter rows where at least 85% of the columns have a value greater than 15
 gcm_filtor <- gcm_or %>%
-  filter(rowSums(across(everything(), ~ . > 15)) >= 0.75 * ncol(gcm_or))
+  filter(rowSums(across(everything(), ~ . > 10)) >= 0.85 * ncol(gcm_or))
 
 nrow(gcm_filtor)
 ```
 
-    [1] 12565
+    [1] 12221
 
-22634 genes (same genes present with or without outlier samples)
+> [!NOTE]
+>
+> 11250 genes made it past our filter when outliers were present, 11586
+> made it past the filter without outlier samples in our gene count
+> matrix.
 
 # Remake DESeq Object
 
 ``` r
 dds_or <- DESeqDataSetFromMatrix(countData = gcm_filtor,
                               colData = metadata_or,
-                              design = ~ hpf +  leachate + hpf:leachate)
+                              design = ~ stage +  leachate + stage:leachate)
 ```
 
 ## Redo count transformations
@@ -651,7 +751,7 @@ dds_or <- estimateSizeFactors(dds_or)
 hist(sizeFactors(dds_or))
 ```
 
-![](05_data_exploration_files/figure-commonmark/unnamed-chunk-20-1.png)
+![](05_data_exploration_files/figure-commonmark/unnamed-chunk-25-1.png)
 
 ``` r
 all(sizeFactors(dds_or))<4
@@ -681,15 +781,15 @@ ggplot(df, aes(x = x, y = y)) +
   ggtitle("All Samples Count Transformation Comparisons with Outliers Removed")
 ```
 
-![](05_data_exploration_files/figure-commonmark/unnamed-chunk-22-1.png)
+![](05_data_exploration_files/figure-commonmark/unnamed-chunk-27-1.png)
 
 ``` r
 meanSdPlot(assay(vsd_or))
 ```
 
-![](05_data_exploration_files/figure-commonmark/unnamed-chunk-23-1.png)
+![](05_data_exploration_files/figure-commonmark/unnamed-chunk-28-1.png)
 
-# PCA
+## Remake PCA
 
 > A principal components analysis (PCA) plot shows the samples in the 2D
 > plane spanned by their first two principal components. This type of
@@ -698,44 +798,364 @@ meanSdPlot(assay(vsd_or))
 
 ``` r
 # Get PCA data (top 500 DEGs by default)
-pca_500 <- plotPCA(vsd_or, intgroup = "group", returnData = TRUE)
-percentVar_500 <- round(100*attr(pca_500, "percentVar"))
+pca_500_or <- plotPCA(vsd_or, intgroup = "group", returnData = TRUE)
+percentVar_500_or <- round(100*attr(pca_500, "percentVar"))
 
 # Merge with metadata
-pca_500 <- merge(pca_500, metadata_or, by.x = "name", by.y = "sample_id", all.x = TRUE)
+pca_500_or <- merge(pca_500_or, metadata_or, by.x = "name", by.y = "sample_id", all.x = TRUE)
 
-# Assign specific colors to each hpf
-hpf_colors <- c(
-  "4" = flex("cyan", sat=500),
-  "9" = flex("green", sat =500),
-  "14" = flex("yellow", sat=500)
-)
+# Assign specific colors to each stage
+stage_colors <- c("red", "blue", "green")
 
-pca_500$label <- paste0("sample: ", pca_500$sample_id,
-                        "\nHpf: ", pca_500$hpf,
-                        "\nLeachate: ", pca_500$leachate)
 
-# Indicate leachate level by saturation (alpha)
-leachate_alpha_map <- c("control" = 0.5, "low" = 0.6, "mid" = 0.7, "high" = 0.9)
-pca_500$alpha_val <- leachate_alpha_map[pca_500$leachate]
+pca_500_or$label <- paste0("sample: ", pca_500_or$sample_id,
+                        "\nHpf: ", pca_500_or$hpf,
+                        "\nLeachate: ", pca_500_or$leachate)
 
-# Original ggplot with a tooltip aesthetic
-PCA_500 <- ggplot(pca_500, aes(PC1, PC2, color = hpf, label = name, alpha = alpha_val)) +
+# PCA with outlier samples removed
+PCA_500_or <- ggplot(pca_500_or, aes(PC1, PC2, color = stage, shape = leachate, label = name)) +
   geom_point(size = 1,  stroke = 1) +
   ggtitle("M.cap embryos exposed to pvc leachate, top 500 most variable genes") +
   xlab(paste0("PC1: ", percentVar_500[1], "% variance")) +
   ylab(paste0("PC2: ", percentVar_500[2], "% variance")) + 
   coord_fixed() +
-  scale_color_manual(values = hpf_colors) +
-  stat_ellipse() + 
-  guides(alpha = "none") +  # hide alpha legend (optional)
-  theme_minimal()
-
-# Convert to interactive plot
-ggplotly(PCA_500, tooltip = "label")
+  scale_color_manual(values = stage_colors) +
+  stat_ellipse(aes(group = stage, color = stage), linewidth = 0.4, show.legend = FALSE) + 
+  theme_minimal() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
 ```
 
-![](05_data_exploration_files/figure-commonmark/unnamed-chunk-24-1.png)
+``` r
+PCA_500_or
+```
+
+![](05_data_exploration_files/figure-commonmark/unnamed-chunk-31-1.png)
+
+We can see there is strong clustering by developmental stage. It’s
+difficult to see if there is any other clustering pattern (by leachate,
+or by nuisance batch effects). Let’s explore those further…
+
+# Examine for batch effects
+
+``` r
+PCA_500_leachate <- ggplot(pca_500_or, aes(PC1, PC2, color = leachate, label = name)) +
+  geom_point(size = 1,  stroke = 1) +
+  ggtitle("M.cap embryos exposed to pvc leachate, top 500 most variable genes") +
+  xlab(paste0("PC1: ", percentVar_500[1], "% variance")) +
+  ylab(paste0("PC2: ", percentVar_500[2], "% variance")) + 
+  coord_fixed() +
+  scale_color_manual(values = leachate_colors) +
+  stat_ellipse(aes(group = leachate, color = leachate), linewidth = 0.4, show.legend = FALSE) + 
+  theme_minimal() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+PCA_500_leachate
+```
+
+![](05_data_exploration_files/figure-commonmark/unnamed-chunk-32-1.png)
+
+``` r
+PCA_500_spawnnight <- ggplot(pca_500_or, aes(PC1, PC2, color = spawn_night, label = name)) +
+  geom_point(size = 1,  stroke = 1) +
+  ggtitle("M.cap embryos exposed to pvc leachate, top 500 most variable genes") +
+  xlab(paste0("PC1: ", percentVar_500[1], "% variance")) +
+  ylab(paste0("PC2: ", percentVar_500[2], "% variance")) + 
+  coord_fixed() +
+  #scale_color_manual(values = leachate_colors) +
+  stat_ellipse(aes(group = spawn_night, color = spawn_night), linewidth = 0.4, show.legend = FALSE) + 
+  theme_minimal() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+PCA_500_spawnnight
+```
+
+![](05_data_exploration_files/figure-commonmark/unnamed-chunk-34-1.png)
+
+``` r
+pca_plot_spawn_night <- ggplot(
+  pca_500_or,
+  aes(
+    x = PC1, y = PC2,
+    fill = stage,                   # inside color
+    colour = factor(spawn_night),       # outline color
+    shape = leachate                # shape must be 21–25
+  )
+) +
+  geom_point(size = 3.5, stroke = 1.5, alpha = 0.8) +   # stroke controls outline width
+  scale_shape_manual(values = c(21, 22, 23, 24, 25)[seq_along(levels(pca_500_or$leachate))]) +
+  scale_fill_grey(name = "Stage", start = 0.1, end = 1) +
+  labs(
+    title = "PCA of top 500 DEGs by Stage, Leachate, and Spawn night",
+    x = paste0("PC1: ", percentVar_500[1], "% variance"),
+    y = paste0("PC2: ", percentVar_500[2], "% variance"),
+    shape = "Leachate",
+    color = "Spawn night"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "right",
+    plot.title = element_text(hjust = 0.5)
+  )+
+  # 3) make the fill legend draw a filled shape with an outline
+  guides(
+    shape  = guide_legend(order = 1),
+    fill   = guide_legend(override.aes = list(shape = 21, stroke = 1.1, colour = "black"), 
+                          order = 2),
+    colour = guide_legend(order = 3)
+    
+  ) 
+
+pca_plot_spawn_night
+```
+
+![](05_data_exploration_files/figure-commonmark/unnamed-chunk-36-1.png)
+
+It seems like there may be clustering by spawn night within the cleavage
+stage only?
+
+## betadispr
+
+Compute distance between samples We apply a variance stabilizing
+transformation (vst) to minimize effects of small counts and normalize
+for library size. Note: `t()` transposes. The code
+`t(assay(vst(dds_cat, blind = TRUE)))` flips the matrix to samples as
+rwos × genes as columns. Functions like `vegan::vegdist()` and
+`adonis2()` expect rows = samples, columns = features. Use the
+transposed matrix for PERMANOVA such that rows are samples with a 1 to 1
+match of samples in our metadata dataframe.
+
+``` r
+# extract variance stabilized count matrix
+vst_gcm <- assay(vst(dds_or, blind = TRUE))
+
+# transpose
+vst_t_gcm <- t(vst_gcm) # rows are samples, columns are genes
+```
+
+``` r
+eu_dist <- vegdist((vst_t_gcm), method = "eu")
+```
+
+``` r
+grp_leachate <- metadata_or$leachate
+grp_stage    <- metadata_or$stage     
+grp_int    <- interaction(metadata_or$leachate, metadata_or$stage)
+grp_night <- metadata_or$spawn_night
+```
+
+### night
+
+``` r
+# Fit beta dispersion model 
+bd_night <- betadisper(eu_dist, group = grp_night, type = "centroid")
+
+# Permutation test with no blocking
+perm_night <- permutest(bd_night, permutations = 999, pairwise = FALSE)
+
+# Result
+perm_night
+```
+
+
+    Permutation test for homogeneity of multivariate dispersions
+    Permutation: free
+    Number of permutations: 999
+
+    Response: Distances
+              Df Sum Sq Mean Sq      F N.Perm Pr(>F)  
+    Groups     2   5330  2665.2 4.5605    999  0.019 *
+    Residuals 58  33895   584.4                       
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+``` r
+plot(bd_night, hull = TRUE, ellipse = TRUE, label = FALSE, cex = 0.8)
+```
+
+![](05_data_exploration_files/figure-commonmark/unnamed-chunk-41-1.png)
+
+### leachate
+
+``` r
+bd_leachate <- betadisper(eu_dist, group = grp_leachate, type = "centroid")
+
+# Permutation test with optional blocking
+perm_leachate <- permutest(bd_leachate, permutations = 999, pairwise = FALSE) 
+perm_leachate
+```
+
+
+    Permutation test for homogeneity of multivariate dispersions
+    Permutation: free
+    Number of permutations: 999
+
+    Response: Distances
+              Df Sum Sq Mean Sq      F N.Perm Pr(>F)
+    Groups     3   1288  429.34 0.6609    999  0.582
+    Residuals 57  37030  649.65                     
+
+``` r
+plot(bd_leachate, hull = TRUE, ellipse = TRUE, label = FALSE, cex = 0.8)
+```
+
+![](05_data_exploration_files/figure-commonmark/unnamed-chunk-43-1.png)
+
+### stage
+
+``` r
+bd_stage <- betadisper(eu_dist, group = grp_stage, type = "centroid")
+# Permutation test with optional blocking
+perm_stage <- permutest(bd_stage, permutations = 999, pairwise = FALSE)
+perm_stage
+```
+
+
+    Permutation test for homogeneity of multivariate dispersions
+    Permutation: free
+    Number of permutations: 999
+
+    Response: Distances
+              Df  Sum Sq Mean Sq      F N.Perm Pr(>F)    
+    Groups     2  8752.2  4376.1 15.027    999  0.001 ***
+    Residuals 58 16890.7   291.2                         
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+``` r
+plot(bd_stage, hull = TRUE, ellipse = TRUE, label = FALSE, cex = 0.8)
+```
+
+![](05_data_exploration_files/figure-commonmark/unnamed-chunk-45-1.png)
+
+### leachate x stage
+
+``` r
+bd_int <- betadisper(eu_dist, group = grp_int, type = "centroid")
+# Permutation test 
+perm_int <- permutest(bd_int, permutations = 999, pairwise = FALSE)
+perm_int
+```
+
+
+    Permutation test for homogeneity of multivariate dispersions
+    Permutation: free
+    Number of permutations: 999
+
+    Response: Distances
+              Df Sum Sq Mean Sq      F N.Perm Pr(>F)    
+    Groups    11 9431.3  857.39 4.9269    999  0.001 ***
+    Residuals 49 8527.1  174.02                         
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+``` r
+plot(bd_int, hull = TRUE, ellipse = TRUE, label = FALSE, cex = 0.8)
+```
+
+![](05_data_exploration_files/figure-commonmark/unnamed-chunk-47-1.png)
+
+# PERMANOVA
+
+Run `adonis2` to build PERMANOVA model
+
+> [!NOTE]
+>
+> Because `adonis2()` uses random permutations to get p-values. Without
+> fixing the seed, each run draws a different set/order of permutations,
+> which results in tiny differences in F-stats/p-values. By adding
+> `set.seed(1)` the permutation stream is reproducible so you (and
+> future you) get the same numbers.
+
+``` r
+set.seed(11042025)
+permanova_result <- adonis2(eu_dist ~ leachate * stage, 
+        data = metadata_or,
+        permutations = 999,
+        strata = metadata_or$spawn_night, # <-- control for spawn night
+        by = "terms") 
+
+permanova_result
+```
+
+    Permutation test for adonis under reduced model
+    Terms added sequentially (first to last)
+    Blocks:  strata 
+    Permutation: free
+    Number of permutations: 999
+
+    adonis2(formula = eu_dist ~ leachate * stage, data = metadata_or, permutations = 999, by = "terms", strata = metadata_or$spawn_night)
+                   Df SumOfSqs      R2       F Pr(>F)    
+    leachate        3    10974 0.02331  1.0757  0.344    
+    stage           2   276606 0.58761 40.6711  0.001 ***
+    leachate:stage  6    16523 0.03510  0.8098  0.688    
+    Residual       49   166625 0.35397                   
+    Total          60   470728 1.00000                   
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+``` r
+# Save results
+write.csv(as.data.frame(permanova_result), 
+          "../../output/05_explore/permanova_result_fullgeneset.csv",
+          row.names = TRUE)
+```
+
+> [!NOTE]
+>
+> A PERMANOVA with 999 permutations (permutations restricted within
+> spawn night) revealed that developmental stage explained the majority
+> of variation in multivariate gene-expression profiles.
+>
+> A permutational multivariate analysis of variance (PERMANOVA) with 999
+> permutations was performed on the Euclidean distance matrix of
+> transformed gene expression values to assess the effects of leachate
+> concentration, developmental stage, and their interaction on global
+> expression profiles while controlling for variation among spawn nights
+> (permutations restricted within spawn night, strata = spawn night).
+> The model revealed that developmental stage explained a substantial
+> proportion of the overall variance in gene expression ( R² = 0.59, F =
+> 41.22, *p* = 0.001 ), indicating strong stage-specific transcriptional
+> patterns. In contrast, neither leachate concentration ( R² = 0.02, F =
+> 1.09, *p* = 0.338 ) nor the interaction between leachate and stage (
+> R² = 0.04, F = 0.81, *p* = 0.679 ) significantly influenced the
+> multivariate expression structure. Residual variation accounted for
+> 35% of the total variance, suggesting that most of the compositional
+> differences in transcriptomic profiles were driven by developmental
+> stage rather than exposure treatment.
+
+PERMANOVA (Permutational Multivariate Analysis of Variance), implemented
+in R as adonis2() (from vegan), is a non-parametric test used to
+evaluate whether groups of samples differ significantly in their
+multivariate composition — that is, whether the centroids (multivariate
+means) of groups are different in the space defined by a distance or
+dissimilarity matrix.
+
+It’s the multivariate analog of ANOVA, but:
+
+- It uses a distance matrix (e.g., Euclidean, Bray–Curtis, Aitchison,
+  etc.) instead of raw data.
+
+- It uses permutations (randomly shuffling group labels many times,
+  typically 999+) instead of parametric assumptions about normality and
+  homoscedasticity.
+
+The PERMANOVA asks “Do samples differ in their overall gene expression
+profiles among levels of leachate, stage, or their interaction, after
+accounting for random variation among spawn nights?”
+
+It asks whether group **centroids** differ. If `leachate` shifts are
+modest, bidirectional, or limited to a subset of genes, the overall
+centroid shift can be tiny → non-sig.
+
+**Dominant developmental stage signal**
+
+Your term table shows **`stage`** explains ~59% of variance; that can
+swamp smaller `leachate` signals. After blocking by spawn_night, the
+residual degrees of freedom and variability left to detect `leachate`
+are limited.
 
 # Heatmap
 
@@ -743,37 +1163,30 @@ Set themes and metadata.
 
 ``` r
 # Extract the annotation dataframe
-df <- as.data.frame(colData(vsd_or)[ , c("leachate", "hpf")])
+df <- as.data.frame(colData(vsd_or)[ , c("leachate", "stage", "spawn_night")])
 
 legend_names_col = colnames(assay(vsd_or))
-names(df)<- c("leachate", "hpf")
+names(df)<- c("leachate", "stage", "spawn_night")
 rownames(df) <- legend_names_col
 
 # Specify colors
-#leachate
-# Assign specific colors to each hpf
-leachate_colors <- c(
-  "control" = flex("blue", sat=400),
-  "low" = flex("magenta", sat =500),
-  "mid" = flex("magenta", sat=700),
-  "high" = flex("magenta", sat=950)
-)
+leachate_colors <- c(control = "grey60", 
+                     low = "#C994C7", 
+                     mid = "#980043", 
+                     high = "#67001F")
+stage_colors <- c(cleavage = "red", 
+                  prawnchip = "blue", 
+                  earlygastrula = "green")
+spawn_colors <- c("July 6th" = "coral", 
+                  "July 7th" = "yellow", 
+                  "July 8th" = "orange")
 
 ann_colors = list(
   leachate = leachate_colors,
-  hpf = hpf_colors
+  stage = stage_colors,
+  spawn_night = spawn_colors
 )
-
-levels(df$leachate) 
 ```
-
-    [1] "control" "low"     "mid"     "high"   
-
-``` r
-levels(df$hpf)
-```
-
-    [1] "4"  "9"  "14"
 
 Plot heatmap of z-scores of differential expression.
 
@@ -781,89 +1194,188 @@ Plot heatmap of z-scores of differential expression.
 # Make the matrix 
 mat <- assay(vsd_or)
 
-png("../../output/05_explore/zscore_heatmap.png", width = 8, height = 6, units = "in", res = 600)
-
+# Display the heatmap
 pheatmap(
-  mat, 
-  cluster_rows=TRUE, 
-  show_rownames=FALSE, 
-  color=inferno(10), 
-  show_colnames=FALSE, 
-  fontsize_row=3, 
-  scale="row", 
-  cluster_cols=TRUE, 
-  annotation_col=df, 
-  annotation_colors = ann_colors, 
-  labels_col=legend_names_col, 
-  clustering_distance_rows = "euclidean", 
-  clustering_distance_cols = "euclidean", 
-  cutree_rows = 3)
+  mat,
+  scale = "row",                                # z-scores by row
+  color = viridisLite::inferno(200),            # smoother gradient
+  cluster_rows = TRUE,
+  cluster_cols = TRUE,
+  clustering_distance_rows = "euclidean",
+  clustering_distance_cols = "euclidean",
+  cutree_rows = 3,
+  show_rownames = FALSE,
+  show_colnames = TRUE,                         # set TRUE if using labels_col
+  labels_col = legend_names_col,                # remove or keep as needed
+  fontsize_row = 3,
+  annotation_col = df,
+  annotation_colors = ann_colors,
+  border_color = NA                             # cleaner look (optional)
+)
+```
 
+![](05_data_exploration_files/figure-commonmark/unnamed-chunk-51-1.png)
+
+``` r
+# save the pheatmap
+png("../../output/05_explore/zscore_heatmap.png", width = 2000, height = 1800, res = 300)
+pheatmap(
+  mat,
+  scale = "row",                                # z-scores by row
+  color = viridisLite::inferno(200),            # smoother gradient
+  cluster_rows = TRUE,
+  cluster_cols = TRUE,
+  clustering_distance_rows = "euclidean",
+  clustering_distance_cols = "euclidean",
+  cutree_rows = 3,
+  show_rownames = FALSE,
+  show_colnames = TRUE,                         # set TRUE if using labels_col
+  labels_col = legend_names_col,                # remove or keep as needed
+  fontsize_row = 3,
+  annotation_col = df,
+  annotation_colors = ann_colors,
+  border_color = NA                             # cleaner look (optional)
+)
+```
+
+![](05_data_exploration_files/figure-commonmark/unnamed-chunk-52-1.png)
+
+``` r
 dev.off()
 ```
 
     png 
-      2 
+      3 
 
 ![](../../output/05_explore/zscore_heatmap.png)
 
-# Results
+# Summary
 
-``` r
-dds_lrt <- DESeq(dds_or, test = "LRT", reduced = ~ hpf + leachate)
-res_lrt <- results(dds_lrt, alpha = 0.05)
-```
-
-``` r
-summary(res_lrt)
-```
-
-
-    out of 12565 with nonzero total read count
-    adjusted p-value < 0.05
-    LFC > 0 (up)       : 28, 0.22%
-    LFC < 0 (down)     : 16, 0.13%
-    outliers [1]       : 0, 0%
-    low counts [2]     : 0, 0%
-    (mean count < 23)
-    [1] see 'cooksCutoff' argument of ?results
-    [2] see 'independentFiltering' argument of ?results
-
-``` r
-sig_genes <- res_lrt %>%
-  as.data.frame() %>%
-  filter(padj < 0.05)
-```
-
-# Summary & Next Steps
+- We filtered our gene count matrix to where at least 85% of the samples
+  have a raw count of ~15. Even doing this, we had a ‘spike’ of samples
+  with `0` gene counts, an artifact of strong developmental stage
+  differences.
 
 We can see both via the PCA and the heatmap that our data groups largely
-by stage, or hours post fertilization (hpf). Any effects of leachate are
-going to be *very subtle* in comparison to the differential expression
-due to stage. Initially, we found 44 genes significant genes (padj \<
-0.05) whose response to leachate exposure depends on developmental
-stage. :::callout-note It’s important to note that the LRT test
-statistic is only informing on significance of genes where the leachate
-effect changes across embryonic stage! :::
+by `stage`, aka hours post fertilization (`hpf`). There is some nuisance
+clustering by `spawn_night`. There is no obvious pattern by `leachate`.
+Any `leachate` effects are going to be *very subtle* in comparison to
+the differential expression due to stage. Do we have enough power to
+‘pick the needle out of the haystack?’
+
+# Next steps
 
 Next we are going to dive into the results of the DESeq2 likelihood
-ratio test to further interpret the interaction term in our design (~
-hpf + leachate + **hpf:leachate**)
+ratio test and Wald test to further interpret the main effect of
+leachate and the interaction term in our design (~ spawn_night + stage +
+**leachate** + **hpf:leachate**)
 
-We also aim to: - characterize effects of leachate (separate from the
-interaction between leachate and stage) - characterize the effect of hpf
-(development) on gene expression to put the leachate effects into
-stage-specific context - look for non-monotonic (aka non-linear)
-responses (are there non-linear effects of leachate, as we hypothesized
-we would see if PVC leachate is following a common endocrine disrupting
-pattern?)
+We also aim to:
+
+- Identify transcripts significantly impacted across our samples by
+  `leachate` and `leachate:stage`
+
+- Look for non-monotonic (aka non-linear) responses (are there
+  non-linear effects of `leachate`, as we hypothesized we would see if
+  PVC `leachate` is following a common endocrine disrupting pattern?)
 
 ``` r
 # save gene count matrix
 gcm_filtor_rownames <- gcm_filtor %>% 
   rownames_to_column(var = "gene_id")
-write.csv(gcm_filtor_rownames, file = "../../output/05_explore/gcm_filtor.csv")
+head(gcm_filtor_rownames)
+```
+
+                                        gene_id 101112C14 101112C4 101112C9
+    1 Montipora_capitata_HIv3___RNAseq.g4581.t1       176      458      395
+    2 Montipora_capitata_HIv3___RNAseq.g4582.t1      1137      380      934
+    3 Montipora_capitata_HIv3___RNAseq.g4583.t1      2043      905     1848
+    4 Montipora_capitata_HIv3___RNAseq.g4584.t1      2641      452      706
+    5 Montipora_capitata_HIv3___RNAseq.g4585.t1       521       17      161
+    6 Montipora_capitata_HIv3___RNAseq.g4586.t1       121       33       81
+      101112H14 101112H4 101112H9 101112L14 101112L4 101112L9 101112M14 101112M4
+    1       195      144      351       156      187      360       215      199
+    2       882      326     1337      1101      392     1195      1311      431
+    3      1847      945     2087      1625     1039     2367      1875     1176
+    4      1917      266      625      2301      367      668      1963      800
+    5       304       33      243       449       20      190       350      103
+    6       116       17       98       114       45       89       109       18
+      101112M9 123C14 123C4 123C9 123H14 123H4 123H9 123L14 123L4 123L9 123M4 123M9
+    1      386     63   714   351    138   384   146    190   271   304   771   154
+    2     1076    643   496  1064    927   378   864    884   270   838   650   516
+    3     2230   1349  1591  1529   1377   648  1902   2007   630  1572  1258   892
+    4      706   2724   703   648   3178   497   438   1867   330   366   677   397
+    5      198    641    25   146    426     9   208    368    31    87    15    90
+    6      155     78    51   114    121    21    32    116     8    62    64    40
+      131415C14 131415C4 131415C9 131415H14 131415H4 131415H9 131415L14 131415L9
+    1       198      321      371       196      221      410       170      362
+    2      1184      712     1338      1314      382     1117      1167     1500
+    3      2175     1667     2190      1932      716     2219      1817     2102
+    4      1556      510      473      2267      334      326      2772      534
+    5       310       18      208       453        0      106       434      129
+    6       143       39      154        82       15       65       154      144
+      131415M14 131415M4 131415M9 13M14 456C4 456H4 456H9 456L14 456L4 456L9 456M14
+    1       291      271      396    71   196   351   236    125    73   274    151
+    2      1376      667     1383   912   306   458  1301   1306   249  1105   1270
+    3      2108     1395     2314  1639   651   987  1882   1882  1050  2506   1649
+    4      2296      404      492  2194   291   547   488   1736   169   495   1698
+    5       375       48      117   527    29    11    87    384    35   198    257
+    6       156       87       90    92    55    29   117    113     0    77     72
+      456M4 456M9 45C14 45C9 45H14 67C9 6C14 789H14 789H4 789H9 789L14 789L4 789L9
+    1   454   250    50  348   411  290  114    150   516   332    168   148   409
+    2   525   967   420  981   590  973 1022    862   628  1338   1027   445  1326
+    3   940  2005   703 2230  1807 1995 1769   1633  1128  2429   1616   819  2344
+    4   522   595  1402  913  1021  310 1435   2783   963   783   2549   313   686
+    5    28   154   289  137   238  167  169    489    21   158    457    34   130
+    6    30    65    17   50    13   77   81     75    68   172     83    16    82
+      789M14 789M4 7C14 89C14 89C9 89M9
+    1    150   461  208   235  273  230
+    2    959   551  711  1563 1349  823
+    3   1757  1111 1874  2623 2594 1646
+    4   2913   906 1307  2195  778  624
+    5    501    30  267   355  271  166
+    6     93    51   55    98  105   42
+
+``` r
+write.csv(gcm_filtor_rownames, file = "../../output/05_explore/gcm_filtor.csv", row.names=FALSE)
 
 # output metadata for other analyses 
 write_csv(metadata_or, "../../metadata/metadata_or.csv")
 ```
+
+Color schemes for data visualizations to carry through the remaining
+analysis steps:
+
+``` r
+# Specify colors
+leachate_colors <- c(control = "grey60", 
+                     low = "#C994C7", 
+                     mid = "#980043", 
+                     high = "#67001F")
+stage_colors <- c(cleavage = "red", 
+                  prawnchip = "blue", 
+                  earlygastrula = "green")
+spawn_colors <- c("July 6th" = "coral", 
+                  "July 7th" = "yellow", 
+                  "July 8th" = "orange")
+
+ann_colors = list(
+  leachate = leachate_colors,
+  stage = stage_colors,
+  spawn_night = spawn_colors
+)
+```
+
+<div id="refs" class="references csl-bib-body hanging-indent"
+entry-spacing="0">
+
+<div id="ref-Love2014-dv" class="csl-entry">
+
+Love, Michael I, Wolfgang Huber, and Simon Anders. 2014. “Moderated
+Estimation of Fold Change and Dispersion for RNA-Seq Data with DESeq2.”
+*Genome Biology* 15 (December): 550.
+<https://doi.org/10.1186/s13059-014-0550-8>.
+
+</div>
+
+</div>
