@@ -49,6 +49,21 @@ knitr::opts_chunk$set(
 
 ## Outputs
 
+
+```{r}
+# Specify colors
+leachate_colors <- c(control = "grey60", 
+                     low = "#C994C7", 
+                     mid = "#980043", 
+                     high = "#67001F")
+stage_colors <- c(cleavage = "red", 
+                  prawnchip = "blue", 
+                  earlygastrula = "green")
+spawn_colors <- c("July_6th" = "coral", 
+                  "July_7th" = "yellow", 
+                  "July_8th" = "orange")
+```
+
 ## Set paths
 ```{r}
 metadata_path <- "../../metadata/metadata_or.csv"
@@ -216,7 +231,6 @@ pf <- ggplot(pca_full_df, aes(x = PC1, y = PC2,
   scale_shape_manual(values = c(21, 22, 23, 24, 25)) +
   # Legend tweak so color legend shows outlines (no fill)
   guides(colour = guide_legend(override.aes = list(fill = NA))) +
-  coord_equal() +
   labs(x = paste0("PC1 (", pvf1, "%)"),
        y = paste0("PC2 (", pvf2, "%)"),
        colour = "Spawn night",
@@ -268,7 +282,6 @@ pd <- ggplot(pca_deg_df, aes(x = PC1, y = PC2,
   scale_shape_manual(values = c(21, 22, 23, 24, 25)) +
   # Legend tweak so color legend shows outlines (no fill)
   guides(colour = guide_legend(override.aes = list(fill = NA))) +
-  coord_equal() +
   labs(x = paste0("PC1 (", pvd1, "%)"),
        y = paste0("PC2 (", pvd2, "%)"),
        colour = "Spawn night",
@@ -287,30 +300,95 @@ pd
 ```
 
 ```{r}
-ggplot(pca_deg_df, aes(x = PC1, y = PC2,
-                        fill = leachate,              # interior color
-                        shape = leachate,          # shapes 21–25 allow fill+outline
-                        colour = factor(spawn_night)) # outline color
-  ) +
-  geom_point(size = 3.5, stroke = 0.9) +
-  scale_fill_grey(name = "Stage", start = 0.3, end = 1)+
-  # Make sure your shape scale uses filled shapes:
-  scale_shape_manual(values = c(21, 22, 23, 24, 25)) +
-  # Legend tweak so color legend shows outlines (no fill)
-  guides(colour = guide_legend(override.aes = list(fill = NA))) +
-  coord_equal() +
+# Choose which % variance vector you computed
+pvd1 <- if (exists("percentVar")) percentVar[1] else round(pvar_deg[1], 1)
+pvd2 <- if (exists("percentVar")) percentVar[2] else round(pvar_deg[2], 1)
+
+ggplot(pca_deg_df, aes(x = PC1, y = PC2, color = leachate)) +
+  geom_point(size = 3.5, alpha = 0.6) +
+  stat_ellipse()+
+  scale_color_manual(values = leachate_colors) +
   labs(x = paste0("PC1 (", pvd1, "%)"),
        y = paste0("PC2 (", pvd2, "%)"),
-       colour = "Spawn night",
-       fill   = "Leachate",
-       shape  = "Leachate") +
-  theme_classic(base_size = 12)+
-  guides(
-    shape  = guide_legend(order = 1),
-    fill   = guide_legend(override.aes = list(shape = 21, stroke = 1.1, colour = "black"), 
-                          order = 2),
-    colour = guide_legend(order = 3)
-    
-  ) 
+       fill = "Leachate",) +
+  theme_classic(base_size = 12)
+```
+```{r, fig.width = 24, fig.height = 24}
+library(tidyverse)
+library(patchwork)  # for combining plots (optional)
+
+# Pick the percent-variance vector you computed
+pvar <- if (exists("percentVar")) percentVar else pvar_deg
+
+# Ensure leachate is a factor matching your palette (optional but robust)
+pca_deg_df <- pca_deg_df %>%
+  mutate(leachate = factor(leachate, levels = c("control","low","mid","high")))
+
+# Helper: make one PC-vs-PC plot
+pc_plot <- function(i) {
+  xcol <- paste0("PC", i)
+  ycol <- paste0("PC", i + 1)
+
+  ggplot(pca_deg_df, aes(x = .data[[xcol]], y = .data[[ycol]], color = leachate)) +
+    geom_point(size = 3.5, alpha = 0.6) +
+    stat_ellipse() +
+    scale_color_manual(values = leachate_colors, name = "Leachate") +
+    labs(
+      x = paste0(xcol, " (", round(pvar[i], 1), "%)"),
+      y = paste0(ycol, " (", round(pvar[i + 1], 1), "%)"),
+      title = paste(xcol, "vs", ycol)
+    ) +
+    theme_classic(base_size = 12)+ 
+    theme(legend.position = "none")
+}
+
+# Figure out how many PCs you actually have, then limit to 1:6 safely
+n_pcs <- sum(grepl("^PC\\d+$", names(pca_deg_df)))
+pairs_to_plot <- 1:min(16, n_pcs - 1)
+
+# Generate the list of plots
+plots <- purrr::map(pairs_to_plot, pc_plot)
+names(plots) <- paste0("PC", pairs_to_plot, "_vs_PC", pairs_to_plot + 1)
+
+# (Optional) Show them all in a grid
+wrap_plots(plots, ncol = 4)
+
+# (Optional) Save each plot
+# purrr::iwalk(plots, ~ ggsave(filename = paste0("../../output/pca_", .y, ".png"),
+#                              plot = .x, width = 6, height = 5, dpi = 300))
+
+```
+Despite the fact that leachate is significant when we run the PERMANOVA on the short list of DEGs, It's not visibly detected in a PCA plot, even when we examine higher principle components. 
+
+
+Which PC's best show leachate signifcance?
+```{r}
+library(broom)
+
+pc_assoc <- map_dfr(1:10, \(i) {
+  pc_col <- paste0("PC", i)
+  fit <- aov(pca_deg_df[[pc_col]] ~ pca_deg_df$leachate)
+  tibble(PC = pc_col,
+         variance = round(pvar_deg[i], 2),
+         p_leachate = tidy(fit)$p.value[1])
+})
+
+pc_assoc %>% arrange(p_leachate)
+
+```
+Based on this it would be 3 v 4
+```{r fig.height = 6, fig.width = 24}
+# Figure out how many PCs you actually have, then limit to 1:6 safely
+n_pcs <- sum(grepl("^PC\\d+$", names(pca_deg_df)))
+pairs_to_plot <- 1:min(4, n_pcs - 1)
+
+# Generate the list of plots
+plots <- purrr::map(pairs_to_plot, pc_plot)
+names(plots) <- paste0("PC", pairs_to_plot, "_vs_PC", pairs_to_plot + 1)
+
+# (Optional) Show them all in a grid
+wrap_plots(plots, ncol = 4)
+
 ```
 
+These plots are not convincing... the only story they really visually communicate is grouping by stage and spawn night. Stage and spawn night are big signals in the data, and we pluck out the subtle effects of leachate... how do we visualize this? 
