@@ -649,6 +649,181 @@ summary(res_earlygastrula_low.vs.control)
 0 genes differentially expressed (adjusted p value \< 0.05) at the early gastrula stage in the low leachate treatment when compared to the control.
 :::
 
+# QC 
+```{r}
+norm <- counts(dds, normalized = TRUE)
+design <- as.data.frame(colData(dds))
+```
+
+## Covariates effect on count data
+```{r, fig.height=6, fig.width=12}
+resCov <- degCovariates(log2(counts(dds)+0.5),
+                        colData(dds))
+```
+## Covariates correlation with metrics
+```{r}
+cor <- degCorCov(colData(dds))
+```
+```{r}
+res_cleavage_mid.vs.control[["id"]] <- row.names(res_cleavage_mid.vs.control)
+show <- as.data.frame(res_cleavage_mid.vs.control[1:10, c("log2FoldChange", "padj", "id")])
+degVolcano(res_cleavage_mid.vs.control[,c("log2FoldChange", "padj")], plot_text = show)
+```
+
+```{r}
+degPlot(dds = dds, res = res_cleavage_mid.vs.control, n = 6, xs = "leachate")
+```
+```{r}
+degPlotWide(dds, rownames(dds)[1:5], group="leachate")
+```
+```{r}
+resreport <- degResults(dds = dds, name = "stage", org = NULL,
+                        do_go = FALSE, group = "leachate", xs = "leachate",
+                        path_results = NULL)
+```
+# Detect Patterns of Expression
+see Roberts Lab Issue [#1916](https://github.com/RobertsLab/resources/issues/1916)
+
+Perform clustering.
+You'll need: 
+- a metadata matrix with sample_id as rows 
+- a gene count matrix that has been variance stabilized and filtered to your significant genes of interest `vst_mat_130` genes in rows, sample ID in columns
+```{r}
+meta_mat <- metadata_or %>%
+  column_to_rownames(var = "sample_id")
+```
+
+Run with minimum 4 genes per cluster to detect because we have few DEGs.\
+- DEGreport vignette, [degPatterns](https://www.bioconductor.org/packages/release/bioc/vignettes/DEGreport/inst/doc/DEGreport.html#:~:text=%22expression%22)-,Detect%20patterns%20of%20expression,-In%20this%20section)
+
+```{r}
+# Use the `degPatterns` function from the 'DEGreport' package to show gene clusters across sample groups
+stage_clusters <- degPatterns(vst_mat_130, metadata = meta_mat, time = "stage", col= "leachate", plot=TRUE, minc = 10)
+```
+
+```{r}
+ggsave(filename="../../output/06_deg/cluster/degStagePatternscluster_plot.png", width=12, height=10)
+```
+Broadly most genes displayed an increased transcript abundance as embryos developed. 
+
+
+```{r}
+# Use the `degPatterns` function from the 'DEGreport' package to show gene clusters across sample groups
+leachate_clusters <- degPatterns(vst_mat_130, metadata = meta_mat, time = "leachate", col="stage", plot=TRUE, minc = 10)
+```
+
+```{r}
+ggsave(filename="../../output/06_deg/cluster/degLeachatePatternscluster_plot.png", width=12, height=10)
+```
+
+Extract the list of genes in each cluster for stage and for leachate.
+Notice that the gene counts for the patterns (1, 2, 3) are the same across stage and leachate... very interesting.
+The genes that have high relative transcript abundance in the earlygastrula stage group in group 1, high relative transcript abundance in prawnchip are group 2, and high relative abundance in cleavage are group 3. There is a general trend of more transcripts present as development progresses... which makes sense because the embryo as it grows is doing more. The subtle leachate effects we do see (non monotonic patterns in cleavage in group 1 and 2, slight increase under high pvc leachate exposure in early gastrula in group 3) appear to impact the transcript abundances of the stage with the lowest abundances of those genes... so the lower the gene abundance the more effect leachate has on those genes? Is that just an artifact of increased variability at lower transcript abundance? 
+Are they the same genes? The following code should return TRUE if that is the case. 
+
+```{r}
+# Rename and extract information 
+leachate_clusters_df <- leachate_clusters$df %>%
+          rename(gene_id=genes)
+stage_clusters_df <- stage_clusters$df %>%
+          rename(gene_id=genes)
+
+identical(leachate_clusters_df, stage_clusters_df)
+```
+Group 1 peak at earlygastrula
+Group 2 peak at prawnchip
+Group 3 peak at cleavage
+Save the gene cluster annotation
+```{r}
+# Rename and extract information 
+gene_clusters <- leachate_clusters$df %>%
+          rename(gene_id=genes)
+dim(gene_clusters)
+```
+
+```{r}
+write_csv(gene_clusters, file.path("../../output/06_deg/cluster/gene_clusters.csv"))
+```
+
+Plot is showing Z score of VST normalized gene counts
+
+```{r}
+gene_cluster_data <- leachate_clusters[["normalized"]]
+gene_cluster_data <- as.data.frame(gene_cluster_data) %>% 
+  select(1:12) %>% 
+  rename(zscore = value)
+
+write_csv(gene_cluster_data, "../../output/06_deg/cluster/gene_cluster_zscores.csv")
+```
+
+```{r, warning=FALSE, fig.height=8, fig.width = 12}
+facet_labs <- gene_cluster_data %>%
+  summarise(n_genes = n_distinct(genes), .by = cluster) %>%        # counts unique genes per cluster
+  mutate(lab = sprintf("Group: %s - genes: %d", cluster, n_genes)) %>%
+  select(cluster, lab) %>%
+  deframe()                                                        # named vector: names = cluster, values = lab
+
+
+# leachate as x plot
+pl <- ggplot(gene_cluster_data %>%
+         mutate(leachate = factor(leachate, levels = c("control","low","mid","high"))),
+       aes(x = leachate, y = zscore, color = stage)) +
+  geom_line(aes(group = interaction(genes, stage)), alpha = 0.1, linewidth = 0.4) + # per-gene(thin & transparent)
+  geom_point(position = position_jitter(width = 0.12, height = 0), alpha = 0.2, size = 1.2) +
+  geom_boxplot(alpha = 0.10, outlier.shape = NA) +
+  geom_smooth(aes(group = stage), se = FALSE) + # trend
+  facet_wrap(~ cluster, nrow = 1) +
+  labs(x = NULL, y = "Z-score of gene abundance", color = "stage") +
+  theme_minimal(base_size = 12) +
+  scale_y_continuous(breaks = function(x) pretty(x, n = 3)) +
+  theme(panel.grid = element_blank(),
+  panel.grid.major.y = element_line(color = "grey80", linewidth = 0.3),   # keep major horizontal
+  panel.grid.minor.y = element_blank(),  # drop minor horizontal
+  panel.grid.major.x = element_blank(),  # drop vertical
+  panel.grid.minor.x = element_blank(),
+  strip.text = element_blank(),
+  strip.background = element_blank())
+
+# stage as x plot
+ps <- ggplot(gene_cluster_data %>%
+         mutate(leachate = factor(leachate, levels = c("control","low","mid","high")),
+                stage = factor(stage, levels = c("cleavage", "prawnchip", "earlygastrula"))),
+       aes(x = stage, y = zscore, color = leachate)) +
+  geom_line(aes(group = interaction(genes, leachate)), alpha = 0.1, linewidth = 0.4) + # per-gene(thin & transparent)
+  geom_point(position = position_jitter(width = 0.12, height = 0), alpha = 0.2, size = 1.2) +
+  geom_boxplot(alpha = 0.10, outlier.shape = NA) +
+  geom_smooth(aes(group = leachate), se = FALSE) + #trend pattern 
+  facet_wrap(~ cluster, nrow = 1, labeller = labeller(cluster = facet_labs)) +
+  labs(x = NULL, y = "Z-score of gene abundance", color = "leachate") +
+  theme_minimal(base_size = 12) +
+  scale_y_continuous(breaks = function(x) pretty(x, n = 3)) +
+  theme(panel.grid = element_blank(),
+  panel.grid.major.y = element_line(color = "grey80", linewidth = 0.3),   # keep major horizontal
+  panel.grid.minor.y = element_blank(),  # drop minor horizontal
+  panel.grid.major.x = element_blank(),  # drop vertical
+  panel.grid.minor.x = element_blank(),
+  strip.text = element_text(face = "bold"))
+
+
+# combine with patchwork
+pc <- ps / pl
+
+pc
+
+```
+```{r}
+ggsave("../../output/06_deg/cluster/leachate_cluster.png", plot = pl, width=18, height=6 , dpi=600)
+ggsave("../../output/06_deg/cluster/stage_cluster.png", plot = ps, width=18, height=6 , dpi=600)
+ggsave("../../output/06_deg/cluster/combo_cluster.png", plot = pc, width=18, height=12 , dpi=600)
+```
+
+
+hmmm gotta arrange so its group 3 , 2,  1 ... and more space between groups so that its obvious to compare the top and bottom graphs. Pick distinct and pretty leachate and stage colors...  
+
+# Summary & Next Steps
+
+We can perform functional enrichment on these clusters now!
+
 # Summary
 
 So we have 9 different 'significant gene' lists. 
@@ -669,6 +844,7 @@ Contrasts
 - `sig_cleavage_high.vs.control`, 7 DEGs 
 - `sig_earlygastrula_high.vs.control`, 27 DEGs
 
+## Save gene lists
 ```{r}
 # 1) Put all of your sig data frames into a *named* list
 sig_lists <- list(
@@ -691,12 +867,19 @@ write_csv(sig_summary, file.path(output_path, "sig_summary.csv"))
 ```
 
 ```{r}
-sig_all <- dplyr::distinct(sig_summary, gene_id)
-nrow(sig_all)
-write_csv(sig_all, file.path(output_path, "sig_all.csv"))
+sig_genes <- dplyr::distinct(sig_summary, gene_id)
+nrow(sig_genes)
+write_csv(sig_genes, file.path(output_path, "sig_genes.csv"))
+```
+```{r}
+all_genes <- rownames(dds) # a charachter vector of all genes used in DESeq2 analysis
+# save this for functional enrichment 
+
+write_csv(tibble(gene_id = all_genes),  file.path(output_path, "all_genes.csv"))
 ```
 There are 130 total DEGs across LRT and Wald tests where leachate popped up as a significant covariate. 
-# Save count matrices
+
+## Save count matrices
 
 Make variance stabilized count matrix of these 130 genes of interest
 ```{r}
