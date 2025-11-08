@@ -1,0 +1,654 @@
+---
+title: "Gene ontology (GO) term analysis for gene expression clusters"
+subtitle: "Characterizing the 3 gene expression patterns found in clustering analysis"
+author: "Sarah Tanja"
+date: 2025-10-21
+date-modified: today
+format:
+  gfm: 
+    toc: true
+    number-sections: true
+  html:
+    theme: journal
+    highlight-style: github
+    page-layout: article
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    number-sections: true
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    reference-location: margin
+    citation-location: margin
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, # Display code chunks
+  eval = TRUE, # Evaluate code chunks
+  warning = FALSE, # Hide warnings
+  message = FALSE, # Hide messages
+  comment = "") # Prevents appending '##' to beginning of lines in code output))        
+```
+
+# Background
+
+In the clustering analysis (07_cluster.qmd), we identified 3 distinct gene expression patterns among the 130 significant genes affected by leachate. 
+These genes cluster based on their expression patterns across leachate concentrations (control, low, mid, high).
+
+Gene cluster breakdown:
+- **Cluster 1**: 72 genes, peak in early gastrula
+- **Cluster 2**: 25 genes, peak in prawnchip 
+- **Cluster 3**: 31 genes, peak in cleavage
+
+We now perform functional enrichment analysis on each cluster separately to understand the biological processes associated with each expression pattern.
+
+We use the R package `goseq` for GO enrichment. 
+`goseq` corrects for gene length bias - longer genes are more likely to be detected as DEGs in RNA-Seq simply because they accumulate more reads. 
+`goseq` accounts for this by using a probability weighting function.
+
+## Inputs
+
+- `sig_genes.csv` - A dataframe (list) of the 130 significant genes
+- `gene_clusters.csv` - A dataframe mapping 128 genes to an expression cluster (1, 2, or 3)
+- `all_genes.csv` - a dataframe (list) of all genes used in the DESeq2 analysis
+- functional annotation: http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.EggNog_results.txt.gz (EggNog)
+- functional annotation: http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.KEGG_results.txt.gz (KEGG)
+
+## Outputs
+
+- GO enrichment results for each of the 3 clusters
+- Reduced GO terms (with redundancy removed) for each cluster
+- Summary tables and visualizations
+
+```{r}
+output_path <- "../../output/07_go/"
+```
+
+
+# Setup
+
+## Install packages
+
+```{r, eval=FALSE}
+# CRAN packages
+#if ("tidyverse" %in% rownames(installed.packages()) == 'FALSE') install.packages('tidyverse')
+
+# Bioconductor packages
+#if (!require("BiocManager", quietly = TRUE))
+#    install.packages("BiocManager")
+#BiocManager::install("GenomicRanges")
+#BiocManager::install("Biostrings")
+#BiocManager::install("goseq")
+#BiocManager::install("rrvgo")
+#BiocManager::install("org.Ce.eg.db") # c.elegans genome-wide annotation
+```
+
+## Load packages
+
+```{r}
+library(GenomicRanges)
+library(Biostrings)
+library(goseq)
+library(rrvgo)
+library(org.Ce.eg.db)
+library(tidyverse)
+```
+
+## Load inputs
+
+Read in gene lists
+
+```{r}
+# significant genes (130 total) (only those that are significant for leachate or stage:leachate)
+sig_genes <- read.csv("../../output/06_deg/spawnnight/sig_all.csv")
+
+# Gene cluster assignments 
+gene_clusters <- read.csv("../../output/06_deg/cluster/gene_clusters.csv")
+
+# Full gene set tested in DESeq2 analysis
+all_genes <- read.csv("../../output/06_deg/spawnnight/all_genes.csv")
+```
+
+Import fasta (optional - for reference only)
+
+```{r, eval=FALSE}
+# Load transcriptome
+all_seqs <- readDNAStringSet("../../input/genome/Montipora_capitata_HIv3.assembly.fasta")
+
+# Filter for the 130 significant genes
+sig_seqs <- all_seqs[names(all_seqs) %in% sig_genes$gene_id]
+```
+
+Import EggNog annotation
+
+```{r}
+# Read in the file
+EggNog_anno <- read_tsv("../../input/annotations/Montipora_capitata_HIv3.genes.EggNog_results.txt")
+
+# Rename "#query" to gene_id
+EggNog_anno <- EggNog_anno %>%
+  rename(gene_id="#query")
+
+paste(nrow(EggNog_anno), "genes have functional annotation")
+```
+
+# Annotate significant genes
+
+Match genes in sig_genes to annotation dataframe
+
+```{r}
+# Annotate significant genes
+sig_genes_anno <- inner_join(sig_genes, EggNog_anno, by = "gene_id")
+
+# Filter out any that lack GO term annotation
+sig_genes_annofilt <- sig_genes_anno %>% 
+  mutate(GOs = na_if(str_trim(GOs), "-")) %>%
+  filter(!is.na(GOs), GOs != "")
+
+paste("Annotated genes:", 
+      nrow(sig_genes_anno), "/", 
+      nrow(sig_genes), "=",
+      round(100*nrow(sig_genes_anno)/nrow(sig_genes),1),"%")
+
+paste("GO annotated genes:", 
+      nrow(sig_genes_annofilt), "/", 
+      nrow(sig_genes), "=",
+      round(100*nrow(sig_genes_annofilt)/nrow(sig_genes),1),"%")
+```
+
+## Add gene lengths
+
+::: callout-note
+Gene lengths are required for goseq bias correction. If genome files are not available, this section can be skipped initially and added later when the files are downloaded.
+:::
+
+```{r}
+# Import GFF file to get gene lengths
+# Check if file exists before importing
+gff_file <- "../../input/genome/Montipora_capitata_HIv3.genes_fixed.gff3"
+
+if (file.exists(gff_file)) {
+  gff <- rtracklayer::import(gff_file)
+  
+  transcripts <- subset(gff, type == "transcript")
+  
+  transcripts_gr <- makeGRangesFromDataFrame(transcripts, keep.extra.columns=TRUE)
+  
+  transcript_lengths <- width(transcripts_gr)
+  
+  gene_id <- transcripts_gr$ID
+  
+  lengths <- cbind(gene_id, transcript_lengths)
+  
+  lengths <- as.data.frame(lengths)
+  
+  paste("Gene lengths extracted for", nrow(lengths), "transcripts")
+} else {
+  warning("GFF file not found. Gene length bias correction will not be available.")
+  lengths <- data.frame(gene_id = character(), transcript_lengths = integer())
+}
+```
+
+Add length to the annotation dataframe
+
+```{r}
+sig_genes_af <- sig_genes_annofilt %>% left_join(lengths, by = "gene_id")
+```
+
+## Add cluster assignments
+
+Join cluster information with annotated genes
+
+```{r}
+sig_genes_afc <- inner_join(sig_genes_af, gene_clusters, by = "gene_id")
+str(sig_genes_afc)
+```
+::: callout-note
+`sig_genes_afc` is now the dataframe with GO annotated, filtered, and matched to gene pattern clusters
+:::
+
+Save GO annotated dataframe
+
+```{r}
+write_csv(sig_genes_afc, file.path(output_path, "sig_genes_GOannotated.csv")
+```
+
+## Subset by cluster
+
+Create separate dataframes for each cluster
+
+```{r}
+sig_cluster1 <- sig_genes_afc %>% filter(cluster == 1)
+sig_cluster2 <- sig_genes_afc %>% filter(cluster == 2)
+sig_cluster3 <- sig_genes_afc %>% filter(cluster == 3)
+
+paste("Cluster 1:", nrow(sig_cluster1), "genes with GO annotation")
+paste("Cluster 2:", nrow(sig_cluster2), "genes with GO annotation")
+paste("Cluster 3:", nrow(sig_cluster3), "genes with GO annotation")
+paste("All together:", nrow(sig_genes_afc), "genes with GO annotation")
+```
+
+# Functional enrichment
+
+Conduct functional enrichment using goseq and rrvgo. 
+Compare against all genes in the dataset that have GO annotation information.
+
+Conduct at biological process level. Filter for adjusted p-value < 0.05.
+
+## Turn gene lists into vectors
+
+```{r}
+# Define gene ID vectors for each cluster & for the annotated significant genes 
+ID.vector.c1 <- sig_cluster1$gene_id
+ID.vector.c2 <- sig_cluster2$gene_id
+ID.vector.c3 <- sig_cluster3$gene_id
+ID.vector.sig <- sig_genes_afc$gene_id
+```
+
+## Create gene universe for bias correction
+
+```{r}
+# Universe for bias correction
+# All genes detected in our filtered DEG tested genes with GO annotation info
+ALL.vector <- EggNog_anno %>%
+  mutate(GOs = na_if(str_trim(GOs), "-")) %>%
+  filter(!is.na(GOs), GOs != "") %>%
+  pull(gene_id) %>%
+  intersect(all_genes$gene_id)
+
+paste(length(ALL.vector), "genes out of", nrow(all_genes), "genes in our DESeq2 dataset have GO annotations")
+paste("Cluster 1:", length(ID.vector.c1), "GO annotated genes")
+paste("Cluster 2:", length(ID.vector.c2), "GO annotated genes")
+paste("Cluster 3:", length(ID.vector.c3), "GO annotated genes")
+
+paste("All together:", length(ID.vector.sig), "GO annotated genes")
+
+```
+
+## GO term mapping
+
+```{r}
+# Gene to GO term mapping for each cluster
+GO.terms.c1 <- sig_cluster1 %>%
+  dplyr::select(gene_id, GOs)
+
+GO.terms.c2 <- sig_cluster2 %>%
+  dplyr::select(gene_id, GOs)
+
+GO.terms.c3 <- sig_cluster3 %>%
+  dplyr::select(gene_id, GOs)
+
+GO.terms.sig <- sig_genes_afc %>%
+  dplyr::select(gene_id, GOs)
+```
+
+Function to split GO terms to one term per row
+
+```{r}
+split_go <- function(df, gene_col = "gene_id", go_col = "GOs") {
+  df %>%
+    mutate(across(all_of(c(gene_col, go_col)), as.character)) %>%
+    separate_rows(!!rlang::sym(go_col), sep = ",") %>%
+    mutate(!!rlang::sym(go_col) := str_trim(!!rlang::sym(go_col))) %>%
+    filter(!is.na(!!rlang::sym(go_col)), !!rlang::sym(go_col) != "") %>%
+    dplyr::select(all_of(c(gene_col, go_col))) %>%
+    as.data.frame(stringsAsFactors = FALSE)
+}
+```
+
+Split GO terms
+
+```{r}
+# Format GO terms to one term per row
+GO.terms.c1 <- split_go(GO.terms.c1)
+GO.terms.c2 <- split_go(GO.terms.c2)
+GO.terms.c3 <- split_go(GO.terms.c3)
+GO.terms.sig <- split_go(GO.terms.sig)
+```
+
+Save GO term mappings
+
+```{r}
+write_csv(GO.terms.c1, file.path(output_path, "GO.terms.cluster1.csv"))
+write_csv(GO.terms.c2, file.path(output_path, "GO.terms.cluster2.csv"))
+write_csv(GO.terms.c3, file.path(output_path, "GO.terms.cluster3.csv"))
+write_csv(GO.terms.sig, file.path(output_path, "GO.terms.sig.csv"))
+```
+
+Get vector of gene lengths
+
+```{r}
+# Only proceed if we have length information
+if (nrow(lengths) > 0) {
+  lengths_anno <- lengths %>% 
+    dplyr::filter(gene_id %in% all_genes$gene_id) %>% 
+    dplyr::filter(gene_id %in% EggNog_anno$gene_id)
+  
+  LENGTH.vector <- as.integer(lengths_anno$transcript_length)
+  names(LENGTH.vector) <- ALL.vector
+  
+  use_length_bias <- TRUE
+  paste("Length bias correction enabled with", length(LENGTH.vector), "genes")
+} else {
+  use_length_bias <- FALSE
+  warning("Gene lengths not available. Proceeding without length bias correction.")
+}
+```
+
+Make gene vector function
+
+```{r}
+make_gene_vector <- function(all_ids, de_ids, label = "DE set") {
+  # Normalize to clean character vectors
+  all_ids <- as.character(all_ids)
+  de_ids  <- unique(trimws(as.character(de_ids)))
+
+  # Hard checks on ALL.vector
+  if (anyNA(all_ids)) stop("ALL.vector contains NA gene IDs.")
+  if (anyDuplicated(all_ids)) {
+    dups <- unique(all_ids[duplicated(all_ids)])
+    stop("ALL.vector has duplicated gene IDs (e.g., ", paste(head(dups, 5), collapse = ", "), ").")
+  }
+
+  # Soft check: DE IDs not in ALL
+  extras <- setdiff(de_ids, all_ids)
+  if (length(extras) > 0) {
+    warning(length(extras), " ", label, " IDs not found in ALL.vector (showing up to 5): ",
+            paste(head(extras, 5), collapse = ", "))
+    de_ids <- intersect(de_ids, all_ids)
+  }
+
+  # Construct 0/1 vector aligned to ALL.vector
+  vec <- as.integer(all_ids %in% de_ids)
+  names(vec) <- all_ids
+
+  # Final sanity
+  stopifnot(length(vec) == length(all_ids), all(vec %in% c(0L, 1L)))
+  vec
+}
+```
+
+Create gene vectors for each cluster
+
+```{r}
+gene.vector.c1 <- make_gene_vector(ALL.vector, ID.vector.c1, "cluster 1")
+gene.vector.c2 <- make_gene_vector(ALL.vector, ID.vector.c2, "cluster 2")
+gene.vector.c3 <- make_gene_vector(ALL.vector, ID.vector.c3, "cluster 3")
+gene.vector.sig <- make_gene_vector(ALL.vector, ID.vector.sig, "sig genes")
+```
+
+## Null probability weighting function (bias for gene length)
+
+::: callout-note
+Gene length bias correction accounts for the fact that longer genes are more likely to be detected as differentially expressed in RNA-seq data simply because they accumulate more reads. If length data is not available, goseq can still run but without this correction.
+:::
+
+```{r}
+# Keep only genes present in ALL.vector and align the order
+LENGTH.vector <- LENGTH.vector[ALL.vector]
+stopifnot(identical(names(LENGTH.vector), ALL.vector))
+
+# Calculate probability weighting function for each cluster
+pwf.c1 <- nullp(gene.vector.c1, bias.data = LENGTH.vector)
+pwf.c2 <- nullp(gene.vector.c2, bias.data = LENGTH.vector)
+pwf.c3 <- nullp(gene.vector.c3, bias.data = LENGTH.vector)
+pwf.sig <- nullp(gene.vector.sig, bias.data = LENGTH.vector)
+```
+
+```{r}
+identical(pwf.sig, pwf.c3)
+```
+
+
+## GO BP enrichment
+
+Run GO enrichment for biological process terms
+
+```{r}
+GO.bp.c1 <- goseq(
+  pwf.c1,
+  gene2cat = GO.terms.c1,
+  test.cats = c("GO:BP"),
+  method = "Wallenius",
+  use_genes_without_cat = TRUE
+)
+
+GO.bp.c2 <- goseq(
+  pwf.c2,
+  gene2cat = GO.terms.c2,
+  test.cats = c("GO:BP"),
+  method = "Wallenius",
+  use_genes_without_cat = TRUE
+)
+
+GO.bp.c3 <- goseq(
+  pwf.c3,
+  gene2cat = GO.terms.c3,
+  test.cats = c("GO:BP"),
+  method = "Wallenius",
+  use_genes_without_cat = TRUE
+)
+
+GO.bp.sig <- goseq(
+  pwf.sig,
+  gene2cat = GO.terms.sig,
+  test.cats = c("GO:BP"),
+  method = "Wallenius",
+  use_genes_without_cat = TRUE
+)
+```
+
+Use the Benjamini-Hochberg method to control false discovery rate
+
+```{r}
+GO.bp.c1$bh_adjust <- p.adjust(GO.bp.c1$over_represented_pvalue, method = "BH")
+GO.bp.c2$bh_adjust <- p.adjust(GO.bp.c2$over_represented_pvalue, method = "BH")
+GO.bp.c3$bh_adjust <- p.adjust(GO.bp.c3$over_represented_pvalue, method = "BH")
+GO.bp.sig$bh_adjust <- p.adjust(GO.bp.sig$over_represented_pvalue, method = "BH")
+```
+
+Filter for biological process terms with valid p-values
+
+```{r}
+GO.BP.c1 <- GO.bp.c1 %>%
+  filter(ontology == "BP") %>%
+  filter(!is.na(bh_adjust)) %>% 
+  filter(bh_adjust < 0.05) %>%
+  arrange(ontology, bh_adjust)
+
+GO.BP.c2 <- GO.bp.c2 %>%
+  filter(ontology == "BP") %>%
+  filter(!is.na(bh_adjust)) %>% 
+  filter(bh_adjust < 0.05) %>%
+  arrange(ontology, bh_adjust)
+
+GO.BP.c3 <- GO.bp.c3 %>%
+  filter(ontology == "BP") %>%
+  filter(!is.na(bh_adjust)) %>% 
+  filter(bh_adjust < 0.05) %>%
+  arrange(ontology, bh_adjust)
+
+GO.BP.sig <- GO.bp.sig %>%
+  filter(ontology == "BP") %>%
+  filter(!is.na(bh_adjust)) %>% 
+  filter(bh_adjust < 0.05) %>%
+  arrange(ontology, bh_adjust)
+```
+
+Write to csv
+
+```{r}
+write_csv(GO.BP.c1, file = file.path(output_path, "GO.BP.cluster1.csv"))
+write_csv(GO.BP.c2, file = file.path(output_path, "GO.BP.cluster2.csv"))
+write_csv(GO.BP.c3, file = file.path(output_path, "GO.BP.cluster3.csv"))
+write_csv(GO.BP.sig, file = file.path(output_path, "GO.BP.sig.csv"))
+```
+
+Display results
+
+```{r}
+paste("Cluster 1:", nrow(GO.BP.c1), "enriched BP terms (BH-adjusted p < 0.05)")
+paste("Cluster 2:", nrow(GO.BP.c2), "enriched BP terms (BH-adjusted p < 0.05)")
+paste("Cluster 3:", nrow(GO.BP.c3), "enriched BP terms (BH-adjusted p < 0.05)")
+paste("All together:", nrow(GO.BP.sig), "enriched BP terms (BH-adjusted p < 0.05)")
+```
+
+## Reduce redundancy
+
+Calculate semantic similarity matrix for each cluster
+
+```{r}
+simMatrix.c1 <- calculateSimMatrix(
+    GO.BP.c1$category,
+    orgdb="org.Ce.eg.db",
+    ont = "BP",
+    method = "Rel"
+  )
+
+simMatrix.c2 <- calculateSimMatrix(
+    GO.BP.c2$category,
+    orgdb="org.Ce.eg.db",
+    ont = "BP",
+    method = "Rel"
+  )
+
+simMatrix.c3 <- calculateSimMatrix(
+    GO.BP.c3$category,
+    orgdb="org.Ce.eg.db",
+    ont = "BP",
+    method = "Rel"
+  )
+
+simMatrix.sig <- calculateSimMatrix(
+    GO.BP.sig$category,
+    orgdb="org.Ce.eg.db",
+    ont = "BP",
+    method = "Rel"
+  )
+
+```
+
+Create named scores vectors
+
+```{r}
+# Create scores for each cluster (handle potential zeros in p-values)
+scores.c1 <- setNames(
+    -log10(pmax(GO.BP.c1$bh_adjust, .Machine$double.xmin)),
+    GO.BP.c1$category
+  )
+
+scores.c2 <- setNames(
+    -log10(pmax(GO.BP.c2$bh_adjust, .Machine$double.xmin)),
+    GO.BP.c2$category
+  )
+
+scores.c3 <- setNames(
+    -log10(pmax(GO.BP.c3$bh_adjust, .Machine$double.xmin)),
+    GO.BP.c3$category
+  )
+
+scores.sig <- setNames(
+    -log10(pmax(GO.BP.sig$bh_adjust, .Machine$double.xmin)),
+    GO.BP.sig$category
+  )
+
+```
+
+Reduce terms with similarity matrix
+
+```{r}
+# Reduce terms for each cluster
+reducedTerms.c1 <- reduceSimMatrix(
+    simMatrix.c1,
+    scores = scores.c1,
+    threshold = 0.8,
+    orgdb = "org.Ce.eg.db"
+  )
+
+reducedTerms.c2 <- reduceSimMatrix(
+    simMatrix.c2,
+    scores = scores.c2,
+    threshold = 0.8,
+    orgdb = "org.Ce.eg.db"
+  )
+
+reducedTerms.c3 <- reduceSimMatrix(
+    simMatrix.c3,
+    scores = scores.c3,
+    threshold = 0.8,
+    orgdb = "org.Ce.eg.db"
+  )
+
+reducedTerms.sig <- reduceSimMatrix(
+    simMatrix.sig,
+    scores = scores.sig,
+    threshold = 0.8,
+    orgdb = "org.Ce.eg.db"
+  )
+```
+
+# Save results
+
+Save reduced terms and similarity matrices
+
+```{r}
+# Save reduced terms
+write_csv(reducedTerms.c1, file.path(output_path, "reducedTerms_cluster1.csv"))
+
+write_csv(reducedTerms.c2, file.path(output_path, "reducedTerms_cluster2.csv"))
+
+write_csv(reducedTerms.c3, file.path(output_path, "reducedTerms_cluster3.csv"))
+
+write_csv(reducedTerms.sig, file.path(output_path, "reducedTerms_sig.csv"))
+
+
+# Save similarity matrices
+simMatrix_c1 <- simMatrix.c1 %>%
+    as.data.frame() %>% 
+    rownames_to_column(var = "GO")
+  write_csv(simMatrix_c1, file.path(output_path, "simMatrix_cluster1.csv"))
+
+simMatrix_c2 <- simMatrix.c2 %>%
+    as.data.frame() %>% 
+    rownames_to_column(var = "GO")
+  write_csv(simMatrix_c2, file.path(output_path, "simMatrix_cluster2.csv"))
+
+simMatrix_c3 <- simMatrix.c3 %>%
+    as.data.frame() %>% 
+    rownames_to_column(var = "GO")
+  write_csv(simMatrix_c3, file.path(output_path, "simMatrix_cluster3.csv"))
+
+simMatrix_sig <- simMatrix.sig %>%
+    as.data.frame() %>% 
+    rownames_to_column(var = "GO")
+  write_csv(simMatrix_sig, file.path(output_path, "simMatrix_sig.csv"))
+```
+
+# Summary
+
+This analysis performed GO enrichment on the 3 gene expression clusters identified in the clustering analysis.
+
+## Cluster characterization
+
+**Cluster 1** (97 genes): The largest cluster, this group of genes peak at early gastrula.
+
+**Cluster 2** (28 genes): This group of genes peak at prawnchip.
+
+**Cluster 3** (24 genes): The smallest cluster, this group of genes peak at cleavage.
+
+## Next steps
+
+- Visualize enriched GO terms for each cluster
+- Compare biological processes across clusters
+- Integrate with other analyses to understand biological significance
+
+```{r}
+sessionInfo()
+```
