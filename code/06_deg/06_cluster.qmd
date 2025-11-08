@@ -26,6 +26,9 @@ format:
     link-external-newwindow: true
     reference-location: margin
     citation-location: margin
+editor: 
+  markdown: 
+    wrap: 72
 ---
 
 ```{r setup, include=FALSE}
@@ -38,40 +41,40 @@ knitr::opts_chunk$set(
 ```
 
 # Background
+
 ## Inputs
 
-So we have 11 different 'significant gene' lists. Each list indicates that leachate had a "significant" effect somewhere:
+So we have 11 different 'significant gene' lists. Each list indicates
+that leachate had a "significant" effect somewhere:
 
-LRT 
-- `sig_cat_LRT`, 44 DEGs, this list are genes that had an overall impact by leachate interacting with stage (full vs reduced, testing interaction term as a whole)
+LRT - `sig_cat_LRT`, 44 DEGs, this list are genes that had an overall
+impact by leachate interacting with stage (full vs reduced, testing
+interaction term as a whole)
 
-Interaction effects
-- `sig_prawnchip_high.int`, 1 DEG
-- `sig_prawnchip_mid.int`, 5 DEGs
-- `sig_prawnchip_low.int`, 12 DEGs
-- `sig_earlygastrula_high.int`, 3 DEGs
-- `sig_earlygastrula_mid.int`, 11 DEGs
-- `sig_earlygastrula_low.int`, 11 DEGs
+Interaction effects - `sig_prawnchip_high.int`, 1 DEG -
+`sig_prawnchip_mid.int`, 5 DEGs - `sig_prawnchip_low.int`, 12 DEGs -
+`sig_earlygastrula_high.int`, 3 DEGs - `sig_earlygastrula_mid.int`, 11
+DEGs - `sig_earlygastrula_low.int`, 11 DEGs
 
-Stage x leachate effects
-- `sig_cleavage_low.vs.control`, 39 DEGs
-- `sig_cleavage_mid.vs.control`, 77 DEGs
-- `sig_cleavage_high.vs.control`, 18 DEGs
-- `sig_earlygastrula_high.vs.control`, 22 DEGs
+Stage x leachate effects - `sig_cleavage_low.vs.control`, 39 DEGs -
+`sig_cleavage_mid.vs.control`, 77 DEGs - `sig_cleavage_high.vs.control`,
+18 DEGs - `sig_earlygastrula_high.vs.control`, 22 DEGs
 
-
-This totals 151 unique DE genes. 
+This totals 130 unique DE genes.
 
 ## Outputs
+
 ```{r}
-output_path <- "../../output/07_cluster/"
+input_path <- "../../output/06_deg/spawnnight/"
+output_path <- "../../output/06_deg/cluster"
+metadata_path <- "../../metadata/metadata_or.csv"
 ```
 
 # Setup
 
 ## Load packages
+
 ```{r}
-library(ComplexUpset)
 library(patchwork)
 library(tidyverse)
 library(DEGreport)
@@ -80,7 +83,7 @@ library(DEGreport)
 ## Load inputs
 
 ```{r}
-input_path <- "../../output/06_deg/results/"
+
 files <- list.files(input_path, pattern = "\\.csv$", full.names = TRUE)
 nm    <- make.names(tools::file_path_sans_ext(basename(files)), unique = TRUE)
 
@@ -90,52 +93,84 @@ for (i in seq_along(files)) {
 ```
 
 ```{r}
-# metadata
-metadata_or <- read_csv("../../metadata/metadata_or.csv")
+# Load metadata (outlier samples removed, 61 samples remain)
+metadata_or <- read_csv(metadata_path)
 
-# Reorder factors
-metadata_or$stage <- as.factor(metadata_or$stage)
-metadata_or$stage <- fct_relevel(metadata_or$stage, "cleavage", "prawnchip", "earlygastrula")
- 
-metadata_or$leachate <- as.factor(metadata_or$leachate)
-metadata_or$leachate <- fct_relevel(metadata_or$leachate, "control", "low", "mid", "high")
+# set factors
+metadata_or <- metadata_or %>% 
+  mutate(
+    collection_date = as.Date(collection_date, format = "%d-%b-%Y"),
+    stage    = factor(stage,    levels = c("cleavage", "prawnchip", "earlygastrula")),
+    leachate = factor(leachate, levels = c("control", "low", "mid", "high")),
+    spawn_night = factor(spawn_night, levels  = c("July_6th", "July_7th", "July_8th"))
+    )
+
+# View metadata structure
+str(metadata_or)
 ```
+
+# General QC
+
+## Size-factor QC
+
+```{r}
+norm <- norm_df %>%  
+  column_to_rownames(var = "gene_id")
+```
+
+```{r}
+degCheckFactors(norm[ , 1:30])
+```
+
+## Mean variance QC plot
+
+```{r}
+degQC(norm, design[["group"]], pvalue = res[["pvalue"]])
+```
+
 # Perform clustering with `DEGreport`
 
-see Roberts Lab Issue [#1916](https://github.com/RobertsLab/resources/issues/1916)
+see Roberts Lab Issue
+[#1916](https://github.com/RobertsLab/resources/issues/1916)
 
-Perform clustering.
-You'll need: 
-- a list of your significant genes of interest
-- a gene count matrix that has been variance stabilized and filtered to your significant genes of interest 
+Perform clustering. You'll need:
+
+\- a list of your significant genes of interest `sig_all`
+
+\- a gene count matrix that has been variance stabilized and filtered to
+your significant genes of interest
+
 ```{r}
 # a list of significant genes
-clustering_sig_genes <- sig_all
+head(sig_all)
 
 # significant gene variance stabilized transformed counts matrix
-matrix <- vst_mat  #genes in rows, sample ID in columns
-
-meta <- metadata_or %>%
-  dplyr::select(sample_id, stage, leachate) %>% #sample id and stage, and leachate columns
-  column_to_rownames(var = "sample_id") %>%
-  dplyr::select(stage, leachate) #sample ID in rows, one column of lifestage 
-
-# Obtain transformed values for those significant genes
-cluster_vst <- matrix[clustering_sig_genes$gene_id, ] #rows are DEGs and columns are sample ID
+head(vst_mat_130_df)  #genes in rows, sample ID in columns
 ```
 
-Run with minimum 4 genes per cluster to detect because we have few DEGs.\
-- DEGreport vignette, [degPatterns](https://www.bioconductor.org/packages/release/bioc/vignettes/DEGreport/inst/doc/DEGreport.html#:~:text=%22expression%22)-,Detect%20patterns%20of%20expression,-In%20this%20section)
+```{r}
+# Obtain transformed values for those significant genes
+# rows are DEGs and columns are sample ID
+vst_mat_130 <- vst_mat_130_df %>%  
+  column_to_rownames(var = "gene_id")
+```
+
+Run with minimum 4 genes per cluster to detect because we have few
+DEGs.\
+- DEGreport vignette,
+[degPatterns](https://www.bioconductor.org/packages/release/bioc/vignettes/DEGreport/inst/doc/DEGreport.html#:~:text=%22expression%22)
 
 ```{r}
 # Use the `degPatterns` function from the 'DEGreport' package to show gene clusters across sample groups
-stage_clusters <- degPatterns(cluster_vst, metadata = meta, time = "stage", col= "leachate", plot=TRUE, minc = 4)
+stage_clusters <- degPatterns(vst_mat_130, metadata = metadata_or, time = "stage", col= "leachate", plot=TRUE, minc = 4)
 ```
+
 ```{r}
 ggsave(filename="../../output/07_cluster/degStagePatternscluster_plot.png", width=12, height=10)
 ```
-Broadly most genes displayed an increased transcript abundance as embryos developed. 
 
+Broadly most genes displayed an increased transcript abundance as
+embryos developed.
 
 ```{r}
 # Use the `degPatterns` function from the 'DEGreport' package to show gene clusters across sample groups
@@ -146,12 +181,15 @@ leachate_clusters <- degPatterns(cluster_vst, metadata = meta, time = "leachate"
 ggsave(filename="../../output/07_cluster/degLeachatePatternscluster_plot.png", width=12, height=10)
 ```
 
-Extract the list of genes in each cluster for leachate (stage grouped all together in one big group, so we can focus in on leachate with the cluster analysis here).
+Extract the list of genes in each cluster for leachate (stage grouped
+all together in one big group, so we can focus in on leachate with the
+cluster analysis here).
 
 ```{r}
 # Rename and extract information 
 gene_clusters <- leachate_clusters$df %>%
           rename(gene_id=genes)
+dim(gene_clusters)
 ```
 
 Save the gene cluster annotation
@@ -198,7 +236,6 @@ ggplot(leachate_cluster_data %>%
 
 ```
 
-
 ```{r, warning=FALSE}
 
 # Strip labels like "Group: 1 - genes: 97"
@@ -237,7 +274,6 @@ ggplot(leachate_cluster_data, aes(x = leachate, y = value, color = stage)) +
 
 ```
 
-
 ```{r, warning=FALSE}
 cluster_plot<-ggplot(leachate_clusters[["normalized"]],
         aes(x=leachate, y=value, color=stage)) +
@@ -260,8 +296,6 @@ cluster_plot
 
 ggsave(cluster_plot, filename="../../output/07_cluster/cluster_plot.png", width=12, height=10)
 ```
-
-
 
 ```{r}
 
