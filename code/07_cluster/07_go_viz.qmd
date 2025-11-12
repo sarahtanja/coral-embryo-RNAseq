@@ -39,6 +39,40 @@ knitr::opts_chunk$set(
 
 # Background
 
+The size column in the reduced results represents the number of genes annotated to each GO term. size \> 0 → that term is associated with at least one gene in your gene universe (and was used in the GOseq enrichment test). size = 0 → no genes in your input set are annotated to that term, even though the term appears in the GO semantic similarity matrix.
+
+Why size = 0 can appear: You built the similarity matrix (calculateSimMatrix) from all GO terms, but then reduced it using a filtered subset (e.g., only enriched terms). Some leftover terms in the similarity matrix may not actually appear in your results' gene annotations. The term was pruned or filtered by GOseq or rrvgo during processing --- for example, if a cluster "parent" term wasn't part of the original enrichment table, but was added as a representative. Annotation differences --- GOseq uses your gene-to-GO mapping (often via gene2cat), while rrvgo's internal lookup (from GO.db) may include additional terms that don't exist in your mapping.
+
+Relationship between score and size
+
+There's no inherent correlation between score and size because they describe different things. A small, specific GO term with few genes (size = 3) might have a very low p-value, if all 3 of those genes are strongly enriched --- → high score (e.g. 307 ≈ --log₁₀(10⁻³⁰⁷)). A large, general term with many genes (size = 321) might not be strongly overrepresented --- → modest p-value → low score (≈ 1.895 → p ≈ 0.0126). That's why score and size often move in opposite directions: small, specific terms can show stronger enrichment signals. GOseq adjusts for gene length bias, so the resulting *p*-values already account for uneven annotation probabilities. Still, a term with few genes can have a small *p*-value if those genes are all DE, whereas a large term with hundreds of genes often dilutes that signal.
+
+Score ≈ significance, not size.
+
+A small size + high score = "narrow but very strong enrichment."
+
+A large size + low score = "broad but weak enrichment."
+
+When reducing with rrvgo, the highest-scoring term in each cluster becomes the representative --- typically the most statistically significant, not necessarily the largest. I**n GOseq (and therefore in rrvgo)**, the `size` column does **not** represent the number of DEGs in that GO term. It represents the **number of genes in your background (gene universe)** that are annotated to that GO term.
+
+🧬 1. What GOseq tests
+
+GOseq's enrichment test works like this:
+
+You provide a set of DEGs and a background (usually all genes tested by DESeq2 or edgeR).
+
+For each GO term, GOseq asks:
+
+"Are DEGs overrepresented among genes annotated to this term compared to what I'd expect by chance (accounting for gene length bias)?"
+
+So each GO term has:
+
+numDEInCat = number of DEGs annotated to that term.
+
+numInCat = number of total genes (background) annotated to that term.
+
+Then it computes a p-value for enrichment.
+
 ## Inputs
 
 -   reduced terms
@@ -79,6 +113,15 @@ input_path <- "../../output/07_go/"
 ```
 
 ```{r}
+files <- list.files(input_path, pattern = "\\.csv$", full.names = TRUE)
+
+for (f in files) {
+  name <- tools::file_path_sans_ext(basename(f))
+  assign(name, read_csv(f), envir = .GlobalEnv)
+}
+```
+
+```{r}
 ## Reduced Terms
 
 reducedTerms.sig <- read.csv(file.path(input_path, "reducedTerms_sig.csv"))
@@ -103,6 +146,11 @@ simMatrix.3 <- read_csv(file.path(input_path, "simMatrix_cluster3.csv"))%>%
 ```
 
 > The rows of simMatrix.xxx should correspond (in order and identity) to the rows of reducedTerms.xxx. Ensure that the go column is character, not factor. Ensure simMatrix.xxx is a data.frame or matrix, and reducedTerms.xxx is a data.frame, not a tibble!\*which is why we load it with read.csv, (which loads a data.frame) and not read_csv (which loads a tibble).
+
+```{r}
+collapse_1 <- reducedTerms_cluster1 %>% 
+  left_join(GO.BP.cluster1, by= c("go" = "category"))
+```
 
 # Plotting & interpretation
 
@@ -186,7 +234,7 @@ scatterPlot(simMatrix.3, reducedTerms.3,
 
 # Custom PCA scatter plots
 
-## Interaction "5 clusters" summary
+## Significant DEG
 
 I want a dataframe that groups my GO terms based on the 5 main clusters displayed in this PCA. The scatterPlot uses a dimensionality reduction (PCoA) approach to project GO terms into 2D space and then visually groups the points into a smaller number of major clusters. These visual clusters are typically broader groupings, which correspond to higher-level semantic similarity rather than the narrow clusters from the cut tree. A possible approach if you want to create a cluster assignment dataframe matching the 5 visual clusters is to: - Extract the 2D coordinates from the scatterPlot dimensionality reduction output, - Apply a clustering method on the 2D coordinates (e.g., k-means with k=5), - Create a new dataframe linking each GO term to its visual cluster. This approach aligns the clustering with the displayed scatterPlot clusters rather than the original fine-grained clusters.
 
@@ -217,12 +265,23 @@ final_df <- merge(df_coords, reducedTerms.sig, by.x = "go", by.y = "go")
 
 This dataframe `final_df` will now include each GO term, its 2D coordinates used for visualization, and its assigned cluster corresponding to the 5 major groups in the scatterPlot.
 
+```{r}
+head(final_df)
+```
+
+Drop size = 0
+
+```{r}
+sigdeg_pcoa <- final_df %>% 
+  filter(size > 0)
+```
+
 ### Interactive plot
 
 For exploration
 
 ```{r, fig.width=12}
-p <- ggplot(final_df, aes(
+p <- ggplot(sigdeg_pcoa, aes(
     Dim1, Dim2,
     color = parentTerm,
     size  = score,
@@ -230,7 +289,8 @@ p <- ggplot(final_df, aes(
       "GO: ", go,
       "<br>Parent Term: ", parentTerm,
       "<br>Term: ", term,
-      "<br>Score: ", round(score, 2)
+      "<br>Score: ", round(score, 2),
+      "<br>Size: ", size
     )
   )) +
   geom_point(alpha = 0.5) +
@@ -247,7 +307,7 @@ ggplotly(p, tooltip = "text")
 
 ```{r}
 # Summarize cluster content by parent term
-cluster_summary <- final_df %>%
+cluster_summary <- sigdeg_pcoa %>%
   group_by(cluster.x, parentTerm) %>%
   summarise(
     n_terms = n(),                     # how many GO terms in this parent within cluster
@@ -270,7 +330,7 @@ knitr::kable(top_parent_terms_by_cluster)
 
 ```{r}
 # Summarize cluster content by parent term
-cluster_summary <- final_df %>%
+cluster_summary <- sigdeg_pcoa %>%
   group_by(cluster.x, term) %>%
   summarise(
     n_terms = n(),                     # how many GO terms in this parent within cluster
@@ -305,10 +365,11 @@ knitr::kable(top_score_by_cluster)
 
 ```{r}
 # 5) Quick visual check (should resemble your scatterPlot clusters)
-ggplot(final_df, aes(Dim1, Dim2, size = score, alpha = 0.4)) +
-  geom_point() +
-  coord_equal() +
-  labs(color = "Cluster (k=5)", title = "GO terms clustered in PCoA space") +
+ggplot(sigdeg_pcoa, aes(Dim1, Dim2, size = score, label = parentTerm)) +
+  geom_point(alpha = 0.3) +
+  geom_text_repel()+
+  coord_equal()+
+  labs(title = "GO terms clustered in PCoA space") +
   theme_minimal(base_size = 12)
 ```
 
@@ -326,7 +387,7 @@ ggplot(final_df, aes(Dim1, Dim2, color = parentTerm, size = score)) +
 ```
 
 ```{r, fig.height=17}
-ggplot(final_df, aes(Dim1, Dim2, color = term, size = score)) +
+ggplot(sigdeg_pcoa, aes(Dim1, Dim2, color = term, size = score)) +
   geom_point(alpha = 0.5) +
   coord_equal() +
   labs(color = "Parent Term", title = "GO terms clustered in PCoA space") +
@@ -419,7 +480,7 @@ Treemaps are space-filling visualization of hierarchical structures. The terms a
 ### Interactions
 
 ```{r}
-treemapPlot(reducedTerms.int)
+treemapPlot(reducedTerms.sig)
 ```
 
 #### pattern 1
@@ -438,32 +499,6 @@ treemapPlot(reducedTerms.2)
 
 ```{r}
 treemapPlot(reducedTerms.3)
-```
-
-### Contrasts
-
-#### Low vs control: cleavage
-
-```{r}
-treemapPlot(reducedTerms.lvccl)
-```
-
-#### Mid vs control: cleavage
-
-```{r}
-treemapPlot(reducedTerms.mvccl)
-```
-
-#### High vs control: cleavage
-
-```{r}
-treemapPlot(reducedTerms.hvccl)
-```
-
-#### High vs control: early gastrula
-
-```{r}
-treemapPlot(reducedTerms.hvceg)
 ```
 
 # Summary & next steps

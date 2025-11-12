@@ -643,6 +643,9 @@ This analysis performed GO enrichment on the 3 gene expression clusters identifi
 
 **Cluster 3** (24 genes): The smallest cluster, this group of genes peak at cleavage.
 
+
+A higher score means the term is more significantly enriched (because smaller p-values become larger –log10(p) values). If your score = –log10(p), then the parent is the most significantly enriched term in that cluster.
+
 ## Next steps
 
 - Visualize enriched GO terms for each cluster
