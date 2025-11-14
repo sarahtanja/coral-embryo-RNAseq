@@ -112,6 +112,7 @@ library(grid)
 library(purrr)
 library(forcats)
 library(ggforce)   # for facet_wrap_paginate
+library(ggnewscale) # to display 2 padj scales on same plot
 ```
 
 ## Load inputs
@@ -175,57 +176,13 @@ At least 4 samples represent each group per significant gene. Most groups are re
 
 # Fold Change 
 
-Here I want to visualize how many DEGs there are in each contrast, and their magnitude and direction. 
-```{r}
-sig_FC <- sig_summary %>% 
-  dplyr::arrange(log2FoldChange) %>%
-  ggplot(aes(x=log2FoldChange, y=reorder(gene_id, -log2FoldChange), colour=padj)) +
-  facet_grid(~list, scales="free_y")+
-  geom_point(size=1)+
-  scale_colour_gradientn(name="P(adj)", colours = colorspace::heat_hcl(7))+
-  geom_segment(aes(x=0, xend=log2FoldChange, y=gene_id, yend=gene_id),linewidth=1) +
-  geom_vline(xintercept = 0, linetype = "dashed") + # Add vertical line
-  theme_classic() +
-  ylab("Gene")+
-  theme(legend.position = "right",
-        axis.text.y = element_blank(),
-        axis.text.x = element_text(size=12),
-        strip.text=element_text(size=14),
-        axis.title.y = element_text(size=14, face="bold"),
-        axis.title.x = element_text(size = 14, face = "bold"),
-        plot.title = element_text(size = 16, face = "bold"))+
-  ggtitle('Log2 Fold Change of significant DEGs')
+Here I want to visualize how many DEGs there are in each contrast, and their magnitude and direction.  
 
-sig_FC
-
-
-```
 The interaction (`int`) and joint (`joint`) lists have valid p values but not valid log2FoldChange values... those are taken from a contrast... therefore visualizing an LRT test log2FoldChange isn't useful. We will try again and exlude them... 
-```{r}
-sig_FC <- sig_summary %>% 
-  dplyr::filter(!list %in% c("int", "joint")) %>% 
-  dplyr::arrange(log2FoldChange) %>%
-  ggplot(aes(x=log2FoldChange, y=reorder(gene_id, -log2FoldChange), colour=padj)) +
-  facet_grid(~list, scales="free_y")+
-  geom_point(size=2)+
-  scale_colour_gradientn(name="P(adj)", colours = colorspace::heat_hcl(7))+
-  geom_segment(aes(x=0, xend=log2FoldChange, y=gene_id, yend=gene_id), linewidth=1.5) +
-  geom_vline(xintercept = 0, linetype = "dashed") + # Add vertical line
-  theme_classic() +
-  ylab("Gene")+
-  theme(legend.position = "right",
-        axis.text.y = element_blank(),
-        axis.text.x = element_text(size=12),
-        strip.text=element_text(size=6),
-        axis.title.y = element_text(size=14, face="bold"),
-        axis.title.x = element_text(size = 14, face = "bold"),
-        plot.title = element_text(size = 16, face = "bold"))+
-  ggtitle('Log2 Fold Change of significant DEGs')
 
-sig_FC
-```
-I think i want this plot to show how many and in which direction... not necessarily comparing the exact genes from one group to another ... though that is interesting too.... it just seems that the data is too sparse... need more data ink! This plot would be more interesting if it included what the genes do... but the problem with 1 gene to many GO terms make that difficult... Should I show all the contrasts that have no DEGs? Should I show the interaction effects separately from the contrast effects?
+The main takeaway for this plot is that the cleavage stage and low dose groups have more DEGs, plus the early gastrula high dose group... not necessarily comparing the exact genes from one group to another ... though that is interesting too.... it just seems that the data is too sparse... need more data ink! This plot would be more interesting if it included what the genes do... but the problem with 1 gene to many GO terms make that difficult.
 
+Here we add rows that will be populated with 'NA' for the categories that had 0 DEGs. It's important to show these to contrast the groups that did pop DEGs!
 ```{r}
 sig_summary <-  sig_summary %>% 
   add_row(`list` = c("cleavage_low.int" ,
@@ -243,48 +200,6 @@ sig_summary <-  sig_summary %>%
 ```
 
 Ok here we're going to only look at the 9 contrasts (sig effect of leachate on gene expression of an embryo at a specific stage and dose)
-
-```{r}
-sig_FC <- sig_summary %>% 
-  dplyr::filter(!list %in% c("int", "joint", 
-                             "cleavage_low.int",
-                             "cleavage_mid.int" , 
-                             "cleavage_high.int",
-                             "prawnchip_mid.int",
-                             "prawnchip_low.int",
-                             "prawnchip_high.int",
-                             "earlygastrula_low.int",
-                             "earlygastrula_mid.int",
-                             "earlygastrula_high.int")) %>%
-  mutate(list = factor(list, levels = c("earlygastrula_low.vs.control",
-                                        "earlygastrula_mid.vs.control",
-                                        "earlygastrula_high.vs.control", 
-                                        "prawnchip_low.vs.control", 
-                                        "prawnchip_mid.vs.control", 
-                                        "prawnchip_high.vs.control", 
-                                        "cleavage_low.vs.control", 
-                                        "cleavage_mid.vs.control",
-                                        "cleavage_high.vs.control"))) %>% 
-  dplyr::arrange(log2FoldChange) %>%
-  ggplot(aes(x=log2FoldChange, y=reorder(gene_id, -log2FoldChange), colour=padj)) +
-  facet_wrap(~list, nrow = 3)+
-  geom_point(size=1)+
-  scale_colour_gradientn(name="P(adj)", colours = colorspace::heat_hcl(7))+
-  geom_segment(aes(x=0, xend=log2FoldChange, y=gene_id, yend=gene_id),linewidth=1) +
-  geom_vline(xintercept = 0, linetype = "dashed") + # Add vertical line
-  theme_classic() +
-  ylab("Gene")+
-  theme(legend.position = "right",
-        axis.text.y = element_blank(),
-        axis.text.x = element_text(size=12),
-        strip.text=element_text(size=6),
-        axis.title.y = element_text(size=14, face="bold"),
-        axis.title.x = element_text(size = 14, face = "bold"),
-        plot.title = element_text(size = 16, face = "bold"))+
-  ggtitle('Log2 Fold Change of significant DEGs')
-
-sig_FC
-```
 ```{r}
 sig_FC <- sig_summary %>% 
   dplyr::filter(!list %in% c("int", "joint", 
@@ -331,7 +246,7 @@ sig_FC <- sig_summary %>%
 sig_FC
 ```
 
-
+And here we're going to look at the interaction effects
 ```{r}
 sif_FC_int <- sig_summary %>% 
   dplyr::filter(!list %in% c("int", "joint", 
@@ -378,223 +293,154 @@ sif_FC_int <- sig_summary %>%
 sig_FC_int
 
 ```
+Cool! Next let's try to combine the info about main stage specific contrasts and interactions into one plot (thereby concentrating more information in less space!)
+
+We can use `ggnewscale` to map two scales to the same facet plot. 
+To do this we'll need a distinct color palette for each different adjusted pvalue scale.
+Checkout colorspace palette options: https://colorspace.r-forge.r-project.org/articles/hcl_palettes.html
 ```{r}
 colorspace::hcl_palettes(type = "sequential")
 ```
-
-#  Gene count plot function
+Make another column by which we want to facet called plot_groups
 ```{r}
-plot_sig_genes <- function(norm_count_long, 
-                           sig,                      # vector of gene_ids OR df with gene_id (+ optional padj)
-                           gene_col = "gene_id",
-                           padj_col = NULL,         # set to the padj column name if available (e.g., "padj")
-                           title = NULL,
-                           subtitle = NULL,
-                           ci_level = 0.95) {
-
-  # --- Normalize the significant list to a tibble with gene_id and optional padj ---
-  if (is.vector(sig)) {
-    sig_df <- tibble(gene_id = as.character(sig), padj = NA_real_)
-  } else if (is.data.frame(sig)) {
-    stopifnot(gene_col %in% names(sig))
-    sig_df <- sig %>%
-      rename(gene_id = !!gene_col) %>%
-      mutate(gene_id = as.character(gene_id))
-    if (!is.null(padj_col) && padj_col %in% names(sig_df)) {
-      sig_df <- sig_df %>% 
-        rename(padj = !!padj_col) %>%
-        group_by(gene_id) %>%
-        summarise(padj = suppressWarnings(min(padj, na.rm = TRUE)), .groups = "drop")
-      sig_df$padj[!is.finite(sig_df$padj)] <- NA_real_  # handle all-NA
-    } else {
-      sig_df <- sig_df %>% mutate(padj = NA_real_)
-    }
-    sig_df <- sig_df %>% distinct(gene_id, .keep_all = TRUE)
-  } else {
-    stop("`sig` must be a character vector of gene_ids or a data.frame.")
-  }
-
-  # --- Keep only rows present in norm_count_long and prep labels/factors ---
-  plot_df <- norm_count_long %>%
-    semi_join(sig_df, by = "gene_id") %>%
-    left_join(dplyr::select(sig_df, gene_id, padj), by = "gene_id") %>%
-    mutate(
-      gene_label = ifelse(
-        is.na(padj), gene_id,
-        paste0(gene_id, "\nFDR: ", formatC(padj, format = "g", digits = 3))
-      ),
-      leachate = forcats::fct_relevel(as.factor(leachate), c("control","low","mid","high"))
-    )
-
-  # --- Summary stats per facet/group/level (mean ± 95% CI) ---
-  alpha <- 1 - ci_level
-  sum_df <- plot_df %>%
-    dplyr::group_by(gene_id, gene_label, stage, leachate) %>%
-    dplyr::summarise(
-      n   = dplyr::n(),
-      mean = mean(expression, na.rm = TRUE),
-      sd   = sd(expression,  na.rm = TRUE),
-      se   = sd / sqrt(n),
-      tcrit = qt(1 - alpha/2, pmax(n - 1, 1)),
-      ci   = tcrit * se,
-      .groups = "drop"
-    ) %>%
-    mutate(
-      ymin = mean - ci,
-      ymax = mean + ci
-    )
-
-  # --- Fallback title/subtitle ---
-  if (is.null(title)) {
-    title <- paste0("Significant genes (n = ", dplyr::n_distinct(plot_df$gene_id), ")")
-  }
-  if (is.null(subtitle)) {
-    subtitle <- paste0("Group means ± ", round(ci_level*100), "% CI per stage; points are raw observations")
-  }
-
-  # --- Plot: raw points + summary line/points + CI error bars ---
-  ggplot(plot_df, aes(x = leachate, y = expression, color = stage)) +
-    labs(
-      title = title,
-      subtitle = subtitle,
-      y = "Normalized gene counts",
-      x = "PVC leachate concentration (milligrams of microplastic/ Liter of seawater)"
-    ) +
-    # raw points
-    geom_jitter(width = 0.12, alpha = 0.6, size = 1, show.legend = FALSE) +
-    # summary error bars + mean points + connecting line
-    geom_errorbar(
-      data = sum_df,
-      aes(y = mean, ymin = ymin, ymax = ymax, group = stage),
-      width = 0.08,
-      linewidth = 0.5,
-      position = position_dodge2(width = 0.0, preserve = "single"),
-      show.legend = FALSE
-    ) +
-    geom_point(
-      data = sum_df,
-      aes(y = mean, group = stage),
-      size = 1.8,
-      stroke = 0.4,
-      show.legend = TRUE
-    ) +
-    geom_line(
-      data = sum_df,
-      aes(y = mean, group = stage),
-      linewidth = 0.6,
-      show.legend = FALSE
-    ) +
-    theme_minimal() +
-    theme(
-      plot.title = element_text(size = 12),
-      plot.subtitle = element_text(size = 8),
-      axis.text.x = element_text(angle = 45, hjust = 1),
-      panel.grid.major.x = element_blank(),
-      panel.grid.minor.x = element_blank(),
-      strip.text = element_text(size = 7, lineheight = 0.9, margin = margin(2,2,2,2))
-    ) +
-    scale_x_discrete(
-      expand = expansion(mult = c(0.1, 0.1)),
-      labels = c(control = "Control", low = "Low (0.01)", mid = "Mid (0.1)", high = "High (1)")
-    ) +
-    facet_wrap(~ gene_label, scales = "free_y")
-}
-
-```
-
-
-# Presence/absence matrix
-```{r}
-presence_mat <- sig_summary %>%
-  distinct(list, gene_id) %>%
-  mutate(value = 1L) %>%
-  tidyr::pivot_wider(names_from = list, values_from = value, values_fill = 0)
-```
-
-
-```{r}
-plot_df <- tidyr::pivot_longer(presence_mat, -gene_id,
-                               names_to = "list", values_to = "present")
-
-ggplot(plot_df, aes(x = list, y = gene_id, fill = factor(present))) +
-  geom_tile() +
-  scale_fill_manual(values = c("0" = "white", "1" = "black"), guide = "none") +
-  labs(x = NULL, y = NULL) +
-  theme_minimal() +
-  theme(panel.grid = element_blank(),
-        axis.text.x = element_text(angle = 45, hjust = 1))
-```
-
-
-```{r}
-# helper to standardize any DESeqResults into a tidy df
-as_tbl <- function(res, name){
-  as.data.frame(res) %>%
-    rownames_to_column("gene_id") %>%
-    transmute(
-      gene_id,
-      result_name = name,
-      log2FC      = log2FoldChange,
-      pval        = pvalue,
-      padj        = padj
-    )
-}
-```
-
-```{r}
-# EXAMPLE: replace the ... with your actual DESeqResults objects
-res_list <- list(
-  # Wald main effects at reference stage (cleavage)
-  leachate_low  = results(dds_wald, name = "leachatelow"),
-  leachate_mid  = results(dds_wald, name = "leachatemid"),
-  leachate_high = results(dds_wald, name = "leachatehigh"),
-
-  # Stage-specific low/mid/high (additive + interaction)
-  prawn_low  = results(dds_wald, contrast = list(c("leachatelow",  "stageprawnchip.leachatelow"))),
-  prawn_mid  = results(dds_wald, contrast = list(c("leachatemid",  "stageprawnchip.leachatemid"))),
-  prawn_high = results(dds_wald, contrast = list(c("leachatehigh", "stageprawnchip.leachatehigh"))),
-
-  eg_low  = results(dds_wald, contrast = list(c("leachatelow",  "stageearlygastrula.leachatelow"))),
-  eg_mid  = results(dds_wald, contrast = list(c("leachatemid",  "stageearlygastrula.leachatemid"))),
-  eg_high = results(dds_wald, contrast = list(c("leachatehigh", "stageearlygastrula.leachatehigh"))),
-
-  # Pure interaction terms (differences of effects vs cleavage)
-  int_prwn_low  = results(dds_wald, name = "stageprawnchip.leachatelow"),
-  sig_prwn_mid  = results(dds_wald, name = "stageprawnchip.leachatemid"),
-  int_prwn_high = results(dds_wald, name = "stageprawnchip.leachatehigh"),
-  int_eg_low    = results(dds_wald, name = "stageearlygastrula.leachatelow"),
-  int_eg_mid   
-  int_eg_high  
-
-  # LRT (e.g., test of interaction block or full vs reduced)
-  sig_cat_LRT
-)
-```
-
-
-```{r}
-# Combine into a summary
-int_wald_df <- data.frame(
-  gene_id = rownames(res_high_pc),
-  pc_h_log2FC = res_high_pc$log2FoldChange,
-  pc_high_padj = res_high_pc$padj,
-  prawnchip_mid_log2FC = res_mid_pc$log2FoldChange,
-  prawnchip_mid_padj = res_mid_pc$padj,
-  prawnchip_low_log2FC = res_low_pc$log2FoldChange,
-  prawnchip_low_padj = res_low_pc$padj,
-  earlygastrula_high_log2FC = res_high_eg$log2FoldChange,
-  earlygastrula_high_padj = res_high_eg$padj,
-  earlygastrula_mid_log2FC = res_mid_eg$log2FoldChange,
-  earlygastrula_mid_padj = res_mid_eg$padj,
-  earlygastrula_low_log2FC = res_low_eg$log2FoldChange,
-  earlygastrula_low_padj = res_low_eg$padj
+groups <- c(
+  "cleavage_low", "cleavage_mid", "cleavage_high",
+  "prawnchip_low", "prawnchip_mid", "prawnchip_high",
+  "earlygastrula_low", "earlygastrula_mid", "earlygastrula_high"
 )
 
-# Focus on the 44 genes
-int_wald_df_sig <- int_wald_df[int_wald_df$gene_id %in% LRT_sig_genes$gene_id, ]
+sig_summary <- sig_summary %>%
+  mutate(
+    plot_group = str_extract(
+      list,
+      paste0("^(", paste(groups, collapse = "|"), ")")
+    )
+  )
 ```
 
-### Plot heatmap
+Make a dataframe for plotting that breaks down the row into main or interaction contrast categories
+```{r}
+plot_levels <- c(
+  "cleavage_high", "prawnchip_high", "earlygastrula_high",
+  "cleavage_mid",  "prawnchip_mid",  "earlygastrula_mid",
+  "cleavage_low",  "prawnchip_low",  "earlygastrula_low"
+)
+
+sig_plot <- sig_summary %>%
+  filter(!list %in% c("int", "joint")) %>%  # keep your current filter
+  mutate(
+    effect_type = case_when(
+      str_detect(list, "\\.int$")         ~ "interaction",
+      str_detect(list, "\\.vs\\.control") ~ "main",
+      TRUE                                ~ "other"
+    )
+  ) %>%
+  filter(effect_type %in% c("main", "interaction")) %>%
+  arrange(abs(log2FoldChange)) %>%
+  mutate(
+    gene_id_fac = factor(gene_id, levels = unique(gene_id)),
+    plot_group  = factor(plot_group, levels = plot_levels)
+  )
+```
+
+Make the plot that combines main and interaction effects 
+```{r, fig.height=8, fig.width=11}
+p_FC <- ggplot() +
+  # ===== MAIN EFFECT: segments + points, 1st colour scale =====
+  geom_segment(
+    data = filter(sig_plot, effect_type == "main"),
+    aes(
+      x    = 0,
+      xend = log2FoldChange,
+      y    = gene_id_fac,
+      yend = gene_id_fac,
+      colour = padj
+    ),
+    linewidth = 1
+  ) +
+  geom_point(
+    data = filter(sig_plot, effect_type == "main"),
+    aes(
+      x = log2FoldChange,
+      y = gene_id_fac,
+      colour = padj
+    ),
+    size = 1
+  ) +
+  scale_colour_gradientn(
+    name    = "P(adj) stage specific leachate effect",
+    colours = colorspace::sequential_hcl(7, palette = "TealGrn"),
+    guide   = guide_colourbar(order = 1,
+                            direction = "horizontal",
+                            title.position = "top",
+                            title.hjust = 0.5)
+  ) +
+
+  ggnewscale::new_scale_colour() +   # << reset colour scale here
+
+  # ===== INTERACTION: segments + points, 2nd colour scale =====
+  geom_segment(
+    data = filter(sig_plot, effect_type == "interaction"),
+    aes(
+      x    = 0,
+      xend = log2FoldChange,
+      y    = gene_id_fac,
+      yend = gene_id_fac,
+      colour = padj
+    ),
+    linewidth = 1
+  ) +
+  geom_point(
+    data = filter(sig_plot, effect_type == "interaction"),
+    aes(
+      x = log2FoldChange,
+      y = gene_id_fac,
+      colour = padj
+    ),
+    size = 1
+  ) +
+  scale_colour_gradientn(
+    name    = "P(adj) stage × leachate interaction effect",
+    colours = colorspace::sequential_hcl(7, palette = "Peach"),
+    guide   = guide_colourbar(order = 2,
+                            direction = "horizontal",
+                            title.position = "top",
+                            title.hjust = 0.5)
+  ) +
+
+  # ===== facets + theme =====
+  facet_wrap(~ plot_group, nrow = 3) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "grey") +
+  theme_classic() +
+  theme(
+    legend.text      = element_text(size = 8, color = "grey60"),
+    legend.key.width = grid::unit(1.25, "cm"),  # increase until labels stop colliding
+    legend.title     = element_text(size = 10, color = "grey30"),
+    legend.position  = "top",
+    axis.text.y      = element_blank(),
+    axis.title.y     = element_blank(),
+    axis.line.y      = element_blank(),
+    axis.line.x      = element_blank(),
+    axis.ticks.y     = element_blank(),
+    axis.ticks.x     = element_blank(),
+    axis.text.x      = element_text(size = 12, color = "grey60"),
+    strip.background = element_blank(),
+    axis.title.x     = element_text(size = 14, color = "grey30"),
+    plot.title       = element_text(size = 16, color = "grey20", hjust = 0.5)
+  ) +
+  ggtitle("Log2 Fold Change of significant DEGs")+
+  labs(x = "Log2 Fold Change")
+
+p_FC
+
+ggsave("../../output/06_deg/figs/log2FC.png", width = "11", height = "8")
+```
+I like this plot! This will be what I tweak for the final manuscript. I'd like to add symbols for the embryonic stages and leachate dose in place of the facet titles. If possible, I'd like to link the genes to enriched function on the y axis... but gene semantic similarity doesn't necessarily map to log2Fold change or significance... 
+
+To re-iterate, the main point of this plot is that cleavage experienced the most differential expression due to leachate, and low dose also shows a signal across stages... then there is this senescense of response in the prawnchip stage (a narrowing?), and another signal in the longest exposure and highest dose (early gatrula, high).
+
+
+# Heatmap
 
 ```{r}
 # Step 1: Order and extract log2FC values
@@ -653,25 +499,77 @@ pheatmap(mat,
 
 Interpretation notes: \> 🧬 What does the heatmap show? Each cell in the heatmap shows the scaled log2 fold change for a gene in a specific interaction condition. \> \> ✅ Scaling Because you set scale = "row", each gene's values are z-scored across the six interaction conditions \> \> Blue = low relative expression change in that condition \> \> Red = high relative expression change in that condition \> \> The actual color scale is relative within each row, not across the whole matrix. \> \> This helps visualize patterns of expression changes across conditions for each gene, regardless of absolute size. \> \> 📊 What can you learn from this? Are there groups of genes responding similarly? Row clustering may reveal gene modules with similar interaction response profiles. \> \> Which stage + leachate condition drives the interaction? Column patterns (e.g., lots of red in prawnchip_high_log2FC) suggest strong interaction effects in that condition. \> \> Which genes have the strongest differential interactions? Genes with high contrast (strong red/blue) have more dynamic interaction effects. \> \> 🧠 Interpretation Reminder These log2 fold changes are interaction effects --- they reflect how gene expression at a specific `stage` & `leachate` level deviates from the expected additive effect of `stage` and `leachate` alone. \> \> So, a large positive log2FC means: \> \> "At this `stage` and `leachate` level, this gene is more highly expressed than we would expect based on `stage` and `leachate` effects individually." \> \> Likewise, a large negative value = stronger-than-expected suppression.
 
+# Venn
 ```{r}
-int_wald_df_sig$any_sig <- apply(int_wald_df_sig[, grepl("padj", names(int_wald_df_sig))], 1, function(p) any(p < 0.05, na.rm = TRUE))
+# MAIN-effect membership
+main_sets <- sig_plot %>%
+  filter(effect_type == "main") %>%
+  distinct(gene_id, plot_group) %>%          # 1 row per gene/group
+  mutate(value = 1L) %>%
+  pivot_wider(
+    names_from  = plot_group,
+    values_from = value,
+    values_fill = 0L
+  )
+
+# INTERACTION-effect membership
+int_sets <- sig_plot %>%
+  filter(effect_type == "interaction") %>%
+  distinct(gene_id, plot_group) %>%
+  mutate(value = 1L) %>%
+  pivot_wider(
+    names_from  = plot_group,
+    values_from = value,
+    values_fill = 0L
+  )
+
 ```
 
-
 ```{r}
-common_genes <- Reduce(intersect, list(
-  sig_lvc_cl$gene_id,
-  sig_mvc_cl$gene_id,
-  sig_hvc_cl$gene_id
-))
+test_df <- data.frame(
+  gene_id = c("g1", "g2", "g3", "g4"),
+  A = c(1, 0, 1, 0),
+  B = c(0, 1, 1, 0),
+  C = c(1, 1, 0, 0)
+)
 
-length(common_genes)  # Number of genes common to all cleavage, just 1!
-print(common_genes) # And it is...
+ComplexUpset::upset(
+  test_df,
+  intersect = c("A", "B", "C")
+)
 ```
 
-::: callout-note
-Montipora_capitata_HIv3\_\_\_TS.g50653.t2" is the only gene common across cleavage with differential expression due to low, mid, and high leachate treatments
-:::
+```{r}
+# UpSet for MAIN effect DEGs
+up_main <- ComplexUpset::upset(
+  main_sets,
+  intersect = plot_levels,
+  #name      = "Main-effect DEGs",
+  base_annotations = list(
+    'Set size' = upset_set_size()
+  )
+)
+
+up_main
+
+# UpSet for INTERACTION effect DEGs
+up_int <- ComplexUpset::upset(
+  int_sets,
+  intersect = plot_levels,
+  name      = "Interaction-effect DEGs",
+  base_annotations = list(
+    'Set size' = upset_set_size()
+  )
+)
+```
+
+```{r}
+up_main / up_int +
+  plot_annotation(
+    title = "Overlaps of significant DEGs across stage × leachate groups",
+    subtitle = "Top: main-effect DEGs; bottom: stage × leachate interaction DEGs"
+  )
+```
 
 # Gene set overlap: Venn Diagram
 ## Venn Diagram with ComplexUpset
