@@ -1,5 +1,5 @@
 ---
-title: "Multifactorial Differential Gene Expression"
+title: "Plotting Differential Gene Expression"
 subtitle: "Exploring the interactions between embryonic stage and PVC leachate in Montipora capitata using DESeq2"
 author: "Sarah Tanja"
 date: 2024-12-02
@@ -34,60 +34,59 @@ knitr::opts_chunk$set(
   eval = TRUE, # Evaluate code chunks
   warning = FALSE, # Hide warnings
   message = FALSE, # Hide messages
-  comment = "", # Prevents appending '##' to beginning of lines in code output))        
+  comment = "") # Prevents appending '##' to beginning of lines in code output))        
 ```
 
 # Background
 
-So we have 11 different 'significant gene' lists. Each list indicates that leachate had a significant effect somewhere:
-
-LRT 
-- `sig_cat_LRT`, 44 DEGs, this list are genes that had an overall impact by leachate interacting with stage (full vs reduced, testing interaction term as a whole)
-
-Interaction effects
-- `sig_prawnchip_high.int`, 1 DEG
-- `sig_prawnchip_mid.int`, 5 DEGs
-- `sig_prawnchip_low.int`, 12 DEGs
-- `sig_earlygastrula_high.int`, 3 DEGs
-- `sig_earlygastrula_mid.int`, 11 DEGs
-- `sig_earlygastrula_low.int`, 11 DEGs
-
-Stage x leachate effects
-- `sig_cleavage_low.vs.control`, 39 DEGs
-- `sig_cleavage_mid.vs.control`, 77 DEGs
-- `sig_cleavage_high.vs.control`, 18 DEGs
-- `sig_earlygastrula_high.vs.control`, 22 DEGs
-
-We also have a normalized count matrix generated via DESeq2
-- `norm_count_mat.csv`
-
+So we have 9 different 'significant gene' lists. 
+Each list indicates genes in which leachate had a significant effect.
 
 ## Inputs
+LRT:
+- `sig_int`, 13 DEGs
+- `sig_joint`. 44 DEGs
 
-Everything from 06_deg/results
-```{r}
-library(readr)
+Interaction effects 
+- cleavage_low.int , 0 DEGs
+- cleavage_mid.int , 0 DEGs
+- cleavage_high.int, 0 DEGs
 
-path <- "../../output/06_deg/results/"
-files <- list.files(path, pattern = "\\.csv$", full.names = TRUE)
-nm    <- make.names(tools::file_path_sans_ext(basename(files)), unique = TRUE)
+- `sig_prawnchip_low.int`, 7 DEGs 
+- prawnchip_mid.int , 0 DEGs
+- prawnchip_high.int, 0 DEGs
 
-for (i in seq_along(files)) {
-  assign(nm[i], readr::read_csv(files[i]), envir = .GlobalEnv)
-}
+- `sig_earlygastrula_low.int`, 8 DEGs
+- earlygastrula_mid.int, 0 DEGs
+- `sig_earlygastrula_high.int`, 1 DEGs 
 
-```
+Contrasts
+- `sig_cleavage_low.vs.control`, 34 DEGs 
+- `sig_cleavage_mid.vs.control`, 58 DEGs 
+- `sig_cleavage_high.vs.control`, 7 DEGs 
 
-Metadata
-```{r}
-metadata_or <- read.csv("../../metadata/metadata_or.csv")
-str(metadata_or)
-```
+- prawnchip_low.vs.control, 0 DEGs
+- prawnchip_mid.vs.control, 0 DEGs
+- prawnchip_high.vs.control, 0 DEGs
+
+- earlygastrula_low.vs.control, 0 DEGs
+- earlygastrula_mid.vs.control, 0 DEGs
+- `sig_earlygastrula_high.vs.control`, 27 DEGs
+
+- `sig_summary.csv` 
+
+We also have VST count matrices generated via DESeq2 of the full gene set and the combined DEGs
+- `vst_mat_df.csv`
+- `vst_mat_130_df.csv`
 
 ## Outputs
 - Gene count plots
 - PCA of significant genes
 - Heatmap(s) showing significant genes across DEG lists
+- Heatmap of genes for each cluster?
+- Plots of log2FC for each contrast
+- Plots of log2FC for each cluster
+- VennDiagram of gene set overlaps
 
 # Setup
 
@@ -97,9 +96,9 @@ str(metadata_or)
 # Load packages
 library(viridis)
 library(tidyverse)
+library(readr)
 library(DEGreport)
 library(ashr)
-library(flexoki)
 library(plotly)
 library(vsn)
 library(pheatmap)
@@ -115,10 +114,32 @@ library(forcats)
 library(ggforce)   # for facet_wrap_paginate
 ```
 
+## Load inputs
+Everything from output/06_deg/spawnnight
+```{r}
+path <- "../../output/06_deg/spawnnight/"
+files <- list.files(path, pattern = "\\.csv$", full.names = TRUE)
+nm    <- make.names(tools::file_path_sans_ext(basename(files)), unique = TRUE)
+
+for (i in seq_along(files)) {
+  assign(nm[i], readr::read_csv(files[i]), envir = .GlobalEnv)
+}
+```
+
+```{r}
+gene_cluster_data <- read_csv("../../output/06_deg/cluster/gene_cluster_zscores.csv")
+```
+
+Metadata
+```{r}
+metadata_or <- read.csv("../../metadata/metadata_or.csv")
+str(metadata_or)
+```
+
 ## Long data for plotting
 ```{r}
 # convert -> long tidy dataframe
-norm_count_long <- as.data.frame(norm_count_mat) %>%
+norm_130_long <- as.data.frame(norm_130_df) %>%
   rownames_to_column("gene_id") 
 
 
@@ -131,7 +152,7 @@ norm_count_long <- as.data.frame(norm_count_mat) %>%
   )
 
 # 3. join sample metadata
-norm_count_long <- norm_count_long %>% left_join(metadata_or, by = "sample_id")
+norm_130_long <- norm_count_long %>% left_join(metadata_or, by = "sample_id")
 ```
 
 How many samples are in each treatment for each significant gene?
@@ -147,9 +168,219 @@ sample_counts <- norm_count_long %>%
 
 summary(sample_counts)
 ```
+
 ::: callout-note
 At least 4 samples represent each group per significant gene. Most groups are represented by 5 samples... some have 4, 6, and 1 group has 7 samples. This is important to check because we want to be able to compare the groups, but if they have vastly different sample sizes that could be problematic. This confirms that the sample sizes are reasonably similar for comparisons.
 :::
+
+# Fold Change 
+
+Here I want to visualize how many DEGs there are in each contrast, and their magnitude and direction. 
+```{r}
+sig_FC <- sig_summary %>% 
+  dplyr::arrange(log2FoldChange) %>%
+  ggplot(aes(x=log2FoldChange, y=reorder(gene_id, -log2FoldChange), colour=padj)) +
+  facet_grid(~list, scales="free_y")+
+  geom_point(size=1)+
+  scale_colour_gradientn(name="P(adj)", colours = colorspace::heat_hcl(7))+
+  geom_segment(aes(x=0, xend=log2FoldChange, y=gene_id, yend=gene_id),linewidth=1) +
+  geom_vline(xintercept = 0, linetype = "dashed") + # Add vertical line
+  theme_classic() +
+  ylab("Gene")+
+  theme(legend.position = "right",
+        axis.text.y = element_blank(),
+        axis.text.x = element_text(size=12),
+        strip.text=element_text(size=14),
+        axis.title.y = element_text(size=14, face="bold"),
+        axis.title.x = element_text(size = 14, face = "bold"),
+        plot.title = element_text(size = 16, face = "bold"))+
+  ggtitle('Log2 Fold Change of significant DEGs')
+
+sig_FC
+
+
+```
+The interaction (`int`) and joint (`joint`) lists have valid p values but not valid log2FoldChange values... those are taken from a contrast... therefore visualizing an LRT test log2FoldChange isn't useful. We will try again and exlude them... 
+```{r}
+sig_FC <- sig_summary %>% 
+  dplyr::filter(!list %in% c("int", "joint")) %>% 
+  dplyr::arrange(log2FoldChange) %>%
+  ggplot(aes(x=log2FoldChange, y=reorder(gene_id, -log2FoldChange), colour=padj)) +
+  facet_grid(~list, scales="free_y")+
+  geom_point(size=2)+
+  scale_colour_gradientn(name="P(adj)", colours = colorspace::heat_hcl(7))+
+  geom_segment(aes(x=0, xend=log2FoldChange, y=gene_id, yend=gene_id), linewidth=1.5) +
+  geom_vline(xintercept = 0, linetype = "dashed") + # Add vertical line
+  theme_classic() +
+  ylab("Gene")+
+  theme(legend.position = "right",
+        axis.text.y = element_blank(),
+        axis.text.x = element_text(size=12),
+        strip.text=element_text(size=6),
+        axis.title.y = element_text(size=14, face="bold"),
+        axis.title.x = element_text(size = 14, face = "bold"),
+        plot.title = element_text(size = 16, face = "bold"))+
+  ggtitle('Log2 Fold Change of significant DEGs')
+
+sig_FC
+```
+I think i want this plot to show how many and in which direction... not necessarily comparing the exact genes from one group to another ... though that is interesting too.... it just seems that the data is too sparse... need more data ink! This plot would be more interesting if it included what the genes do... but the problem with 1 gene to many GO terms make that difficult... Should I show all the contrasts that have no DEGs? Should I show the interaction effects separately from the contrast effects?
+
+```{r}
+sig_summary <-  sig_summary %>% 
+  add_row(`list` = c("cleavage_low.int" ,
+                    "cleavage_mid.int" , 
+                    "cleavage_high.int",
+                    "prawnchip_mid.int", 
+                    "prawnchip_high.int",
+                    "earlygastrula_mid.int",
+                    "prawnchip_low.vs.control", 
+                    'prawnchip_mid.vs.control', 
+                    'prawnchip_high.vs.control', 
+                    'earlygastrula_low.vs.control', 
+                    'earlygastrula_mid.vs.control'
+                    ))
+```
+
+Ok here we're going to only look at the 9 contrasts (sig effect of leachate on gene expression of an embryo at a specific stage and dose)
+
+```{r}
+sig_FC <- sig_summary %>% 
+  dplyr::filter(!list %in% c("int", "joint", 
+                             "cleavage_low.int",
+                             "cleavage_mid.int" , 
+                             "cleavage_high.int",
+                             "prawnchip_mid.int",
+                             "prawnchip_low.int",
+                             "prawnchip_high.int",
+                             "earlygastrula_low.int",
+                             "earlygastrula_mid.int",
+                             "earlygastrula_high.int")) %>%
+  mutate(list = factor(list, levels = c("earlygastrula_low.vs.control",
+                                        "earlygastrula_mid.vs.control",
+                                        "earlygastrula_high.vs.control", 
+                                        "prawnchip_low.vs.control", 
+                                        "prawnchip_mid.vs.control", 
+                                        "prawnchip_high.vs.control", 
+                                        "cleavage_low.vs.control", 
+                                        "cleavage_mid.vs.control",
+                                        "cleavage_high.vs.control"))) %>% 
+  dplyr::arrange(log2FoldChange) %>%
+  ggplot(aes(x=log2FoldChange, y=reorder(gene_id, -log2FoldChange), colour=padj)) +
+  facet_wrap(~list, nrow = 3)+
+  geom_point(size=1)+
+  scale_colour_gradientn(name="P(adj)", colours = colorspace::heat_hcl(7))+
+  geom_segment(aes(x=0, xend=log2FoldChange, y=gene_id, yend=gene_id),linewidth=1) +
+  geom_vline(xintercept = 0, linetype = "dashed") + # Add vertical line
+  theme_classic() +
+  ylab("Gene")+
+  theme(legend.position = "right",
+        axis.text.y = element_blank(),
+        axis.text.x = element_text(size=12),
+        strip.text=element_text(size=6),
+        axis.title.y = element_text(size=14, face="bold"),
+        axis.title.x = element_text(size = 14, face = "bold"),
+        plot.title = element_text(size = 16, face = "bold"))+
+  ggtitle('Log2 Fold Change of significant DEGs')
+
+sig_FC
+```
+```{r}
+sig_FC <- sig_summary %>% 
+  dplyr::filter(!list %in% c("int", "joint", 
+                             "cleavage_low.int",
+                             "cleavage_mid.int" , 
+                             "cleavage_high.int",
+                             "prawnchip_mid.int",
+                             "prawnchip_low.int",
+                             "prawnchip_high.int",
+                             "earlygastrula_low.int",
+                             "earlygastrula_mid.int",
+                             "earlygastrula_high.int")) %>%
+  mutate(list = factor(list, levels = c("cleavage_high.vs.control",
+                                        "prawnchip_high.vs.control",
+                                        "earlygastrula_high.vs.control",
+                                        "cleavage_mid.vs.control",
+                                        "prawnchip_mid.vs.control",
+                                        "earlygastrula_mid.vs.control",
+                                        "cleavage_low.vs.control",
+                                        "prawnchip_low.vs.control",
+                                        "earlygastrula_low.vs.control"))) %>% 
+  dplyr::arrange(log2FoldChange) %>%
+  ggplot(aes(x=log2FoldChange, y=reorder(gene_id, -log2FoldChange), colour=padj)) +
+  facet_wrap(~list, nrow = 3)+
+  geom_point(size=1)+
+  scale_colour_gradientn(name="P(adj) main leachate effect", colours = colorspace::heat_hcl(7))+
+  geom_segment(aes(x=0, xend=log2FoldChange, y=gene_id, yend=gene_id), linewidth = 1) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "grey") + # Add vertical line
+  theme_classic() +
+  theme(legend.position = "right",
+        axis.text.y = element_blank(),
+        axis.title.y = element_blank(),
+        axis.line.y = element_blank(),
+        axis.line.x = element_line(color = "grey60"),
+        axis.ticks.y = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_text(size=12, color = "grey60"),
+        strip.text = element_text(size=6),
+        strip.background = element_blank(),
+        axis.title.x = element_text(size = 14, color = "grey60"),
+        plot.title = element_text(size = 16, color = "grey60"))+
+  ggtitle('Log2 Fold Change of significant DEGs')
+
+sig_FC
+```
+
+
+```{r}
+sif_FC_int <- sig_summary %>% 
+  dplyr::filter(!list %in% c("int", "joint", 
+                             "cleavage_high.vs.control",
+                             "prawnchip_high.vs.control",
+                             "earlygastrula_high.vs.control",
+                             "cleavage_mid.vs.control",
+                             "prawnchip_mid.vs.control",
+                             "earlygastrula_mid.vs.control",
+                             "cleavage_low.vs.control",
+                             "prawnchip_low.vs.control",
+                             "earlygastrula_low.vs.control")) %>%
+  mutate(list = factor(list, levels = c("cleavage_high.int",
+                                        "prawnchip_high.int",
+                                        "earlygastrula_high.int",
+                                        "cleavage_mid.int", 
+                                        "prawnchip_mid.int",
+                                        "earlygastrula_mid.int",
+                                        "cleavage_low.int",
+                                        "prawnchip_low.int",
+                                        "earlygastrula_low.int"))) %>% 
+  dplyr::arrange(log2FoldChange) %>%
+  ggplot(aes(x=log2FoldChange, y=reorder(gene_id, -log2FoldChange), colour=padj)) +
+  facet_wrap(~list, nrow = 3)+
+  geom_point(size=1)+
+  scale_colour_gradientn(name="P(adj) stage x leachate interaction", colours = colorspace::sequential_hcl(7, palette = "Viridis"))+
+  geom_segment(aes(x=0, xend=log2FoldChange, y=gene_id, yend=gene_id), linewidth = 1) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "grey") + # Add vertical line
+  theme_classic() +
+  theme(legend.position = "right",
+        axis.text.y = element_blank(),
+        axis.title.y = element_blank(),
+        axis.line.y = element_blank(),
+        axis.line.x = element_line(color = "grey60"),
+        axis.ticks.y = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_text(size=12, color = "grey60"),
+        strip.text = element_text(size=6),
+        strip.background = element_blank(),
+        axis.title.x = element_text(size = 14, color = "grey60"),
+        plot.title = element_text(size = 16, color = "grey60"))+
+  ggtitle('Log2 Fold Change of significant DEGs')
+
+sig_FC_int
+
+```
+```{r}
+colorspace::hcl_palettes(type = "sequential")
+```
 
 #  Gene count plot function
 ```{r}
@@ -271,326 +502,6 @@ plot_sig_genes <- function(norm_count_long,
 
 ```
 
-```{r}
-plot_sig_genes(norm_count_long, sig_prawnchip_mid.int, gene_col = "gene_id", padj_col = "padj")
-```
-
-
-```{r}
-resultsNames(dds_wald)
-```
-
-## Interaction terms
--   "stageprawnchip.leachatelow"
-
--   "stageearlygastrula.leachatelow"
-
--   "stageprawnchip.leachatemid"
-
--   "stageearlygastrula.leachatemid"
-
--   "stageprawnchip.leachatehigh"
-
--   "stageearlygastrula.leachatehigh"
-
-Each of the above interaction terms tells us the extra effect of the leachate level at a stage (vs the additive sum of the stage and leachate effects) in comparison to a control baseline count. For the interaction terms, we are trying to get the "difference of the differences". For this analysis, we are interested in genes that are differentially expressed in treatment conditions, but not in the control condition (ie. genes uniquely changing in a stage due to treatment).
-
-```{r}
-# prawnchip interaction terms
-res_prawnchip_high.int <- results(dds_wald, name = "stageprawnchip.leachatehigh", alpha = 0.05)
-res_prawnchip_mid.int <- results(dds_wald, name = "stageprawnchip.leachatemid", alpha = 0.05)
-res_prawnchip_low.int  <- results(dds_wald, name = "stageprawnchip.leachatelow", alpha = 0.05)
-
-# early gastrula interaction terms
-res_earlygastrula_high.int <- results(dds_wald, name = "stageearlygastrula.leachatehigh", alpha = 0.05)
-res_earlygastrula_mid.int <- results(dds_wald, name = "stageearlygastrula.leachatemid", alpha = 0.05)
-res_earlygastrula_low.int <- results(dds_wald, name = "stageearlygastrula.leachatelow", alpha = 0.05)
-
-```
-
-### Prawnchip
-#### high
-```{r}
-summary(res_prawnchip_high.int)
-```
-::: callout-note
-1 gene was found to have significant stage x leachate interaction (adjusted p value \< 0.05)
-:::
-
-```{r}
-sig_prawnchip_high.int <- res_prawnchip_high.int %>%
-  as.data.frame() %>%
-  filter(padj < 0.05) %>% 
-  rownames_to_column(var = "gene_id")
-
-sig_prawnchip_high.int
-```
-
-::: callout-note
-Only one gene showed a significant stage × leachate interaction in the prawnchip stage under the high treatment (Wald test, BH-adjusted p < 0.05). Specifically, **Montipora_capitata_HIv3___RNAseq.g11129.t1** was up-regulated during the prawnchip stage in the high treatment (log2FC = +5.76, padj = 0.026) relative to the expected count levels...
-:::
-
-```{r}
-plot_sig_genes(norm_count_long, sig_prawnchip_high.int, gene_col = "gene_id", padj_col = "padj")
-```
-
-```{r}
-ggplot(sig_prawnchip_high.int, aes(x=leachate, y=expression, color = stage, group = stage)) +
-  stat_summary(fun = mean, geom = "line") +
-  stat_summary(fun.data = mean_cl_normal, geom = "errorbar", width = 0.1) +
-  stat_summary(fun = mean, geom = "point", size = 2) +
-  facet_wrap(~ gene_id, scales = "free_y")
-
-```
-
-
-::: callout-note
-Visually... I can't see how this indicates an interaction effect in the prawnchip x high samples
-:::
-
-::: column-margin
-
-> DESeq2 uses size-factor normalization (the “median-ratio method”). It corrects for library size and composition so you can compare counts across samples. How it works (median-ratio method) Per-gene geometric mean across samples (skip genes with all zeros). Per-sample ratios: for each gene, divide a sample’s count by that gene’s geometric mean. Size factor: the median of those ratios within each sample. Normalized counts: normalized = raw_count / size_factor. These size factors are used as an offset in the negative binomial GLM for the Wald/LRT tests. Normalization is independent of the design formula.
-
-:::
-
-#### mid
-```{r}
-summary(res_prawnchip_mid.int)
-```
-::: callout-note
-5 genes were found to have significant prawnchip stage x mid leachate interaction (adjusted p value \< 0.05)
-:::
-
-```{r}
-sig_prawnchip_mid.int <- res_prawnchip_mid.int %>%
-  as.data.frame() %>%
-  filter(padj < 0.05) %>% 
-  rownames_to_column(var = "gene_id")
-```
-
-```{r}
-plot_sig_genes(norm_count_long, sig_prawnchip_mid.int, gene_col = "gene_id", padj_col = "padj")
-```
-
-#### low
-```{r}
-summary(pcl)
-```
-
-```{r}
-sig_pcl <- pcl %>%
-  as.data.frame() %>%
-  filter(padj < 0.05) %>% 
-  rownames_to_column(var = "gene_id")
-```
-
-### Early gastrula
-#### high
-```{r}
-summary(res_earlygastrula_high.int)
-```
-
-```{r}
-sig_earlygastrula_high.int_egh <- res_earlygastrula_high.int %>%
-  as.data.frame() %>%
-  filter(padj < 0.05) %>% 
-  rownames_to_column(var = "gene_id")
-```
-
-#### mid
-```{r}
-summary(res_earlygastrula_mid.int)
-```
-
-```{r}
-sig_earlygastrula_mid.int <- res_earlygastrula_mid.int %>%
-  as.data.frame() %>%
-  filter(padj < 0.05) %>% 
-  rownames_to_column(var = "gene_id")
-
-write_csv(sig_earlygastrula_mid.int, "../../output/06_deg/contrasts/sig_earlygastrula_mid.int.csv")
-```
-#### low
-```{r}
-summary(res_earlygastrula_low.int)
-```
-
-```{r}
-sig_earlygastrula_low.int <- res_earlygastrula_low.int %>%
-  as.data.frame() %>%
-  filter(padj < 0.05) %>% 
-  rownames_to_column(var = "gene_id")
-
-write_csv(sig_earlygastrula_low.int, "../../output/06_deg/contrasts/sig_earlygastrula_low.int.csv")
-```
-
-## vs. Control contrasts
-
-See [A guide to designs and contrasts in DESeq2](https://www.atakanekiz.com/technical/a-guide-to-designs-and-contrasts-in-DESeq2/) by Dr. Atakan Ekiz
-
-```{r}
-resultsNames(dds_wald)
-```
-```{r}
-# cleavage 
-res_cleavage_low.vs.control <- results(dds_wald, name = "leachatelow", alpha = 0.05)
-res_cleavage_mid.vs.control  <- results(dds_wald, name = "leachatemid", alpha = 0.05)
-res_cleavage_high.vs.control <- results(dds_wald, name = "leachatehigh", alpha = 0.05)
-
-# prawnchip
-res_prawnchip_low.vs.control <- results(dds_wald, contrast = list(c("leachatelow", "stageprawnchip.leachatelow")), alpha = 0.05)
-res_prawnchip_mid.vs.control  <- results(dds_wald, contrast = list(c("leachatemid",  "stageprawnchip.leachatemid")), alpha = 0.05)
-res_prawnchip_high.vs.control <- results(dds_wald, contrast = list(c("leachatehigh", "stageprawnchip.leachatehigh")), alpha = 0.05)
-
-# earlygastrula
-res_earlygastrula_low.vs.control <- results(dds_wald, contrast = list(c("leachatelow", "stageearlygastrula.leachatelow")), alpha = 0.05)
-res_earlygastrula_mid.vs.control  <- results(dds_wald, contrast = list(c("leachatemid",  "stageearlygastrula.leachatemid")), alpha = 0.05)
-res_earlygastrula_high.vs.control <- results(dds_wald, contrast = list(c("leachatehigh", "stageearlygastrula.leachatehigh")), alpha = 0.05)
-
-```
-
-## low leachate vs control
-
-for cleavage (baseline stage)
-> Because you fit ~ 0 + stage + leachate + stage:leachate, **the coefficient leachatelow is the low vs control effect at the reference stage**. From your resultsNames() (no stagecleavage.leachatelow term is present) the reference stage is cleavage, so Low vs control at cleavage is simply the leachatelow coefficient.
-
-```{r}
-summary(res_cleavage_low.vs.control)
-```
-
-::: callout-note
-39 genes were found to be significantly differentially expressed (adjusted p value \< 0.05) at the cleavage stage in the low leachate treatment compared to the control. 14 LFC \> 0 & 25 LFC \< 0.
-:::
-
-```{r}
-sig_cleavage_low.vs.control <- res_cleavage_low.vs.control %>%
-  as.data.frame() %>%
-  filter(padj < 0.05) %>% 
-  rownames_to_column(var = "gene_id")
-
-write_csv(sig_cleavage_low.vs.control, "../../output/06_deg/contrasts/sig_cleavage_low.vs.control.csv")
-```
-
-for prawnchip
-
-```{r}
-res_lvc_pc <- results(dds_wald, contrast = list(c("leachatelow",
-                                                  "stageprawnchip.leachatelow")), 
-                      alpha = 0.05)
-summary(res_lvc_pc)
-```
-
-::: callout-note
-0 genes differentially expressed (adjusted p value \< 0.05) at the prawn chip stage in the low leachate treatment when compared to the control.
-:::
-
-for early gastrula
-
-```{r}
-res_lvc_eg <- results(dds_wald, contrast = list(c("leachatelow",
-                                                 "stageearlygastrula.leachatelow")),
-                      alpha = 0.05)
-summary(res_lvc_eg)
-```
-
-::: callout-note
-0 genes differentially expressed (adjusted p value \< 0.05) at the early gatrula stage in the low leachate treatment when compared to the control.
-:::
-
-## mid leachate vs. control (mvc)
-
-for cleavage
-
-```{r}
-res_mvc_cl <- results(dds_wald, name = "leachatemid", alpha = 0.05)
-summary(res_mvc_cl)
-```
-
-::: callout-note
-77 genes were found to be significantly differentially expressed (adjusted p value \< 0.05) at the cleavage stage in the mid leachate treatment compared to the control. 77 LFC \> 0. These 77 genes were all found in more abundance compared to the controls.
-:::
-
-```{r}
-sig_mvc_cl <- as.data.frame(subset(res_mvc_cl, padj<0.05))
-sig_mvc_cl <- sig_mvc_cl %>% rownames_to_column(., var = "gene_id")
-write_csv(sig_mvc_cl, "../../output/06_deg/contrasts/sig_mvc_cl.csv")
-```
-
-for prawnchip
-
-```{r}
-res_mvc_pc <- results(dds_wald, contrast = list(c("leachatemid",
-                                                  "stageprawnchip.leachatemid")))
-summary(res_mvc_pc)
-```
-
-::: callout-note
-0 genes differentially expressed (adjusted p value \< 0.05) at the prawn chip stage in the mid leachate treatment when compared to the control.
-:::
-
-for early gastrula
-
-```{r}
-res_mvc_eg <- results(dds_wald, contrast = list(c("leachatemid",
-                                                  "stageearlygastrula.leachatemid")))
-summary(res_mvc_eg)
-```
-
-::: callout-note
-0 genes differentially expressed (adjusted p value \< 0.05) at the early gastrula stage in the mid leachate treatment when compared to the control.
-:::
-
-## high leachate vs. control (hvc)
-
-for cleavage
-
-```{r}
-res_hvc_cl <- results(dds_wald, name = "leachatehigh", alpha=0.05)
-summary(res_hvc_cl)
-```
-
-::: callout-note
-18 genes were found to be significantly differentially expressed (adjusted p value \< 0.05) at the cleavage stage in the high leachate treatment compared to the control. 8 LFC \> 0 , 16 LFC \<0.
-:::
-
-```{r}
-sig_hvc_cl <- as.data.frame(subset(res_hvc_cl, padj<0.05))
-sig_hvc_cl <- sig_hvc_cl %>% rownames_to_column(., var = "gene_id")
-write_csv(sig_hvc_cl, "../../output/06_deg/contrasts/sig_hvc_cl.csv")
-```
-
-for prawnchip
-
-```{r}
-res_hvc_pc <- results(dds_wald, contrast = list(c("leachate_high_vs_control",
-                                                  "stageprawnchip.leachatehigh")))
-summary(res_hvc_pc)
-```
-
-::: callout-note
-0 genes differentially expressed (adjusted p value \< 0.05) at the prawn chip stage in the high leachate treatment when compared to the control.
-:::
-
-for early gastrula
-
-```{r}
-res_hvc_eg <- results(dds_wald, contrast = list(c("leachate_high_vs_control",
-                                                  "stageearlygastrula.leachatehigh")))
-summary(res_hvc_eg)
-```
-
-::: callout-note
-32 genes were found to be significantly differentially expressed (adjusted p value \< 0.05) at the early gastrula stage in the high leachate treatment compared to the control. 32 LFC \> 0 .
-:::
-
-```{r}
-sig_hvc_eg <- as.data.frame(subset(res_hvc_eg, padj<0.05))
-sig_hvc_eg <- sig_hvc_eg %>% rownames_to_column(., var = "gene_id")
-write_csv(sig_hvc_eg, "../../output/06_deg/contrasts/sig_hvc_eg.csv")
-```
-
-# Summarize results
 
 # Presence/absence matrix
 ```{r}
@@ -686,8 +597,6 @@ int_wald_df_sig <- int_wald_df[int_wald_df$gene_id %in% LRT_sig_genes$gene_id, ]
 ### Plot heatmap
 
 ```{r}
-library(pheatmap)
-
 # Step 1: Order and extract log2FC values
 log2fc_cols <- c(
   "prawnchip_low_log2FC", "prawnchip_mid_log2FC", "prawnchip_high_log2FC",
@@ -748,100 +657,6 @@ Interpretation notes: \> 🧬 What does the heatmap show? Each cell in the heatm
 int_wald_df_sig$any_sig <- apply(int_wald_df_sig[, grepl("padj", names(int_wald_df_sig))], 1, function(p) any(p < 0.05, na.rm = TRUE))
 ```
 
-### PCA of significant genes only
-
-```{r}
-# Subset DESeqDataSet to just significant genes
-dds_wald_sig <- dds_wald[rownames(dds_wald) %in% sig_cat, ]
-vsd_wald_sig <- varianceStabilizingTransformation(dds_wald_sig)
-
-# Get PCA data (only 44 sig DEGs)
-pca_sig <- plotPCA(vsd_wald_sig, intgroup = "group", returnData = TRUE)
-percentVar_sig <- round(100*attr(pca_sig, "percentVar"))
-
-# Merge with metadata
-pca_sig <- merge(pca_sig, metadata_or, by.x = "name", by.y = "sample_id", all.x = TRUE)
-
-# Assign specific colors to each hpf
-hpf_colors <- c(
-  "cleavage" = flexoki::flex("cyan", sat=500),
-  "prawnchip" = flexoki::flex("green", sat =500),
-  "earlygastrula" = flexoki::flex("yellow", sat=500)
-)
-
-pca_sig$label <- paste0("sample: ", pca_sig$sample_id,
-                        "\nStage: ", pca_sig$stage,
-                        "\nLeachate: ", pca_sig$leachate)
-
-# Indicate leachate level by saturation (alpha)
-leachate_alpha_map <- c("control" = 0.5, "low" = 0.6, "mid" = 0.7, "high" = 0.9)
-pca_sig$alpha_val <- leachate_alpha_map[pca_sig$leachate]
-```
-
-```{r}
-# Original ggplot with a tooltip aesthetic
-PCA_sig <- ggplot(pca_sig, aes(PC1, PC2, color = stage, label = name, alpha = alpha_val)) +
-  geom_point(size = 1,  stroke = 1) +
-  ggtitle("M.cap embryos exposed to pvc leachate, 44 significant genes VST expression") +
-  xlab(paste0("PC1: ", percentVar_sig[1], "% variance")) +
-  ylab(paste0("PC2: ", percentVar_sig[2], "% variance")) + 
-  coord_fixed() +
-  scale_color_manual(values = hpf_colors) +
-  stat_ellipse() + 
-  guides(alpha = "none") +  # hide alpha legend (optional)
-  theme_minimal()
-
-# Convert to interactive plot
-ggplotly(PCA_sig, tooltip = "label")
-
-```
-
-```{r}
-# Original ggplot with a tooltip aesthetic
-PCA_sig <- ggplot(pca_sig, aes(PC1, PC2, color = stage, shape = leachate, label = name, alpha = alpha_val)) +
-  geom_point(size = 1,  stroke = 1) +
-  ggtitle("M.cap embryos exposed to pvc leachate, 44 significant genes VST expression") +
-  xlab(paste0("PC1: ", percentVar_sig[1], "% variance")) +
-  ylab(paste0("PC2: ", percentVar_sig[2], "% variance")) + 
-  coord_fixed() +
-  scale_color_manual(values = hpf_colors) +
-  stat_ellipse() + 
-  guides(alpha = "none") +  # hide alpha legend (optional)
-  theme_minimal()
-
-# Convert to interactive plot
-ggplotly(PCA_sig, tooltip = "label")
-```
-
-# Save gene lists
-
--   `sig_cat` : List of the 44 genes that show significant interactions between leachate and stage (saved above)
-
--   `LRT_sig_genes` : List of LRT significant genes, LFC, & padj values (saved above)
-
--   `Wald_sig_genes` : List of Wald test results, LFC & padj values for each interaction contrast
-
--   `vsd_sig` : Variance stabilized count matrix of genes from significant list
-
--   `all_genes` : List of all genes in the dataset (the filtered input to the DESeq object) which will serve as a reference for functional enrichment
-
-```{r}
-# The 39 genes that are sig diff from control at low cleavage 
-sig_lvc_cl <- sig_lvc_cl %>% 
-  mutate(low_cleavage = 1)
-
-# The 77 genes that are sig diff from control at mid cleavage
-sig_mvc_cl <- sig_mvc_cl %>% 
-  mutate(mid_cleavage = 1)
-
-# The 18 genes that are sig diff from control at high cleavage
-sig_hvc_cl <- sig_hvc_cl %>% 
-  mutate(high_cleavage = 1)
-
-# The 13 genes that are sig diff from control at high early gastrula
-sig_hvc_eg <- sig_hvc_eg %>% 
-  mutate(high_earlygastrula = 1)
-```
 
 ```{r}
 common_genes <- Reduce(intersect, list(

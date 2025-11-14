@@ -63,7 +63,9 @@ You provide a set of DEGs and a background (usually all genes tested by DESeq2 o
 
 For each GO term, GOseq asks:
 
-"Are DEGs overrepresented among genes annotated to this term compared to what I'd expect by chance (accounting for gene length bias)?"
+-   Are DEGs overrepresented among genes annotated to this term compared to what I'd expect by chance (accounting for gene length bias)?
+
+-   *Given the set of genes that **could have been called DE**, are DEGs over-represented in this GO term compared to what I'd expect by chance?*
 
 So each GO term has:
 
@@ -109,23 +111,9 @@ library(kableExtra)
 ## Load inputs
 
 ```{r}
-input_path <- "../../output/07_go/"
-```
-
-```{r}
-files <- list.files(input_path, pattern = "\\.csv$", full.names = TRUE)
-
-for (f in files) {
-  name <- tools::file_path_sans_ext(basename(f))
-  assign(name, read_csv(f), envir = .GlobalEnv)
-}
-```
-
-```{r}
 ## Reduced Terms
 
 reducedTerms.sig <- read.csv(file.path(input_path, "reducedTerms_sig.csv"))
-
 reducedTerms.1 <- read.csv(file.path(input_path, "reducedTerms_cluster1.csv"))
 reducedTerms.2 <- read.csv(file.path(input_path, "reducedTerms_cluster2.csv"))
 reducedTerms.3 <- read.csv(file.path(input_path, "reducedTerms_cluster3.csv"))
@@ -138,8 +126,10 @@ simMatrix.sig <- read_csv(file.path(input_path, "simMatrix_sig.csv")) %>%
   
 simMatrix.1 <- read_csv(file.path(input_path, "simMatrix_cluster1.csv"))%>% 
   column_to_rownames("GO") %>% as.matrix()  # uses the GO column as rownames
+
 simMatrix.2 <- read_csv(file.path(input_path, "simMatrix_cluster2.csv"))%>% 
   column_to_rownames("GO") %>% as.matrix() # uses the GO column as rownames
+
 simMatrix.3 <- read_csv(file.path(input_path, "simMatrix_cluster3.csv"))%>% 
   column_to_rownames("GO") %>% as.matrix() # uses the GO column as rownames
 
@@ -149,7 +139,7 @@ simMatrix.3 <- read_csv(file.path(input_path, "simMatrix_cluster3.csv"))%>%
 
 ```{r}
 collapse_1 <- reducedTerms_cluster1 %>% 
-  left_join(GO.BP.cluster1, by= c("go" = "category"))
+  left_join(GO.BP.cluster1, by= c("go" = "category"), "term") 
 ```
 
 # Plotting & interpretation
@@ -232,7 +222,7 @@ scatterPlot(simMatrix.3, reducedTerms.3,
             labelSize = 4)
 ```
 
-# Custom PCA scatter plots
+# Custom PCA scatter plot
 
 ## Significant DEG
 
@@ -499,6 +489,35 @@ treemapPlot(reducedTerms.2)
 
 ```{r}
 treemapPlot(reducedTerms.3)
+```
+
+# Lollipop plot?
+
+```{r}
+go_lolli <- early_data %>% 
+  dplyr::arrange(bh_adjust) %>%
+  mutate(percHits=(numDEInCat/numInCat)*100)%>%
+  
+  ggplot(aes(x=percHits, y=term, fill=bh_adjust, colour=bh_adjust, size=percHits)) +
+  facet_grid(ParentTerm ~ ., scales = "free", space='free', labeller = label_wrap_gen(width = 30, multi_line = TRUE))+
+  geom_point(aes(group=term))+
+  geom_segment(aes(x=0, xend=percHits, y=term, yend=term),linewidth=1) +
+  scale_colour_gradientn(name = "Adj. p-value", colours = colorspace::heat_hcl(7))+
+  scale_fill_gradientn(name = "Adj. p-value", colours = colorspace::heat_hcl(7))+
+  scale_size(name="Hits (%)", range = c(1, 5))+
+  theme_classic() +
+  ylab("GO Term")+
+  xlab("Hits (%)")+
+  ggtitle("Early Development (1-38 hpf); 2,679 genes")+
+  theme(legend.position = "none",
+        axis.text.y = element_text(size=18),
+        axis.text.x = element_text(size=18),
+        axis.title.y = element_text(size=24, face="bold"),
+        axis.title.x = element_text(size = 24, face = "bold"),
+        plot.title = element_text(size = 24, face = "bold"), 
+        strip.text.y.right=element_text(angle=0, size=18), 
+        legend.title=element_text(size=22),
+        legend.text=element_text(size=18)); go_plot_earlyA
 ```
 
 # Summary & next steps

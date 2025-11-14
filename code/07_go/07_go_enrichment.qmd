@@ -116,7 +116,7 @@ gene_clusters <- read.csv("../../output/06_deg/cluster/gene_clusters.csv")
 all_genes <- read.csv("../../output/06_deg/spawnnight/all_genes.csv")
 ```
 
-Import fasta (optional - for reference only)
+Import fasta 
 
 ```{r, eval=FALSE}
 # Load transcriptome
@@ -166,7 +166,7 @@ paste("GO annotated genes:",
 ## Add gene lengths
 
 ::: callout-note
-Gene lengths are required for goseq bias correction. If genome files are not available, this section can be skipped initially and added later when the files are downloaded.
+Gene lengths are required for goseq bias correction.
 :::
 
 ```{r}
