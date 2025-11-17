@@ -1,0 +1,1299 @@
+---
+title: "Gene ontology (GO) term analysis"
+subtitle: "Now that we've identified the DEGs, what do they do?"
+author: "Sarah Tanja"
+date: 2025-06-17
+date-modified: today
+format:
+  gfm: 
+    toc: true
+    number-sections: true
+  html:
+    theme: journal
+    highlight-style: github
+    page-layout: article
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    number-sections: true
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    reference-location: margin
+    citation-location: margin
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, # Display code chunks
+  eval = TRUE, # Evaluate code chunks
+  warning = FALSE, # Hide warnings
+  message = FALSE, # Hide messages
+  comment = "", # Prevents appending '##' to beginning of lines in code output))        
+```
+
+# Background
+
+We identified 44 genes that were broadly impacted by leachate across all
+stages (meaning transcript abundance of those genes were significantly
+different in at least one dose of leachate compared to the control in at
+least one stage). 
+
+We further identified that these 44 genes fit into 1 of 4 gene expression patterns.
+
+
+
+We do this using the R package `goseq`. Why is `goseq` different from
+other enrichment tools? Typical enrichment methods (like Fisher's exact
+test or hypergeometric tests) assume that every gene has an equal
+probability of being selected as a DEG. But in RNA-Seq longer genes are
+more likely to be detected as DEGs just because they accumulate more
+reads. `goseq` corrects for this bias.
+
+## Inputs
+
+-   `LRT_significant_genes_combined_wald.csv` A dataframe of the 44
+    genes and their LRT and Wald test statistics
+
+-   functional annotation:
+    http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.EggNog_results.txt.gz
+    (EggNog)
+
+-   functional annotation
+    http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.KEGG_results.txt.gz
+    (KEGG)
+
+-   `output/06_deg/interactions/clusters.csv` A dataframe mapping our 44
+    significant leachate interaction genes to 4 main gene expression
+    response patterns.... The genes cluster into these 4 patterns:
+
+    ![](images/degPatternscluster_plot.png){width="8in" height="6.4in"}
+
+## Outputs
+
+# Setup
+
+## Install packages
+
+```{r, eval=FALSE}
+# CRAN packages
+#if ("tidyverse" %in% rownames(installed.packages()) == 'FALSE') install.packages('tidyverse')
+
+# Bioconductor packages
+#if (!require("BiocManager", quietly = TRUE))
+#    install.packages("BiocManager")
+#BiocManager::install("GenomicRanges")
+#BiocManager::install("Biostrings")
+#BiocManager::install("goseq")
+#BiocManager::install("rrvgo")
+#BiocManager::install("org.Ce.eg.db") # c.elegens genome-wide annotation
+```
+
+## Load packages
+
+```{r}
+library(GenomicRanges)
+library(Biostrings)
+library(goseq)
+library(rrvgo)
+library(org.Ce.eg.db)
+library(tidyverse)
+```
+
+## Load inputs
+
+Read in gene lists and counts
+
+```{r}
+# interaction
+all_genes <- read.csv("../../output/06_deg/interactions/all_genes.csv")
+sig_genes <- read.csv("../../output/06_deg/interactions/sig_genes.csv")
+sig_counts <- read.csv("../../output/06_deg/interactions/sig_counts.csv", row.names="gene_id", check.names = FALSE)
+
+# contrasts
+sig_lvc_cl <- read_csv("../../output/06_deg/contrasts/sig_lvc_cl.csv")
+sig_mvc_cl <- read_csv("../../output/06_deg/contrasts/sig_mvc_cl.csv")
+sig_hvc_cl <- read_csv("../../output/06_deg/contrasts/sig_hvc_cl.csv")
+sig_hvc_eg <- read_csv("../../output/06_deg/contrasts/sig_hvc_eg.csv")
+```
+
+Read in pattern clusters
+
+```{r}
+int_deg_patterns <- read.csv("../../output/06_deg/interactions/clusters.csv")
+```
+
+Import fasta
+
+```{r}
+# Load your transcriptome
+all_seqs <- readDNAStringSet("../../input/genome/Montipora_capitata_HIv3.assembly.fasta")  
+
+# Filter for the 44 significant interaction genes
+sig_seqs <- all_seqs[names(all_seqs) %in% sig_genes]
+```
+
+```{r, eval=FALSE}
+# Save to new FASTA file
+#writeXStringSet(sig_seqs, "../../output/08_go/significant_genes.fasta")
+```
+
+Download annotation & enrichment files
+
+::: callout-note
+Only need to do this once!
+:::
+
+```{r, engine='bash', eval=FALSE}
+#cd ../../input/annotations
+
+#wget http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.EggNog_results.txt.gz
+#wget http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.KEGG_results.txt.gz
+```
+
+Unzip
+
+::: callout-note
+Only need to do this once!
+:::
+
+```{r, engine='bash', eval=FALSE}
+#cd ../../input/annotations
+#gunzip *.gz
+```
+
+Import EggNog to R environment
+
+```{r}
+# Read in the file (it will include "#query" as a column name)
+EggNog_anno <- read_tsv("../../input/annotations/Montipora_capitata_HIv3.genes.EggNog_results.txt")
+```
+
+rename "#query" to `gene_id`
+
+```{r}
+EggNog_anno <- EggNog_anno %>%
+  rename(gene_id="#query")
+
+nrow(EggNog_anno)
+names(EggNog_anno)
+```
+
+> This functional annotation has 24,072 genes. This is 44% of total
+> protein predicted genes described in the publication associated with
+> this annotation.
+> https://academic.oup.com/gigascience/article/doi/10.1093/gigascience/giac098/6815755
+
+# Annotate significant genes
+
+Match up genes in sig_genes dataframe to annotation dataframe
+
+::: callout-note
+An `inner_join()` only keeps observations from `x` that have a matching
+key in `y`. The most important property of an inner join is that
+unmatched rows in either input are not included in the result.
+:::
+
+## Interactions
+
+sig_genes \> sig_genes_anno \> sig_genes_annofilt
+
+```{r}
+# Annotate the interaction gene list
+sig_genes_anno <- inner_join(sig_genes, EggNog_anno, by = "gene_id")
+
+# Filter out any that lack GO term annotation
+sig_genes_annofilt <- sig_genes_anno %>% 
+  mutate(GOs = na_if(str_trim(GOs), "-")) %>% # treat "-" as missing and trim whitespace
+  filter(!is.na(GOs), GOs != "") # keep only rows that have GO terms (remove NA and blank)
+```
+
+```{r}
+paste("Annotated interaction genes:", 
+      nrow(sig_genes_anno), "/", 
+      nrow(sig_genes), "=",
+      round(100*nrow(sig_genes_anno)/nrow(sig_genes),1),"%")
+
+paste("GO annotated interaction genes:", 
+      nrow(sig_genes_annofilt), "/", 
+      nrow(sig_genes), "=",
+      round(100*nrow(sig_genes_annofilt)/nrow(sig_genes),1),"%")
+```
+
+::: callout-important
+-   37 of the 44 (84.1%) significant interaction genes were in the
+    `EggNog_anno` dataframe!
+
+-   23 of the 44 (52.3%) actually had GO terms
+:::
+
+## Contrasts
+
+```{r}
+# Annotate the contrast gene lists
+sig_lvc_cl_anno <- inner_join(sig_lvc_cl, EggNog_anno, by = "gene_id")
+sig_mvc_cl_anno <- inner_join(sig_mvc_cl, EggNog_anno, by = "gene_id")
+sig_hvc_cl_anno <- inner_join(sig_hvc_cl, EggNog_anno, by = "gene_id")
+sig_hvc_eg_anno <- inner_join(sig_hvc_eg, EggNog_anno, by = "gene_id")
+
+# Filter out any that lack GO term annotation
+sig_lvc_cl_annofilt <- sig_lvc_cl_anno %>% 
+  mutate(GOs = na_if(str_trim(GOs), "-")) %>% # treat "-" as missing and trim whitespace
+  filter(!is.na(GOs), GOs != "") # keep only rows that have GO terms (remove NA and blank)
+
+sig_mvc_cl_annofilt <- sig_mvc_cl_anno %>% 
+  mutate(GOs = na_if(str_trim(GOs), "-")) %>% # treat "-" as missing and trim whitespace
+  filter(!is.na(GOs), GOs != "") # keep only rows that have GO terms (remove NA and blank)
+
+sig_hvc_cl_annofilt <- sig_hvc_cl_anno %>% 
+  mutate(GOs = na_if(str_trim(GOs), "-")) %>% # treat "-" as missing and trim whitespace
+  filter(!is.na(GOs), GOs != "") # keep only rows that have GO terms (remove NA and blank)
+
+sig_hvc_eg_annofilt <- sig_hvc_eg_anno %>% 
+  mutate(GOs = na_if(str_trim(GOs), "-")) %>% # treat "-" as missing and trim whitespace
+  filter(!is.na(GOs), GOs != "") # keep only rows that have GO terms (remove NA and blank)
+```
+
+```{r}
+# Low vs control (cleavage)
+paste("Annotated low vs control cleavage:", 
+      nrow(sig_lvc_cl_anno),"/", 
+      nrow(sig_lvc_cl),"=",
+      round(100*nrow(sig_lvc_cl_anno)/nrow(sig_lvc_cl),1),"%")
+paste("GO annotated low vs control cleavage:", 
+      nrow(sig_lvc_cl_annofilt),"/", 
+      nrow(sig_lvc_cl),"=",
+      round(100*nrow(sig_lvc_cl_annofilt)/nrow(sig_lvc_cl),1),"%")
+
+# Mid vs control (cleavage)
+paste("Annotated mid vs control cleavage:", 
+      nrow(sig_mvc_cl_anno), "/", 
+      nrow(sig_mvc_cl),"=",
+      round(100*nrow(sig_mvc_cl_anno)/nrow(sig_mvc_cl),1),"%")
+paste("GO annotated mid vs control cleavage:", 
+      nrow(sig_mvc_cl_annofilt), "/", 
+      nrow(sig_mvc_cl),"=",
+      round(100*nrow(sig_mvc_cl_annofilt)/nrow(sig_mvc_cl),1),"%")
+
+# High vs control (cleavage)
+paste("Annotated high vs control cleavage:", 
+      nrow(sig_hvc_cl_anno), "/", 
+      nrow(sig_hvc_cl),"=",
+      round(100*nrow(sig_hvc_cl_anno)/nrow(sig_hvc_cl),1),"%")
+paste("GO annotated high vs control cleavage:", 
+      nrow(sig_hvc_cl_annofilt), "/", 
+      nrow(sig_hvc_cl),"=",
+      round(100*nrow(sig_hvc_cl_annofilt)/nrow(sig_hvc_cl),1),"%")
+
+# High vs control (early gastrula)
+paste("Annotated high vs control early gastrula:", 
+      nrow(sig_hvc_eg_anno), "/", 
+      nrow(sig_hvc_eg),"=",
+      round(100*nrow(sig_hvc_eg_anno)/nrow(sig_hvc_eg),1),"%")
+paste("GO annotated high vs control early gastrula:", 
+      nrow(sig_hvc_eg_annofilt), "/", 
+      nrow(sig_hvc_eg),"=",
+      round(100*nrow(sig_hvc_eg_annofilt)/nrow(sig_hvc_eg),1),"%")
+```
+
+::: {.callout-important title="Results"}
+-   36 of the 39 (92.3%) significant low vs control cleavage genes were
+    in the `EggNog_anno` dataframe!
+
+-   26 of the 39 (66.7%) were annotated with GO terms
+
+-   56 of the 77 (72.7%) significant mid vs control cleavage genes were
+    in the `EggNog_anno` dataframe!
+
+-   40 of the 77 (51.9%) were annotated with GO terms
+
+-   16 of the 18 (88.9%) significant high vs control cleavage genes were
+    in the `EggNog_anno` dataframe!
+
+-   11 of the 18 (61.1%) were annotated with GO terms
+
+-   10 of the 13 (76.9%) significant high vs control early gastrula
+    genes were in the `EggNog_anno` dataframe!
+
+-   8 of the 13 (61.5%) were annotated with GO terms
+:::
+
+
+
+::: callout-important
+These dataframes now only contain genes
+that were significant *and* have GO annotation information.
+
+Can we do enrichment with the numbers of annotated genes we have?
+
+< 10 genes:
+Very small. Statistical power is extremely limited, and enrichment results are unreliable or can’t be computed at all.
+10–30 genes:
+Small. You may see odd statistical artifacts—like p-values of 0, ties, or unstable FDR corrections. Results can be meaningful but must be interpreted with caution. Enriched terms may be driven by just a few genes.
+30–100 genes:
+Moderate. This is more typical for focused DEG lists. Results are more stable, but still sensitive to outliers and list composition.
+100+ genes:
+Ideal for most GO tools. Enrichment statistics are most stable and reliable.
+:::
+
+## Add gene lengths
+
+```{r}
+#import file
+gff <- rtracklayer::import("../../input/genome/Montipora_capitata_HIv3.genes_fixed.gff3") #if this doesn't work, restart R and try again 
+
+transcripts <- subset(gff, type == "transcript") #keep only transcripts 
+
+transcripts_gr <- makeGRangesFromDataFrame(transcripts, keep.extra.columns=TRUE) #extract length information
+
+transcript_lengths <- width(transcripts_gr) #isolate length of each gene
+
+gene_id <- transcripts_gr$ID #extract list of gene id 
+
+lengths <- cbind(gene_id, transcript_lengths)
+
+lengths <- as.data.frame(lengths) #convert to data frame
+```
+
+Add in length to the annotation dataframes
+
+```{r, length-annotation}
+# Interaction genes
+sig_genes_af <- sig_genes_annofilt %>% left_join(lengths, by = "gene_id")
+
+# Contrasts
+sig_lvc_cl_af <- sig_lvc_cl_annofilt %>% left_join(lengths, by = "gene_id")
+sig_mvc_cl_af <- sig_mvc_cl_annofilt %>% left_join(lengths, by = "gene_id")
+sig_hvc_cl_af <- sig_hvc_cl_annofilt %>% left_join(lengths, by = "gene_id")
+sig_hvc_eg_af <- sig_hvc_eg_annofilt %>% left_join(lengths, by = "gene_id")
+```
+
+## Add interaction deg pattern clusters
+
+Add column indicating deg pattern (1-4)
+a = annotated, f = filtered, p = patterns
+```{r, deg-pattern-annotation}
+sig_genes_afp <- inner_join(sig_genes_af, int_deg_patterns, by = "gene_id")
+str(sig_genes_afp)
+```
+
+```{r}
+write_csv(sig_genes_afp, "../../output/08_go/sig_genes_int.csv")
+write_csv(sig_lvc_cl_af, "../../output/08_go/sig_genes_lvccl.csv")
+write_csv(sig_mvc_cl_af, "../../output/08_go/sig_genes_mvccl.csv")
+write_csv(sig_hvc_cl_af, "../../output/08_go/sig_genes_hvccl.csv")
+write_csv(sig_hvc_eg_af, "../../output/08_go/sig_genes_hvceg.csv")
+```
+
+Subset annotated dataframe to each deg pattern (1-4)
+
+```{r, deg-pattern-subset}
+sig_genes_af1 <- sig_genes_afp %>% 
+  filter(leachate_cluster == 1)
+
+sig_genes_af2 <- sig_genes_afp %>% 
+  filter(leachate_cluster == 2)
+
+sig_genes_af3 <- sig_genes_afp %>% 
+  filter(leachate_cluster == 3)
+
+sig_genes_af4 <- sig_genes_afp %>% 
+  filter(leachate_cluster == 4)
+
+nrow(sig_genes_af1)
+nrow(sig_genes_af2)
+nrow(sig_genes_af3)
+nrow(sig_genes_af4)
+```
+
+::: callout-note
+All interaction genes with GO annotations: 23
+
+DGE pattern 1 : 14 genes
+
+DGE pattern 2: 5 genes
+
+DGE pattern 3: 3 genes
+
+DGE pattern 4: 1 gene
+
+It doesn't seem like it would be appropriate to do functional enrichment
+on 1 gene... Maybe I should go back to the dg code and increase the
+minimum number of genes assigned to a pattern to bin more genes
+together. Ex. I'm certain that the 1 gene in pattern 4 would bin most
+closely with the others in pattern 3.
+
+> NOPE.. that's not how the clustering works... it just drops the genes
+> that don't meet the pattern similarity, it doesn't group them in to
+> 'close enough' pattern. We'll stick with the 4 patterns. And see what
+> happens with functional enrichment of 1 gene....
+
+JK can't do it with 1 gene! Have to simply report functional annotation. 
+:::
+
+# Get annotation for ONE gene in pattern 4
+```{r}
+# Print nicely
+knitr::kable(t(sig_genes_af4), col.names = c("Annotation"))
+```
+
+```{r}
+cat(paste(
+  "Gene", sig_genes_af4$gene_id, "is described as", sig_genes_af4$Description, ".",
+  "GO terms:", sig_genes_af4$GOs, ".",
+  "KEGG pathways:", sig_genes_af4$KEGG_Pathway, ".",
+  "COG category:", sig_genes_af4$COG_category, ".",
+  "PFAMs:", sig_genes_af4$PFAMs
+))
+```
+::: column-margin
+Can you do GO enrichment on 1 gene?
+
+No, you cannot meaningfully perform GO enrichment analysis on just one gene.
+
+Here’s why:
+
+GO enrichment is a statistical test: The goal is to see whether certain GO terms are overrepresented in a list of genes (e.g., your DEGs) compared to a background/universe set of genes. This requires comparing the frequency of GO terms in your gene set to their frequency in the background.
+With only 1 gene, there is no enrichment: There are no “frequencies” or “overrepresentation” to test—your single gene either has a GO term or it doesn’t. Any statistical test (like Fisher’s exact test, hypergeometric test, or Wallenius test) will be meaningless, since there is no distribution to compare.
+Most GO tools will either error or trivially return the GO terms of your one gene: Some packages might run, but the result just mirrors the annotation of that gene, not an enrichment or statistical significance.
+What should you do?
+
+If you have only one gene in a cluster/pattern, you should just report its functional annotation—not attempt enrichment.
+If you want to do GO enrichment, you need a reasonably sized gene list (ideally >10, but minimum at least 3–5 genes for very basic results).
+In summary:
+GO enrichment analysis is not appropriate for a single gene. Just report the GO terms for that gene directly.
+:::
+
+Map GO term IDs to names/descriptions for a single gene
+1. Extract GO term IDs
+```{r}
+# Extract the GO term string
+go_string <- sig_genes_af4$GOs[1]
+
+# Split into a character vector of GO IDs
+go_ids <- unlist(strsplit(go_string, ","))
+head(go_ids)
+```
+2. Use `GO.db` to map IDs to names
+```{r}
+# Make sure GO IDs are character
+go_ids <- as.character(go_ids)
+
+# Get names (may return NA for obsolete/unmapped terms)
+go_names <- Term(go_ids)
+
+# Combine into a dataframe for reporting
+go_map <- data.frame(GO_ID = go_ids, GO_Name = go_names, stringsAsFactors = FALSE)
+
+# Preview
+head(go_map, 10)
+```
+3. Filter by ontology
+```{r}
+go_ontology <- Ontology(go_ids)
+go_map <- data.frame(GO_ID = go_ids, GO_Name = go_names, Ontology = go_ontology, stringsAsFactors = FALSE)
+head(go_map, 10)
+```
+
+4. Report 
+```{r}
+knitr::kable(go_map[!is.na(go_map$GO_Name), ])  # Exclude unmapped for pretty display
+```
+
+```{r}
+cat(paste(na.omit(go_names), collapse = "; "))
+```
+
+```{r}
+write_csv(go_map, "../../output/08_go/functional_annotation_Montipora_capitata_HIv3___TS.g15697.t1.csv")
+```
+
+::: column-margin
+How do you report functional annotation of 1 gene?
+
+To summarize and report the functional annotation of a single gene, you should focus on clearly presenting all available annotation information for that gene, rather than attempting any statistical enrichment. 
+- Tips for Reporting
+If you want GO term names (not just IDs), map GO IDs to their names using GO.db or online lookup.
+You can display each annotation category as a bullet point or sub-table for clarity.
+If multiple genes must be reported, use a table; if just one, a narrative or simple table is best.
+Summary:
+When you have just one gene, simply report all its functional annotation fields clearly—no statistics or enrichment. This helps readers understand what is known about the gene’s possible roles.
+:::
+
+# Functional enrichment
+
+Conduct functional enrichment using goseq and
+[rrvgo](https://www.bioconductor.org/packages/release/bioc/vignettes/rrvgo/inst/doc/rrvgo.html).
+Compare against all genes detected in the dataset that we have GO
+annotation information for.
+
+Conduct at biological process level. Filter for adjusted p-value \<0.05.
+
+## Turn DEG lists into vectors
+
+```{r, deg-list-vectors}
+# Define your DEG lists — the genes you're testing
+## Interaction
+### significant interaction genes
+ID.vector.int <- sig_genes_af$gene_id 
+
+### all sig interaction genes that fall into cluster 1
+ID.vector.1 <- sig_genes_af1$gene_id 
+
+### all sig interaction genes that fall into cluster 2
+ID.vector.2 <- sig_genes_af2$gene_id 
+
+### all sig interaction genes that fall into cluster 3
+ID.vector.3 <- sig_genes_af3$gene_id 
+
+
+## Contrasts
+# all sig genes low vs control cleavage contrast
+ID.vector.lvc_cl <- sig_lvc_cl_af$gene_id
+
+# all sig genes mid vs control cleavage contrast
+ID.vector.mvc_cl <- sig_mvc_cl_af$gene_id 
+
+# all sig genes high vs control cleavage contrast
+ID.vector.hvc_cl <- sig_hvc_cl_af$gene_id 
+
+# all sig genes high vs control early gastrula contrast
+ID.vector.hvc_eg <- sig_hvc_eg_af$gene_id 
+
+```
+
+## Create gene universe for bias correction
+
+```{r}
+# Universe for bias correction
+# All genes detected in our filtered DEG tested genes with GO annotation info
+ALL.vector <- EggNog_anno %>%
+  mutate(GOs = na_if(str_trim(GOs), "-")) %>% # treat "-" as missing and trim whitespace
+  filter(!is.na(GOs), GOs != "") %>% # keep only rows that have GO terms (remove NA and blank)
+  pull(gene_id) %>% # make gene_id column a vector
+  intersect(all_genes$gene_id) #keep only genes from our DESeq2 set used to generate our DEG lists
+
+paste(length(ALL.vector), "genes out of 12564 genes in our DESeq2 dataset have GO annotations")
+paste(length(ID.vector.int), "genes out of 44 significant interaction genes have GO annotations")
+paste(length(ID.vector.1), "of the 23 bin into deg pattern 1")
+paste(length(ID.vector.2), "of the 23 bin into deg pattern 2")
+paste(length(ID.vector.3), "of the 23 bin into deg pattern 3")
+
+paste("There are", length(ID.vector.lvc_cl), "low vs control cleavage GO annotated DE genes")
+paste("There are", length(ID.vector.mvc_cl), "mid vs control cleavage GO annotated DE genes")
+paste("There are", length(ID.vector.hvc_cl), "high vs control cleavage GO annotated DE genes")
+paste("There are", length(ID.vector.hvc_eg), "high vs control early gastrula GO annotated DE genes")
+```
+
+::: callout-important
+- "6979 genes out of 12564 genes in our DESeq2 dataset have GO
+annotations"
+
+- "23 genes out of 44 significant interaction genes have GO
+annotations"
+
+- "14 of the 23 bin into deg pattern 1"
+
+- "5 of the 23 bin into deg pattern 2"
+
+- "3 of the 23 bin into deg pattern 3"
+
+- "There are 26 low vs control cleavage GO annotated DE genes"
+
+- "There are 40 mid vs control cleavage GO annotated DE genes"
+
+- "There are 11 high vs control cleavage GO annotated DE genes"
+
+- "There are 8 high vs control early gastrula GO annotated DE genes"
+:::
+
+## GO term mapping
+
+About goseq() command:
+
+| Argument                       | Meaning                                                                                                                                                      |
+|-------------------------|-----------------------------------------------|
+| `pwf`                          | A **probability weighting function** object from `nullp()`. It contains the DEG status of all genes (1 = DEG, 0 = not DEG), plus gene length bias info.      |
+| `gene2cat`                     | A data frame or list mapping **genes to functional categories** (like GO terms). In your case, it's a long-format table of gene-GO pairs.                    |
+| `test.cats = "GO:BP"`          | This limits the enrichment to only **biological process** GO terms (you could also use `"GO:MF"` or `"GO:CC"` for molecular function or cellular component). |
+| `method = "Wallenius"`         | This uses the **Wallenius noncentral hypergeometric distribution**, which accounts for sampling bias (like gene length).                                     |
+| `use_genes_without_cat = TRUE` | Allows the method to consider genes that **do not have a GO annotation** (prevents them from being excluded by default).                                     |
+
+`goseq()` returns a data frame where each row is a GO term, with:
+
+-   The GO ID
+
+-   Category (BP, MF, or CC)
+
+-   Over-representation p-value (for DEGs)
+
+-   Under-representation p-value (less commonly used)
+
+-   Number of DEGs in that GO term
+
+-   Total number of genes in that GO term
+
+-   Other metadata (like GO term name)
+
+```{r, go-maps}
+# Gene to GO term mapping
+## Interaction
+GO.terms.int <- sig_genes_af %>%
+  dplyr::select(gene_id, GOs)
+
+## Interaction patterns
+GO.terms.1 <- sig_genes_af1 %>%
+  dplyr::select(gene_id, GOs)
+
+GO.terms.2 <- sig_genes_af2 %>%
+  dplyr::select(gene_id, GOs) 
+
+GO.terms.3 <- sig_genes_af3 %>%
+  dplyr::select(gene_id, GOs)
+
+
+## Contrasts
+GO.terms.lvccl <- sig_lvc_cl_af %>% 
+  dplyr::select(gene_id, GOs)
+
+GO.terms.mvccl <- sig_mvc_cl_af %>% 
+  dplyr::select(gene_id, GOs)
+
+GO.terms.hvccl <- sig_hvc_cl_af %>% 
+  dplyr::select(gene_id, GOs)
+
+GO.terms.hvceg <- sig_hvc_eg_af %>% 
+  dplyr::select(gene_id, GOs)
+```
+
+Function to split GO terms to a single term per row
+
+```{r, split-go-fun}
+split_go <- function(df, gene_col = "gene_id", go_col = "GOs") {
+  df %>%
+    mutate(across(all_of(c(gene_col, go_col)), as.character)) %>%
+    separate_rows(!!rlang::sym(go_col), sep = ",") %>%
+    mutate(!!rlang::sym(go_col) := str_trim(!!rlang::sym(go_col))) %>%
+    filter(!is.na(!!rlang::sym(go_col)), !!rlang::sym(go_col) != "") %>%
+    dplyr::select(all_of(c(gene_col, go_col))) %>%      # keep only 2 cols
+    as.data.frame(stringsAsFactors = FALSE)            # <- base data.frame
+}
+
+```
+
+```{r}
+# Format GO terms to one term per row
+## Interaction
+GO.terms.int <- split_go(GO.terms.int)
+
+## Interaction patterns
+GO.terms.1 <- split_go(GO.terms.1) 
+GO.terms.2 <- split_go(GO.terms.2) 
+GO.terms.3 <- split_go(GO.terms.3) 
+
+## Contrasts
+GO.terms.lvccl <- split_go(GO.terms.lvccl)
+GO.terms.mvccl <- split_go(GO.terms.mvccl)
+GO.terms.hvccl <- split_go(GO.terms.hvccl)
+GO.terms.hvceg <- split_go(GO.terms.hvceg)
+```
+
+Save GO.terms.xx files
+```{r}
+write_csv(GO.terms.int, "../../output/08_go/GO.terms.int.csv")
+
+write_csv(GO.terms.1, "../../output/08_go/GO.terms.1.csv")
+write_csv(GO.terms.2, "../../output/08_go/GO.terms.2.csv")
+write_csv(GO.terms.3, "../../output/08_go/GO.terms.3.csv")
+
+write_csv(GO.terms.lvccl, "../../output/08_go/GO.terms.lvccl.csv")
+write_csv(GO.terms.mvccl, "../../output/08_go/GO.terms.mvccl.csv")
+write_csv(GO.terms.hvccl, "../../output/08_go/GO.terms.hvccl.csv")
+write_csv(GO.terms.hvceg, "../../output/08_go/GO.terms.hvceg.csv")
+```
+
+Get vector of gene lengths
+```{r, weight-length}
+lengths_anno <- lengths %>% 
+  dplyr::filter(gene_id %in% all_genes$gene_id) %>% 
+  dplyr::filter(gene_id %in% EggNog_anno$gene_id)
+
+LENGTH.vector <- as.integer(lengths_anno$transcript_length)
+names(LENGTH.vector) <- ALL.vector  # Needed for bias correction
+```
+
+Make gene vector function
+```{r}
+# --- Safety helper -----------------------------------------------------------
+make_gene_vector <- function(all_ids, de_ids, label = "DE set") {
+  # Normalize to clean character vectors
+  all_ids <- as.character(all_ids)
+  de_ids  <- unique(trimws(as.character(de_ids)))
+
+  # Hard checks on ALL.vector
+  if (anyNA(all_ids)) stop("ALL.vector contains NA gene IDs.")
+  if (anyDuplicated(all_ids)) {
+    dups <- unique(all_ids[duplicated(all_ids)])
+    stop("ALL.vector has duplicated gene IDs (e.g., ", paste(head(dups, 5), collapse = ", "), ").")
+  }
+
+  # Soft check: DE IDs not in ALL
+  extras <- setdiff(de_ids, all_ids)
+  if (length(extras) > 0) {
+    warning(length(extras), " ", label, " IDs not found in ALL.vector (showing up to 5): ",
+            paste(head(extras, 5), collapse = ", "))
+    # Drop them so %in% works as intended
+    de_ids <- intersect(de_ids, all_ids)
+  }
+
+  # Construct 0/1 vector aligned to ALL.vector
+  vec <- as.integer(all_ids %in% de_ids)
+  names(vec) <- all_ids
+
+  # Final sanity
+  stopifnot(length(vec) == length(all_ids), all(vec %in% c(0L, 1L)))
+  vec
+}
+
+```
+
+```{r}
+# Interaction
+gene.vector.int  <- make_gene_vector(ALL.vector, ID.vector.int,  "interaction")
+
+# Interaction patterns
+gene.vector.1    <- make_gene_vector(ALL.vector, ID.vector.1,    "pattern 1")
+gene.vector.2    <- make_gene_vector(ALL.vector, ID.vector.2,    "pattern 2")
+gene.vector.3    <- make_gene_vector(ALL.vector, ID.vector.3,    "pattern 3")
+
+# Contrasts
+gene.vector.lvccl <- make_gene_vector(ALL.vector, ID.vector.lvc_cl, "low vs control (cleavage)")
+gene.vector.mvccl <- make_gene_vector(ALL.vector, ID.vector.mvc_cl, "mid vs control (cleavage)")
+gene.vector.hvccl <- make_gene_vector(ALL.vector, ID.vector.hvc_cl, "high vs control (cleavage)")
+gene.vector.hvceg <- make_gene_vector(ALL.vector, ID.vector.hvc_eg, "high vs control (earlygastrula)")
+```
+
+### Null probability weighting function (bias for gene length)
+
+> What "weighting by sequence length" means in goseq In RNA-seq, longer
+> genes tend to produce more reads at the same per-base expression, so
+> they're more likely to be called DE simply because statistical power
+> is higher. If you ran GO enrichment naively, GO categories enriched
+> for long genes could look significant even under the null. goseq fixes
+> this by estimating a probability weighting function (PWF): a smooth
+> curve of Pr(DE \| length) from your data. Then, when it tests each GO
+> category, it reweights genes by their PWF values so long-gene
+> categories aren't unfairly favored.
+
+```{r}
+# LENGTH.vector must be a named numeric vector with names == gene IDs
+stopifnot(is.numeric(LENGTH.vector), !is.null(names(LENGTH.vector)))
+
+# Keep only genes present in ALL.vector and align the order
+LENGTH.vector <- LENGTH.vector[ALL.vector]
+stopifnot(identical(names(LENGTH.vector), ALL.vector))
+```
+
+```{r}
+# nullp is a function from nadiadavidson/goseq
+## Interactions
+pwf.int <- nullp(gene.vector.int, bias.data = LENGTH.vector)
+
+## Interaction patterns
+pwf.1 <- nullp(gene.vector.1, bias.data = LENGTH.vector)
+pwf.2 <- nullp(gene.vector.2, bias.data = LENGTH.vector)
+pwf.3 <- nullp(gene.vector.3, bias.data = LENGTH.vector)
+
+## Contrasts
+pwf.lvccl <- nullp(gene.vector.lvccl, bias.data = LENGTH.vector)
+pwf.mvccl <- nullp(gene.vector.mvccl, bias.data = LENGTH.vector)
+pwf.hvccl <- nullp(gene.vector.hvccl, bias.data = LENGTH.vector)
+pwf.hvceg <- nullp(gene.vector.hvceg, bias.data = LENGTH.vector)
+```
+
+
+> You should typically see an **increasing** trend: longer genes →
+> higher DE probability. If it\'s flat, length bias is minimal (fine!).
+> If it\'s erratic, check inputs.
+
+## GO BP enrichment
+
+```{r}
+# Run GO enrichment for biological process terms
+GO.bp.int <- goseq(
+  pwf.int,
+  gene2cat = GO.terms.int,
+  test.cats = c("GO:BP"),
+  method = "Wallenius",
+  use_genes_without_cat = TRUE
+)
+
+GO.bp.1 <- goseq(
+  pwf.1,
+  gene2cat = GO.terms.1,
+  test.cats = c("GO:BP"),
+  method = "Wallenius",
+  use_genes_without_cat = TRUE
+)
+
+GO.bp.2 <- goseq(
+  pwf.2,
+  gene2cat = GO.terms.2,
+  test.cats = c("GO:BP"),
+  method = "Wallenius",
+  use_genes_without_cat = TRUE
+)
+
+GO.bp.3 <- goseq(
+  pwf.3,
+  gene2cat = GO.terms.3,
+  test.cats = c("GO:BP"),
+  method = "Wallenius",
+  use_genes_without_cat = TRUE
+)
+
+
+GO.bp.lvccl <- goseq(
+  pwf.lvccl,
+  gene2cat = GO.terms.lvccl,
+  test.cats = c("GO:BP"),
+  method = "Wallenius",
+  use_genes_without_cat = TRUE
+)
+
+GO.bp.mvccl <- goseq(
+  pwf.mvccl,
+  gene2cat = GO.terms.mvccl,
+  test.cats = c("GO:BP"),
+  method = "Wallenius",
+  use_genes_without_cat = TRUE
+)
+
+GO.bp.hvccl <- goseq(
+  pwf.hvccl,
+  gene2cat = GO.terms.hvccl,
+  test.cats = c("GO:BP"),
+  method = "Wallenius",
+  use_genes_without_cat = TRUE
+)
+
+GO.bp.hvceg <- goseq(
+  pwf.hvceg,
+  gene2cat = GO.terms.hvceg,
+  test.cats = c("GO:BP"),
+  method = "Wallenius",
+  use_genes_without_cat = TRUE
+)
+```
+
+Use the Benjamini-Hochberg method to control false discovery rate
+
+```{r, bh-adjust}
+# Interactions
+GO.bp.int$bh_adjust <- p.adjust(GO.bp.int$over_represented_pvalue, method = "BH")
+
+# Interaction patterns
+GO.bp.1$bh_adjust <- p.adjust(GO.bp.1$over_represented_pvalue, method = "BH")
+GO.bp.2$bh_adjust <- p.adjust(GO.bp.2$over_represented_pvalue, method = "BH")
+GO.bp.3$bh_adjust <- p.adjust(GO.bp.3$over_represented_pvalue, method = "BH")
+
+# Contrasts
+GO.bp.lvccl$bh_adjust <- p.adjust(GO.bp.lvccl$over_represented_pvalue, method = "BH")
+GO.bp.mvccl$bh_adjust <- p.adjust(GO.bp.mvccl$over_represented_pvalue, method = "BH")
+GO.bp.hvccl$bh_adjust <- p.adjust(GO.bp.hvccl$over_represented_pvalue, method = "BH")
+GO.bp.hvceg$bh_adjust <- p.adjust(GO.bp.hvceg$over_represented_pvalue, method = "BH")
+```
+
+Filter for biological process terms with valid p-values
+
+```{r}
+# Interaction
+GO.BP.int <- GO.bp.int %>%
+  filter(ontology == "BP") %>%
+  filter(!is.na(bh_adjust)) %>% 
+  filter(bh_adjust < 0.05) %>%
+  arrange(ontology, bh_adjust)
+
+# Interaction patterns
+GO.BP.1 <- GO.bp.1 %>%
+  filter(ontology == "BP") %>%
+  filter(!is.na(bh_adjust)) %>% 
+  filter(bh_adjust < 0.05) %>%
+  arrange(ontology, bh_adjust)
+
+GO.BP.2 <- GO.bp.2 %>%
+  filter(ontology == "BP") %>%
+  filter(!is.na(bh_adjust)) %>% 
+  filter(bh_adjust < 0.05) %>%
+  arrange(ontology, bh_adjust)
+
+GO.BP.3 <- GO.bp.3 %>%
+  filter(ontology == "BP") %>%
+  filter(!is.na(bh_adjust)) %>% 
+  filter(bh_adjust < 0.05) %>%
+  arrange(ontology, bh_adjust)
+
+
+# Contrasts
+GO.BP.lvccl <- GO.bp.lvccl %>%
+  filter(ontology == "BP") %>%
+  filter(!is.na(bh_adjust)) %>% 
+  filter(bh_adjust < 0.05) %>%
+  arrange(ontology, bh_adjust)
+
+GO.BP.mvccl <- GO.bp.mvccl %>%
+  filter(ontology == "BP") %>%
+  filter(!is.na(bh_adjust)) %>% 
+  filter(bh_adjust < 0.05) %>%
+  arrange(ontology, bh_adjust)
+
+GO.BP.hvccl <- GO.bp.hvccl %>%
+  filter(ontology == "BP") %>%
+  filter(!is.na(bh_adjust)) %>% 
+  filter(bh_adjust < 0.05) %>%
+  arrange(ontology, bh_adjust)
+
+GO.BP.hvceg <- GO.bp.hvceg %>%
+  filter(ontology == "BP") %>%
+  filter(!is.na(bh_adjust)) %>% 
+  filter(bh_adjust < 0.05) %>%
+  arrange(ontology, bh_adjust)
+```
+
+Write to csv
+
+```{r}
+# Interactions 
+write_csv(GO.BP.int, 
+          file = "../../output/08_go/GO.BP.int.csv")
+
+# Interaction patterns
+write_csv(GO.BP.1, 
+          file = "../../output/08_go/GO.BP.1.csv")
+write_csv(GO.BP.2, 
+          file = "../../output/08_go/GO.BP.2.csv")
+write_csv(GO.BP.3, 
+          file = "../../output/08_go/GO.BP.3.csv")
+
+# Contrasts
+write_csv(GO.BP.lvccl, 
+          file = "../../output/08_go/GO.BP.lvccl.csv")
+write_csv(GO.BP.mvccl, 
+          file = "../../output/08_go/GO.BP.mvccl.csv")
+write_csv(GO.BP.hvccl, 
+          file = "../../output/08_go/GO.BP.hvccl.csv")
+write_csv(GO.BP.hvceg, 
+          file = "../../output/08_go/GO.BP.hvceg.csv")
+```
+
+::: column-margin
+Why Does Controlling False Discovery Rate Matter in Enrichment Analysis?
+
+The Benjamini-Hochberg procedure controls the proportion of false
+positives among all rejected hypotheses, which is especially important
+in high-throughput data like gene ontology enrichment.
+
+Controlling the false discovery rate (FDR) is critical in enrichment
+analysis, especially when thousands of statistical tests are performed
+simultaneously (e.g., testing many gene sets, pathways, or terms for
+enrichment): - Multiple Comparisons Increase False Positives: In
+enrichment analyses, each hypothesis test (such as whether a specific
+gene set is enriched) carries a risk of yielding a false
+positive---detecting significance where there is none. When testing
+hundreds or thousands of hypotheses, the probability of encountering
+several false positives increases dramatically. - FDR Balances Discovery
+and Error: Unlike stricter corrections (e.g., Bonferroni), which often
+result in missing true findings because they are overly conservative,
+controlling FDR allows researchers to detect more significant results
+while maintaining a specified proportion of false positives among all
+significant findings. - Improves Interpretability of Results: In
+practical biological applications, such as genomics and proteomics, FDR
+control means that of all reported significant gene sets or pathways,
+only a small, known proportion are expected to be false discoveries.
+This provides confidence in the reported biological findings and
+enhances reproducibility.
+
+The adjusted p-values (bh_adjust) reflect the minimum FDR at which each
+test can be called significant. Use these values to determine
+significance by comparing them to your desired FDR threshold (e.g.,
+0.05).
+
+*Generated from ChatGPT on 09AUG2025*
+:::
+
+## Reduce redundancy
+
+What is a semantic similarity matrix?
+
+> Calculating the similarity matrix and reducing GO terms First step is
+> to get the similarity matrix between terms. The function
+> calculateSimMatrix takes a list of GO terms for which the semantic
+> simlarity is to be calculated, an OrgDb object for an organism, the
+> ontology of interest and the method to calculate the similarity
+> scores.
+
+> NOTE:rrvgo uses the similarity between pairs of terms to compute a
+> distance matrix, defined as (1-simMatrix). The terms are then
+> hierarchically clustered using complete linkage, and the tree is cut
+> at the desired threshold, picking the term with the highest score as
+> the representative of each group. Therefore, higher thresholds lead to
+> fewer groups, and the threshold should be read as the minimum
+> similarity between group representatives.
+
+# Calculate semantic similarity matrix
+```{r}
+# Interaction
+simMatrix.int <- calculateSimMatrix(
+  GO.BP.int$category, # the column of go terms
+  orgdb="org.Ce.eg.db", #c. elegans database org.Ce.eg.db
+  ont = "BP",
+  method = "Rel"
+)
+
+# Interaction patterns
+simMatrix.1 <- calculateSimMatrix(
+  GO.BP.1$category, # the column of go terms
+  orgdb="org.Ce.eg.db", #c. elegans database org.Ce.eg.db
+  ont = "BP",
+  method = "Rel"
+)
+
+simMatrix.2 <- calculateSimMatrix(
+  GO.BP.2$category, # the column of go terms
+  orgdb="org.Ce.eg.db", #c. elegans database org.Ce.eg.db
+  ont = "BP",
+  method = "Rel"
+)
+
+simMatrix.3 <- calculateSimMatrix(
+  GO.BP.3$category, # the column of go terms
+  orgdb="org.Ce.eg.db", #c. elegans database org.Ce.eg.db
+  ont = "BP",
+  method = "Rel"
+)
+
+# Contrasts
+
+simMatrix.lvccl <- calculateSimMatrix(
+  GO.BP.lvccl$category, # the column of go terms
+  orgdb="org.Ce.eg.db", #c. elegans database org.Ce.eg.db
+  ont = "BP",
+  method = "Rel"
+)
+
+
+simMatrix.mvccl <- calculateSimMatrix(
+  GO.BP.mvccl$category, # the column of go terms
+  orgdb="org.Ce.eg.db", #c. elegans database org.Ce.eg.db
+  ont = "BP",
+  method = "Rel"
+)
+
+
+simMatrix.hvccl <- calculateSimMatrix(
+  GO.BP.hvccl$category, # the column of go terms
+  orgdb="org.Ce.eg.db", #c. elegans database org.Ce.eg.db
+  ont = "BP",
+  method = "Rel"
+)
+
+
+simMatrix.hvceg <- calculateSimMatrix(
+  GO.BP.hvceg$category, # the column of go terms
+  orgdb="org.Ce.eg.db", #c. elegans database org.Ce.eg.db
+  ont = "BP",
+  method = "Rel"
+)
+
+```
+
+# Create named scores vectors
+
+::: callout-caution
+The first time I ran this as:
+`scores <- setNames(-log10(GO_BP$bh_adjust), GO_BP$category)` but some
+of the bh_adjust values are \~0, and the -log10 of 0 is Inf. This messes
+with interpretation and visualization down the line, so instead we
+generate the scores using `.Machine$double.xmin`, which is
+`~2.225074e-308`, the smallest positive double in R. `pmax()` replaces
+any 0 with that minimum before transforming it with `-log10()`.
+:::
+
+```{r}
+# Interaction
+scores.int <- setNames(
+  -log10(pmax(GO.BP.int$bh_adjust, .Machine$double.xmin)),
+  GO.BP.int$category
+)
+
+# Interaction patterns
+scores.1 <- setNames(
+  -log10(pmax(GO.BP.1$bh_adjust, .Machine$double.xmin)),
+  GO.BP.1$category
+)
+
+scores.2 <- setNames(
+  -log10(pmax(GO.BP.2$bh_adjust, .Machine$double.xmin)),
+  GO.BP.2$category
+)
+
+scores.3 <- setNames(
+  -log10(pmax(GO.BP.3$bh_adjust, .Machine$double.xmin)),
+  GO.BP.3$category
+)
+
+# Contrasts
+scores.lvccl <- setNames(
+  -log10(pmax(GO.BP.lvccl$bh_adjust, .Machine$double.xmin)),
+  GO.BP.lvccl$category
+)
+
+scores.mvccl <- setNames(
+  -log10(pmax(GO.BP.mvccl$bh_adjust, .Machine$double.xmin)),
+  GO.BP.mvccl$category
+)
+
+scores.hvccl <- setNames(
+  -log10(pmax(GO.BP.hvccl$bh_adjust, .Machine$double.xmin)),
+  GO.BP.hvccl$category
+)
+
+scores.hvceg <- setNames(
+  -log10(pmax(GO.BP.hvceg$bh_adjust, .Machine$double.xmin)),
+  GO.BP.hvceg$category
+)
+```
+
+Reduce terms with similarity matrix.
+
+```{r}
+# Interaction
+reducedTerms.int <- reduceSimMatrix(
+  simMatrix.int,
+  scores = scores.int,
+  threshold = 0.8,
+  orgdb = "org.Ce.eg.db"
+)
+
+# Interaction patterns
+reducedTerms.1 <- reduceSimMatrix(
+  simMatrix.1,
+  scores = scores.1,
+  threshold = 0.8,
+  orgdb = "org.Ce.eg.db"
+)
+
+reducedTerms.2 <- reduceSimMatrix(
+  simMatrix.2,
+  scores = scores.2,
+  threshold = 0.8,
+  orgdb = "org.Ce.eg.db"
+)
+
+reducedTerms.3 <- reduceSimMatrix(
+  simMatrix.3,
+  scores = scores.3,
+  threshold = 0.8,
+  orgdb = "org.Ce.eg.db"
+)
+
+# Contrasts
+
+reducedTerms.lvccl <- reduceSimMatrix(
+  simMatrix.lvccl,
+  scores = scores.lvccl,
+  threshold = 0.8,
+  orgdb = "org.Ce.eg.db"
+)
+
+reducedTerms.mvccl <- reduceSimMatrix(
+  simMatrix.mvccl,
+  scores = scores.mvccl,
+  threshold = 0.8,
+  orgdb = "org.Ce.eg.db"
+)
+
+reducedTerms.hvccl <- reduceSimMatrix(
+  simMatrix.hvccl,
+  scores = scores.hvccl,
+  threshold = 0.8,
+  orgdb = "org.Ce.eg.db"
+)
+
+reducedTerms.hvceg <- reduceSimMatrix(
+  simMatrix.hvceg,
+  scores = scores.hvceg,
+  threshold = 0.8,
+  orgdb = "org.Ce.eg.db"
+)
+```
+
+# Save files
+```{r}
+## Reduced Terms
+write_csv(reducedTerms.int, "../../output/08_go/reducedTerms_int.csv")
+write_csv(reducedTerms.1, "../../output/08_go/reducedTerms_1.csv")
+write_csv(reducedTerms.2, "../../output/08_go/reducedTerms_2.csv")
+write_csv(reducedTerms.3, "../../output/08_go/reducedTerms_3.csv")
+
+write_csv(reducedTerms.lvccl, "../../output/08_go/reducedTerms_lvccl.csv")
+write_csv(reducedTerms.mvccl, "../../output/08_go/reducedTerms_mvccl.csv")
+write_csv(reducedTerms.hvccl, "../../output/08_go/reducedTerms_hvccl.csv")
+write_csv(reducedTerms.hvceg, "../../output/08_go/reducedTerms_hvceg.csv")
+
+## Similarity matrices
+### Interaction
+simMatrix_int <- simMatrix.int %>%
+  as.data.frame() %>% 
+  rownames_to_column(var = "GO")
+write_csv(simMatrix_int, "../../output/08_go/simMatrix_int.csv")
+
+### Interaction patterns
+simMatrix_1 <- simMatrix.1 %>%
+  as.data.frame() %>% 
+  rownames_to_column(var = "GO")
+write_csv(simMatrix_1, "../../output/08_go/simMatrix_1.csv")
+
+simMatrix_2 <- simMatrix.2 %>%
+  as.data.frame() %>% 
+  rownames_to_column(var = "GO")
+write_csv(simMatrix_2, "../../output/08_go/simMatrix_2.csv")
+
+simMatrix_3 <- simMatrix.3 %>%
+  as.data.frame() %>% 
+  rownames_to_column(var = "GO")
+write_csv(simMatrix_3, "../../output/08_go/simMatrix_3.csv")
+
+
+### Contrasts
+simMatrix_lvccl <- simMatrix.lvccl %>%
+  as.data.frame() %>% 
+  rownames_to_column(var = "GO")
+write_csv(simMatrix_lvccl, "../../output/08_go/simMatrix_lvccl.csv")
+
+simMatrix_mvccl <- simMatrix.mvccl %>%
+  as.data.frame() %>% 
+  rownames_to_column(var = "GO")
+write_csv(simMatrix_mvccl, "../../output/08_go/simMatrix_mvccl.csv")
+
+simMatrix_hvccl <- simMatrix.hvccl %>%
+  as.data.frame() %>% 
+  rownames_to_column(var = "GO")
+write_csv(simMatrix_hvccl, "../../output/08_go/simMatrix_hvccl.csv")
+
+simMatrix_hvceg <- simMatrix.hvceg %>%
+  as.data.frame() %>% 
+  rownames_to_column(var = "GO")
+write_csv(simMatrix_hvceg, "../../output/08_go/simMatrix_hvceg.csv")
+```
+
+# Summary & next steps
+```{r}
+sessionInfo()
+```
+

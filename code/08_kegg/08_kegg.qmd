@@ -1,0 +1,202 @@
+---
+title: "KEGG Ortholog (KO) pathway analysis for gene expression clusters"
+subtitle: "Characterizing the 3 gene expression patterns found in clustering analysis"
+author: "Sarah Tanja"
+date: 2025-11-17
+date-modified: today
+format:
+  gfm: 
+    toc: true
+    number-sections: true
+  html:
+    theme: journal
+    highlight-style: github
+    page-layout: article
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    number-sections: true
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    reference-location: margin
+    citation-location: margin
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, # Display code chunks
+  eval = TRUE, # Evaluate code chunks
+  warning = FALSE, # Hide warnings
+  message = FALSE, # Hide messages
+  comment = "") # Prevents appending '##' to beginning of lines in code output))        
+```
+
+# Background
+
+```{r}
+BiocManager::install("clusterProfiler")
+BiocManager::install("enrichplot")
+library(clusterProfiler)
+library(enrichplot)
+library(GOSemSim)
+library(tidyverse)
+```
+## Load inputs
+
+## Load inputs
+
+Read in gene lists
+
+```{r}
+# significant genes (130 total) (only those that are significant for leachate or stage:leachate)
+sig_genes <- read.csv("../../output/06_deg/spawnnight/sig_all.csv")
+
+# Gene cluster assignments 
+gene_clusters <- read.csv("../../output/06_deg/cluster/gene_clusters.csv")
+
+# Full gene set tested in DESeq2 analysis
+all_genes <- read.csv("../../output/06_deg/spawnnight/all_genes.csv")
+```
+
+Import fasta 
+
+```{r, eval=FALSE}
+# Load transcriptome
+all_seqs <- readDNAStringSet("../../input/genome/Montipora_capitata_HIv3.assembly.fasta")
+
+# Filter for the 130 significant genes
+sig_seqs <- all_seqs[names(all_seqs) %in% sig_genes$gene_id]
+```
+
+Import EggNog annotation
+
+```{r}
+# Read in the file
+EggNog_anno <- read_tsv("../../input/annotations/Montipora_capitata_HIv3.genes.EggNog_results.txt")
+
+# Rename "#query" to gene_id
+EggNog_anno <- EggNog_anno %>%
+  rename(gene_id="#query")
+
+paste(nrow(EggNog_anno), "genes have functional annotation")
+```
+
+# Annotate significant genes
+
+Match genes in sig_genes to annotation dataframe
+
+```{r}
+# Annotate significant genes
+sig_genes_anno <- inner_join(sig_genes, EggNog_anno, by = "gene_id")
+
+# Filter out any that lack GO term annotation
+sig_genes_annofilt <- sig_genes_anno %>% 
+  mutate(GOs = na_if(str_trim(GOs), "-")) %>%
+  filter(!is.na(GOs), GOs != "")
+
+paste("Annotated genes:", 
+      nrow(sig_genes_anno), "/", 
+      nrow(sig_genes), "=",
+      round(100*nrow(sig_genes_anno)/nrow(sig_genes),1),"%")
+
+paste("GO annotated genes:", 
+      nrow(sig_genes_annofilt), "/", 
+      nrow(sig_genes), "=",
+      round(100*nrow(sig_genes_annofilt)/nrow(sig_genes),1),"%")
+```
+
+## Add gene lengths
+
+::: callout-note
+Gene lengths are required for goseq bias correction.
+:::
+
+```{r}
+# Import GFF file to get gene lengths
+# Check if file exists before importing
+gff_file <- "../../input/genome/Montipora_capitata_HIv3.genes_fixed.gff3"
+
+if (file.exists(gff_file)) {
+  gff <- rtracklayer::import(gff_file)
+  
+  transcripts <- subset(gff, type == "transcript")
+  
+  transcripts_gr <- makeGRangesFromDataFrame(transcripts, keep.extra.columns=TRUE)
+  
+  transcript_lengths <- width(transcripts_gr)
+  
+  gene_id <- transcripts_gr$ID
+  
+  lengths <- cbind(gene_id, transcript_lengths)
+  
+  lengths <- as.data.frame(lengths)
+  
+  paste("Gene lengths extracted for", nrow(lengths), "transcripts")
+} else {
+  warning("GFF file not found. Gene length bias correction will not be available.")
+  lengths <- data.frame(gene_id = character(), transcript_lengths = integer())
+}
+```
+
+Add length to the annotation dataframe
+
+```{r}
+sig_genes_af <- sig_genes_annofilt %>% left_join(lengths, by = "gene_id")
+```
+
+## Add cluster assignments
+
+Join cluster information with annotated genes
+
+```{r}
+sig_genes_afc <- inner_join(sig_genes_af, gene_clusters, by = "gene_id")
+str(sig_genes_afc)
+```
+::: callout-note
+`sig_genes_afc` is now the dataframe with GO annotated, filtered, and matched to gene pattern clusters
+:::
+
+Save GO annotated dataframe
+
+```{r}
+write_csv(sig_genes_afc, file.path(output_path, "sig_genes_GOannotated.csv")
+```
+
+
+
+Everything from output/07_go/
+```{r}
+path <- "../../output/07_go/"
+files <- list.files(path, pattern = "\\.csv$", full.names = TRUE)
+nm    <- make.names(tools::file_path_sans_ext(basename(files)), unique = TRUE)
+
+for (i in seq_along(files)) {
+  assign(nm[i], readr::read_csv(files[i]), envir = .GlobalEnv)
+}
+```
+
+```{r}
+gene_clusters <- read_csv("../../output/06_deg/cluster/gene_clusters.csv")
+
+gene_lists <- split(gene_clusters$gene_id, gene_clusters$cluster)
+```
+
+
+```{r}
+xx <- compareCluster(
+  geneCluster   = gene_lists,
+  fun           = "enrichKEGG",        # or enrichKEGG, etc.
+  OrgDb         = orgdb_object,
+  keyType       = "ENSEMBL",         # or whatever your IDs are
+  ont           = "BP",
+  pvalueCutoff  = 0.05
+)
+```
+
+
