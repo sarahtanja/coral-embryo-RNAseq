@@ -39,8 +39,8 @@ knitr::opts_chunk$set(
 
 # Background
 
-In the clustering analysis (07_cluster.qmd), we identified 3 distinct gene expression patterns among the 130 significant genes affected by leachate. 
-These genes cluster based on their expression patterns across leachate concentrations (control, low, mid, high).
+In the clustering analysis (07_cluster.qmd), we identified 3 distinct gene expression patterns among the 130 significant genes affected by leachate, 128 genes out of the 130 DEGs fit into one of the three patterns. 
+These genes cluster based on their expression patterns across stage & leachate concentrations (control, low, mid, high).
 
 Gene cluster breakdown:
 - **Cluster 1**: 72 genes, peak in early gastrula
@@ -107,7 +107,7 @@ Read in gene lists
 
 ```{r}
 # significant genes (130 total) (only those that are significant for leachate or stage:leachate)
-sig_genes <- read.csv("../../output/06_deg/spawnnight/sig_all.csv")
+sig_genes <- read.csv("../../output/06_deg/spawnnight/sig_genes.csv")
 
 # Gene cluster assignments 
 gene_clusters <- read.csv("../../output/06_deg/cluster/gene_clusters.csv")
@@ -162,6 +162,12 @@ paste("GO annotated genes:",
       nrow(sig_genes), "=",
       round(100*nrow(sig_genes_annofilt)/nrow(sig_genes),1),"%")
 ```
+```{r}
+
+```
+
+
+
 
 ## Add gene lengths
 
@@ -217,7 +223,8 @@ str(sig_genes_afc)
 Save GO annotated dataframe
 
 ```{r}
-write_csv(sig_genes_afc, file.path(output_path, "sig_genes_GOannotated.csv")
+write_csv(sig_genes_afc, file.path(output_path, "sig_genes_GOannotated.csv"))
+write_csv(sig_genes_anno, file.path(output_path, "sig_genes_GOKEGGannotated.csv"))
 ```
 
 ## Subset by cluster
@@ -629,6 +636,43 @@ simMatrix_sig <- simMatrix.sig %>%
     as.data.frame() %>% 
     rownames_to_column(var = "GO")
   write_csv(simMatrix_sig, file.path(output_path, "simMatrix_sig.csv"))
+```
+
+
+# clusterProfiler
+
+```{r}
+library(clusterProfiler)
+```
+
+
+```{r}
+gene_clusters <- read_csv("../../output/06_deg/cluster/gene_clusters.csv")
+
+gene_lists <- split(gene_clusters$gene_id, gene_clusters$cluster)
+```
+
+gene to GOterm to description
+```{r}
+term_gene <- GO.terms.sig %>% 
+  select(GOs, gene_id) %>% 
+  rename(GO = GOs)
+
+term_name <- GO.bp.sig %>% 
+  select(category, term) %>% 
+  rename(GO = category)
+```
+
+```{r}
+cc_go <- compareCluster(
+  geneCluster   = gene_lists,
+  fun           = "enricher",
+  TERM2GENE     = term_gene,
+  TERM2NAME     = term_name,
+  pvalueCutoff  = 0.05,
+  pAdjustMethod = "BH",
+  qvalueCutoff  = 0.2
+)
 ```
 
 # Summary
