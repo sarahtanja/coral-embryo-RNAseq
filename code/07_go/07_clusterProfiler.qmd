@@ -1,0 +1,527 @@
+---
+title: "KEGG Ortholog (KO) pathway analysis for gene expression clusters"
+subtitle: "Characterizing the 3 gene expression patterns found in clustering analysis"
+author: "Sarah Tanja"
+date: 2025-11-17
+date-modified: today
+format:
+  gfm: 
+    toc: true
+    number-sections: true
+  html:
+    theme: journal
+    highlight-style: github
+    page-layout: article
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    number-sections: true
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    reference-location: margin
+    citation-location: margin
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, # Display code chunks
+  eval = TRUE, # Evaluate code chunks
+  warning = FALSE, # Hide warnings
+  message = FALSE, # Hide messages
+  comment = "") # Prevents appending '##' to beginning of lines in code output))        
+```
+
+# Background
+
+KEGGREST package to access KEGG database: https://www.bioconductor.org/packages/release/bioc/vignettes/KEGGREST/inst/doc/KEGGREST-vignette.html
+
+For each of GO and KEGG you want:
+
+Background / universe
+
+universe_genes <- rownames(dds) (or similar)
+
+DEG + annotation table in long form
+
+One row per (gene_id, GO_id) and (gene_id, KEGG_id).
+
+TERM2GENE & TERM2NAME tables
+
+GO: (GO_id, gene_id) and (GO_id, GO_term)
+
+KEGG: (KEGG_id, gene_id) and (KEGG_id, KEGG_term)
+
+Clustered gene lists
+
+gene_clusters <- split(deg_annot$gene_id, deg_annot$cluster) (with dedup)
+
+Run compareCluster(..., fun="enricher", TERM2GENE=..., TERM2NAME=...)
+
+One call for GO, one for KEGG.
+
+Visualise with dotplot(), emapplot(), cnetplot(), etc.
+
+Breakdown of the gene ID format
+
+Montipora_capitata_HIv3___TS.g9699.t2
+
+`Montipora_capitata`	Species (your experimental species)
+`HIv3`	Genome assembly version — Hawai‘i version 3 (the one commonly used in RNA-seq pipelines now)
+`___TS`	Annotation source / transcript set (often "TS" = transcript set, sometimes “TS” refers to Trinity/STRINGTIE if that was used in comprehensive assemblies)
+`g9699`	Gene ID (numbered gene)
+`t2`	Transcript number 2 (transcript isoform of g9699)
+
+# Setup
+## Set paths
+```{r}
+output_path <- "../../output/07_enrichment/clusterProfiler/"
+```
+
+
+## Load libraries
+```{r}
+#BiocManager::install("clusterProfiler")
+#BiocManager::install("enrichplot")
+#BiocManager::install("KEGGREST")
+
+library(clusterProfiler)
+library(enrichplot)
+library(tidyverse)
+library(GO.db)
+library(AnnotationDbi)
+library(KEGGREST)
+```
+
+## Load inputs
+
+Read in gene lists and annotations
+```{r}
+# Full gene set tested in DESeq2 analysis
+all_genes <- read.csv("../../output/06_deg/spawnnight/all_genes.csv")
+
+# significant genes (130 total) (only those that are significant for leachate or stage:leachate)
+sig_genes <- read.csv("../../output/06_deg/spawnnight/sig_genes.csv")
+sig_summary <- read.csv("../../output/06_deg/spawnnight/sig_summary.csv")
+
+# Gene cluster assignments 
+gene_clusters <- read.csv("../../output/06_deg/cluster/gene_clusters.csv")
+
+# GO/KEGG Annotation to gene table
+all_genes_anno <- read.csv("../../output/07_enrichment/goseq/all_genes_anno.csv")
+gene2kegg <- read.csv("../../output/07_enrichment/goseq/gene2kegg.csv")
+gene2go <- read.csv("../../output/07_enrichment/goseq/gene2go.csv")
+
+# gene universe named vector
+universe.genes <- all_genes$gene_id
+names(universe.genes) <- universe.genes
+
+# DEG named vector 
+deg.vector <- sig_genes$gene_id
+names(deg.vector) <- deg.vector
+```
+
+
+# Get KEGG Pathways for KO terms
+
+KO = KEGG Orthology ID
+Example: K01900 (Enolase)
+
+Represents gene-level functional units.
+
+One KO = one “orthologous gene family” with a well-defined function
+
+KO is the atomic KEGG annotation
+
+Pathways are large biological processes composed of many KOs.
+
+High-level, very interpretable (e.g., apoptosis, TCA cycle, Wnt signaling)
+
+Based on curated networks
+
+Pathways can be metabolic or signaling
+# Build kegg TERM2NAME table
+
+KEGG has two montipora species in the organisms list, Montipora capricornis (leaf plate montipora) with organismal code [mcaz](https://www.kegg.jp/kegg-bin/show_organism?org=mcaz) and Montipora foliosa with organismal code [mfoo](https://www.kegg.jp/kegg-bin/show_organism?org=mfoo). 
+
+Use KEGGREST to access mcaz and mfoo pathways
+```{r}
+kegg_mcaz <- keggList("pathway", "mcaz")
+head(kegg_mcaz)
+```
+
+```{r}
+kegg_mfoo <- keggList("pathway", "mfoo")
+head(kegg_mfoo)
+```
+
+Use KEGGREST to access KO pathways via function `keggList("pathway", "ko")`! This queries the KO database and returns all KEGG pathways with their names. As a reminder, we got these ko pathways from eggNOG-mapper annotations.
+```{r}
+kegg_ko_paths <- keggList("pathway", "ko")
+
+head(kegg_ko_paths)
+```
+
+keggList returns a named character vector, so now we have to turn it into a tibble dataframe with columns term and name.
+```{r}
+# kegg_ko_paths is a named character vector
+kegg2name <- tibble(
+  term = sub("^path:", "", names(kegg_ko_paths)),  # "ko04714"
+  name = unname(kegg_ko_paths)                    # "Dopaminergic synapse"
+)
+
+# kegg2name
+head(kegg2name)
+# should look like:
+#   term     name
+#   ko04714  Dopaminergic synapse
+```
+
+We built a gene2kegg table earlier from eggNOG-mapper annotations for goseq. Now we need to turn that into TERM2GENE format for clusterProfiler.
+```{r}
+kegg2gene <- gene2kegg %>%
+  dplyr::select(category, gene) %>%
+  rename(term = category)
+# gene2kegg 
+head(kegg2gene)
+# should look like:
+#   term      gene
+# 	ko04714	  Montipora_capitata_HIv3___RNAseq.g4581.t1
+```
+
+# enricher (for KO KEGG pathways)
+
+```{r}
+# How many of the 130 significant DE genes are mapped to kegg pathways?
+sum(sig_genes$gene_id %in% kegg2gene$gene)
+```
+::: callout-note
+only 44 out of the 130 DEGs have KEGG pathway annotation 
+:::
+
+We already know from our goseq results that we don't have any enriched go terms. Therefore, I don't expect to see any enrichment in KEGG Pathways either. But I still want to see what our DEGs do, so we will run the `clusterProfiler::enricher()` function but we won't filter for pvalueCutoff. This means we'll just show everything, and explain that what is shown is **not enriched**, but is descriptive of what the DEGs do.
+
+```{r}
+# sig_genes$gene_id = your DEGs (all patterns combined)
+# gene2kegg = gene, category (ko####) as you built
+# kegg2name = data.frame(term = "ko04714", name = "Dopaminergic synapse")
+
+kegg_all <- enricher(
+  gene         = deg.vector,
+  TERM2GENE    = kegg2gene,
+  TERM2NAME    = kegg2name,
+  pvalueCutoff = 1,   # keep everything
+  qvalueCutoff = 1
+)
+
+# Look at the table
+kegg_df <- as.data.frame(kegg_all)
+nrow(kegg_df)   # pathways that have at least 1 DEG
+```
+
+Make a named numeric “cluster code” for your DEGs
+You already have clusters (1/2/3) for DEGs. You can feed that to cnetplot() via foldChange= to color gene nodes by pattern.
+```{r}
+# sig_summary: gene_id, cluster (1/2/3)
+cluster_code <- gene_clusters %>%
+  distinct(gene_id, cluster) %>%
+  # encode clusters as numeric just for the color scale
+  mutate(code = case_when(
+    cluster == 1 ~ -1,   # e.g. cleavage-high
+    cluster == 2 ~  0,   # prawnchip-high
+    cluster == 3 ~  1    # early-gastrula-high
+  )) %>%
+  dplyr::select(gene_id, code) %>%
+  tibble::deframe()   # named numeric: names = gene_id, values = code
+```
+Now cluster_code["Montipora_capitata_HIv3___TS.g1234.t1"] gives -1/0/1 depending on pattern.
+
+Cnetplot: KEGG pathways with gene nodes colored by pattern
+```{r, fig.height=10, fig.width=10, warning=FALSE}
+p_cnet <- cnetplot(
+  kegg_all,
+  foldChange  = cluster_code,  # this colors gene nodes
+  showCategory = 200,           # number of pathways to show
+  node_label   = "category"    # label pathways, not genes
+)
+
+p_cnet+
+  scale_colour_gradient2(
+    name = "Expression pattern",
+    low  = "#8E6B01",  # cluster 1
+    mid  = "#CECDC3",  # cluster 2
+    high = "#5B8E8A",  # cluster 3
+    midpoint = 0
+  )
+```
+> “KEGG pathways annotated to DEGs. Nodes represent pathways (circles) and genes (smaller nodes), with gene nodes colored by expression pattern cluster (cleavage-, prawnchip-, or early-gastrula–biased). Pathway nodes are sized by the number of genes that map to that pathway. No pathways were significantly enriched after multiple-testing correction; visualization is descriptive of 44 DEGs that had KEGG Pathway annotation.”
+
+```{r, fig.width=10, fig.height=10}
+kegg_sim <- pairwise_termsim(kegg_all)  # adds term-term similarity
+p_emap <- emapplot(
+  kegg_sim,
+  showCategory = 200
+)
+
+p_emap 
+```
+# enrich GO
+
+# Build GO term to name dataframe
+
+Reformat for clusterProfiler
+```{r}
+go2gene <- gene2go %>% 
+  dplyr::select(category, gene) %>% 
+  rename(term = category)
+
+head(go2gene)
+# term gene
+```
+
+```{r}
+go_terms <- AnnotationDbi::select(
+  GO.db,
+  keys    = go2gene$term,
+  keytype = "GOID",
+  columns = c("TERM", "ONTOLOGY")
+)
+
+head(go_terms)
+#      GOID        TERM                               ONTOLOGY
+```
+```{r}
+goterms <- go_terms %>% 
+  dplyr::select(GOID, TERM) %>% 
+  rename(name = TERM, 
+         term = GOID)
+
+head(goterms)
+```
+
+```{r}
+go2name <- go2gene %>%
+  left_join(go_terms, by = c("term" = "GOID")) %>%
+  rename(name = TERM) %>%
+  dplyr::select(term, name)
+
+head(go2name)
+```
+
+```{r}
+go_all <- enricher(
+  gene         = sig_genes$gene_id,   # your DEGs
+  TERM2GENE    = go2gene,
+  TERM2NAME    = go2name,
+  universe     = universe.genes,
+  pvalueCutoff = 1,
+  qvalueCutoff = 1,
+  minGSSize    = 1
+)
+
+go_all
+as.data.frame(go_all) %>% head()
+```
+
+
+# ORA
+https://chatgpt.com/share/691d3dec-fff0-8008-8a0b-fe8f672fa716
+
+
+For ORA in clusterProfiler, whether GO, KEGG, or custom gene sets, the core inputs are:
+
+#1. A gene list (or lists)
+  - e.g. genes in pattern 1, pattern 2, pattern 3
+  - This is a character vector of gene IDs.
+  
+For comparing expression patterns 1/2/3 in one go, we can pass a named list of gene vectors into compareCluster(geneClusters = ...)  
+
+
+```{r}
+identical(unique(sig_summary$gene_id), sig_genes$gene_id)
+
+sig_genes_vector <- sig_genes$gene_id
+```
+
+
+```{r}
+sig_genes_cluster1 <- sig_summary %>% 
+  filter(cluster == 1) %>% 
+  pull(unique(gene_id)) # does this collapse any duplicate gene_id?
+
+sig_genes_cluster2 <- sig_summary %>%
+  filter(cluster == 2) %>% 
+  pull(unique(gene_id))
+
+sig_genes_cluster3 <- sig_summary %>%
+  filter(cluster == 3) %>% 
+  pull(unique(gene_id))
+
+gene_clusters <- list(
+  Pattern_1 = sig_genes_cluster1,
+  Pattern_2 = sig_genes_cluster2,
+  Pattern_3 = sig_genes_cluster3
+)
+```
+  
+  
+
+# 2. A background / universe 
+  - All genes that could possibly have been called DE in that analysis (e.g. all genes in your filtered DESeq2 object, ~10k).
+  - Passed as universe = all_genes in enricher() / enrichGO() etc.
+```{r}
+universe_genes <- all_genes$gene_id
+```
+
+# 3. Annotation mapping: TERM2GENE (and optionally TERM2NAME)
+  - For GO ORA: a 2-column data frame of term = GO ID (e.g. "GO:0006355"), gene = gene_id
+  - For KEGG ORA: a 2-column data frame of term = KEGG pathway ID or KO ID (whichever you want to treat as “gene set”), gene = gene_id
+  - Built from your annotation table (gff, eggNOG), then restricted to the genes in `universe_genes`
+
+Xu et al. explicitly demonstrate using enricher()/compareCluster() with custom TERM2GENE/TERM2NAME for non-model GO and TF annotations, which is exactly our situation.
+```{r}
+go2gene <- all_genes_GO %>% 
+  dplyr::select(GOs, gene_id, Preferred_name) %>% 
+  separate_rows(GOs, sep = ",") %>%        # separate the GOs column into rows by comma
+  mutate(term = trimws(GOs)) %>%                  # trim whitespace 
+  rename(gene = gene_id) %>%               
+  dplyr::select(term, gene)
+```
+
+## Get GO terms 
+```{r}
+# vector of GO IDs you care about
+go_ids <- unique(go2gene$term)   # or whatever your df is called
+
+go_terms <- AnnotationDbi::select(
+  GO.db,
+  keys    = go_ids,
+  keytype = "GOID",
+  columns = c("TERM", "ONTOLOGY")    # TERM = name, ONTOLOGY = BP/CC/MF
+)
+
+go2name <- go2gene %>%
+  left_join(go_terms, by = c("term" = "GOID")) %>% 
+  rename(name = TERM) %>% 
+  dplyr::select(term, name)
+```
+
+In the KEGG_Pathway columns we basically have two representations of the same KEGG pathway:
+- ko04714 = “global KEGG Orthology” pathway ID
+- map04714 = “reference pathway map”
+
+For enrichment, if you keep both for the same gene, you’lld ouble-count that gene-pathway association (once as ko04714, once as map04714).
+
+In KEGG, map refers to the pathway map, a graphical representation of a metabolic or functional pathway network, while KO is the KEGG Orthology identifier, a specific gene ortholog that acts as a building block (node) for these maps. A map provides a systems-level view of how various biological processes work together, whereas a KO is the unique identifier for a specific gene or protein that performs a function, such as catalyzing a reaction. 
+
+```{r}
+kegg_pairs <- all_genes_KEGG %>%
+  rename(gene = Preferred_name) %>%
+  # 1) split comma-separated IDs into separate rows
+  separate_rows(KEGG_Pathway, sep = ",") %>%
+  mutate(kegg_pathway = trimws(KEGG_Pathway)) %>%
+  filter(kegg_pathway != "") %>%
+  
+  # 2) keep only ko/map-style KEGG IDs
+  filter(str_detect(kegg_pathway, "^(ko|map)\\d+")) %>%
+  
+  # 3) tag each as ko or map and pull out the numeric part
+  mutate(
+    type   = if_else(str_starts(kegg_pathway, "ko"), "ko", "map"),
+    id_num = str_extract(kegg_pathway, "\\d+")   # 04714, 05230, etc.
+  ) %>%
+  select(kegg_pathway, gene, gene_id, type, id_num) %>%
+  distinct()
+
+kegg2gene <- kegg_pairs %>%
+  pivot_wider(
+    id_cols    = c(gene, gene_id, id_num),   # one row per gene + numeric ID
+    names_from = type,                 # columns: ko, map
+    values_from = kegg_pathway
+  ) %>%
+  # optional: drop rows where only ko or only map exists
+  filter(!is.na(ko) & !is.na(map)) %>%
+  select(ko, gene, gene_id, map)
+```
+
+
+```{r}
+ego <- enricher(
+  gene         = sig_genes_vector,
+  TERM2GENE    = go2gene,
+  TERM2NAME    = go2name,
+  universe     = universe_genes,
+  pvalueCutoff = 1,
+  qvalueCutoff = 1
+)
+
+summary(ego)
+```
+
+```{r}
+dotplot(ego)
+```
+
+
+
+```{r}
+ego1 <- enricher(
+  gene        = sig_genes_cluster1,
+  TERM2GENE   = go2gene,
+  universe    = universe_genes,
+  pvalueCutoff = 0.05,
+  qvalueCutoff = 0.2
+)
+
+ego2 <- enricher(
+  gene        = cluster2_genes,
+  TERM2GENE   = go_term2gene,
+  TERM2NAME   = go_term2name,
+  universe    = universe_genes
+)
+
+ego3 <- enricher(
+  gene        = cluster3_genes,
+  TERM2GENE   = go_term2gene,
+  TERM2NAME   = go_term2name,
+  universe    = universe_genes
+)
+```
+
+
+
+
+```{r}
+ego_clusters <- compareCluster(
+  geneClusters = sig_genes,
+  fun          = "enricher",
+  TERM2GENE    = go2gene,
+  universe     = universe_genes,  # optional but good practice
+  pAdjustMethod = "BH",
+  qvalueCutoff  = 1
+)
+
+# quick visualization
+library(enrichplot)
+dotplot(ego_clusters, showCategory = 10)
+```
+
+
+# GSEA
+```{r}
+xx <- compareCluster(
+  geneCluster   = gene_lists,
+  fun           = "enrichKEGG",        # or enrichKEGG, etc.
+  OrgDb         = orgdb_object,
+  keyType       = "ENSEMBL",         # or whatever your IDs are
+  ont           = "BP",
+  pvalueCutoff  = 0.05
+)
+```
+
+
