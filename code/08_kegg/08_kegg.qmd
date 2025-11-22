@@ -39,134 +39,172 @@ knitr::opts_chunk$set(
 
 # Background
 
+For each of GO and KEGG you want:
+
+Background / universe
+
+universe_genes <- rownames(dds) (or similar)
+
+DEG + annotation table in long form
+
+One row per (gene_id, GO_id) and (gene_id, KEGG_id).
+
+TERM2GENE & TERM2NAME tables
+
+GO: (GO_id, gene_id) and (GO_id, GO_term)
+
+KEGG: (KEGG_id, gene_id) and (KEGG_id, KEGG_term)
+
+Clustered gene lists
+
+gene_clusters <- split(deg_annot$gene_id, deg_annot$cluster) (with dedup)
+
+Run compareCluster(..., fun="enricher", TERM2GENE=..., TERM2NAME=...)
+
+One call for GO, one for KEGG.
+
+Visualise with dotplot(), emapplot(), cnetplot(), etc.
+
+Breakdown of the gene ID format
+
+Montipora_capitata_HIv3___TS.g9699.t2
+
+`Montipora_capitata`	Species (your experimental species)
+`HIv3`	Genome assembly version — Hawai‘i version 3 (the one commonly used in RNA-seq pipelines now)
+`___TS`	Annotation source / transcript set (often "TS" = transcript set, sometimes “TS” refers to Trinity/STRINGTIE if that was used in comprehensive assemblies)
+`g9699`	Gene ID (numbered gene)
+`t2`	Transcript number 2 (transcript isoform of g9699)
+
+# Setup
+## Set paths
 ```{r}
-BiocManager::install("clusterProfiler")
-BiocManager::install("enrichplot")
+output_path <- "../../output/08_kegg/"
+```
+
+
+## Load libraries
+```{r}
+#BiocManager::install("clusterProfiler")
+#BiocManager::install("enrichplot")
+
 library(clusterProfiler)
 library(enrichplot)
 library(GOSemSim)
+library(GenomicRanges)
+library(Biostrings)
 library(tidyverse)
 ```
-## Load inputs
 
 ## Load inputs
 
 Read in gene lists
-
 ```{r}
+# Full gene set tested in DESeq2 analysis
+all_genes <- read.csv("../../output/06_deg/spawnnight/all_genes.csv")
+
 # significant genes (130 total) (only those that are significant for leachate or stage:leachate)
-sig_genes <- read.csv("../../output/06_deg/spawnnight/sig_all.csv")
+sig_genes <- read.csv("../../output/06_deg/spawnnight/sig_genes.csv")
+sig_summary <- read.csv("../../output/06_deg/spawnnight/sig_summary.csv")
 
 # Gene cluster assignments 
 gene_clusters <- read.csv("../../output/06_deg/cluster/gene_clusters.csv")
-
-# Full gene set tested in DESeq2 analysis
-all_genes <- read.csv("../../output/06_deg/spawnnight/all_genes.csv")
 ```
 
-Import fasta 
-
-```{r, eval=FALSE}
-# Load transcriptome
-all_seqs <- readDNAStringSet("../../input/genome/Montipora_capitata_HIv3.assembly.fasta")
-
-# Filter for the 130 significant genes
-sig_seqs <- all_seqs[names(all_seqs) %in% sig_genes$gene_id]
+Add cluster to sig_summary
+```{r}
+sig_summary <- sig_summary %>% 
+  left_join(gene_clusters, by = "gene_id")
 ```
 
 Import EggNog annotation
-
 ```{r}
 # Read in the file
-EggNog_anno <- read_tsv("../../input/annotations/Montipora_capitata_HIv3.genes.EggNog_results.txt")
+EggNog <- read_tsv("../../input/annotations/Montipora_capitata_HIv3.genes.EggNog_results.txt")
 
 # Rename "#query" to gene_id
-EggNog_anno <- EggNog_anno %>%
+EggNog <- EggNog %>%
   rename(gene_id="#query")
 
-paste(nrow(EggNog_anno), "genes have functional annotation")
+paste(nrow(EggNog), "genes have functional annotation")
 ```
 
-# Annotate significant genes
+KO = KEGG Orthology ID
+Example: K01900 (Enolase)
 
-Match genes in sig_genes to annotation dataframe
+Represents gene-level functional units.
 
+One KO = one “orthologous gene family” with a well-defined function
+
+KO is the atomic KEGG annotation
+
+Pathways are large biological processes composed of many KOs.
+
+High-level, very interpretable (e.g., apoptosis, TCA cycle, Wnt signaling)
+
+Based on curated networks
+
+Pathways can be metabolic or signaling
+
+# Annotate genes
+
+Match genes in all_genes to EggNog annotation dataframe
 ```{r}
 # Annotate significant genes
-sig_genes_anno <- inner_join(sig_genes, EggNog_anno, by = "gene_id")
+all_genes_anno <- inner_join(all_genes, EggNog, by = "gene_id")
 
+# How many of the background genes are annotated by either GO or KEGG?
+paste("Annotated genes from DESeq background universe set:", 
+      nrow(all_genes_anno), "/", 
+      nrow(all_genes), "=",
+      round(100*nrow(all_genes_anno)/nrow(all_genes),1),"%")
+```
+
+How many of the background universe set are GO annotated?
+```{r}
 # Filter out any that lack GO term annotation
-sig_genes_annofilt <- sig_genes_anno %>% 
+all_genes_GO <- all_genes_anno %>% 
   mutate(GOs = na_if(str_trim(GOs), "-")) %>%
   filter(!is.na(GOs), GOs != "")
 
-paste("Annotated genes:", 
-      nrow(sig_genes_anno), "/", 
-      nrow(sig_genes), "=",
-      round(100*nrow(sig_genes_anno)/nrow(sig_genes),1),"%")
-
-paste("GO annotated genes:", 
-      nrow(sig_genes_annofilt), "/", 
-      nrow(sig_genes), "=",
-      round(100*nrow(sig_genes_annofilt)/nrow(sig_genes),1),"%")
+paste("GO annotated genes in DESeq background universe set:", 
+      nrow(all_genes_GO), "/", 
+      nrow(all_genes), "=",
+      round(100*nrow(all_genes_GO)/nrow(all_genes),1),"%")
 ```
-
-## Add gene lengths
-
-::: callout-note
-Gene lengths are required for goseq bias correction.
-:::
-
+Save GO annotated dataframe
 ```{r}
-# Import GFF file to get gene lengths
-# Check if file exists before importing
-gff_file <- "../../input/genome/Montipora_capitata_HIv3.genes_fixed.gff3"
-
-if (file.exists(gff_file)) {
-  gff <- rtracklayer::import(gff_file)
-  
-  transcripts <- subset(gff, type == "transcript")
-  
-  transcripts_gr <- makeGRangesFromDataFrame(transcripts, keep.extra.columns=TRUE)
-  
-  transcript_lengths <- width(transcripts_gr)
-  
-  gene_id <- transcripts_gr$ID
-  
-  lengths <- cbind(gene_id, transcript_lengths)
-  
-  lengths <- as.data.frame(lengths)
-  
-  paste("Gene lengths extracted for", nrow(lengths), "transcripts")
-} else {
-  warning("GFF file not found. Gene length bias correction will not be available.")
-  lengths <- data.frame(gene_id = character(), transcript_lengths = integer())
-}
+write_csv(all_genes_GO, file.path(output_path, "all_genes_GO.csv")
 ```
 
-Add length to the annotation dataframe
-
+How many of the background universe set are KEGG_Pathway annotated?
 ```{r}
-sig_genes_af <- sig_genes_annofilt %>% left_join(lengths, by = "gene_id")
-```
+# Filter out any that lack GO term annotation
+all_genes_KEGG <- all_genes_anno %>% 
+  mutate(KEGG_Pathway = na_if(str_trim(KEGG_Pathway), "-")) %>%
+  filter(!is.na(KEGG_Pathway), KEGG_Pathway != "")
 
+paste("KEGG annotated genes in DESeq background universe set:", 
+      nrow(all_genes_KEGG), "/", 
+      nrow(all_genes), "=",
+      round(100*nrow(all_genes_KEGG)/nrow(all_genes),1),"%")
+```
+Save KEGG_Pathway annotated dataframe
+```{r}
+write_csv(all_genes_KEGG, file.path(output_path, "all_genes_KEGG_Pathway.csv")
+```
 ## Add cluster assignments
 
 Join cluster information with annotated genes
-
 ```{r}
 sig_genes_afc <- inner_join(sig_genes_af, gene_clusters, by = "gene_id")
 str(sig_genes_afc)
 ```
+
 ::: callout-note
 `sig_genes_afc` is now the dataframe with GO annotated, filtered, and matched to gene pattern clusters
 :::
 
-Save GO annotated dataframe
 
-```{r}
-write_csv(sig_genes_afc, file.path(output_path, "sig_genes_GOannotated.csv")
-```
 
 
 
@@ -187,7 +225,86 @@ gene_clusters <- read_csv("../../output/06_deg/cluster/gene_clusters.csv")
 gene_lists <- split(gene_clusters$gene_id, gene_clusters$cluster)
 ```
 
+# ORA
+https://chatgpt.com/share/691d3dec-fff0-8008-8a0b-fe8f672fa716
 
+## What ORA needs (per Xu et al.)
+
+```{r}
+gene_clusters <- read_csv("../../output/06_deg/cluster/gene_clusters.csv")
+
+gene_lists <- split(gene_clusters$gene_id, gene_clusters$cluster)
+```
+
+gene to GOterm to description
+```{r}
+term_gene <- GO.terms.sig %>% 
+  select(GOs, gene_id) %>% 
+  rename(GO = GOs)
+
+term_name <- GO.bp.sig %>% 
+  select(category, term) %>% 
+  rename(GO = category)
+```
+
+```{r}
+cc_go <- compareCluster(
+  geneCluster   = gene_lists,
+  fun           = "enricher",
+  TERM2GENE     = term_gene,
+  TERM2NAME     = term_name,
+  pvalueCutoff  = 0.05,
+  pAdjustMethod = "BH",
+  qvalueCutoff  = 0.2
+)
+```
+
+
+For ORA in clusterProfiler, whether GO, KEGG, or custom gene sets, the core inputs are:
+
+1. A gene list (or lists)
+  - e.g. genes in pattern 1, pattern 2, pattern 3
+  - This is a character vector of gene IDs.
+  
+For comparing expression patterns 1/2/3 in one go, we can pass a named list of gene vectors into compareCluster(geneClusters = ...)  
+
+```{r}
+sig_genes_cluster1 <- sig_summary %>% 
+  filter(cluster == 1) %>% 
+  pull(unique(gene_id)) # does this collapse any duplicate gene_id?
+
+sig_genes_cluster2 <- sig_summary %>%
+  filter(cluster == 2) %>% 
+  pull(unique(gene_id))
+
+sig_genes_cluster3 <- sig_summary %>%
+  filter(cluster == 3) %>% 
+  pull(unique(gene_id))
+```
+  
+  
+
+2. A background / universe (recommended)
+  - All genes that could possibly have been called DE in that analysis (e.g. all genes in your filtered DESeq2 object, ~10k).
+  - Passed as universe = all_genes in enricher() / enrichGO() etc.
+```{r}
+universe_genes <- all_genes$gene_id
+```
+
+3. Annotation mapping: TERM2GENE (and optionally TERM2NAME)
+  - For GO ORA: a 2-column data frame of term = GO ID (e.g. "GO:0006355"), gene = gene_id
+  - For KEGG ORA: a 2-column data frame of term = KEGG pathway ID or KO ID (whichever you want to treat as “gene set”), gene = gene_id
+  - Built from your annotation table (gff, eggNOG), then restricted to the genes in `universe_genes`
+
+Xu et al. explicitly demonstrate using enricher()/compareCluster() with custom TERM2GENE/TERM2NAME for non-model GO and TF annotations, which is exactly our situation.
+```{r}
+go2gene <- GO.terms.sig %>% 
+  select(GOs, gene_id) %>%
+  )
+```
+
+
+# GSEA
 ```{r}
 xx <- compareCluster(
   geneCluster   = gene_lists,
