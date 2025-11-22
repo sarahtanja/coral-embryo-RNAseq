@@ -129,7 +129,8 @@ for (i in seq_along(files)) {
 ```
 
 ```{r}
-gene_cluster_data <- read_csv("../../output/06_deg/cluster/gene_cluster_zscores.csv")
+gene_cluster_zs <- read_csv("../../output/06_deg/cluster/gene_cluster_zscores.csv")
+gene_clusters <- read_csv("../../output/06_deg/cluster/gene_clusters.csv")
 ```
 
 Metadata
@@ -137,6 +138,7 @@ Metadata
 metadata_or <- read.csv("../../metadata/metadata_or.csv")
 str(metadata_or)
 ```
+
 ```{r}
 duplicated(norm_130_df$gene_id)
 ```
@@ -154,6 +156,129 @@ norm_130_long <- as.data.frame(norm_130_df) %>%
 # 3. join sample metadata
 norm_130_long <- norm_130_long %>% left_join(metadata_or, by = "sample_id")
 ```
+
+# Up vs Down?
+```{r}
+sig_summary <- sig_summary %>% 
+  mutate(regulation = if_else(log2FoldChange<0, "down", "up"))%>% 
+  mutate(
+    list     = factor(list),  # or set levels = c("list1", "list2", ...)
+    gene_id  = factor(gene_id),
+    regulation = factor(regulation, levels = c("down", "up"))
+  ) %>% 
+  left_join(gene_clusters, by = "gene_id")
+
+sig_summary %>% 
+  select(gene_id, list, regulation) %>% 
+  distinct() %>%               # just in case you have duplicates
+  pivot_wider(
+    names_from  = list,        # each list becomes a column
+    values_from = regulation   # up / down
+  )
+```
+
+```{r}
+ggplot(sig_summary, aes(x = list, y = gene_id, fill = regulation)) +
+  geom_tile() +
+  labs(
+    x = "List / contrast",
+    y = "Gene",
+    title = "Direction of differential expression across lists"
+  ) +
+  theme_minimal(base_size = 10) +
+  theme(
+    strip.text.y = element_text(angle = 0),
+    axis.text.y  = element_text(size = 6)  # 130 genes = small labels
+  )
+```
+
+```{r}
+updown <- sig_summary %>% 
+  group_by(gene_id) %>% 
+  summarise(
+    n_up   = sum(regulation == "up"),
+    n_down = sum(regulation == "down"),
+   # reg_index = (n_up + n_down) n_up / n_down  ## continuous scale index?? 
+    class  = case_when(
+      n_up  > 0 & n_down == 0 ~ "up_only",
+      n_up  == 0 & n_down > 0 ~ "down_only",
+      n_up  > 0 & n_down > 0  ~ "mixed",
+      TRUE                    ~ "other"
+    )) %>% 
+  left_join(gene_clusters, by = "gene_id") %>% 
+  mutate(cluster = factor(cluster, levels = c(1, 2, 3), labels = c("Early Gastrula", "Prawnchip", "Cleavage")))
+
+
+ggplot(updown, aes(x = class, y = gene_id, fill = cluster)) +
+  geom_tile() +
+  labs(
+    x = "Up, Down, Mixed Direction of Log2FC across DEG groupings",
+    y = "Gene",
+    title = "Direction of differential expression across lists and expression clusters"
+  ) +
+  theme_minimal(base_size = 10) +
+  theme(
+    strip.text.y = element_text(angle = 0),
+    axis.text.y  = element_text(size = 6)  # 130 genes = small labels
+  )
+```
+This exploratory plot shows us that we have overall more upregulated genes, particularly driven by the cleavage pattern gene set (blue)
+
+How many do we have in each category?? Does it matter biologically? Just because a group of gene transcripts were all found in more abundance doesnʻt necessarily mean that they are related in function. One gene with upregulated expression and one gene with downregulated expression may be more related functionally...  
+Still its something to report in the results section:
+```{r}
+updown %>% count(class)
+```
+Here I would like to see a breakdown of up vs down vs mixed by cluster
+```{r}
+updown %>% 
+ group_by(cluster) %>%
+  count(class)
+```
+
+Here I would like to see a breakdown of up vs down vs mixed by list
+```{r}
+sig_summary %>%
+  group_by(list) %>%
+  count(regulation)
+
+```
+
+::: callout-note
+Across all DEGs:
+Of the 130 DEGs 20 are explicitly downregulated across contrasts, 90 are explicitly upregulated, and 20 are mixed... either showing a positive log2FC or a negative log2FC depending on the specific contrast. 
+
+Within clusters of expression patterns:
+In cluster 1 (Early Gastrula stage dominant pattern) 9 are exclusively down, 14 are mixed, and 49 are exclusively up 
+In cluster 2 (Prawnchip stage dominant pattern) 9 are exclusively down, 6 are mixed, 10 are exclusively up
+In cluster 3 (Cleavage stage dominant pattern) 1 is exclusively down and 30 are exclusively up
+2 of the 130 did not fall into the three main cluster patterns
+
+Within the various DEG lists:
+LRT int down: 7
+LRT int up: 6
+
+LRT joint down: 15
+LRT joint up: 28
+
+prawnchip_low.int down: 1
+prawnchip_low.int up: 6
+
+earlygastrula_low.int down: 3
+earlygastrula_low.int up: 5
+
+earlygastrula_high.int down: 1
+
+cleavage_low.vs.control down: 21
+cleavage_low.vs.control up: 13
+
+cleavage_mid.vs.control down: 1
+cleavage_mid.vs.control up: 57
+
+cleavage_high.vs.control down: 5
+cleavage_high.vs.control up: 2
+
+:::
 
 How many samples are in each treatment for each significant gene?
 

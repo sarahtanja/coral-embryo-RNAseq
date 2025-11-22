@@ -41,6 +41,8 @@ knitr::opts_chunk$set(
 
 Here we are looking at a multifactorial differential gene expression analysis for *Montipora capitata* coral embryos at 3 developmental stages (4 hours post fertilization = cleavage , 9 hours post fertilization = prawnchip, and 14 hours post fertilization = early gastrula). Embryos at each stage were exposed to either a control, low, mid, or high concentration of PVC leachate. This work aims to understand sublethal effects of ubiquitous non-point source PVC leachate pollution on coral reefs.
 
+What we really want is effect of leachate within each stage.
+
 https://chatgpt.com/share/68ed79f1-e768-8008-9caa-0df1ca68b4ef
 
 ## Inputs
@@ -70,7 +72,6 @@ metadata_path <- "../../metadata/metadata_or.csv"
 #  "plotly",
 #  "cowplot",
 #  "pheatmap",
-#  "vsn",
 #  "ashr",
 #  "remotes"  # required for GitHub installs
 #))
@@ -83,7 +84,7 @@ metadata_path <- "../../metadata/metadata_or.csv"
 #if (!"BiocManager" %in% rownames(installed.packages())) {
 #  install.packages("BiocManager")
 #}
-#BiocManager::install(c("DESeq2", "DEGreport"))
+#BiocManager::install(c("DESeq2", "DEGreport","vsn"))
 ```
 
 ## Load packages
@@ -95,20 +96,13 @@ library(viridis)
 library(tidyverse)
 library(DEGreport)
 library(ashr)
-library(flexoki)
 library(plotly)
 library(vsn)
 library(pheatmap)
 library(ComplexUpset)
-library(ggplot2)
 library(ggplotify)
 library(patchwork)   # for wrap_plots(...)
 library(cowplot)     # for plot_grid & get_legend
-library(dplyr)
-library(grid) 
-library(purrr)
-library(forcats)
-library(ggforce)   # for facet_wrap_paginate
 ```
 
 ## Import filtered gene count matrix
@@ -649,6 +643,33 @@ summary(res_earlygastrula_low.vs.control)
 0 genes differentially expressed (adjusted p value \< 0.05) at the early gastrula stage in the low leachate treatment when compared to the control.
 :::
 
+# Extract all results for use in GSEA 
+
+> Example from Xu et al. 2024:
+> `all_results <- lapply(time_points, function(time_point) { 
+ result <- results(dds, tidy = TRUE, 
+ contrast = c("group", time_point, "0h")) 
+ setNames(object = result$log2FoldChange, nm = result$row) |>   sort(decreasing = TRUE)` 
+
+
+```{r}
+leachate_levels <- setdiff(levels(metadata_or$leachate), "control")
+
+all_results <- lapply(leachate_levels, function(lvl) { 
+  res <- results(
+    dds,
+    tidy     = TRUE,
+    contrast = c("leachate", lvl, "control")  # <— uses leachate, not group
+  )
+  
+  setNames(object = res$log2FoldChange, nm = res$row) |>
+    sort(decreasing = TRUE)
+})
+names(all_results) <- leachate_levels
+
+```
+
+
 # QC
 
 ```{r}
@@ -870,7 +891,8 @@ sig_lists <- list(
 
 # 2) Smoosh: add a 'list' column indicating the source and stack them
 sig_summary <- bind_rows(sig_lists, .id = "list") %>%
-  relocate(list, gene_id)
+  relocate(list, gene_id)%>% 
+  left_join(gene_clusters, by = "gene_id")
 
 write_csv(sig_summary, file.path(output_path, "sig_summary.csv"))
 ```
