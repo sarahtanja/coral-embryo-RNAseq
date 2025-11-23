@@ -38,7 +38,14 @@ knitr::opts_chunk$set(
 ```
 
 # Background
+https://chatgpt.com/share/691d3dec-fff0-8008-8a0b-fe8f672fa716
+For ORA in clusterProfiler, whether GO, KEGG, or custom gene sets, the core inputs are:
 
+#1. A gene list (or lists)
+  - e.g. genes in pattern 1, pattern 2, pattern 3
+  - This is a character vector of gene IDs.
+  
+For comparing expression patterns 1/2/3 in one go, we can pass a named list of gene vectors into compareCluster(geneClusters = ...)  
 KEGGREST package to access KEGG database: https://www.bioconductor.org/packages/release/bioc/vignettes/KEGGREST/inst/doc/KEGGREST-vignette.html
 
 For each of GO and KEGG you want:
@@ -126,8 +133,26 @@ deg.vector <- sig_genes$gene_id
 names(deg.vector) <- deg.vector
 ```
 
+gene log fold change named vector
+```{r}
+geneLFC <- sig_summary %>%
+  dplyr::filter(!list %in% c("int", "joint")) %>% 
+  dplyr::select(gene_id, log2FoldChange) %>%
+  tibble::deframe()   # creates named numeric vector
 
-# Get KEGG Pathways for KO terms
+any(duplicated(names(geneLFC)))  
+names(geneLFC)[duplicated(names(geneLFC))]  
+```
+Except these genes show up in multiple contrasts with different LFC values...
+
+
+
+gene cluster named vector
+
+
+# KEGG Pathways with clusterProfiler
+
+## Get KEGG Pathways for KO terms
 
 KO = KEGG Orthology ID
 Example: K01900 (Enolase)
@@ -145,7 +170,8 @@ High-level, very interpretable (e.g., apoptosis, TCA cycle, Wnt signaling)
 Based on curated networks
 
 Pathways can be metabolic or signaling
-# Build kegg TERM2NAME table
+
+## Build kegg TERM2NAME
 
 KEGG has two montipora species in the organisms list, Montipora capricornis (leaf plate montipora) with organismal code [mcaz](https://www.kegg.jp/kegg-bin/show_organism?org=mcaz) and Montipora foliosa with organismal code [mfoo](https://www.kegg.jp/kegg-bin/show_organism?org=mfoo). 
 
@@ -186,7 +212,7 @@ We built a gene2kegg table earlier from eggNOG-mapper annotations for goseq. Now
 ```{r}
 kegg2gene <- gene2kegg %>%
   dplyr::select(category, gene) %>%
-  rename(term = category)
+  dplyr::rename(term = category)
 # gene2kegg 
 head(kegg2gene)
 # should look like:
@@ -194,14 +220,14 @@ head(kegg2gene)
 # 	ko04714	  Montipora_capitata_HIv3___RNAseq.g4581.t1
 ```
 
-# enricher (for KO KEGG pathways)
+## Run enricher for KEGG pathways
 
 ```{r}
 # How many of the 130 significant DE genes are mapped to kegg pathways?
 sum(sig_genes$gene_id %in% kegg2gene$gene)
 ```
 ::: callout-note
-only 44 out of the 130 DEGs have KEGG pathway annotation 
+44 out of the 130 DEGs have KEGG pathway annotation 
 :::
 
 We already know from our goseq results that we don't have any enriched go terms. Therefore, I don't expect to see any enrichment in KEGG Pathways either. But I still want to see what our DEGs do, so we will run the `clusterProfiler::enricher()` function but we won't filter for pvalueCutoff. This means we'll just show everything, and explain that what is shown is **not enriched**, but is descriptive of what the DEGs do.
@@ -224,6 +250,7 @@ kegg_df <- as.data.frame(kegg_all)
 nrow(kegg_df)   # pathways that have at least 1 DEG
 ```
 
+## Visualize KEGG Pathways
 Make a named numeric “cluster code” for your DEGs
 You already have clusters (1/2/3) for DEGs. You can feed that to cnetplot() via foldChange= to color gene nodes by pattern.
 ```{r}
@@ -243,14 +270,15 @@ Now cluster_code["Montipora_capitata_HIv3___TS.g1234.t1"] gives -1/0/1 depending
 
 Cnetplot: KEGG pathways with gene nodes colored by pattern
 ```{r, fig.height=10, fig.width=10, warning=FALSE}
-p_cnet <- cnetplot(
+kegg_cnet <- cnetplot(
   kegg_all,
+  circular = TRUE,
   foldChange  = cluster_code,  # this colors gene nodes
   showCategory = 200,           # number of pathways to show
   node_label   = "category"    # label pathways, not genes
 )
 
-p_cnet+
+kegg_cnet+
   scale_colour_gradient2(
     name = "Expression pattern",
     low  = "#8E6B01",  # cluster 1
@@ -263,22 +291,33 @@ p_cnet+
 
 ```{r, fig.width=10, fig.height=10}
 kegg_sim <- pairwise_termsim(kegg_all)  # adds term-term similarity
-p_emap <- emapplot(
+kegg_emap <- emapplot(
   kegg_sim,
   showCategory = 200
 )
 
-p_emap 
+kegg_emap 
 ```
-# enrich GO
+```{r}
+dotplot(kegg_sim, showCategory = 15)
+```
 
-# Build GO term to name dataframe
+```{r, fig.width=10}
+barplot(kegg_sim, showCategory = 40)
+```
+```{r}
+heatplot(kegg_all, foldChange=geneLFC, showCategory=5)
+```
+
+# GO terms with clusterProfiler
+
+## Build GO term to name dataframe
 
 Reformat for clusterProfiler
 ```{r}
 go2gene <- gene2go %>% 
   dplyr::select(category, gene) %>% 
-  rename(term = category)
+  dplyr::rename(term = category)
 
 head(go2gene)
 # term gene
@@ -296,23 +335,25 @@ head(go_terms)
 #      GOID        TERM                               ONTOLOGY
 ```
 ```{r}
-goterms <- go_terms %>% 
-  dplyr::select(GOID, TERM) %>% 
-  rename(name = TERM, 
-         term = GOID)
-
-head(goterms)
+identical(go2gene$term, go_terms$GOID)
+```
+```{r}
+go2name <- tibble::tibble(
+  term = go2gene$term,
+  name = go_terms$TERM
+)
 ```
 
-```{r}
-go2name <- go2gene %>%
-  left_join(go_terms, by = c("term" = "GOID")) %>%
-  rename(name = TERM) %>%
-  dplyr::select(term, name)
+```{r, warning=TRUE}
+## This code should give the same result as above, but hangs up on R memory usage
+#go2name <- go2gene %>%
+#  left_join(go_terms, by = c("term" = "GOID")) %>%
+#  dplyr::rename(name = TERM) %>%
+#  dplyr::select(term, name)
 
 head(go2name)
 ```
-
+## Run enricher for GO terms
 ```{r}
 go_all <- enricher(
   gene         = sig_genes$gene_id,   # your DEGs
@@ -321,33 +362,61 @@ go_all <- enricher(
   universe     = universe.genes,
   pvalueCutoff = 1,
   qvalueCutoff = 1,
-  minGSSize    = 1
+  minGSSize    = 5
 )
 
 go_all
-as.data.frame(go_all) %>% head()
+go_all_df <- as.data.frame(go_all)
+nrow(go_all_df)  # how many GO terms have at least 1 DEG?
+head(go_all_df)
+```
+Cnetplot: GO terms with gene nodes colored by pattern
+
+
+## Visualize GO terms
+```{r, fig.height=10, fig.width=10, warning=FALSE}
+go_cnet <- cnetplot(
+  go_all,
+  foldChange  = cluster_code,  # this colors gene nodes
+  showCategory = 100,           # number of go terms to show
+  node_label   = "category",  # label go terms, not genes
+  hilight_alpha = 0.3,
+  pie = 'count')
+
+go_cnet
+
+go_cnet+
+  scale_colour_gradient2(
+    name = "Expression pattern",
+    low  = "#8E6B01",  # cluster 1
+    mid  = "#CECDC3",  # cluster 2
+    high = "#5B8E8A",  # cluster 3
+    midpoint = 0
+  )
 ```
 
+```{r, fig.width=10, fig.height=10}
+go_sim <- pairwise_termsim(go_all)  # adds term-term similarity
+```
 
-# ORA
-https://chatgpt.com/share/691d3dec-fff0-8008-8a0b-fe8f672fa716
+```{r, fig.width=10, fig.height=10}
+go_emap <- emapplot(
+  go_sim,
+  showCategory = 50
+)
 
-
-For ORA in clusterProfiler, whether GO, KEGG, or custom gene sets, the core inputs are:
-
-#1. A gene list (or lists)
-  - e.g. genes in pattern 1, pattern 2, pattern 3
-  - This is a character vector of gene IDs.
-  
-For comparing expression patterns 1/2/3 in one go, we can pass a named list of gene vectors into compareCluster(geneClusters = ...)  
-
+go_emap 
+```
 
 ```{r}
-identical(unique(sig_summary$gene_id), sig_genes$gene_id)
-
-sig_genes_vector <- sig_genes$gene_id
+dotplot(go_sim, showCategory = 15)
 ```
 
+
+
+
+
+# compareCluster
 
 ```{r}
 sig_genes_cluster1 <- sig_summary %>% 
@@ -369,145 +438,18 @@ gene_clusters <- list(
 )
 ```
   
-  
-
-# 2. A background / universe 
-  - All genes that could possibly have been called DE in that analysis (e.g. all genes in your filtered DESeq2 object, ~10k).
-  - Passed as universe = all_genes in enricher() / enrichGO() etc.
-```{r}
-universe_genes <- all_genes$gene_id
-```
-
-# 3. Annotation mapping: TERM2GENE (and optionally TERM2NAME)
-  - For GO ORA: a 2-column data frame of term = GO ID (e.g. "GO:0006355"), gene = gene_id
-  - For KEGG ORA: a 2-column data frame of term = KEGG pathway ID or KO ID (whichever you want to treat as “gene set”), gene = gene_id
-  - Built from your annotation table (gff, eggNOG), then restricted to the genes in `universe_genes`
-
-Xu et al. explicitly demonstrate using enricher()/compareCluster() with custom TERM2GENE/TERM2NAME for non-model GO and TF annotations, which is exactly our situation.
-```{r}
-go2gene <- all_genes_GO %>% 
-  dplyr::select(GOs, gene_id, Preferred_name) %>% 
-  separate_rows(GOs, sep = ",") %>%        # separate the GOs column into rows by comma
-  mutate(term = trimws(GOs)) %>%                  # trim whitespace 
-  rename(gene = gene_id) %>%               
-  dplyr::select(term, gene)
-```
-
-## Get GO terms 
-```{r}
-# vector of GO IDs you care about
-go_ids <- unique(go2gene$term)   # or whatever your df is called
-
-go_terms <- AnnotationDbi::select(
-  GO.db,
-  keys    = go_ids,
-  keytype = "GOID",
-  columns = c("TERM", "ONTOLOGY")    # TERM = name, ONTOLOGY = BP/CC/MF
-)
-
-go2name <- go2gene %>%
-  left_join(go_terms, by = c("term" = "GOID")) %>% 
-  rename(name = TERM) %>% 
-  dplyr::select(term, name)
-```
-
-In the KEGG_Pathway columns we basically have two representations of the same KEGG pathway:
-- ko04714 = “global KEGG Orthology” pathway ID
-- map04714 = “reference pathway map”
-
-For enrichment, if you keep both for the same gene, you’lld ouble-count that gene-pathway association (once as ko04714, once as map04714).
-
-In KEGG, map refers to the pathway map, a graphical representation of a metabolic or functional pathway network, while KO is the KEGG Orthology identifier, a specific gene ortholog that acts as a building block (node) for these maps. A map provides a systems-level view of how various biological processes work together, whereas a KO is the unique identifier for a specific gene or protein that performs a function, such as catalyzing a reaction. 
-
-```{r}
-kegg_pairs <- all_genes_KEGG %>%
-  rename(gene = Preferred_name) %>%
-  # 1) split comma-separated IDs into separate rows
-  separate_rows(KEGG_Pathway, sep = ",") %>%
-  mutate(kegg_pathway = trimws(KEGG_Pathway)) %>%
-  filter(kegg_pathway != "") %>%
-  
-  # 2) keep only ko/map-style KEGG IDs
-  filter(str_detect(kegg_pathway, "^(ko|map)\\d+")) %>%
-  
-  # 3) tag each as ko or map and pull out the numeric part
-  mutate(
-    type   = if_else(str_starts(kegg_pathway, "ko"), "ko", "map"),
-    id_num = str_extract(kegg_pathway, "\\d+")   # 04714, 05230, etc.
-  ) %>%
-  select(kegg_pathway, gene, gene_id, type, id_num) %>%
-  distinct()
-
-kegg2gene <- kegg_pairs %>%
-  pivot_wider(
-    id_cols    = c(gene, gene_id, id_num),   # one row per gene + numeric ID
-    names_from = type,                 # columns: ko, map
-    values_from = kegg_pathway
-  ) %>%
-  # optional: drop rows where only ko or only map exists
-  filter(!is.na(ko) & !is.na(map)) %>%
-  select(ko, gene, gene_id, map)
-```
-
-
-```{r}
-ego <- enricher(
-  gene         = sig_genes_vector,
-  TERM2GENE    = go2gene,
-  TERM2NAME    = go2name,
-  universe     = universe_genes,
-  pvalueCutoff = 1,
-  qvalueCutoff = 1
-)
-
-summary(ego)
-```
-
-```{r}
-dotplot(ego)
-```
-
-
-
-```{r}
-ego1 <- enricher(
-  gene        = sig_genes_cluster1,
-  TERM2GENE   = go2gene,
-  universe    = universe_genes,
-  pvalueCutoff = 0.05,
-  qvalueCutoff = 0.2
-)
-
-ego2 <- enricher(
-  gene        = cluster2_genes,
-  TERM2GENE   = go_term2gene,
-  TERM2NAME   = go_term2name,
-  universe    = universe_genes
-)
-
-ego3 <- enricher(
-  gene        = cluster3_genes,
-  TERM2GENE   = go_term2gene,
-  TERM2NAME   = go_term2name,
-  universe    = universe_genes
-)
-```
-
-
-
 
 ```{r}
 ego_clusters <- compareCluster(
-  geneClusters = sig_genes,
+  geneClusters = gene_clusters,
   fun          = "enricher",
   TERM2GENE    = go2gene,
-  universe     = universe_genes,  # optional but good practice
+  universe     = universe.genes,  # optional but good practice
   pAdjustMethod = "BH",
   qvalueCutoff  = 1
 )
 
 # quick visualization
-library(enrichplot)
 dotplot(ego_clusters, showCategory = 10)
 ```
 

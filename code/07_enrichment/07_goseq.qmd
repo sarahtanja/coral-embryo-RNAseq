@@ -1,6 +1,6 @@
 ---
-title: "Gene ontology (GO) term analysis for gene expression clusters"
-subtitle: "Characterizing the 3 gene expression patterns found in clustering analysis"
+title: "Gene ontology (GO) term analysis for differentially expressed genes"
+subtitle: "using `goseq` with gene length bias correction"
 author: "Sarah Tanja"
 date: 2025-10-21
 date-modified: today
@@ -121,11 +121,6 @@ sig_genes <- read.csv("../../output/06_deg/spawnnight/sig_genes.csv")
 
 # Gene cluster assignments 
 gene_clusters <- read.csv("../../output/06_deg/cluster/gene_clusters.csv")
-
-# Rename cluster column to pattern for gene expression pattern
-gene_clusters <- gene_clusters %>%
-  rename(pattern = cluster)
-
 
 # Full gene set tested in DESeq2 analysis
 all_genes <- read.csv("../../output/06_deg/spawnnight/all_genes.csv")
@@ -526,7 +521,7 @@ reducedTerms_anno <- reducedTerms %>%
   left_join(GO.bp.deg.filt, by = c("go" = "category", "term")) %>% 
   left_join(gene2go, by = c("go" = "category")) %>% 
   left_join(gene_clusters, by = c("gene" = "gene_id")) %>% 
-  filter(!is.na(pattern))
+  filter(!is.na(cluster))
 ```
 
 ```{r}
@@ -585,7 +580,7 @@ Annotate KEGG pathways via genes and gene expression patterns
 KEGG.deg.anno <- KEGG.deg %>%
   left_join(gene2kegg, by = "category") %>% 
   left_join(gene_clusters, by = c("gene" = "gene_id")) %>% 
-  filter(!is.na(pattern))
+  filter(!is.na(cluster))
 ```
 
 ```{r}
