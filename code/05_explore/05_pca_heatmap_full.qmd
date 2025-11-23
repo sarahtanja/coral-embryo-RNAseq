@@ -1,0 +1,271 @@
+---
+title: "Step 5: Final figure of PCA & Heatmap of full gene set"
+subtitle: "Samples group largely by stage rather than leachate"
+author: "Sarah Tanja"
+date: 11/22/2025
+date-modified: today
+bibliography: "../../references.bib"
+format:
+  gfm: 
+    toc: true
+    number-sections: true
+  html:
+    theme: journal
+    highlight-style: github
+    page-layout: article
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    number-sections: true
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    reference-location: margin
+    citation-location: margin
+
+editor: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, # Display code chunks
+  eval = TRUE, # Evaluate code chunks
+  warning = FALSE, # Hide warnings
+  message = FALSE, # Hide messages
+  comment = ""
+  ) # Prevents appending '##' to beginning of lines in code output))        
+```
+
+# Background
+
+## Load libraries
+```{r}
+library(colorspace)
+library(shinyjs) # for colorspace hclwizard
+library(ggsidekick) # for sean andersons theme_sleek()
+library(pheatmap)
+library(ComplexHeatmap)
+library(tidyverse)
+```
+
+## Load inputs
+```{r}
+mat <- readRDS("../../output/05_explore/vst_matrix.rds")
+pca <- read_csv("../../output/05_explore/pca_500_or.csv")
+pheat_df <- readRDS("../../output/05_explore/pheat_annotation_df.rds")
+```
+
+## Custom ggplot theme
+```{r}
+theme_sleek_axe <- function() {
+  theme_sleek() +
+    theme(
+      panel.border = element_blank(),
+      axis.line.x  = element_line(color = "grey70"),
+      axis.line.y  = element_line(color = "grey70")
+    )
+}
+```
+
+
+## Set colorschemes
+
+```{r}
+#colorspace::hclwizard()
+```
+### Leachate
+Leachate options
+Ocean environmental watery tones
+blue-purple
+```{r}
+leachate_0 <- c("#B0F4FA", "#75C165", "#A96C00", "#8B0069")
+leachate_1 <- c("#D5ECC0", "#6ACFBA", "#399AC2", "#80146E")
+leachate_2 <- c("#E4EBD6", "#8CC4AD", "#3E909F", "#4E4E7A")
+leachate_3 <- c("#DAE6FF", "#BBC7FF", "#9CA9FF", "#7D8BFF")
+
+leachate.colors <- c(control = "#AEF1FF", 
+                low = "#BBC7FF",
+                mid = "#7D8BFF", 
+                high = "#592F7D")
+```
+
+### Stage
+Earthy stony coral tones
+yellow-orange-red
+```{r}
+stage_0 <- c("#DCC14F", "#D89500", "#C86600")
+stage_1 <- c("#DCC14F", "#9F3D2F", "#000000")
+stage_2 <- c("#A2223C", "#E6AA83",  "#D9685B")
+stage_3 <- c("#D9685B", "#D89500",  "#9F3D2F")
+stage_4 <- c("#FFE362", "#EBA600", "#8D5300")
+
+stage.colors <- c(cleavage = "#E6AA83", 
+                  prawnchip = "#D9685B", 
+                  earlygastrula = "#A2223C")
+```
+
+### Spawn night
+
+```{r}
+night_0 <- c("#FDE725", "#440154", "#21918C")
+night_1 <- c("#FFCEF4", "#578B21", "#201158")
+night_2 <- c("#E3FAA5", "#B16776", "#1E2440")
+
+night.colors <- c(July_6th = "#E3FAA5", 
+                  July_7th = "#578B21", 
+                  July_8th = "#1E2440")
+```
+
+
+```{r}
+# Annotation colors for pheatmap
+ann_colors = list(
+  leachate = leachate.colors,
+  stage = stage.colors,
+  night = night.colors
+)
+```
+
+# PCA plot of full gene set
+```{r}
+pca_flip <- pca %>% 
+  mutate(stage = factor(stage, levels = c("cleavage", "prawnchip", "earlygastrula")),
+         leachate = factor(leachate, levels = c("control", "low", "mid", "high")))%>%
+  dplyr::mutate(PC1 = -PC1)
+```
+
+
+Extract the Percent Variance for the X and Y axis labels
+```{r}
+pca_comp <- prcomp(t(mat))         # samples in rows
+
+percentVar <- (pca_comp$sdev^2) / sum(pca_comp$sdev^2) * 100
+
+pc1_var <- round(percentVar[1], 1)
+pc2_var <- round(percentVar[2], 1)
+```
+
+
+```{r, fig.height= 4, fig.width = 6}
+pca_plot <- ggplot(pca_flip, aes(PC1, PC2, color = stage, shape = leachate, label = name)) +
+  geom_point(size = 1,  stroke = 1) +
+  xlab(paste0("PC1: ", pc1_var, "% variance")) +
+  ylab(paste0("PC2: ", pc2_var, "% variance")) + 
+  coord_fixed() +
+  scale_color_manual(values = stage.colors) +
+  stat_ellipse(aes(group = stage, color = stage), linewidth = 0.4, show.legend = FALSE) + 
+  theme_sleek_axe() 
+
+pca_plot
+```
+
+
+# Heatmap of full gene set
+
+Annotations for our heatmap
+```{r}
+
+ha_top <- HeatmapAnnotation(
+  stage = pheat_df$stage,
+  col   = list(stage = ann_colors$stage),
+  annotation_name_side = "right"  # label "stage" on the left side
+)
+
+ha_bottom <- HeatmapAnnotation(
+  `spawn night` = pheat_df$spawn_night,
+  leachate      = pheat_df$leachate,
+  col = list(
+    `spawn night` = ann_colors$night,
+    leachate      = ann_colors$leachate
+  ),
+  annotation_name_side = "right"
+)
+```
+
+Scale the matrix to be z scores! And then clamp extreme values for better visualization. 
+```{r}
+mat_scaled <- t(scale(t(mat)))     # row-wise z-scaling
+mat_scaled_clamped <- pmin(pmax(mat_scaled, -5), 5)  # clamp extreme values to -5 and 5
+```
+
+```{r, fig.height = 10, fig.width= 10}
+# 1. build column dendrogram once
+col_hc <- hclust(
+  dist(t(mat_scaled_clamped), method = "euclidean"),
+  method = "complete"
+)
+
+# 2. flip it
+col_dend_flipped <- rev(as.dendrogram(col_hc))
+
+set.seed(11222025)
+Heatmap(
+  mat_scaled_clamped,
+  clustering_distance_rows    = "euclidean",
+  clustering_method_rows      = "complete",
+  cluster_columns             = col_dend_flipped,
+  name = "zscore of gene expression",
+  border = NA,
+  column_dend_gp  = gpar(col = "grey50", lwd = 0.7),
+  row_names_gp    = gpar(col = "grey50", fontsize = 8),
+  column_names_gp = gpar(col = "grey50", fontsize = 8),
+  col = rev(colorspace::divergingx_hcl(n = 200, palette = "Roma")),
+  cluster_column_slices = TRUE,
+  show_row_dend    = FALSE,
+  show_column_dend = TRUE,
+  top_annotation    = ha_top,
+  bottom_annotation = ha_bottom,
+  show_row_names    = FALSE,
+  show_column_names = TRUE
+)
+```
+> Expression values were transformed using variance-stabilizing transformation (VST) and then standardized on a per-gene basis (z-score transformation). For each gene, the mean expression across samples was subtracted, and the standard deviation was used to scale its expression profile. Thus, a value of 0 indicates average expression for that gene across all samples, positive values indicate above-average expression, and negative values indicate below-average expression. This allows visual comparison of expression patterns, not absolute expression levels between genes.
+
+# Patchwork 
+```{r}
+# 1. Your heatmap object (DON'T draw it yet)
+set.seed(11222025)
+ht <- 
+Heatmap(
+  mat_scaled_clamped,
+  clustering_distance_rows    = "euclidean",
+  clustering_method_rows      = "complete",
+  cluster_columns             = col_dend_flipped,
+  name = "zscore of gene expression",
+  border = NA,
+  column_dend_gp  = gpar(col = "grey50", lwd = 0.7),
+  row_names_gp    = gpar(col = "grey50", fontsize = 8),
+  column_names_gp = gpar(col = "grey50", fontsize = 8),
+  col = rev(colorspace::divergingx_hcl(n = 200, palette = "Roma")),
+  cluster_column_slices = TRUE,
+  show_row_dend    = FALSE,
+  show_column_dend = TRUE,
+  top_annotation    = ha_top,
+  bottom_annotation = ha_bottom,
+  show_row_names    = FALSE,
+  show_column_names = TRUE
+)
+
+# 2. Grab the drawn heatmap as a grob
+ht_grob <- grid.grabExpr(draw(ht, 
+                              heatmap_legend_side    = "right",
+                              annotation_legend_side = "right",
+                              merge_legends          = TRUE))
+
+# 3. Wrap it so patchwork can use it
+heatmap_wrapped <- patchwork::wrap_elements(ht_grob)
+
+```
+
+```{r, fig.height= 14, fig.width= 7}
+pca_plot / heatmap_wrapped +
+  ggtitle("PCA and Heatmap of Full Gene Set ") 
+```
+
