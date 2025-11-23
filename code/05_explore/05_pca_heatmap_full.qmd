@@ -50,9 +50,9 @@ knitr::opts_chunk$set(
 library(colorspace)
 library(shinyjs) # for colorspace hclwizard
 library(ggsidekick) # for sean andersons theme_sleek()
-library(pheatmap)
 library(ComplexHeatmap)
 library(tidyverse)
+library(patchwork)
 ```
 
 ## Load inputs
@@ -69,9 +69,21 @@ theme_sleek_axe <- function() {
     theme(
       panel.border = element_blank(),
       axis.line.x  = element_line(color = "grey70"),
-      axis.line.y  = element_line(color = "grey70")
-    )
+      axis.line.y  = element_line(color = "grey70"),
+      plot.title = element_text(
+      size  = 14,
+      color = "grey40",
+      hjust = 0.5,    # center
+      margin = margin(b = 20) # add space BELOW title
+      ),      ,       
+      plot.subtitle = element_text(
+      size   = 10,       # smaller than title
+      colour = "grey60", # lighter grey
+      hjust  = 0.5 ),      # center
+      margin = margin(b = 40) # add space BELOW title
+      )
 }
+
 ```
 
 
@@ -161,6 +173,10 @@ pca_plot <- ggplot(pca_flip, aes(PC1, PC2, color = stage, shape = leachate, labe
   coord_fixed() +
   scale_color_manual(values = stage.colors) +
   stat_ellipse(aes(group = stage, color = stage), linewidth = 0.4, show.legend = FALSE) + 
+  labs(
+    title = "Variation of gene expression patterns among samples",
+    subtitle = "PCA of 500 most variable genes • Each point is a sample",
+  )+
   theme_sleek_axe() 
 
 pca_plot
@@ -195,7 +211,7 @@ mat_scaled <- t(scale(t(mat)))     # row-wise z-scaling
 mat_scaled_clamped <- pmin(pmax(mat_scaled, -5), 5)  # clamp extreme values to -5 and 5
 ```
 
-```{r, fig.height = 10, fig.width= 10}
+```{r, fig.height = 8, fig.width= 6}
 # 1. build column dendrogram once
 col_hc <- hclust(
   dist(t(mat_scaled_clamped), method = "euclidean"),
@@ -229,7 +245,9 @@ Heatmap(
 > Expression values were transformed using variance-stabilizing transformation (VST) and then standardized on a per-gene basis (z-score transformation). For each gene, the mean expression across samples was subtracted, and the standard deviation was used to scale its expression profile. Thus, a value of 0 indicates average expression for that gene across all samples, positive values indicate above-average expression, and negative values indicate below-average expression. This allows visual comparison of expression patterns, not absolute expression levels between genes.
 
 # Patchwork 
-```{r}
+
+```{r, fig.width = 6, fig.height = 8}
+#| include: false
 # 1. Your heatmap object (DON'T draw it yet)
 set.seed(11222025)
 ht <- 
@@ -238,7 +256,7 @@ Heatmap(
   clustering_distance_rows    = "euclidean",
   clustering_method_rows      = "complete",
   cluster_columns             = col_dend_flipped,
-  name = "zscore of gene expression",
+  name = "zscore",
   border = NA,
   column_dend_gp  = gpar(col = "grey50", lwd = 0.7),
   row_names_gp    = gpar(col = "grey50", fontsize = 8),
@@ -264,8 +282,103 @@ heatmap_wrapped <- patchwork::wrap_elements(ht_grob)
 
 ```
 
-```{r, fig.height= 14, fig.width= 7}
-pca_plot / heatmap_wrapped +
-  ggtitle("PCA and Heatmap of Full Gene Set ") 
+Caption 
+```{r}
+library(ggplot2)
+library(patchwork)
+library(stringr)
+
+cap_text <- paste(
+  "A. Principal Component Analysis (PCA) of VST-normalized gene expression across all samples.",
+  "PC1 explains 53.9% of the total variance and primarily separates samples by embryonic stage,",
+  "while PC2 explains 18.5% of the variance, accounting for 72.4% of total sample variance.",
+  "Each point represents an individual sample, positioned according to its overall expression profile.",
+  "B. Heatmap of z-scored variance-stabilized gene count matrix. Values were transformed using",
+  "variance-stabilizing transformation (VST) and then standardized on a per-gene basis (z-score).",
+  "For each gene, the mean expression across samples was subtracted and the standard deviation",
+  "was used to scale its expression profile. A value of 0 indicates no change in expression for",
+  "that gene across all samples; positive values indicate above-average expression and negative",
+  "values indicate below-average expression. This allows visual comparison of expression patterns",
+  "across samples (columns), not absolute expression levels between genes (rows).",
+  sep = " "
+)
+
+# wrap to, say, 100 characters per line (tweak as needed)
+cap_wrapped <- str_wrap(cap_text, width = 100)
+
+
+caption_plot <- ggplot() +
+  annotate(
+    "text",
+    x     = 0, y = 1,
+    label = cap_wrapped,   # << wrapped text
+    hjust = 0, vjust = 1,
+    size  = 3,
+    lineheight = 0.95
+  ) +
+  xlim(0, 1) +
+  ylim(0, 1) +
+  theme_void() +
+  theme(
+    plot.margin = margin(t = 5, r = 5, b = 5, l = 5)
+  )
+
+caption_plot
+```
+
+Join plots and add text annotations
+
+```{r, fig.height= 14, fig.width= 9}
+fig_pca_heat <- (
+  (pca_plot / heatmap_wrapped) +
+  plot_annotation(tag_levels = "A",
+                  caption = cap_wrapped) &
+  theme(plot.tag = element_text(size = 10, 
+                                colour = "grey50"),
+        plot.caption = element_text(size   = 8,
+                                colour = "grey30",
+                                hjust  = 0.22,
+                                margin = margin(t = 0, r = 0, b = 5, l = 0))   # << add space ABOVE caption)
+  ))+
+  labs(
+    subtitle = "Z-scored expression of DA tested gene set (n = 12,221) • Each row is a gene",
+  )+
+  theme(
+    plot.subtitle = element_text(
+      size   = 10,
+      colour = "grey50",
+      hjust  = 0.5
+    ),
+   
+    plot.margin = margin(t = 5, r = 5, b = 60, l = 5)   # << extra space at bottom for caption
+  )
+
+
+fig_pca_heat
+```
+
+> caption = paste(
+        "A. Principal Component Analysis (PCA) of VST-normalized gene expression across all samples.",
+        "PC1 explains 53.9% of the total variance and primarily separates samples by embryonic stage,",
+        "while PC2 explains 18.5% of the variance, accounting for 72.4% of total sample variance.",
+        "Each point represents an individual sample, positioned according to its overall expression profile.",
+        "B. Heatmap of z-scored variance-stabilized gene count matrix. Values were transformed using variance-stabilizing",
+        "transformation (VST) and then standardized on a per-gene basis (z-score transformation). For each gene, the mean",
+        "expression across samples was subtracted, and the standard deviation was used to scale its expression profile.",
+        "A value of 0 indicates no change in expression for that gene across all samples, positive values indicate",
+        "above-average expression, and negative values indicate below-average expression. This allows visual comparison",
+        "of expression patterns across samples (columns), not absolute expression levels between genes (rows).",
+        sep = " ")
+
+```{r}
+# Save figure
+ggsave(
+  filename = "../../output/05_explore/fig_pca_heatmap_fullgene.png",
+  plot     = fig_pca_heat,
+  width    = 9,
+  height   = 12,
+  units    = "in",
+  dpi      = 900
+)
 ```
 
