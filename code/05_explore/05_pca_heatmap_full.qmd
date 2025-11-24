@@ -282,7 +282,7 @@ heatmap_wrapped <- patchwork::wrap_elements(ht_grob)
 
 ```
 
-Caption 
+## Caption 
 ```{r}
 library(ggplot2)
 library(patchwork)
@@ -306,24 +306,6 @@ cap_text <- paste(
 # wrap to, say, 100 characters per line (tweak as needed)
 cap_wrapped <- str_wrap(cap_text, width = 100)
 
-
-caption_plot <- ggplot() +
-  annotate(
-    "text",
-    x     = 0, y = 1,
-    label = cap_wrapped,   # << wrapped text
-    hjust = 0, vjust = 1,
-    size  = 3,
-    lineheight = 0.95
-  ) +
-  xlim(0, 1) +
-  ylim(0, 1) +
-  theme_void() +
-  theme(
-    plot.margin = margin(t = 5, r = 5, b = 5, l = 5)
-  )
-
-caption_plot
 ```
 
 Join plots and add text annotations
