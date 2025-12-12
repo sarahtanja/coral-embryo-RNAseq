@@ -8,7 +8,7 @@ The exploratory analysis includes:
 - Quality control checks on the count matrix
 - Principal Component Analysis (PCA) to visualize sample clustering
 - Heatmap analysis to examine gene expression patterns
-- Statistical tests for batch effects (betadispr and PERMANOVA)
+- Statistical tests for batch effects (betadisper and PERMANOVA)
 
 See [`05_data_exploration.qmd`](05_data_exploration.qmd) for the full analysis code and [`05_data_exploration.md`](05_data_exploration.md) or [`05_data_exploration.html`](05_data_exploration.html) for the rendered output.
 
@@ -113,7 +113,7 @@ The following figures are automatically generated from the Quarto analysis docum
 
 ## Outputs
 
-- `output/05_explore/gcm_filtor.csv` - Filtered gene count matrix with outlier samples removed
+- `output/05_explore/gcm_filtor.csv` - Filtered gene count matrix (gcm) with outlier samples removed
 - `metadata/metadata_or.csv` - Filtered metadata with outlier samples removed
 - `output/05_explore/pca.png` - Exploratory PCA plot
 - `output/05_explore/zscore_heatmap.png` - Exploratory heatmap
