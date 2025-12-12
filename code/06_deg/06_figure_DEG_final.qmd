@@ -327,9 +327,9 @@ ps2 <- ggplot(
   gene_cluster_data %>%
     mutate(
       leachate = factor(leachate, levels = c("control","low","mid","high")),
-      stage    = factor(stage, levels   = c("cleavage", "prawnchip", "earlygastrula"))
+      hpf    = factor(hpf, levels   = c("4", "9", "14"))
     ),
-  aes(x = stage, y = zscore, color = leachate)
+  aes(x = hpf, y = zscore, color = leachate)
 ) +
   # trends, first layer
   geom_smooth(aes(group = leachate, fill = leachate), se = TRUE, alpha = 0.3, show.legegnd = FALSE) +
@@ -353,7 +353,7 @@ ps2 <- ggplot(
   labs(
     title = "Differential expression is driven by stage specific patterns",
     subtitle = "Z-scores across 128 DEGs clustered by expression pattern",
-    x = NULL,
+    x = "Hours post-fertilization",
     y = "Z-score of gene abundance",
     color = "leachate",
     fill  = "leachate"
@@ -375,7 +375,7 @@ ps2 <- ggplot(
     panel.grid.major.x = element_blank(),
     panel.grid.minor.x = element_blank(),
     axis.line.x  = element_blank(),
-    axis.text.x = element_blank(), #supress axis labels and add in embryo stage logos after patching with logfc
+    #axis.text.x = element_blank(), #supress axis labels and add in embryo stage logos after patching with logfc
     axis.line.y  = element_blank()
   )
 
@@ -753,6 +753,89 @@ mfc <- ggplot() +
 mfc 
 ```
 
+```{r}
+# make sure plot_group has nice labels
+fc_df <- fc_df %>% 
+  mutate(plot_group = factor(plot_group,
+                             levels = c("low", "mid", "high"),
+                             labels = c("Low", "Mid", "High")))
+
+mfc <- ggplot() +
+  # ===== MAIN EFFECT: segments + points =====
+  geom_segment(
+    data = dplyr::filter(fc_df, effect_type == "main"),
+    aes(
+      x    = 0,
+      xend = log2FoldChange,
+      y    = gene_id_fac,
+      yend = gene_id_fac,
+      colour = cluster
+    ),
+    alpha = 0.6,
+    linewidth = 1.2
+  ) +
+  scale_colour_discrete(
+    name  = "Gene expression pattern",
+    type  = cluster.colors,
+    guide = guide_legend(order = 2)
+  ) +
+  geom_point(
+    data = dplyr::filter(fc_df, effect_type == "main"),
+    aes(
+      x = log2FoldChange,
+      y = gene_id_fac,
+      colour = cluster
+    ),
+    size = 1.5
+  ) +
+  scale_y_discrete(expand = c(0.02, 0.01)) +
+  scale_x_continuous(breaks = function(x) pretty(x, n = 3)) +
+
+  # ===== facets: 3 rows, strips on the LEFT =====
+  facet_wrap(
+    ~ plot_group,
+    nrow = 3,
+    strip.position = "left"       # << move labels to far left
+  ) +
+  geom_vline(
+    xintercept = 0,
+    linetype   = "dashed",
+    linewidth  = 1,
+    color      = "#AEF1FF"
+  ) +
+  theme_sleek_axe() +
+  theme(
+    plot.title      = element_text(margin = margin(b = 60)),
+    panel.spacing.y = unit(4, "lines"),
+    legend.position = "none",
+    axis.text.y     = element_blank(),
+    axis.title.y    = element_blank(),
+    axis.line.y     = element_blank(),
+    axis.line.x     = element_blank(),
+    axis.ticks.y    = element_blank(),
+    axis.ticks.x    = element_blank(),
+    axis.text.x     = element_text(color = "grey60"),
+
+    # strips become your LOW / MID / HIGH labels
+    strip.background  = element_blank(),
+    strip.placement   = "outside",
+    strip.text.y.left = element_text(
+      angle = 0,          # horizontal
+      hjust = 0.5,
+      vjust = 0.5,
+      size  = 10,
+      colour = "grey30"
+    )
+  ) +
+  labs(x = "Log2 Fold Change")
+
+mfc
+
+
+```
+
+
+
 ## Combo plot with genes colored according to cluster
 ```{r, fig.width=12, fig.height=10}
 pfc <- ggplot() +
@@ -843,17 +926,17 @@ pfc
 ## Add caption 
 ```{r}
 cap_text <- paste(
-  "A. Z-scores of VST-normalized gene expression across 128 differentially expressed genes shown on the y axis with stage on the x axis. B. Z-scores of VST-normalized gene expression across 128 differentially expressed genes shown on the y axis with leachate dose on the x axis. C. Log two-fold change of differentially expressed genes identified in each treatment group. Direction of log two-fold change is indicated on the x axis; genes are shown on the y axis grouped by treatment. Point color indicates adjusted p-value for either the main effect of leachate (teal) or the interaction effect of stage and leachate (purple).Gene color indicates cluster membership based on expression patterns across stages and leachate doses."
+  "A. Z-scores of VST-normalized gene expression across 128 differentially expressed genes shown on the y axis with stage on the x axis. B. Z-scores of VST-normalized gene expression across 128 differentially expressed genes shown on the y axis with leachate dose on the x axis. C. Log two-fold change of differentially expressed genes identified in each treatment group. Direction of log two-fold change is indicated on the x axis; genes are shown on the y axis grouped by treatment. Point color indicates adjusted p-value for either the main effect of leachate (teal) or the interaction effect of stage and leachate (purple).Gene color indicates cluster membership based on expression patterns across stages and leachate doses (Sarah Tanja, Beautiful Graphics in R [AU25])."
 )
 
 # wrap to, say, 100 characters per line (tweak as needed)
-cap_wrapped <- str_wrap(cap_text, width = 130)
+cap_wrapped <- str_wrap(cap_text, width = 140)
 ```
 
 ## Highlight the patterns
 ```{r, fig.width = 10, fig.height = 12}
-ps2/mfc +
-  plot_layout(heights = c(1, 1.2)) +
+hipat <- (ps2/plot_spacer()/mfc) +
+  plot_layout(heights = c(1, 0.5, 1.2)) +
   plot_annotation(tag_levels = "A",
                   caption = cap_wrapped) &
   theme(plot.tag = element_text(size = 10, 
@@ -862,7 +945,54 @@ ps2/mfc +
                                 colour = "grey30",
                                 hjust  = 0.22,
                                 margin = margin(t = 0, r = 0, b = 5, l = 0)))
+
+hipat
 ```
+
+```{r, fig.width = 10, fig.height = 12}
+hipat_pretty <- ggdraw() + 
+  draw_plot(hipat, 0, 0, 1, 1) +
+  # cluster 1 
+  draw_image('svg/cleavage_bw.png',    x = 0.07, y = 0.73, width = 0.06, height = 0.06) +
+  draw_image('svg/prawnchip_bw.png',   x = 0.17, y = 0.71, width = 0.06, height = 0.06) +
+  draw_image('svg/earlygastrula_bw.png', x = 0.27,  y = 0.68, width = 0.06, height = 0.06)+
+  # cluster 2
+  draw_image('svg/cleavage_bw.png',    x = 0.35, y = 0.62, width = 0.06, height = 0.06) +
+  draw_image('svg/prawnchip_bw.png',   x = 0.45, y = 0.75, width = 0.06, height = 0.06) +
+  draw_image('svg/earlygastrula_bw.png', x = 0.55,  y = 0.72, width = 0.06, height = 0.06)+
+  # cluster 3
+  draw_image('svg/cleavage_bw.png',    x = 0.65, y = 0.65, width = 0.06, height = 0.06) +
+  draw_image('svg/prawnchip_bw.png',   x = 0.75, y = 0.71, width = 0.06, height = 0.06) +
+  draw_image('svg/earlygastrula_bw.png', x = 0.82,  y = 0.75, width = 0.06, height = 0.06)+
+  # arrows
+  draw_image('svg/red_arrow.png', x = 0.22, y = 0.71, width = 0.15, height = 0.15) +
+  draw_image('svg/yellow_arrow.png', x = 0.31, y = 0.76, width = .15, height = .15) +
+  draw_image('svg/teal_arrow.png', x = 0.6, y = 0.75, width = .15, height = .15)+
+  # B embryo logos
+  draw_image('svg/cleavage_bw.png',    x = 0.17, y = 0.42, width = 0.1, height = 0.1) +
+  draw_image('svg/prawnchip_bw.png',   x = 0.44, y = 0.42, width = 0.1, height = 0.1) +
+  draw_image('svg/earlygastrula_bw.png', x = 0.72,  y = 0.42, width = 0.1, height = 0.1)+
+  # labels
+  draw_label("High",
+             color = "#592F7D",
+             x = 0.04, y = 0.39,        # left + near top row
+             hjust = 0, vjust = 0.5,
+             size = 20) +
+  draw_label("Mid",
+             color = "#7D8BFF",
+             x = 0.04, y = 0.28,        # middle row
+             hjust = 0, vjust = 0.5,
+             size = 20) +
+  draw_label("Low",
+             color = "#BBC7FF",
+             x = 0.04, y = 0.13,        # bottom row
+             hjust = 0, vjust = 0.5,
+             size = 20)
+
+hipat_pretty
+
+```
+
 
 ```{r, fig.width = 10, fig.height = 14}
 fig <- patchwork::wrap_plots(
@@ -887,6 +1017,11 @@ fig
 # Save figure
 ```{r}
 ggsave("../../output/06_deg/figs/figure_DEG_final.png", width = 10, height = 14)
+```
+
+# Save hipat pretty
+```{r}
+ggsave("../../output/06_deg/figs/highlight_patterns_pretty.png", width = 10, height = 12)
 ```
 
 
