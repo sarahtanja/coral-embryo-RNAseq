@@ -154,7 +154,7 @@ leachate_3 <- c("#DAE6FF", "#BBC7FF", "#9CA9FF", "#7D8BFF")
 leachate.colors <- c(control = "#AEF1FF", 
                 low = "#BBC7FF",
                 mid = "#7D8BFF", 
-                high = "#5B47CF")
+                high = "#592F7D")
 ```
 
 ### Stage
@@ -166,9 +166,16 @@ stage_1 <- c("#DCC14F", "#9F3D2F", "#000000")
 stage_2 <- c("#A2223C", "#E6AA83",  "#D9685B")
 stage_3 <- c("#D9685B", "#D89500",  "#9F3D2F")
 
-stage.colors <- c(cleavage = "#FFE362", 
-                  prawnchip = "#EBA600", 
-                  earlygastrula = "#8D5300")
+stage.5.colors <- c(egg = "#FFE362",
+                    cleavage = "#EBA600", 
+                    morula = "#E6AA83",
+                    prawnchip = "#D9685B", 
+                    earlygastrula = "#A2223C")
+
+
+stage.colors <- c(cleavage = "#EBA600", 
+                  prawnchip = "#D9685B", 
+                  earlygastrula = "#A2223C")
 ```
 
 ### Spawn night
@@ -177,8 +184,9 @@ stage.colors <- c(cleavage = "#FFE362",
 night_0 <- c("#FDE725", "#440154", "#21918C")
 night_1 <- c("#FFCEF4", "#578B21", "#201158")
 
+
 night.colors <- c(July_6th = "#E3FAA5", 
-                  July_7th = "#B16776", 
+                  July_7th = "#578B21", 
                   July_8th = "#1E2440")
 ```
 
@@ -623,7 +631,7 @@ PCA_500 <- ggplot(pca_500, aes(PC1, PC2, color = stage, label = label)) +
   xlab(paste0("PC1: ", percentVar_500[1], "% variance")) +
   ylab(paste0("PC2: ", percentVar_500[2], "% variance")) + 
   coord_fixed() +
-  scale_color_manual(values = stage_4) +
+  scale_color_manual(values = stage.colors) +
   theme_minimal()+
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
@@ -791,7 +799,7 @@ PCA_500_or <- ggplot(pca_500_or, aes(PC1, PC2, color = stage, shape = leachate, 
   xlab(paste0("PC1: ", percentVar_500[1], "% variance")) +
   ylab(paste0("PC2: ", percentVar_500[2], "% variance")) + 
   coord_fixed() +
-  scale_color_manual(values = stage_4) +
+  scale_color_manual(values = stage.colors) +
   stat_ellipse(aes(group = stage, color = stage), linewidth = 0.4, show.legend = FALSE) + 
   theme_minimal() +
   theme(panel.grid.major = element_blank(),
@@ -820,7 +828,7 @@ PCA_500_leachate <- ggplot(pca_500_or, aes(PC1, PC2, color = leachate, label = n
   xlab(paste0("PC1: ", percentVar_500[1], "% variance")) +
   ylab(paste0("PC2: ", percentVar_500[2], "% variance")) + 
   coord_fixed() +
-  scale_color_manual(values = leachate_4) +
+  scale_color_manual(values = leachate.colors) +
   stat_ellipse(aes(group = leachate, color = leachate), linewidth = 0.4, show.legend = FALSE) + 
   theme_minimal() +
   theme(panel.grid.major = element_blank(),
@@ -841,7 +849,7 @@ PCA_500_spawnnight <- ggplot(pca_500_or, aes(PC1, PC2, color = spawn_night, labe
   xlab(paste0("PC1: ", percentVar_500[1], "% variance")) +
   ylab(paste0("PC2: ", percentVar_500[2], "% variance")) + 
   coord_fixed() +
-  scale_color_manual(values = night_2) +
+  scale_color_manual(values = night.colors) +
   stat_ellipse(aes(group = spawn_night, color = spawn_night), linewidth = 0.4, show.legend = FALSE) + 
   theme_minimal() +
   theme(panel.grid.major = element_blank(),
@@ -865,9 +873,11 @@ pca_plot_spawn_night <- ggplot(
     shape = leachate                # shape must be 21–25
   )
 ) +
-  geom_point(size = 3.5, stroke = 1.5, alpha = 0.8) +   # stroke controls outline width
+  geom_point(size = 2, stroke = 1.5, alpha = 0.9) +   # stroke controls outline width
   scale_shape_manual(values = c(21, 22, 23, 24, 25)[seq_along(levels(pca_500_or$leachate))]) +
-  scale_fill_grey(name = "Stage", start = 0.1, end = 1) +
+  scale_fill_manual(values = stage.colors) +
+  scale_color_manual(values = night.colors) +
+  coord_fixed() +
   labs(
     title = "PCA of top 500 DEGs by Stage, Leachate, and Spawn night",
     x = paste0("PC1: ", percentVar_500[1], "% variance"),
@@ -883,19 +893,44 @@ pca_plot_spawn_night <- ggplot(
   # 3) make the fill legend draw a filled shape with an outline
   guides(
     shape  = guide_legend(order = 1),
-    fill   = guide_legend(override.aes = list(shape = 21, stroke = 1.1, colour = "black"), 
-                          order = 2),
+    fill   = guide_legend(override.aes = list(shape = 21),order = 2),
     colour = guide_legend(order = 3)
     
   ) 
 
 pca_plot_spawn_night
 ```
+::: callout-note
+It seems like there may be clustering by spawn night, particularly within the cleavage stage.
+:::
 
-It seems like there may be clustering by spawn night within the cleavage
-stage only?
 
-## betadispr
+# PERMANOVA
+
+
+PERMANOVA (Permutational Multivariate Analysis of Variance), implemented
+in R as adonis2() (from vegan), is a non-parametric test used to
+evaluate whether groups of samples differ significantly in their
+multivariate composition --- that is, whether the centroids
+(multivariate means) of groups are different in the space defined by a
+distance or dissimilarity matrix.
+
+It's the multivariate analog of ANOVA, but:
+
+-   It uses a distance matrix (e.g., Euclidean, Bray--Curtis, Aitchison,
+    etc.) instead of raw data.
+
+-   It uses permutations (randomly shuffling group labels many times,
+    typically 999+) instead of parametric assumptions about normality
+    and homoscedasticity.
+
+The PERMANOVA asks "Do samples differ in their overall gene expression
+profiles among levels of leachate, stage, or their interaction, after
+accounting for random variation among spawn nights?"
+
+It asks whether group **centroids** differ. If `leachate` shifts are
+modest, bidirectional, or limited to a subset of genes, the overall
+centroid shift can be tiny → non-sig.
 
 Compute distance between samples We apply a variance stabilizing
 transformation (vst) to minimize effects of small counts and normalize
@@ -903,8 +938,7 @@ for library size. Note: `t()` transposes. The code
 `t(assay(vst(dds_cat, blind = TRUE)))` flips the matrix to samples as
 rwos × genes as columns. Functions like `vegan::vegdist()` and
 `adonis2()` expect rows = samples, columns = features. Use the
-transposed matrix for PERMANOVA such that rows are samples with a 1 to 1
-match of samples in our metadata dataframe.
+transposed matrix for PERMANOVA such that rows are samples with a 1 to 1 match to samples in our metadata dataframe.
 
 ```{r}
 # extract variance stabilized count matrix
@@ -918,79 +952,13 @@ vst_t_gcm <- t(vst_gcm) # rows are samples, columns are genes
 eu_dist <- vegdist((vst_t_gcm), method = "eu")
 ```
 
-```{r}
-grp_leachate <- metadata_or$leachate
-grp_stage    <- metadata_or$stage     
-grp_int    <- interaction(metadata_or$leachate, metadata_or$stage)
-grp_night <- metadata_or$spawn_night
-```
-
-### night
-
-```{r}
-# Fit beta dispersion model 
-bd_night <- betadisper(eu_dist, group = grp_night, type = "centroid")
-
-# Permutation test with no blocking
-perm_night <- permutest(bd_night, permutations = 999, pairwise = FALSE)
-
-# Result
-perm_night
-```
-
-```{r}
-plot(bd_night, hull = TRUE, ellipse = TRUE, label = FALSE, cex = 0.8)
-```
-
-### leachate
-
-```{r}
-bd_leachate <- betadisper(eu_dist, group = grp_leachate, type = "centroid")
-
-# Permutation test with optional blocking
-perm_leachate <- permutest(bd_leachate, permutations = 999, pairwise = FALSE) 
-perm_leachate
-```
-
-```{r}
-plot(bd_leachate, hull = TRUE, ellipse = TRUE, label = FALSE, cex = 0.8)
-```
-
-### stage
-
-```{r}
-bd_stage <- betadisper(eu_dist, group = grp_stage, type = "centroid")
-# Permutation test with optional blocking
-perm_stage <- permutest(bd_stage, permutations = 999, pairwise = FALSE)
-perm_stage
-```
-
-```{r}
-plot(bd_stage, hull = TRUE, ellipse = TRUE, label = FALSE, cex = 0.8)
-```
-
-### leachate x stage
-
-```{r}
-bd_int <- betadisper(eu_dist, group = grp_int, type = "centroid")
-# Permutation test 
-perm_int <- permutest(bd_int, permutations = 999, pairwise = FALSE)
-perm_int
-```
-
-```{r}
-plot(bd_int, hull = TRUE, ellipse = TRUE, label = FALSE, cex = 0.8)
-```
-
-# PERMANOVA
-
-Run `adonis2` to build PERMANOVA model
+## Run `adonis2` to build PERMANOVA model
 
 ::: callout-note
 Because `adonis2()` uses random permutations to get p-values. Without
 fixing the seed, each run draws a different set/order of permutations,
 which results in tiny differences in F-stats/p-values. By adding
-`set.seed(1)` the permutation stream is reproducible so you (and future
+`set.seed()` the permutation stream is reproducible so you (and future
 you) get the same numbers.
 :::
 
@@ -1022,49 +990,150 @@ permutations was performed on the Euclidean distance matrix of
 transformed gene expression values to assess the effects of leachate
 concentration, developmental stage, and their interaction on global
 expression profiles while controlling for variation among spawn nights
-(permutations restricted within spawn night, strata = spawn night). The
-model revealed that developmental stage explained a substantial
-proportion of the overall variance in gene expression ( R² = 0.59, F =
+(permutations restricted within spawn night, strata = spawn night). 
+
+Stage explains ~59% of total variance in gene expression patterns (stage: R² = 0.588, F = 40.67, p = 0.001), indicating strong statistically significant centroid separation. 
+
+Leachate explains ~2.3% of total variance in gene expression patterns (leachate: R² = 0.023, F = 1.08, p = 0.344), indicating no significant global multivariate shift detectable at this scale. This result doesn't mean there are no effects, it means that any effects are likely subtle, gene-specific, stage-dependent, better captured by DE models than by ordination. 
+
+The interaction between stage and leachate explained ~3.5% of total variance in gene expression patterns (stage:leachate: R² = 0.035, F = 0.809, p = 0.688), indicating no significant interaction effect on overall multivariate expression profiles, and no evidence that leachate reshapes expression profiles differently by stage at the global level.
+
+35% residual variation unexplained by the model. 
+
+The model revealed that developmental stage explained ~59% of the overall variance in gene expression ( R² = 0.59, F =
 41.22, *p* = 0.001 ), indicating strong stage-specific transcriptional
 patterns. In contrast, neither leachate concentration ( R² = 0.02, F =
-1.09, *p* = 0.338 ) nor the interaction between leachate and stage ( R²
-= 0.04, F = 0.81, *p* = 0.679 ) significantly influenced the
-multivariate expression structure. Residual variation accounted for 35%
-of the total variance, suggesting that most of the compositional
-differences in transcriptomic profiles were driven by developmental
-stage rather than exposure treatment.
+1.09, *p* = 0.338 ) nor the interaction between leachate and stage ( R²= 0.04, F = 0.81, *p* = 0.679 ) significantly influenced the
+multivariate expression structure. Residual variation accounted for 35% of the total variance.
 :::
 
-PERMANOVA (Permutational Multivariate Analysis of Variance), implemented
-in R as adonis2() (from vegan), is a non-parametric test used to
-evaluate whether groups of samples differ significantly in their
-multivariate composition --- that is, whether the centroids
-(multivariate means) of groups are different in the space defined by a
-distance or dissimilarity matrix.
 
-It's the multivariate analog of ANOVA, but:
+## betadispr
 
--   It uses a distance matrix (e.g., Euclidean, Bray--Curtis, Aitchison,
-    etc.) instead of raw data.
 
--   It uses permutations (randomly shuffling group labels many times,
-    typically 999+) instead of parametric assumptions about normality
-    and homoscedasticity.
+```{r}
+grp_leachate <- metadata_or$leachate
+grp_stage    <- metadata_or$stage     
+grp_int    <- interaction(metadata_or$leachate, metadata_or$stage)
+grp_night <- metadata_or$spawn_night
+```
 
-The PERMANOVA asks "Do samples differ in their overall gene expression
-profiles among levels of leachate, stage, or their interaction, after
-accounting for random variation among spawn nights?"
+### night
 
-It asks whether group **centroids** differ. If `leachate` shifts are
-modest, bidirectional, or limited to a subset of genes, the overall
-centroid shift can be tiny → non-sig.
+```{r}
+set.seed(12152025)
+# Fit beta dispersion model 
+bd_night <- betadisper(eu_dist, group = grp_night, type = "centroid")
 
-**Dominant developmental stage signal**
+# Permutation test with no blocking
+perm_night <- permutest(bd_night, permutations = 999, pairwise = FALSE)
 
-Your term table shows **`stage`** explains \~59% of variance; that can
-swamp smaller `leachate` signals. After blocking by spawn_night, the
-residual degrees of freedom and variability left to detect `leachate`
-are limited.
+# Result
+perm_night
+```
+
+```{r}
+plot(bd_night, hull = TRUE, ellipse = TRUE, label = FALSE, cex = 0.8)
+```
+
+```{r}
+boxplot(bd_night, xlab = "Spawn night", ylab = "Distance to centroid")
+```
+::: callout-note
+
+Principal component analysis revealed clustering of samples by developmental stage, with additional structure associated with spawn night. 
+
+There is significant variation in dispersion among spawn nights (p = 0.012), i.e. within-group dispersion differs among spawn nights. This means groups differ in variability, not just location. 
+
+- Spawn night groups differ in multivariate spread
+- PCA showing tight vs diffuse clusters is consistent with this result
+
+Homogeneity of multivariate dispersion differed significantly among spawn nights (betadisper permutation test: 𝐹= 4.56, p = 0.012, 999 permutations), indicating unequal within-group variability.
+
+Accordingly, spawn night was treated as a blocking factor in PERMANOVA to account for differences in overall variability among consecutive spawning nights. Tests for homogeneity of multivariate dispersion indicated significant differences among spawn nights supporting the use of spawn night as a blocking factor.
+
+Differences in dispersion among spawn nights may reflect variation in parental crosses, gametogenesis synchrony, maternal provisioning, consistent with known biological heterogeneity across consecutive spawning nights. 
+
+:::
+
+### leachate
+
+```{r}
+set.seed(12152025)
+bd_leachate <- betadisper(eu_dist, group = grp_leachate, type = "centroid")
+
+# Permutation test with optional blocking
+perm_leachate <- permutest(bd_leachate, permutations = 999, pairwise = FALSE) 
+perm_leachate
+```
+
+```{r}
+plot(bd_leachate, hull = TRUE, ellipse = TRUE, label = FALSE, cex = 0.8)
+```
+```{r}
+ggplot(as.data.frame(bd_leachate$distances), aes(x = grp_leachate, y = bd_leachate$distances)) +
+  geom_boxplot() +
+  xlab("Leachate") +
+  ylab("Distance to centroid")
+```
+::: callout-note
+Tests for homogeneity of multivariate dispersion indicated no significant differences among leachate treatments (betadisper permutation test: F=0.66, p=0.592, 999 permutations), suggesting comparable within-group multivariate variability across leachate levels. Accordingly, the absence of a significant PERMANOVA effect of leachate is unlikely to be driven by heterogeneity of dispersion.
+:::
+
+### stage
+
+```{r}
+set.seed(12152025)
+bd_stage <- betadisper(eu_dist, group = grp_stage, type = "centroid")
+# Permutation test with optional blocking
+perm_stage <- permutest(bd_stage, permutations = 999, pairwise = FALSE)
+perm_stage
+```
+
+```{r}
+plot(bd_stage, hull = TRUE, ellipse = TRUE, label = FALSE, cex = 0.8)
+```
+
+```{r}
+ggplot(as.data.frame(bd_stage$distances), aes(x = grp_stage, y = bd_stage$distances)) +
+  geom_boxplot() +
+  xlab("Stage") +
+  ylab("Distance to centroid")
+```
+
+
+::: callout-note
+- Within-stage multivariate dispersion differs significantly
+- Some stages are more variable than others in expression space
+
+Therefore:
+PERMANOVA significance for stage reflects both centroid separation AND differences in dispersion. But this does not negate the stage effect!
+
+Tests for homogeneity of multivariate dispersion revealed significant differences in within-stage variability (betadisper permutation test: F=15.03, p=0.001, 999 permutations), suggesting comparable within-group multivariate variability across leachate levels. Accordingly, the absence of a significant PERMANOVA effect of leachate is unlikely to be driven by heterogeneity of dispersion.
+
+Permutational multivariate analysis of variance (PERMANOVA) identified developmental stage as the dominant driver of multivariate expression differences (pseudo-F=40.67, R= 0.588, p = 0.001). Tests for homogeneity of multivariate dispersion further indicated significant differences in within-stage variability (betadisper permutation test: F=15.03, p=0.001), suggesting that the observed stage effect reflects a combination of strong centroid separation and differences in dispersion among stages.
+
+Prawnchip stage embryos experience a bottleneck, or "selection event", where embryos that progress are characterized by reduced variability in gene expression profiles. In contrast, earlier cleavage stages and later larval stages exhibit greater heterogeneity in developmental timing and gene expression patterns, reflected in increased within-stage dispersion.
+
+Despite differences in dispersion, the magnitude of the stage effect and clear separation observed in PCA indicate that developmental stage represents a robust and biologically meaningful source of multivariate variation.
+:::
+
+### leachate x stage
+
+```{r}
+bd_int <- betadisper(eu_dist, group = grp_int, type = "centroid")
+# Permutation test 
+perm_int <- permutest(bd_int, permutations = 999, pairwise = FALSE)
+perm_int
+```
+
+```{r}
+plot(bd_int, hull = TRUE, ellipse = TRUE, label = FALSE, cex = 0.8)
+```
+
+::: callout-note
+Tests for homogeneity of multivariate dispersion indicated no significant differences among leachate treatments (betadisper permutation test: F=0.66, p=0.592, 999 permutations), suggesting comparable within-group multivariate variability across leachate levels. Accordingly, the absence of a significant PERMANOVA effect of leachate is unlikely to be driven by heterogeneity of dispersion.
+:::
 
 # Heatmap
 

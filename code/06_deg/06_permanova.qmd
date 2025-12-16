@@ -49,19 +49,19 @@ knitr::opts_chunk$set(
 
 ## Outputs
 
-
+## Set colors
 ```{r}
 # Specify colors
-leachate_colors <- c(control = "grey60", 
-                     low = "#C994C7", 
-                     mid = "#980043", 
-                     high = "#67001F")
-stage_colors <- c(cleavage = "red", 
-                  prawnchip = "blue", 
-                  earlygastrula = "green")
-spawn_colors <- c("July_6th" = "coral", 
-                  "July_7th" = "yellow", 
-                  "July_8th" = "orange")
+leachate.colors <- c(control = "#AEF1FF", 
+                low = "#BBC7FF",
+                mid = "#7D8BFF", 
+                high = "#592F7D")
+stage.colors <- c(cleavage = "#EBA600", 
+                  prawnchip = "#D9685B", 
+                  earlygastrula = "#A2223C")
+night.colors <- c(July_6th = "#E3FAA5", 
+                  July_7th = "#578B21", 
+                  July_8th = "#1E2440")
 ```
 
 ## Set paths
@@ -272,8 +272,8 @@ pvd1 <- if (exists("percentVar")) percentVar[1] else round(pvar_deg[1], 1)
 pvd2 <- if (exists("percentVar")) percentVar[2] else round(pvar_deg[2], 1)
 
 pd <- ggplot(pca_deg_df, aes(x = PC1, y = PC2,
-                        fill = stage,              # interior color
-                        shape = leachate,          # shapes 21–25 allow fill+outline
+                        fill = stage,     # interior color
+                        shape = leachate, # shapes 21–25 allow fill+outline
                         colour = factor(spawn_night)) # outline color
   ) +
   geom_point(size = 3.5, stroke = 0.9) +
@@ -307,12 +307,13 @@ pvd2 <- if (exists("percentVar")) percentVar[2] else round(pvar_deg[2], 1)
 ggplot(pca_deg_df, aes(x = PC1, y = PC2, color = leachate)) +
   geom_point(size = 3.5, alpha = 0.6) +
   stat_ellipse()+
-  scale_color_manual(values = leachate_colors) +
+  scale_color_manual(values = leachate.colors) +
   labs(x = paste0("PC1 (", pvd1, "%)"),
        y = paste0("PC2 (", pvd2, "%)"),
        fill = "Leachate",) +
   theme_classic(base_size = 12)
 ```
+
 ```{r, fig.width = 24, fig.height = 24}
 library(tidyverse)
 library(patchwork)  # for combining plots (optional)
@@ -332,7 +333,7 @@ pc_plot <- function(i) {
   ggplot(pca_deg_df, aes(x = .data[[xcol]], y = .data[[ycol]], color = leachate)) +
     geom_point(size = 3.5, alpha = 0.6) +
     stat_ellipse() +
-    scale_color_manual(values = leachate_colors, name = "Leachate") +
+    scale_color_manual(values = leachate.colors, name = "Leachate") +
     labs(
       x = paste0(xcol, " (", round(pvar[i], 1), "%)"),
       y = paste0(ycol, " (", round(pvar[i + 1], 1), "%)"),
@@ -361,7 +362,7 @@ wrap_plots(plots, ncol = 4)
 Despite the fact that leachate is significant when we run the PERMANOVA on the short list of DEGs, It's not visibly detected in a PCA plot, even when we examine higher principle components. 
 
 
-Which PC's best show leachate signifcance?
+Which PC's best show leachate significance?
 ```{r}
 library(broom)
 
