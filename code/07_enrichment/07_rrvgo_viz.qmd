@@ -1,6 +1,6 @@
 ---
 title: "Gene ontology (GO) enrichment plots"
-subtitle: "We've matched the DEGs with GO terms, and identified enriched GOs... let's visualize them!"
+subtitle: "We've matched the DEGs with GO terms... let's visualize them!"
 author: "Sarah Tanja"
 date: 2025-09-30
 date-modified: today
@@ -38,8 +38,13 @@ knitr::opts_chunk$set(
 ```
 
 # Background
+- [Using the rrvgo package](https://bioconductor.org/packages/devel/bioc/vignettes/rrvgo/inst/doc/rrvgo.html)
 
-The size column in the reduced results represents the number of genes annotated to each GO term. size \> 0 → that term is associated with at least one gene in your gene universe (and was used in the GOseq enrichment test). size = 0 → no genes in your input set are annotated to that term, even though the term appears in the GO semantic similarity matrix.
+The size column in the reduced results represents the number of genes annotated to each GO term.
+
+size \> 0 → that term is associated with at least one gene in our gene universe (and was used in the GOseq enrichment test).
+
+size = 0 → no genes in our input set are annotated to that term, even though the term appears in the GO semantic similarity matrix.
 
 Why size = 0 can appear: You built the similarity matrix (calculateSimMatrix) from all GO terms, but then reduced it using a filtered subset (e.g., only enriched terms). Some leftover terms in the similarity matrix may not actually appear in your results' gene annotations. The term was pruned or filtered by GOseq or rrvgo during processing --- for example, if a cluster "parent" term wasn't part of the original enrichment table, but was added as a representative. Annotation differences --- GOseq uses your gene-to-GO mapping (often via gene2cat), while rrvgo's internal lookup (from GO.db) may include additional terms that don't exist in your mapping.
 
@@ -83,7 +88,9 @@ Then it computes a p-value for enrichment.
 ## Outputs
 
 # Setup
+
 ## Set paths
+
 ```{r}
 input_path <- "../../output/07_enrichment/goseq/"
 ```
@@ -110,6 +117,7 @@ library(plotly)
 library(tidyverse)
 library(rrvgo)
 library(kableExtra)
+library(ggrepel)
 ```
 
 ## Load inputs
@@ -120,75 +128,200 @@ reducedTerms <- read.csv(file.path(input_path, "reducedTerms_GO.csv"))
 reducedTerms.anno <- read.csv(file.path(input_path, "reducedTerms_GO_anno.csv"))
 
 ## Similarity matrices
-simMatrix <- read_csv(file.path(input_path, "simMatrix.csv")) %>% 
-  column_to_rownames("GO") %>% as.matrix()  # uses the GO column as rownames
+simMatrix <- read_csv(file.path(input_path, "simMatrix.csv")) #%>% 
+  #column_to_rownames("GO") %>% as.matrix()  # uses the GO column as rownames
 
 ```
-> The rows of simMatrix should correspond (in order and identity) to the rows of reducedTerms.
-Ensure that the go column is character, not factor. Ensure simMatrix is a data.frame or matrix, and reducedTerms is a data.frame, not a tibble! \*which is why we load it with read.csv, (which loads a data.frame) and not read_csv (which loads a tibble).
+
+Give sim matrix rownames
+```{r}
+rownames(simMatrix) <- colnames(simMatrix)
+```
+> The rows of simMatrix should correspond (in order and identity) to the rows of reducedTerms. Ensure that the reducedTerms `go` column is a character, not a factor. Ensure simMatrix is a data.frame or matrix, and reducedTerms is a data.frame, not a tibble! \*which is why we load it with read.csv, (which loads a data.frame) and not read_csv (which loads a tibble).
 
 
-# Plotting & interpretation
+# All PVC-leachate DEG go terms 
 
-[Using the rrvgo package](https://bioconductor.org/packages/devel/bioc/vignettes/rrvgo/inst/doc/rrvgo.html)
+Represented by `reducedTerms` and `simMatrix`
 
-## Similarity matrix heatmap
+### Similarity matrix heatmap
 
 Plot similarity matrix as a heatmap, with clustering of columns of rows turned on by default (thus arranging together similar terms).
 
-```{r}
+```{r, fig.height=12}
 heatmapPlot(simMatrix,
             reducedTerms,
             annotateParent=TRUE,
-            annotationLabel="parentTerm",
-            fontsize=6)
+            annotationLabel="parentTerm")
 ```
 
-
-## Scatter plot
+### Scatter plot
 
 Plot GO terms as scattered points. Distances between points represent the similarity between terms, and axes are the first 2 components of applying a PCoA to the (di)similarity matrix. Size of the point represents the provided scores or, in its absence, the number of genes the GO term contains.
 
-```{r, fig.height = 7}
+```{r, fig.height=7}
 scatterPlot(simMatrix, reducedTerms,
             onlyParents = FALSE,
             addLabel = TRUE,
             labelSize = 4)
 ```
 
+### Treemap plot
+Treemaps are space-filling visualization of hierarchical structures. The terms are grouped (colored) based on their parent, and the space used by the term is proportional to the score. Treemaps can help with the interpretation of the summarized results and also comparing different sets of GO terms.
+```{r}
+treemapPlot(reducedTerms)
+```
 
-# Custom PCA
 
-## Significant DEG
+# PVC GEP 1
+
+```{r}
+reducedTerms_GEP1 <- reducedTerms.anno %>% 
+  filter(pattern == 1) %>% # select only GEP1 aka cleavage
+  select(!gene) %>% # remove gene row which makes each go distinct
+  distinct()# select distinct rows
+```
+
+This leaves us with 1271 observed go terms in `reducedTerms_GEP1` , we now need to make sure we have a matching simMatrix that uses those same 1271 go terms
+
+```{r}
+# define vector of GEP1 goterms
+GEP1_goterms <- reducedTerms_GEP1$go
+
+keep1 <- intersect(colnames(simMatrix), GEP1_goterms)
+  
+simMatrix_GEP1 <- simMatrix[keep1, keep1, drop = FALSE]
+```
+
+## scatter plot
+```{r, fig.height = 7}
+scatterPlot(simMatrix_GEP1, reducedTerms_GEP1,
+            onlyParents = FALSE,
+            addLabel = TRUE,
+            labelSize = 4)
+```
+
+## treemap plot
+```{r}
+treemapPlot(reducedTerms_GEP1)
+```
+
+# GEP 2
+
+```{r}
+reducedTerms_GEP2 <- reducedTerms.anno %>% 
+  filter(pattern == 2) %>% # select only GEP1 aka cleavage
+  select(!gene) %>% # remove gene row which makes each go distinct
+  distinct()# select distinct rows
+
+nrow(reducedTerms_GEP2)
+```
+
+This leaves us with 752 observed go terms in `reducedTerms_GEP2` , we now need to make sure we have a matching simMatrix that uses those same go terms
+
+```{r}
+# define vector of GEP1 goterms
+GEP2_goterms <- reducedTerms_GEP2$go
+
+keep2 <- intersect(colnames(simMatrix), GEP2_goterms)
+  
+simMatrix_GEP2 <- simMatrix[keep2, keep2, drop = FALSE]
+```
+## scatter plot
+```{r, fig.height = 7}
+scatterPlot(simMatrix_GEP2, reducedTerms_GEP2,
+            onlyParents = FALSE,
+            addLabel = TRUE,
+            labelSize = 4)
+```
+## treemap plot
+```{r}
+treemapPlot(reducedTerms_GEP2)
+```
+
+
+# GEP 3
+```{r}
+reducedTerms_GEP3 <- reducedTerms.anno %>% 
+  filter(pattern == 3) %>% # select only GEP1 aka cleavage
+  select(!gene) %>% # remove gene row which makes each go distinct
+  distinct()# select distinct rows
+
+nrow(reducedTerms_GEP3)
+```
+
+This leaves us with 552 observed go terms in `reducedTerms_GEP2` , we now need to make sure we have a matching simMatrix that uses those same go terms
+
+```{r}
+# define vector of GEP1 goterms
+GEP3_goterms <- reducedTerms_GEP3$go
+
+keep3 <- intersect(colnames(simMatrix), GEP3_goterms)
+  
+simMatrix_GEP3 <- simMatrix[keep3, keep3, drop = FALSE]
+```
+## scatter plot
+```{r, fig.height = 7}
+scatterPlot(simMatrix_GEP3, reducedTerms_GEP3,
+            onlyParents = FALSE,
+            addLabel = TRUE,
+            labelSize = 4)
+```
+
+## treemap plot
+```{r}
+treemapPlot(reducedTerms_GEP3)
+```
+
+
+# Manuscript PCA
+
 
 I want a dataframe that groups my GO terms based on the 5 main clusters displayed in this PCA. The scatterPlot uses a dimensionality reduction (PCoA) approach to project GO terms into 2D space and then visually groups the points into a smaller number of major clusters. These visual clusters are typically broader groupings, which correspond to higher-level semantic similarity rather than the narrow clusters from the cut tree. A possible approach if you want to create a cluster assignment dataframe matching the 5 visual clusters is to: - Extract the 2D coordinates from the scatterPlot dimensionality reduction output, - Apply a clustering method on the 2D coordinates (e.g., k-means with k=5), - Create a new dataframe linking each GO term to its visual cluster. This approach aligns the clustering with the displayed scatterPlot clusters rather than the original fine-grained clusters.
 
 ```{r}
 # Distance from similarity matrix
-dist <- as.dist(1 - simMatrix.sig)
+dist <- as.dist(1 - simMatrix)
 
 # PCoA to 2 dimensions
 coord <- cmdscale(dist, k = 2)
 
 # Convert to dataframe with GO terms
-df_coords <- data.frame(go = rownames(simMatrix.sig), Dim1 = coord[,1], Dim2 = coord[,2])
+df_coords <- data.frame(go = rownames(simMatrix), Dim1 = coord[,1], Dim2 = coord[,2])
 ```
 
 Cluster the terms visually in 2D space Use k-means clustering on the 2D coordinates with k = 5 (number of desired clusters).
 
 ```{r}
 set.seed(123)  # for reproducibility
-clusters <- kmeans(df_coords[, c("Dim1", "Dim2")], centers = 5)
-df_coords$cluster <- as.factor(clusters$cluster)
+centers <- kmeans(df_coords[, c("Dim1", "Dim2")], centers = 8)
+df_coords$centers <- as.factor(centers$cluster)
 ```
-
-Combine cluster info with other GO term data Merge this dataframe with your reducedTerms or other GO annotation information as needed.
 
 ```{r}
-final_df <- merge(df_coords, reducedTerms.sig, by.x = "go", by.y = "go")
+anno <- reducedTerms.anno %>%
+  select(!gene) %>% 
+  group_by(go) %>%
+  mutate(pattern = paste0("GEP", pattern)) %>% 
+  mutate(value = 1L) %>% 
+  distinct(go, pattern, .keep_all = TRUE) %>% 
+  pivot_wider(
+    names_from  = pattern,
+    values_from = value,
+    values_fill = 0
+  )
 ```
 
-This dataframe `final_df` will now include each GO term, its 2D coordinates used for visualization, and its assigned cluster corresponding to the 5 major groups in the scatterPlot.
+
+Combine cluster info with other GO term data.
+Merge this dataframe with your reducedTerms & other GO annotation information.
+
+```{r}
+final_df <- merge(df_coords, anno, by = "go") 
+  
+```
+
+This dataframe `final_df` will now include each GO term, its 2D coordinates used for visualization, and its assigned cluster corresponding to 7 major parentTerms. 
 
 ```{r}
 head(final_df)
@@ -197,7 +330,7 @@ head(final_df)
 Drop size = 0
 
 ```{r}
-sigdeg_pcoa <- final_df %>% 
+final_pcoa <- final_df %>% 
   filter(size > 0)
 ```
 
@@ -206,10 +339,10 @@ sigdeg_pcoa <- final_df %>%
 For exploration
 
 ```{r, fig.width=12}
-p <- ggplot(sigdeg_pcoa, aes(
+p <- ggplot(final_pcoa, aes(
     Dim1, Dim2,
-    color = parentTerm,
-    size  = score,
+    color = centers,
+    size  = size,
     text  = paste0(
       "GO: ", go,
       "<br>Parent Term: ", parentTerm,
@@ -223,9 +356,69 @@ p <- ggplot(sigdeg_pcoa, aes(
   labs(color = "Parent Term",
        size  = "Score",
        title = "GO terms clustered in PCoA space") +
-  theme_minimal(base_size = 12)
-
+  theme_minimal(base_size = 12)+
+  theme(
+    legend.position = "none",      # remove legend
+  )
+```
+Static
+```{r}
+p
+```
+Interactive 
+```{r}
 ggplotly(p, tooltip = "text")
+```
+
+
+```{r}
+final_pcoa <- final_pcoa %>% 
+  mutate(
+    total = GEP1 + GEP2 + GEP3,
+    GEP1_prop = ifelse(total == 0, 0, GEP1 / total),
+    GEP2_prop = ifelse(total == 0, 0, GEP2 / total),
+    GEP3_prop = ifelse(total == 0, 0, GEP3 / total)
+  )
+
+head(final_pcoa)
+```
+Now each row has GEP*_prop columns that sum to 1 for the groups it belongs to.
+Using scatterpie in ggplot2 (recommended)
+If you can install packages, scatterpie is the easiest way to draw pie glyphs at arbitrary x/y coordinates. In geom_scatterpie(), the pie size is controlled by the aesthetics r (radius) rather than size, so you map your size column to r inside aes().
+```{r}
+#install.packages("scatterpie")
+library(ggplot2)
+library(scatterpie)
+
+r_min <- 0.01   # smallest pie radius
+r_max <- 0.3   # largest pie radius
+
+final_pcoa <- final_pcoa %>% 
+  mutate(
+    size_scaled = ifelse(
+      max(numDEInCat, na.rm = TRUE) == min(numDEInCat, na.rm = TRUE),
+      (r_min + r_max) / 2,  # all same size if no variation
+      r_min + (numDEInCat - min(numDEInCat, na.rm = TRUE)) *
+        (r_max - r_min) / (max(numDEInCat, na.rm = TRUE) - min(numDEInCat, na.rm = TRUE))
+    )
+  )
+
+ggplot() +
+  geom_scatterpie(
+    data = final_pcoa,
+    aes(x = Dim1, y = Dim2,
+    r  = size_scaled),         # replace with your coordinates
+    cols = c("GEP1_prop", "GEP2_prop", "GEP3_prop"),
+    color = NA,                # outline color; set to "black" if you want borders
+    alpha = 0.9
+  ) +
+  scale_fill_manual(
+    values = c(GEP1_prop = "#E41A1C",
+               GEP2_prop = "#377EB8",
+               GEP3_prop = "#4DAF4A")
+  ) +
+  coord_equal()
+
 ```
 
 ### Table of top parent terms
@@ -328,7 +521,7 @@ ggplot(sigdeg_pcoa, aes(Dim1, Dim2, color = term, size = score)) +
   )
 ```
 
-::: column-margin
+:::: column-margin
 ::: callout-note
 How to interpret distances
 
@@ -370,7 +563,7 @@ Point size (score): tells you which terms were more strongly enriched.
 
 Color by parentTerm: just tags each dot with the one "parent" you merged in. The fact that colors are mixed within a cluster shows that ontology categories don't always line up with semantic neighborhoods.
 :::
-:::
+::::
 
 ::: callout-note
 
@@ -396,34 +589,6 @@ kable(
   align  = c("r", "l", "r", "r", "r"),
   caption = "Top GO terms by cluster"
 )
-```
-
-## Treemap plot
-
-Treemaps are space-filling visualization of hierarchical structures. The terms are grouped (colored) based on their parent, and the space used by the term is proportional to the score. Treemaps can help with the interpretation of the summarized results and also comparing different sets of GO terms.
-
-### Interactions
-
-```{r}
-treemapPlot(reducedTerms.sig)
-```
-
-#### pattern 1
-
-```{r}
-treemapPlot(reducedTerms.1)
-```
-
-#### pattern 2
-
-```{r}
-treemapPlot(reducedTerms.2)
-```
-
-#### pattern 3
-
-```{r}
-treemapPlot(reducedTerms.3)
 ```
 
 # Lollipop plot?
