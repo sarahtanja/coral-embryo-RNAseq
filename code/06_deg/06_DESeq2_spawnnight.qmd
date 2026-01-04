@@ -26,6 +26,9 @@ format:
     link-external-newwindow: true
     reference-location: margin
     citation-location: margin
+editor: 
+  markdown: 
+    wrap: 72
 ---
 
 ```{r setup, include=FALSE}
@@ -39,7 +42,14 @@ knitr::opts_chunk$set(
 
 # Background
 
-Here we are looking at a multifactorial differential gene expression analysis for *Montipora capitata* coral embryos at 3 developmental stages (4 hours post fertilization = cleavage , 9 hours post fertilization = prawnchip, and 14 hours post fertilization = early gastrula). Embryos at each stage were exposed to either a control, low, mid, or high concentration of PVC leachate. This work aims to understand sublethal effects of ubiquitous non-point source PVC leachate pollution on coral reefs.
+Here we are looking at a multifactorial differential gene expression
+analysis for *Montipora capitata* coral embryos at 3 developmental
+stages (4 hours post fertilization = cleavage , 9 hours post
+fertilization = prawnchip, and 14 hours post fertilization = early
+gastrula). Embryos at each stage were exposed to either a control, low,
+mid, or high concentration of PVC leachate. This work aims to understand
+sublethal effects of ubiquitous non-point source PVC leachate pollution
+on coral reefs.
 
 What we really want is effect of leachate within each stage.
 
@@ -47,8 +57,11 @@ https://chatgpt.com/share/68ed79f1-e768-8008-9caa-0df1ca68b4ef
 
 ## Inputs
 
--   `gcm_filtor.csv` is the filtered gene count matrix (genes were kept in which 85% of the samples had a minimum count of 15) for 61 samples (two outliers removed).
--   `metadata_or.csv` is the metadata for 61 samples (two outliers removed)
+-   `gcm_filtor.csv` is the filtered gene count matrix (genes were kept
+    in which 85% of the samples had a minimum count of 15) for 61
+    samples (two outliers removed).
+-   `metadata_or.csv` is the metadata for 61 samples (two outliers
+    removed)
 
 ## Outputs
 
@@ -107,9 +120,13 @@ library(cowplot)     # for plot_grid & get_legend
 
 ## Import filtered gene count matrix
 
-In this count matrix, each row represents a gene, each column a sequenced RNA library (i.e. a sample), and the values give the estimated counts of fragments that were assigned to the respective gene in each library by `HISAT2`
+In this count matrix, each row represents a gene, each column a
+sequenced RNA library (i.e. a sample), and the values give the estimated
+counts of fragments that were assigned to the respective gene in each
+library by `HISAT2`
 
--   `check.names = FALSE` removed the 'X' from in front of sample id's in the column headers
+-   `check.names = FALSE` removed the 'X' from in front of sample id's
+    in the column headers
 
 ```{r, eval=TRUE}
 gcm_filtor <- read.csv("../../output/05_explore/gcm_filtor.csv", row.names="gene_id", check.names=FALSE) 
@@ -119,10 +136,16 @@ head(gcm_filtor)
 -   The count matrix shows counts of whole numbers (integers)
 -   Each column is a sample
 -   Each row is a gene
--   A sample id describes parental crosses (the first string of numbers), the pollution exposure (C, L, M, H), and the embryonic stage (4, 9, 14)
+-   A sample id describes parental crosses (the first string of
+    numbers), the pollution exposure (C, L, M, H), and the embryonic
+    stage (4, 9, 14)
 
 ::: callout-note
-`gcm_filtor` is the gene count matrix that has been filtered down to only contain rows where counts are at least 15 in 85% of the samples and 2 outlier samples ( `131415L4` and `789C4` ) that had poor HISAT alignment and did not group in the exploratory PCA are already removed. This step was completed in `code/05_explore`
+`gcm_filtor` is the gene count matrix that has been filtered down to
+only contain rows where counts are at least 15 in 85% of the samples and
+2 outlier samples ( `131415L4` and `789C4` ) that had poor HISAT
+alignment and did not group in the exploratory PCA are already removed.
+This step was completed in `code/05_explore`
 :::
 
 ## Import metadata
@@ -145,52 +168,110 @@ str(metadata_or)
 ```
 
 ::: callout-note
-`metadata_or` contains metadata for 61 samples (*o*utliers *r*emoved) with explanatory variables: - `stage` is a factor with 3 levels (cleavage, prawnchip, earlygastrula) - `hpf` is a numerical variable representing the hours post fertilization 4, 9, and 14 (corresponding to `stage`)
+`metadata_or` contains metadata for 61 samples (*o*utliers *r*emoved)
+with explanatory variables: - `stage` is a factor with 3 levels
+(cleavage, prawnchip, earlygastrula) - `hpf` is a numerical variable
+representing the hours post fertilization 4, 9, and 14 (corresponding to
+`stage`)
 
 -   `leachate` is a factor with 4 levels (control, low, mid, high)
 
--   `leachate_mgL` is a continuous numerical variable representing leachate concentrations in mg/L with values 0 , 0.01 , 0.1 , and 1 (corresponding to `leachate`)
+-   `leachate_mgL` is a continuous numerical variable representing
+    leachate concentrations in mg/L with values 0 , 0.01 , 0.1 , and 1
+    (corresponding to `leachate`)
 
--   `collection_date` is a date-formatted **"%d-%b-%Y"** column with the date of the night embryos were spawned
+-   `collection_date` is a date-formatted **"%d-%b-%Y"** column with the
+    date of the night embryos were spawned
 
--   `spawn_night` is a factor character string of the spawn night date (either July 6th, July 7th, or July 8th)
+-   `spawn_night` is a factor character string of the spawn night date
+    (either July 6th, July 7th, or July 8th)
 :::
 
 # LRT
 
-> [Likelihood ratio test](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#likelihood-ratio-test:~:text=seq%20workflow.-,Likelihood%20ratio%20test,-DESeq2%20offers%20two): DESeq2 offers two kinds of hypothesis tests: the Wald test, where we use the estimated standard error of a log2 fold change to test if it is equal to zero, and the likelihood ratio test (LRT). The LRT examines two models for the counts, a full model with a certain number of terms and a reduced model, in which some of the terms of the full model are removed. The test determines if the increased likelihood of the data using the extra terms in the full model is more than expected if those extra terms are truly zero. The LRT is therefore useful for testing multiple terms at once, for example testing 3 or more levels of a factor at once, or all interactions between two variables. The LRT for count data is conceptually similar to an analysis of variance (ANOVA) calculation in linear regression, except that in the case of the Negative Binomial GLM, we use an analysis of deviance (ANODEV), where the deviance captures the difference in likelihood between a full and a reduced model. The likelihood ratio test can be performed by specifying test="LRT" when using the DESeq function, and providing a reduced design formula, e.g. one in which a number of terms from design(dds) are removed. The degrees of freedom for the test is obtained from the difference between the number of parameters in the two models.
+> [Likelihood ratio
+> test](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#likelihood-ratio-test:~:text=seq%20workflow.-,Likelihood%20ratio%20test,-DESeq2%20offers%20two):
+> DESeq2 offers two kinds of hypothesis tests: the Wald test, where we
+> use the estimated standard error of a log2 fold change to test if it
+> is equal to zero, and the likelihood ratio test (LRT). The LRT
+> examines two models for the counts, a full model with a certain number
+> of terms and a reduced model, in which some of the terms of the full
+> model are removed. The test determines if the increased likelihood of
+> the data using the extra terms in the full model is more than expected
+> if those extra terms are truly zero. The LRT is therefore useful for
+> testing multiple terms at once, for example testing 3 or more levels
+> of a factor at once, or all interactions between two variables. The
+> LRT for count data is conceptually similar to an analysis of variance
+> (ANOVA) calculation in linear regression, except that in the case of
+> the Negative Binomial GLM, we use an analysis of deviance (ANODEV),
+> where the deviance captures the difference in likelihood between a
+> full and a reduced model. The likelihood ratio test can be performed
+> by specifying test="LRT" when using the DESeq function, and providing
+> a reduced design formula, e.g. one in which a number of terms from
+> design(dds) are removed. The degrees of freedom for the test is
+> obtained from the difference between the number of parameters in the
+> two models.
 
-> For a control and treatment time series, one can use a design formula containing the condition factor, the time factor, and the interaction of the two. *In this case, using the likelihood ratio test with a reduced model which does not contain the interaction terms will test whether the condition induces a change in gene expression at any time point after the reference level time point (time 0). An example of the later analysis is provided in our [RNA-seq workflow](https://master.bioconductor.org/packages/release/workflows/vignettes/rnaseqGene/inst/doc/rnaseqGene.html)*.
+> For a control and treatment time series, one can use a design formula
+> containing the condition factor, the time factor, and the interaction
+> of the two. *In this case, using the likelihood ratio test with a
+> reduced model which does not contain the interaction terms will test
+> whether the condition induces a change in gene expression at any time
+> point after the reference level time point (time 0). An example of the
+> later analysis is provided in our [RNA-seq
+> workflow](https://master.bioconductor.org/packages/release/workflows/vignettes/rnaseqGene/inst/doc/rnaseqGene.html)*.
 
 We run a few LRT tests :
 
 -   full model: `~ spawn_night + stage + leachate + stage:leachate`
 
--   reduced model: `~ spawn_night + stage + leachate` (effect of interaction) **INT**
+-   reduced model: `~ spawn_night + stage + leachate` (effect of
+    interaction) **INT**
 
--   reduced model: `~ spawn_night + stage` (effects of leachate and stage specific leachate together) **JOINT**
+-   reduced model: `~ spawn_night + stage` (effects of leachate and
+    stage specific leachate together) **JOINT**
 
 &
 
 -   full model: `~ spawn_night + stage + leachate`
 
--   reduced model: `~ spawn_night + stage` (tests for main effect of leachate) **MAIN**
+-   reduced model: `~ spawn_night + stage` (tests for main effect of
+    leachate) **MAIN**
 
-This tells you if there are any interaction effects between stage and leachate, but it won't tell you which interaction is significant, or in which direction --- It helps you decide which model to use. If there aren't any differences in significant gene results between models, use the simpler model.
+This tells you if there are any interaction effects between stage and
+leachate, but it won't tell you which interaction is significant, or in
+which direction --- It helps you decide which model to use. If there
+aren't any differences in significant gene results between models, use
+the simpler model.
 
 ::: callout-caution
-Order matters! The first term (`stage`) is what the model controls for, and the second term (`leachate`) is the main effect. Meaning the model adjusts for stage first and then assesses the leachate effect.
+Order matters! The first term (`stage`) is what the model controls for,
+and the second term (`leachate`) is the main effect. Meaning the model
+adjusts for stage first and then assesses the leachate effect.
 :::
 
 Stage & Leachate will be treated as categorical variables
 
-When embryonic `stage` is treated as a categorical variable DESeq2 will estimate expression differences between stages, rather than assuming a linear progression from 4 → 14 hpf. DESeq2 will fit different intercepts for each stage (i.e., different baseline expression levels). If you encode stage as a continuous numeric, the model would assume a linear change in expression per hour of development, which is biologically risky unless you expect linearity (note: we do not).
+When embryonic `stage` is treated as a categorical variable DESeq2 will
+estimate expression differences between stages, rather than assuming a
+linear progression from 4 → 14 hpf. DESeq2 will fit different intercepts
+for each stage (i.e., different baseline expression levels). If you
+encode stage as a continuous numeric, the model would assume a linear
+change in expression per hour of development, which is biologically
+risky unless you expect linearity (note: we do not).
 
 ::: callout-note
 `stage` will be treated as a categorical variable
 :::
 
-Whether `leachate` is treated as a factor or a numeric (continuous) variable radically changes the interpretation of both the main effect and the interaction. If a variable is numeric, DESeq2 treats it as a continuous covariate. This fits a regression slope, estimating the change in gene expression per unit increase in the variable. Coding `leachate` as a categorical factor allows each stage to have its own independent leachate effect. ✅ Use this if you expect nonlinear, stage-specific effects of exposure (note: we do).
+Whether `leachate` is treated as a factor or a numeric (continuous)
+variable radically changes the interpretation of both the main effect
+and the interaction. If a variable is numeric, DESeq2 treats it as a
+continuous covariate. This fits a regression slope, estimating the
+change in gene expression per unit increase in the variable. Coding
+`leachate` as a categorical factor allows each stage to have its own
+independent leachate effect. ✅ Use this if you expect nonlinear,
+stage-specific effects of exposure (note: we do).
 
 # Make DESeqDataSet
 
@@ -209,17 +290,42 @@ design = formula( \~ spawn_night + stage + leachate + stage:leachate))
 
 ## Run DESeq LRT Tests
 
+### Stage
+
+```{r}
+dds_stage_LRT <- DESeq(dds, test = "LRT", reduced = ~ spawn_night + leachate)
+```
+
+| Model name | Reduced model formula | What it tests for | Interpretation of significant genes |
+|---------------|---------------|---------------|-----------------------------|
+| **dds_stage_LRT** | `~ spawn_night + leachate + stage:leachate` | Tests the contribution of **stage** | Genes whose expression significantly varies **across stage**, after accounting for spawn_night and leachate |
+
+```{r}
+res_stage <- results(dds_stage_LRT, alpha = 0.05)
+summary(res_stage)
+```
+
+There are 10687 DEGs across stages.
+
+```{r}
+sig_stage <- res_stage %>%
+  as.data.frame() %>%
+  filter(padj < 0.05) %>% 
+  rownames_to_column(var = "gene_id")
+```
+
 ### Spawn night
 
-Here we treat spawn night as a covariate as a way to control for it as a nuisance factor.
+Here we treat spawn night as a covariate as a way to control for it as a
+nuisance factor.
 
 ```{r}
 dds_sp_LRT <- DESeq(dds, test = "LRT", reduced = ~ stage + leachate + stage:leachate)
 ```
 
-| Model name     | Reduced model formula                 | What it tests for                         | Interpretation of significant genes                                                                                             |
-|-------------|-------------|-------------|----------------------------------|
-| **dds_sp_LRT** | `~ stage + leachate + stage:leachate` | Tests the contribution of **spawn_night** | Genes whose expression significantly varies **among spawn nights**, after accounting for stage, leachate, and their interaction |
+| Model name | Reduced model formula | What it tests for | Interpretation of significant genes |
+|---------------|---------------|---------------|-----------------------------|
+| **dds_sp_LRT** | `~ stage + leachate + stage:leachate` | Tests the contribution of **spawn_night** | Genes whose expression significantly varies **across spawn nights**, after accounting for stage, leachate, and their interaction |
 
 ```{r}
 res_spawn <- results(dds_sp_LRT, alpha = 0.05)
@@ -228,9 +334,23 @@ summary(res_spawn)
 
 So this test asks:
 
-"Does including spawn_night explain additional variation in gene expression, after accounting for stage and leachate (and their interaction)?"
+"Does including spawn_night explain additional variation in gene
+expression, after accounting for stage and leachate (and their
+interaction)?"
 
-The fact that we found \~3,551 genes (≈29%) significant means that spawn_night contributes meaningfully to expression variability. That's strong evidence that it is a real batch or parental effect --- not random noise. BDUT we're not interested in biological differences among spawn nights in *this* study (although it's an interesting question!); for now we stay focused on our hpyothesis, looking for evidence of low-dose **leachate** effects. In this case, we just want to adjust for spawn nights so they don't confound our leachate comparisons. To do this we include spawn_night in the design formula to control for it, but we do not extract any test results for it (no LRT against it; no results table for it). When we interpret the coefficients (or LRT results) for leachate, stage, and stage:leachate --- these now represent effects after adjusting for spawn_night.
+The fact that we found \~3,551 genes (≈29%) significant means that
+spawn_night contributes meaningfully to expression variability. That's
+strong evidence that it is a real batch or parental effect --- not
+random noise. BUT we're not interested in biological differences among
+spawn nights in *this* study (although it's an interesting question!);
+for now we stay focused on our hypothesis, looking for evidence of
+low-dose **leachate** effects. In this case, we just want to adjust for
+spawn nights so they don't confound our leachate comparisons. To do this
+we include spawn_night in the final design formula to control for it,
+but we do not extract any test results for it (no LRT against it; no
+results table for it). When we interpret the coefficients (or LRT
+results) for leachate, stage, and stage:leachate --- these now represent
+effects after adjusting for spawn_night.
 
 ### Interaction term
 
@@ -238,8 +358,8 @@ The fact that we found \~3,551 genes (≈29%) significant means that spawn_night
 dds_int_LRT <- DESeq(dds, test = "LRT", reduced = ~ spawn_night + stage + leachate)
 ```
 
-| Model name      | Reduced model formula              | What it tests for                                              | Interpretation of significant genes                                                               |
-|--------------|--------------|-----------------|----------------------------|
+| Model name | Reduced model formula | What it tests for | Interpretation of significant genes |
+|----------------|----------------|----------------|-------------------------|
 | **dds_int_LRT** | `~ spawn_night + stage + leachate` | Tests the contribution of the **stage × leachate interaction** | Genes whose expression patterns differ across **leachate treatments in a stage-dependent manner** |
 
 ```{r}
@@ -254,9 +374,14 @@ Out of 12,221 genes tested:
 -   Tests **interaction only** (`stage:leachate`).
 -   We got **13 DEGs** ⇒ This subset only show stage-specific responses.
 
-For nearly all genes, the relationship between leachate level and expression does not change significantly across stages --- the leachate effect is fairly consistent through development. So the interaction term adds very little explanatory power after controlling for spawn night and main effects.
+For nearly all genes, the relationship between leachate level and
+expression does not change significantly across stages --- the leachate
+effect is fairly consistent through development. So the interaction term
+adds very little explanatory power after controlling for spawn night and
+main effects.
 
-This result suggests that stage:leachate effects are **minimal** or **limited to a small subset of genes**.
+This result suggests that stage:leachate effects are **minimal** or
+**limited to a small subset of genes**.
 
 ### Main leachate effect
 
@@ -275,7 +400,11 @@ res_main <- results(dds_main_LRT, alpha = 0.05)
 summary(res_main)
 ```
 
-Here we find zero (0) differentially expressed genes when we only model the main effects and then reduce the model by leachate(effectively asking, does leachate contribute significantly to the variation among samples?) And we see that no, the stage and spawn_night variables explain the variation well enough...
+Here we find zero (0) differentially expressed genes when we only model
+the main effects and then reduce the model by leachate(effectively
+asking, does leachate contribute significantly to the variation among
+samples?) And we see that no, the stage and spawn_night variables
+explain the variation well enough...
 
 ### Joint
 
@@ -286,31 +415,60 @@ dds_joint_LRT <- DESeq(dds, test = "LRT", reduced = ~ spawn_night + stage)
 ```{r}
 res_joint <- results(dds_joint_LRT, alpha = 0.05)
 summary(res_joint)
-
-
 ```
 
-→ Tests the joint contribution of all leachate terms (main effect and stage:leachate).
+→ Tests the joint contribution of all leachate terms (main effect and
+stage:leachate).
 
-→ We got 43 DEGs ⇒ there is leachate-associated signal somewhere (main and/or interaction taken together).
+→ We got 43 DEGs ⇒ there is leachate-associated signal somewhere (main
+and/or interaction taken together).
 
-This indicates some genes (30) have **weak main + weak interaction** effects that don't cross FDR alone but **do** when evaluated together.
+This indicates some genes (30) have **weak main + weak interaction**
+effects that don't cross FDR alone but **do** when evaluated together.
 
 ::: callout-important
-In summary: results are consistent with stage-specific leachate responses (interaction), not a uniform, stage-averaged leachate shift (main effect). Hence: 0 (main-only), 13 (interaction-only), 43 (any leachate signal jointly) is coherent.
+In summary: results are consistent with stage-specific leachate
+responses (interaction), not a uniform, stage-averaged leachate shift
+(main effect). Hence: 0 (main-only), 13 (interaction-only), 43 (any
+leachate signal jointly) is coherent.
 :::
 
-> When one performs a likelihood ratio test, the *p* values and the test statistic (the `stat` column) are values for the test that removes all of the variables which are present in the full design and not in the reduced design. This tests the null hypothesis that all the coefficients from these variables and levels of these factors are equal to zero.
+> When one performs a likelihood ratio test, the *p* values and the test
+> statistic (the `stat` column) are values for the test that removes all
+> of the variables which are present in the full design and not in the
+> reduced design. This tests the null hypothesis that all the
+> coefficients from these variables and levels of these factors are
+> equal to zero.
 >
-> The likelihood ratio test *p* values therefore represent a test of *all the variables and all the levels of factors* which are among these variables. However, the results table only has space for one column of log fold change, so a single variable and a single comparison is shown (among the potentially multiple log fold changes which were tested in the likelihood ratio test). This is indicated at the top of the results table with the text, e.g., log2 fold change (MLE): condition C vs A, followed by, LRT p-value: '\~ batch + condition' vs '\~ batch'. This indicates that the *p* value is for the likelihood ratio test of *all the variables and all the levels*, while the log fold change is a single comparison from among those variables and levels.
+> The likelihood ratio test *p* values therefore represent a test of
+> *all the variables and all the levels of factors* which are among
+> these variables. However, the results table only has space for one
+> column of log fold change, so a single variable and a single
+> comparison is shown (among the potentially multiple log fold changes
+> which were tested in the likelihood ratio test). This is indicated at
+> the top of the results table with the text, e.g., log2 fold change
+> (MLE): condition C vs A, followed by, LRT p-value: '\~ batch +
+> condition' vs '\~ batch'. This indicates that the *p* value is for the
+> likelihood ratio test of *all the variables and all the levels*, while
+> the log fold change is a single comparison from among those variables
+> and levels.
 
 ```{r}
 ?results
 ```
 
-> [Building the results table](https://master.bioconductor.org/packages/release/workflows/vignettes/rnaseqGene/inst/doc/rnaseqGene.html#multiple-testing:~:text=5.2-,Building%20the%20results%20table,-Calling%20results%20without): Calling results without any arguments will extract the estimated log2 fold changes and p values for the last variable in the design formula. If there are more than 2 levels for this variable, results will extract the results table for a comparison of the last level over the first level.
+> [Building the results
+> table](https://master.bioconductor.org/packages/release/workflows/vignettes/rnaseqGene/inst/doc/rnaseqGene.html#multiple-testing:~:text=5.2-,Building%20the%20results%20table,-Calling%20results%20without):
+> Calling results without any arguments will extract the estimated log2
+> fold changes and p values for the last variable in the design formula.
+> If there are more than 2 levels for this variable, results will
+> extract the results table for a comparison of the last level over the
+> first level.
 >
-> Genes with small *p* values from the LRT test are those which at one or more time points after time 0 showed a strain-specific effect. Note therefore that this will not give small *p* values to genes that moved up or down over time in the same way in both strains.
+> Genes with small *p* values from the LRT test are those which at one
+> or more time points after time 0 showed a strain-specific effect. Note
+> therefore that this will not give small *p* values to genes that moved
+> up or down over time in the same way in both strains.
 
 ```{r}
 sig_int <- res_int %>%
@@ -329,18 +487,26 @@ overlap_ids                # which ones
 ```
 
 ::: callout-note
-The 13 genes found to have stage specific effects (interaction term) are also present in the joint list that catches subtle effects of both interaction and main leachate. We have 43 genes with significant leachate effects overall. This is subtle (43 out of \~12K genes may be p-hacked...) but significant based on adjusted pvalues all less than 0.05.
+The 13 genes found to have stage specific effects (interaction term) are
+also present in the joint list that catches subtle effects of both
+interaction and main leachate. We have 43 genes with significant
+leachate effects overall. This is subtle (43 out of \~12K genes may be
+p-hacked...) but significant based on adjusted pvalues all less than
+0.05.
 :::
 
 ```{r}
 dim(sig_joint)
 ```
 
-> The 43 genes showing significant stage-specific responses to leachate exhibit nonlinear or non-monotonic patterns, rather than a simple linear trend across leachate levels.
+> The 43 genes showing significant responses to leachate exhibit
+> nonlinear or non-monotonic patterns, rather than a simple linear trend
+> across leachate levels.
 
 # Wald
 
-> Wald tests assess whether the coefficient **differs significantly from 0**
+> Wald tests assess whether the coefficient **differs significantly from
+> 0**
 
 Run the Wald test on the dds object.
 
@@ -352,11 +518,11 @@ dds <- DESeq(dds, test = "Wald")
 resultsNames(dds)
 ```
 
-## Results
+## Leachate Results
 
 **We're focusing only on leachate effects in this analysis**
 
-### Interaction effects
+### Extract Results for interaction effects
 
 -   "stageprawnchip.leachatelow"
 
@@ -370,7 +536,10 @@ resultsNames(dds)
 
 -   "stageearlygastrula.leachatehigh"
 
-Each of the above interaction terms tells us the extra effect of the leachate level at a stage (vs the additive sum of the stage and leachate effects) in comparison to a control baseline count. For the interaction terms, we are trying to get the "difference of the differences".
+Each of the above interaction terms tells us the extra effect of the
+leachate level at a stage (vs the additive sum of the stage and leachate
+effects) in comparison to a control baseline count. For the interaction
+terms, we are trying to get the "difference of the differences".
 
 ```{r}
 # prawnchip interaction terms
@@ -393,11 +562,21 @@ summary(res_prawnchip_high.int)
 ```
 
 ::: callout-note
-0 genes showed a significant stage × leachate interaction in the prawnchip stage under the high treatment (Wald test, BH-adjusted p \< 0.05).
+0 genes showed a significant stage × leachate interaction in the
+prawnchip stage under the high treatment (Wald test, BH-adjusted p \<
+0.05).
 :::
 
 ::: column-margin
-> DESeq2 uses size-factor normalization (the "median-ratio method"). It corrects for library size and composition so you can compare counts across samples. How it works (median-ratio method) Per-gene geometric mean across samples (skip genes with all zeros). Per-sample ratios: for each gene, divide a sample's count by that gene's geometric mean. Size factor: the median of those ratios within each sample. Normalized counts: normalized = raw_count / size_factor. These size factors are used as an offset in the negative binomial GLM for the Wald/LRT tests. Normalization is independent of the design formula.
+> DESeq2 uses size-factor normalization (the "median-ratio method"). It
+> corrects for library size and composition so you can compare counts
+> across samples. How it works (median-ratio method) Per-gene geometric
+> mean across samples (skip genes with all zeros). Per-sample ratios:
+> for each gene, divide a sample's count by that gene's geometric mean.
+> Size factor: the median of those ratios within each sample. Normalized
+> counts: normalized = raw_count / size_factor. These size factors are
+> used as an offset in the negative binomial GLM for the Wald/LRT tests.
+> Normalization is independent of the design formula.
 :::
 
 ##### mid
@@ -407,7 +586,8 @@ summary(res_prawnchip_mid.int)
 ```
 
 ::: callout-note
-0 genes were found to have significant prawnchip stage x mid leachate interaction (adjusted p value \< 0.05)
+0 genes were found to have significant prawnchip stage x mid leachate
+interaction (adjusted p value \< 0.05)
 :::
 
 ##### low
@@ -417,7 +597,8 @@ summary(res_prawnchip_low.int)
 ```
 
 ::: callout-note
-7 genes were found to have significant prawnchip stage x low leachate interaction (adjusted p value \< 0.05)
+7 genes were found to have significant prawnchip stage x low leachate
+interaction (adjusted p value \< 0.05)
 :::
 
 ```{r}
@@ -438,7 +619,8 @@ summary(res_earlygastrula_high.int)
 ```
 
 ::: callout-note
-1 gene was found to have a significant interaction effect between early gastrula and high leachate
+1 gene was found to have a significant interaction effect between early
+gastrula and high leachate
 :::
 
 ```{r}
@@ -457,7 +639,8 @@ summary(res_earlygastrula_mid.int)
 ```
 
 ::: callout-note
-0 genes were found to have a significant interaction between early gastrula and mid leachate
+0 genes were found to have a significant interaction between early
+gastrula and mid leachate
 :::
 
 ##### low
@@ -467,7 +650,8 @@ summary(res_earlygastrula_low.int)
 ```
 
 ::: callout-note
-8 genes were found to have significant interaction between early gastrula and low leachate
+8 genes were found to have significant interaction between early
+gastrula and low leachate
 :::
 
 ```{r}
@@ -479,9 +663,11 @@ sig_earlygastrula_low.int <- res_earlygastrula_low.int %>%
 write_csv(sig_earlygastrula_low.int, file.path(output_path, "sig_earlygastrula_low.int.csv"))
 ```
 
-## Contrasts
+## Extract results for stage by leachate contrasts
 
-See [A guide to designs and contrasts in DESeq2](https://www.atakanekiz.com/technical/a-guide-to-designs-and-contrasts-in-DESeq2/) by Dr. Atakan Ekiz
+See [A guide to designs and contrasts in
+DESeq2](https://www.atakanekiz.com/technical/a-guide-to-designs-and-contrasts-in-DESeq2/)
+by Dr. Atakan Ekiz
 
 ```{r}
 resultsNames(dds)
@@ -514,7 +700,9 @@ summary(res_cleavage_high.vs.control)
 ```
 
 ::: callout-note
-7 genes were found to be significantly differentially expressed (adjusted p value \< 0.05) at the cleavage stage in the high leachate treatment compared to the control.
+7 genes were found to be significantly differentially expressed
+(adjusted p value \< 0.05) at the cleavage stage in the high leachate
+treatment compared to the control.
 :::
 
 ```{r}
@@ -535,7 +723,10 @@ summary(res_cleavage_mid.vs.control)
 ```
 
 ::: callout-note
-58 genes were found to be significantly differentially expressed (adjusted p value \< 0.05) at the cleavage stage in the mid leachate treatment compared to the control. 57 LFC \> 0. 57/58 total genes were found in more abundance compared to the controls.
+58 genes were found to be significantly differentially expressed
+(adjusted p value \< 0.05) at the cleavage stage in the mid leachate
+treatment compared to the control. 57 LFC \> 0. 57/58 total genes were
+found in more abundance compared to the controls.
 :::
 
 ```{r}
@@ -549,14 +740,21 @@ write_csv(sig_cleavage_mid.vs.control, file.path(output_path, "sig_cleavage_mid.
 
 #### low
 
-for cleavage (baseline stage) \> Because you fit \~ 0 + stage + leachate + stage:leachate, **the coefficient leachatelow is the low vs control effect at the reference stage**. From your resultsNames() (no stagecleavage.leachatelow term is present) the reference stage is cleavage, so Low vs control at cleavage is simply the leachatelow coefficient.
+for cleavage (baseline stage) \> Because you fit \~ 0 + stage +
+leachate + stage:leachate, **the coefficient leachatelow is the low vs
+control effect at the reference stage**. From your resultsNames() (no
+stagecleavage.leachatelow term is present) the reference stage is
+cleavage, so Low vs control at cleavage is simply the leachatelow
+coefficient.
 
 ```{r}
 summary(res_cleavage_low.vs.control)
 ```
 
 ::: callout-note
-34 genes were found to be significantly differentially expressed (adjusted p value \< 0.05) at the cleavage stage in the low leachate treatment compared to the control. 13 LFC \> 0 & 21 LFC \< 0.
+34 genes were found to be significantly differentially expressed
+(adjusted p value \< 0.05) at the cleavage stage in the low leachate
+treatment compared to the control. 13 LFC \> 0 & 21 LFC \< 0.
 :::
 
 ```{r}
@@ -579,7 +777,8 @@ summary(res_prawnchip_high.vs.control)
 ```
 
 ::: callout-note
-0 genes differentially expressed (adjusted p value \< 0.05) at the prawn chip stage in the high leachate treatment when compared to the control.
+0 genes differentially expressed (adjusted p value \< 0.05) at the prawn
+chip stage in the high leachate treatment when compared to the control.
 :::
 
 #### mid
@@ -589,7 +788,8 @@ summary(res_prawnchip_mid.vs.control)
 ```
 
 ::: callout-note
-0 genes differentially expressed (adjusted p value \< 0.05) at the prawn chip stage in the high leachate treatment when compared to the control.
+0 genes differentially expressed (adjusted p value \< 0.05) at the prawn
+chip stage in the high leachate treatment when compared to the control.
 :::
 
 #### low
@@ -599,7 +799,8 @@ summary(res_prawnchip_low.vs.control)
 ```
 
 ::: callout-note
-0 genes differentially expressed (adjusted p value \< 0.05) at the prawn chip stage in the high leachate treatment when compared to the control.
+0 genes differentially expressed (adjusted p value \< 0.05) at the prawn
+chip stage in the high leachate treatment when compared to the control.
 :::
 
 ### Early gastrula
@@ -611,7 +812,10 @@ summary(res_earlygastrula_high.vs.control)
 ```
 
 ::: callout-note
-27 genes differentially expressed (adjusted p value \< 0.05) at the early gastrula stage in the high leachate treatment when compared to the control. All 27 of these genes had more abundant transcripts in treated samples compared to controls.
+27 genes differentially expressed (adjusted p value \< 0.05) at the
+early gastrula stage in the high leachate treatment when compared to the
+control. All 27 of these genes had more abundant transcripts in treated
+samples compared to controls.
 :::
 
 ```{r}
@@ -630,7 +834,9 @@ summary(res_earlygastrula_mid.vs.control)
 ```
 
 ::: callout-note
-0 genes differentially expressed (adjusted p value \< 0.05) at the early gastrula stage in the mid leachate treatment when compared to the control.
+0 genes differentially expressed (adjusted p value \< 0.05) at the early
+gastrula stage in the mid leachate treatment when compared to the
+control.
 :::
 
 #### low
@@ -640,35 +846,310 @@ summary(res_earlygastrula_low.vs.control)
 ```
 
 ::: callout-note
-0 genes differentially expressed (adjusted p value \< 0.05) at the early gastrula stage in the low leachate treatment when compared to the control.
+0 genes differentially expressed (adjusted p value \< 0.05) at the early
+gastrula stage in the low leachate treatment when compared to the
+control.
 :::
 
-# Extract all results for use in GSEA 
-
-> Example from Xu et al. 2024:
-> `all_results <- lapply(time_points, function(time_point) { 
- result <- results(dds, tidy = TRUE, 
- contrast = c("group", time_point, "0h")) 
- setNames(object = result$log2FoldChange, nm = result$row) |>   sort(decreasing = TRUE)` 
-
+# Stage Results
 
 ```{r}
-leachate_levels <- setdiff(levels(metadata_or$leachate), "control")
+resultsNames(dds)
+```
 
-all_results <- lapply(leachate_levels, function(lvl) { 
-  res <- results(
-    dds,
-    tidy     = TRUE,
-    contrast = c("leachate", lvl, "control")  # <— uses leachate, not group
-  )
-  
-  setNames(object = res$log2FoldChange, nm = res$row) |>
-    sort(decreasing = TRUE)
-})
-names(all_results) <- leachate_levels
+```{r}
+# 1. Get results for each stage vs cleavage
+res_prawnchip   <- results(dds, name = "stage_prawnchip_vs_cleavage", alpha = 0.05)
+res_earlygastrula   <- results(dds, name = "stage_earlygastrula_vs_cleavage", alpha = 0.05)
+
+# Compare prawnchip vs earlygastrula
+res_pc.vs.eg <- results(dds, contrast = list(c("stage_prawnchip_vs_cleavage", "stage_earlygastrula_vs_cleavage")), alpha = 0.05)
 
 ```
 
+```{r}
+summary(res_prawnchip)
+```
+
+There are 6880 DEGs between the cleavage and prawnchip stages. Of those,
+3665 genes (30%) are up-regulated and 3215 genes (26%) are
+down-regulated.
+
+```{r}
+sig_prawnchip <- res_prawnchip %>%
+  as.data.frame() %>%
+  filter(padj < 0.05) %>% 
+  rownames_to_column(var = "gene_id")
+```
+
+```{r}
+summary(res_earlygastrula)
+```
+
+There are 8007 DEGs between the cleavage and earlygastrula stages. Of
+those, 4492 genes (37%) are up-regulated and 3515 genes (29%) are
+down-regulated.
+
+```{r}
+sig_earlygastrula <- res_earlygastrula %>%
+  as.data.frame() %>%
+  filter(padj < 0.05) %>% 
+  rownames_to_column(var = "gene_id")
+```
+
+```{r}
+summary(res_pc.vs.eg)
+```
+
+There are 7780 DEGs between the prawnchip and earlygastrula stages. Of
+those, 4331 genes (35%) are up-regulated and 3449 genes (28%) are
+down-regulated.
+
+```{r}
+sig_pc.vs.eg <- res_pc.vs.eg %>%
+  as.data.frame() %>%
+  filter(padj < 0.05) %>% 
+  rownames_to_column(var = "gene_id") 
+```
+
+# Results gene lists
+
+## Leachate 
+
+We have 9 different 'significant gene' lists for leachate. Each list
+indicates genes in which leachate treatment contributed to significantly
+differential expression.
+
+LRT:
+
+\- `sig_int`, 13 DEGs
+
+\- `sig_joint`. 44 DEGs
+
+::: callout-note
+No main effects due to leachate detected - leachate effects were only
+detected within interactions and within stage contrasts
+:::
+
+Interaction effects:
+
+\- `sig_prawnchip_low.int`, 7 DEGs
+
+\- `sig_earlygastrula_high.int`, 1 DEG
+
+\- `sig_earlygastrula_low.int`, 8 DEGs
+
+Contrasts:
+
+\- `sig_cleavage_low.vs.control`, 34 DEGs
+
+\- `sig_cleavage_mid.vs.control`, 58 DEGs
+
+\- `sig_cleavage_high.vs.control`, 7 DEGs
+
+\- `sig_earlygastrula_high.vs.control`, 27 DEGs
+
+## Stage
+
+LRT:
+
+\- `sig_stage`, 10687 DEGs
+
+Main effects:
+
+\- `sig_prawnchip`, 6880 DEGs
+
+\- `sig_earlygastrula`, 8007 DEGs
+
+Contrasts:
+
+\- `sig_pc.vs.eg`, 7780 DEGs
+
+# Save gene lists
+
+## Leachate
+
+Make a list of all genes that significantly change with leachate
+exposure
+
+```{r}
+# 1) Put all of your sig data frames into a *named* list
+sig_lists_leachate <- list(
+  int                           = sig_int,
+  joint                         = sig_joint,
+  prawnchip_low.int             = sig_prawnchip_low.int,
+  earlygastrula_high.int        = sig_earlygastrula_high.int,
+  earlygastrula_low.int         = sig_earlygastrula_low.int,
+  cleavage_low.vs.control       = sig_cleavage_low.vs.control,
+  cleavage_mid.vs.control       = sig_cleavage_mid.vs.control,
+  cleavage_high.vs.control      = sig_cleavage_high.vs.control,
+  earlygastrula_high.vs.control = sig_earlygastrula_high.vs.control
+)
+
+# 2) Smoosh: add a 'list' column indicating the source and stack them
+sig_summary_leachate <- bind_rows(sig_lists_leachate, .id = "list") %>%
+  relocate(list, gene_id)
+```
+
+```{r}
+sig_genes_leachate <- dplyr::distinct(sig_summary_leachate, gene_id)
+nrow(sig_genes_leachate)
+
+write_csv(sig_genes_leachate, file.path(output_path, "sig_genes_leachate.csv"))
+```
+
+::: callout-note
+There are 130 total DEGs across LRT and Wald tests where leachate popped
+up as a significant covariate.
+:::
+
+## Stage
+
+Make a list of all genes that significantly change across stages
+
+```{r}
+sig_lists_stage <- list(
+  stage_LRT      = sig_stage,
+  pc_v_cl        = sig_prawnchip,
+  eg_v_cl        = sig_earlygastrula,
+  pc_v_eg        = sig_pc.v.eg
+)
+
+# 2) Smoosh: add a 'list' column indicating the source and stack them
+sig_summary_stage <- bind_rows(sig_lists_stage, .id = "list") %>%
+  relocate(list, gene_id)
+```
+
+```{r}
+sig_genes_stage <- dplyr::distinct(sig_summary_stage, gene_id)
+nrow(sig_genes_stage)
+
+write_csv(sig_genes_stage, file.path(output_path, "sig_genes_stage.csv"))
+```
+
+## Gene universe
+
+Make a list of all genes tested in DESeq2 analysis, to be used as 'gene
+universe' background for functional enrichment.
+
+```{r}
+all_genes <- rownames(dds) # a character vector of all genes used in DESeq2 analysis
+# save this for functional enrichment 
+
+write_csv(tibble(gene_id = all_genes),  file.path(output_path, "all_genes.csv"))
+```
+
+::: callout-note
+There are 12,221 total genes tested in DESeq2 after filtering low count
+genes.
+:::
+
+# Save count matrices
+
+Make variance stabilized count matrix of these 130 significant leachate
+genes of interest, the significant stage genes of interest, and save the
+entire gene universe VST count matrix.
+
+```{r}
+# VST transform
+vsd <- vst(dds, blind = FALSE) # DESeqTransform Object
+vst_mat <- assay(vsd) # VST count matrix with genes as rows and samples as columns
+
+# Keep the 130 genes of interest
+vst_mat_130 <- vst_mat[sig_genes_leachate$gene_id, , drop = FALSE]
+dim(vst_mat_130)
+
+# Keep the stage genes of interest
+vst_mat_stage <- vst_mat[sig_genes_stage$gene_id, , drop=FALSE]
+dim(vst_mat_stage)
+```
+
+```{r}
+# Convert to dataframes and save 
+vst_mat_df <- vst_mat %>% 
+  as.data.frame() %>% 
+  rownames_to_column(var = "gene_id")
+
+vst_mat_130_df <- vst_mat_130 %>% 
+  as.data.frame() %>% 
+  rownames_to_column(var = "gene_id")
+
+vst_mat_stage_df <- vst_mat_stage %>% 
+  as.data.frame() %>% 
+  rownames_to_column(var = "gene_id")
+
+write_csv(vst_mat_df, file.path(output_path,"vst_mat_df.csv"))
+write_csv(vst_mat_130_df, file.path(output_path,"vst_mat_130_df.csv"))
+write_csv(vst_mat_stage_df, file.path(output_path,"vst_mat_stage_df.csv"))
+```
+
+Make library-size adjusted count matrices
+
+```{r}
+norm <- counts(dds, normalized = TRUE) # size factor normalized count matrix with genes as rows and samples as columns
+
+# Keep the 130 leachate genes of interest
+norm_130 <- norm[sig_genes_leachate$gene_id, , drop = FALSE]
+dim(norm_130)
+
+# Keep the stage genes of interest
+norm_stage <- norm[sig_genes_stage$gene_id, , drop = FALSE]
+dim(norm_stage)
+```
+
+```{r}
+# Convert to dataframes and save 
+norm_df <- norm %>% 
+  as.data.frame() %>% 
+  rownames_to_column(var = "gene_id")
+
+norm_130_df <- norm_130 %>% 
+  as.data.frame() %>% 
+  rownames_to_column(var = "gene_id")
+
+norm_stage_df <- norm_stage %>% 
+  as.data.frame() %>% 
+  rownames_to_column(var = "gene_id")
+
+write_csv(norm_df, file.path(output_path,"norm_df.csv"))
+write_csv(norm_130_df, file.path(output_path,"norm_130_df.csv"))
+write_csv(norm_stage_df, file.path(output_path,"norm_stage_df.csv"))
+```
+
+Make raw count matrices
+
+```{r}
+raw <- counts(dds) # raw count matrix with genes as rows and samples as columns
+
+# Keep the 130 genes of interest
+raw_130 <- raw[sig_genes_leachate$gene_id, , drop = FALSE]
+dim(raw_130)
+
+# Keep the 130 genes of interest
+raw_stage <- raw[sig_genes_stage$gene_id, , drop = FALSE]
+dim(raw_stage)
+```
+
+```{r}
+# Convert to dataframes and save 
+raw_df <- raw %>% 
+  as.data.frame() %>% 
+  rownames_to_column(var = "gene_id")
+
+raw_130_df <- raw_130 %>% 
+  as.data.frame() %>% 
+  rownames_to_column(var = "gene_id")
+
+raw_stage_df <- raw_stage %>% 
+  as.data.frame() %>% 
+  rownames_to_column(var = "gene_id")
+
+write_csv(raw_df, file.path(output_path,"raw_df.csv"))
+write_csv(raw_130_df, file.path(output_path,"raw_130_df.csv"))
+write_csv(raw_stage_df, file.path(output_path,"raw_stage_df.csv"))
+```
+
+## Stage
 
 # QC
 
@@ -692,17 +1173,23 @@ cor <- degCorCov(colData(dds))
 
 # Clustering
 
-Detect Patterns of Expression see Roberts Lab Issue [#1916](https://github.com/RobertsLab/resources/issues/1916)
+Detect Patterns of Expression see Roberts Lab Issue
+[#1916](https://github.com/RobertsLab/resources/issues/1916)
 
-Perform clustering. You'll need: - a metadata matrix with sample_id as rows - a gene count matrix that has been variance stabilized and filtered to your significant genes of interest `vst_mat_130` genes in rows, sample ID in columns
+Perform clustering. You'll need: - a metadata matrix with sample_id as
+rows - a gene count matrix that has been variance stabilized and
+filtered to your significant genes of interest `vst_mat_130` genes in
+rows, sample ID in columns
 
 ```{r}
 meta_mat <- metadata_or %>%
   column_to_rownames(var = "sample_id")
 ```
 
-Run with minimum 4 genes per cluster to detect because we have few DEGs.\
-- DEGreport vignette, [degPatterns](https://www.bioconductor.org/packages/release/bioc/vignettes/DEGreport/inst/doc/DEGreport.html#:~:text=%22expression%22)-,Detect%20patterns%20of%20expression,-In%20this%20section)
+Run with minimum 4 genes per cluster to detect because we have few
+DEGs.\
+- DEGreport vignette,
+[degPatterns](https://www.bioconductor.org/packages/release/bioc/vignettes/DEGreport/inst/doc/DEGreport.html#:~:text=%22expression%22)-,Detect%20patterns%20of%20expression,-In%20this%20section)
 
 ```{r}
 # Use the `degPatterns` function from the 'DEGreport' package to show gene clusters across sample groups
@@ -713,7 +1200,8 @@ stage_clusters <- degPatterns(vst_mat_130, metadata = meta_mat, time = "stage", 
 ggsave(filename="../../output/06_deg/cluster/degStagePatternscluster_plot.png", width=12, height=10)
 ```
 
-Broadly most genes displayed an increased transcript abundance as embryos developed.
+Broadly most genes displayed an increased transcript abundance as
+embryos developed.
 
 ```{r}
 # Use the `degPatterns` function from the 'DEGreport' package to show gene clusters across sample groups
@@ -724,7 +1212,21 @@ leachate_clusters <- degPatterns(vst_mat_130, metadata = meta_mat, time = "leach
 ggsave(filename="../../output/06_deg/cluster/degLeachatePatternscluster_plot.png", width=12, height=10)
 ```
 
-Extract the list of genes in each cluster for stage and for leachate. Notice that the gene counts for the patterns (1, 2, 3) are the same across stage and leachate... very interesting. The genes that have high relative transcript abundance in the earlygastrula stage group in group 1, high relative transcript abundance in prawnchip are group 2, and high relative abundance in cleavage are group 3. There is a general trend of more transcripts present as development progresses... which makes sense because the embryo as it grows is doing more. The subtle leachate effects we do see (non monotonic patterns in cleavage in group 1 and 2, slight increase under high pvc leachate exposure in early gastrula in group 3) appear to impact the transcript abundances of the stage with the lowest abundances of those genes... so the lower the gene abundance the more effect leachate has on those genes? Is that just an artifact of increased variability at lower transcript abundance? Are they the same genes? The following code should return TRUE if that is the case.
+Extract the list of genes in each cluster for stage and for leachate.
+Notice that the gene counts for the patterns (1, 2, 3) are the same
+across stage and leachate... very interesting. The genes that have high
+relative transcript abundance in the earlygastrula stage group in group
+1, high relative transcript abundance in prawnchip are group 2, and high
+relative abundance in cleavage are group 3. There is a general trend of
+more transcripts present as development progresses... which makes sense
+because the embryo as it grows is doing more. The subtle leachate
+effects we do see (non monotonic patterns in cleavage in group 1 and 2,
+slight increase under high pvc leachate exposure in early gastrula in
+group 3) appear to impact the transcript abundances of the stage with
+the lowest abundances of those genes... so the lower the gene abundance
+the more effect leachate has on those genes? Is that just an artifact of
+increased variability at lower transcript abundance? Are they the same
+genes? The following code should return TRUE if that is the case.
 
 ```{r}
 # Rename and extract information 
@@ -736,7 +1238,8 @@ stage_clusters_df <- stage_clusters$df %>%
 identical(leachate_clusters_df, stage_clusters_df)
 ```
 
-Group 1 peak at earlygastrula Group 2 peak at prawnchip Group 3 peak at cleavage Save the gene cluster annotation
+Group 1 peak at earlygastrula Group 2 peak at prawnchip Group 3 peak at
+cleavage Save the gene cluster annotation
 
 ```{r}
 # Rename and extract information 
@@ -764,7 +1267,6 @@ write_csv(gene_cluster_data, "../../output/06_deg/cluster/gene_cluster_zscores.c
 gene_cluster_data <- read_csv("../../output/06_deg/cluster/gene_cluster_zscores.csv")
 ```
 
-
 ```{r}
 leachate_colors <- c(control = "#BFE8D9",
                      low = "#DFB431",
@@ -777,6 +1279,8 @@ stage_colors <- c(cleavage = "#B7B5AC",
                   earlygastrula = "#343331"
                   )
 ```
+
+## Plot gene clusters
 
 ```{r}
 # reverse gene cluster order to plot from cleavage to eg
@@ -848,152 +1352,40 @@ ggsave("../../output/06_deg/cluster/stage_cluster.png", plot = ps, width=18, hei
 ggsave("../../output/06_deg/cluster/combo_cluster.png", plot = pc, width=18, height=12 , dpi=600)
 ```
 
-hmmm gotta arrange so its group 3 , 2, 1 ... and more space between groups so that its obvious to compare the top and bottom graphs. Pick distinct and pretty leachate and stage colors...
+hmmm gotta arrange so its group 3 , 2, 1 ... and more space between
+groups so that its obvious to compare the top and bottom graphs. Pick
+distinct and pretty leachate and stage colors...
+
+## Add gene cluster annotation to gene list summaries
+
+```{r}
+# leachate
+sig_summary_leachate <- sig_summary_leachate %>%
+  left_join(gene_clusters, by = "gene_id")
+
+write_csv(sig_summary_leachate, file.path(output_path, "sig_summary_leachate.csv"))
+
+# stage 
+sig_summary_stage <- sig_summary_stage %>% 
+  left_join(gene_clusters, by = "gene_id")
+
+write_csv(sig_summary_stage, file.path(output_path, "sig_summary_stage.csv"))
+```
 
 # Summary & Next Steps
 
 We can perform functional enrichment on these clusters now!
 
-# Summary
-
-So we have 9 different 'significant gene' lists. Each list indicates genes in which leachate had a significant effect.
-
-LRT: 
-- `sig_int`, 13 DEGs 
-- `sig_joint`. 44 DEGs
-
-Interaction effects 
-- `sig_prawnchip_low.int`, 7 DEGs 
-- `sig_earlygastrula_high.int`, 1 DEGs 
-- `sig_earlygastrula_low.int`, 8 DEGs
-
-Contrasts 
-- `sig_cleavage_low.vs.control`, 34 DEGs 
-- `sig_cleavage_mid.vs.control`, 58 DEGs 
-- `sig_cleavage_high.vs.control`, 7 DEGs 
-- `sig_earlygastrula_high.vs.control`, 27 DEGs
-
-## Save gene lists
-
-```{r}
-# 1) Put all of your sig data frames into a *named* list
-sig_lists <- list(
-  int                           = sig_int,
-  joint                         = sig_joint,
-  prawnchip_low.int             = sig_prawnchip_low.int,
-  earlygastrula_high.int        = sig_earlygastrula_high.int,
-  earlygastrula_low.int         = sig_earlygastrula_low.int,
-  cleavage_low.vs.control       = sig_cleavage_low.vs.control,
-  cleavage_mid.vs.control       = sig_cleavage_mid.vs.control,
-  cleavage_high.vs.control      = sig_cleavage_high.vs.control,
-  earlygastrula_high.vs.control = sig_earlygastrula_high.vs.control
-)
-
-# 2) Smoosh: add a 'list' column indicating the source and stack them
-sig_summary <- bind_rows(sig_lists, .id = "list") %>%
-  relocate(list, gene_id)%>% 
-  left_join(gene_clusters, by = "gene_id")
-
-write_csv(sig_summary, file.path(output_path, "sig_summary.csv"))
-```
-
-```{r}
-sig_genes <- dplyr::distinct(sig_summary, gene_id)
-nrow(sig_genes)
-write_csv(sig_genes, file.path(output_path, "sig_genes.csv"))
-```
-
-```{r}
-all_genes <- rownames(dds) # a charachter vector of all genes used in DESeq2 analysis
-# save this for functional enrichment 
-
-write_csv(tibble(gene_id = all_genes),  file.path(output_path, "all_genes.csv"))
-```
-
-There are 130 total DEGs across LRT and Wald tests where leachate popped up as a significant covariate.
-
-## Save count matrices
-
-Make variance stabilized count matrix of these 130 genes of interest
-
-```{r}
-# VST transform
-vsd <- vst(dds, blind = FALSE) # DESeqTransform Object
-vst_mat <- assay(vsd) # VST count matrix with genes as rows and samples as columns
-
-# Keep the 130 genes of interest
-vst_mat_130 <- vst_mat[sig_all$gene_id, , drop = FALSE]
-dim(vst_mat_130)
-```
-
-```{r}
-# Convert to dataframes and save 
-vst_mat_df <- vst_mat %>% 
-  as.data.frame() %>% 
-  rownames_to_column(var = "gene_id")
-
-vst_mat_130_df <- vst_mat_130 %>% 
-  as.data.frame() %>% 
-  rownames_to_column(var = "gene_id")
-
-write_csv(vst_mat_df, file.path(output_path,"vst_mat_df.csv"))
-write_csv(vst_mat_130_df, file.path(output_path,"vst_mat_130_df.csv"))
-```
-
-Make library-size adjusted count matrix of these 130 genes of interest
-
-```{r}
-norm <- counts(dds, normalized = TRUE) # size factor normalized count matrix with genes as rows and samples as columns
-
-# Keep the 130 genes of interest
-norm_130 <- norm[sig_all$gene_id, , drop = FALSE]
-dim(norm_130)
-```
-
-```{r}
-# Convert to dataframes and save 
-norm_df <- norm %>% 
-  as.data.frame() %>% 
-  rownames_to_column(var = "gene_id")
-
-norm_130_df <- norm_130 %>% 
-  as.data.frame() %>% 
-  rownames_to_column(var = "gene_id")
-
-write_csv(norm_df, file.path(output_path,"norm_df.csv"))
-write_csv(norm_130_df, file.path(output_path,"norm_130_df.csv"))
-```
-
-Make raw count matrix of these 130 genes of interest
-
-```{r}
-raw <- counts(dds) # raw count matrix with genes as rows and samples as columns
-
-# Keep the 130 genes of interest
-raw_130 <- raw[sig_all$gene_id, , drop = FALSE]
-dim(raw_130)
-```
-
-```{r}
-# Convert to dataframes and save 
-raw_df <- raw %>% 
-  as.data.frame() %>% 
-  rownames_to_column(var = "gene_id")
-
-raw_130_df <- raw_130 %>% 
-  as.data.frame() %>% 
-  rownames_to_column(var = "gene_id")
-
-write_csv(raw_df, file.path(output_path,"raw_df.csv"))
-write_csv(raw_130_df, file.path(output_path,"raw_130_df.csv"))
-```
-
 # Next steps
 
 -   Make a PCA and PERMANOVA of the DEGs ...
--   I'd simply like an easy absence/presence heatmap that shows all the genes, and which lists they are significant in.
--   I'd then like to show on the heatmap the log2FC, and add astericks for significance levels p\<0.05, p\<0.01, p\<0.001.
--   I'd like gene count plots visually summarizing each list type (LRT, Interaction, Stagexleachate effects) in tiny tidy multiples
+-   I'd simply like an easy absence/presence heatmap that shows all the
+    genes, and which lists they are significant in.
+-   I'd then like to show on the heatmap the log2FC, and add astericks
+    for significance levels p\<0.05, p\<0.01, p\<0.001.
+-   I'd like gene count plots visually summarizing each list type (LRT,
+    Interaction, Stagexleachate effects) in tiny tidy multiples
 -   Do these genes cluster into expression patterns? ... Clustering
 -   What do these genes do ? ... GO enrichment
--   Are there correlations between these differentially expressed genes and differentially abundant taxa?
+-   Are there correlations between these differentially expressed genes
+    and differentially abundant taxa?
