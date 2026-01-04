@@ -1,0 +1,30 @@
+---
+title: "GSEA"
+format: html
+---
+...
+# Extract all results for use in GSEA ?
+
+> Example from Xu et al. 2024:
+> `all_results <- lapply(time_points, function(time_point) { 
+ result <- results(dds, tidy = TRUE, 
+ contrast = c("group", time_point, "0h")) 
+ setNames(object = result$log2FoldChange, nm = result$row) |>   sort(decreasing = TRUE)` 
+
+
+```{r}
+leachate_levels <- setdiff(levels(metadata_or$leachate), "control")
+
+all_results <- lapply(leachate_levels, function(lvl) { 
+  res <- results(
+    dds,
+    tidy     = TRUE,
+    contrast = c("leachate", lvl, "control")  # <— uses leachate, not group
+  )
+  
+  setNames(object = res$log2FoldChange, nm = res$row) |>
+    sort(decreasing = TRUE)
+})
+names(all_results) <- leachate_levels
+
+```
