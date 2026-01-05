@@ -36,8 +36,7 @@ knitr::opts_chunk$set(
   echo = TRUE, # Display code chunks
   eval = TRUE, # Evaluate code chunks
   warning = FALSE, # Hide warnings
-  message = FALSE, # Hide messages
-  cache = TRUE) # chunk re-runs if inputs change
+  message = FALSE) # Hide messages
 ```
 
 # Background
@@ -128,7 +127,7 @@ library by `HISAT2`
 -   `check.names = FALSE` removed the 'X' from in front of sample id's
     in the column headers
 
-```{r, eval=TRUE, cache=FALSE}
+```{r, eval=TRUE}
 gcm_filtor <- read.csv("../../output/05_explore/gcm_filtor.csv", row.names="gene_id", check.names=FALSE) 
 head(gcm_filtor)
 ```
@@ -391,7 +390,7 @@ dds_main <- DESeqDataSetFromMatrix(countData = gcm_filtor,
                               design = formula( ~ spawn_night + stage + leachate))
 ```
 
-```{r}
+```{r, eval=TRUE}
 dds_main_LRT <- DESeq(dds_main, test = "LRT", reduced = ~ spawn_night + stage)
 ```
 
@@ -453,7 +452,7 @@ leachate signal jointly) is coherent.
 > the log fold change is a single comparison from among those variables
 > and levels.
 
-```
+```{r}
 ?results
 ```
 
@@ -606,9 +605,7 @@ sig_prawnchip_low.int <- res_prawnchip_low.int %>%
   as.data.frame() %>%
   filter(padj < 0.05) %>% 
   rownames_to_column(var = "gene_id")
-```
 
-```{r, eval=FALSE}
 write_csv(sig_prawnchip_low.int, file.path(output_path, "sig_prawnchip_low.int.csv"))
 ```
 
@@ -630,9 +627,7 @@ sig_earlygastrula_high.int <- res_earlygastrula_high.int %>%
   as.data.frame() %>%
   filter(padj < 0.05) %>% 
   rownames_to_column(var = "gene_id")
-```
 
-```{r, eval=FALSE}
 write_csv(sig_earlygastrula_high.int, file.path(output_path, "sig_earlygastrula_high.int.csv"))
 ```
 
@@ -663,9 +658,7 @@ sig_earlygastrula_low.int <- res_earlygastrula_low.int %>%
   as.data.frame() %>%
   filter(padj < 0.05) %>% 
   rownames_to_column(var = "gene_id")
-```
 
-```{r, eval=FALSE}
 write_csv(sig_earlygastrula_low.int, file.path(output_path, "sig_earlygastrula_low.int.csv"))
 ```
 
@@ -716,9 +709,7 @@ sig_cleavage_high.vs.control <- res_cleavage_high.vs.control %>%
   as.data.frame() %>%
   filter(padj < 0.05) %>% 
   rownames_to_column(var = "gene_id")
-```
 
-```{r, eval=FALSE}
 write_csv(sig_cleavage_high.vs.control, file.path(output_path, "sig_cleavage_high.vs.control.csv"))
 ```
 
@@ -742,9 +733,7 @@ sig_cleavage_mid.vs.control <- res_cleavage_mid.vs.control %>%
   as.data.frame() %>%
   filter(padj < 0.05) %>% 
   rownames_to_column(var = "gene_id")
-```
 
-```{r, eval=FALSE}
 write_csv(sig_cleavage_mid.vs.control, file.path(output_path, "sig_cleavage_mid.vs.control.csv"))
 ```
 
@@ -772,9 +761,7 @@ sig_cleavage_low.vs.control <- res_cleavage_low.vs.control %>%
   as.data.frame() %>%
   filter(padj < 0.05) %>% 
   rownames_to_column(var = "gene_id")
-```
 
-```{r, eval=FALSE}
 write_csv(sig_cleavage_low.vs.control, file.path(output_path, "sig_cleavage_low.vs.control.csv"))
 ```
 
@@ -833,9 +820,7 @@ sig_earlygastrula_high.vs.control <- res_earlygastrula_high.vs.control %>%
   as.data.frame() %>%
   filter(padj < 0.05) %>% 
   rownames_to_column(var = "gene_id")
-```
 
-```{r, eval=FALSE}
 write_csv(sig_earlygastrula_high.vs.control, file.path(output_path, "sig_earlygastrula_high.vs.control.csv"))
 ```
 
@@ -926,13 +911,6 @@ sig_pc.vs.eg <- res_pc.vs.eg %>%
 nrow(sig_pc.vs.eg)
 ```
 
-```{r, eval=FALSE}
-write_csv(sig_stage, file.path(output_path, "sig_stage.csv"))
-write_csv(sig_prawnchip, file.path(output_path, "sig_prawnchip.csv"))
-write_csv(sig_earlygastrula, file.path(output_path, "sig_earlygastrula.csv"))
-write_csv(sig_pc.vs.eg, file.path(output_path, "sig_pc.vs.eg.csv"))
-```
-
 # Results gene lists
 
 ## Leachate
@@ -1008,9 +986,7 @@ sig_summary_leachate <- bind_rows(sig_lists_leachate, .id = "list") %>%
 ```{r}
 sig_genes_leachate <- dplyr::distinct(sig_summary_leachate, gene_id)
 nrow(sig_genes_leachate)
-```
 
-```{r, eval=FALSE}
 write_csv(sig_genes_leachate, file.path(output_path, "sig_genes_leachate.csv"))
 ```
 
@@ -1039,9 +1015,7 @@ sig_summary_stage <- bind_rows(sig_lists_stage, .id = "list") %>%
 ```{r}
 sig_genes_stage <- dplyr::distinct(sig_summary_stage, gene_id)
 nrow(sig_genes_stage)
-```
 
-```{r, eval=FALSE}
 write_csv(sig_genes_stage, file.path(output_path, "sig_genes_stage.csv"))
 ```
 
@@ -1059,9 +1033,7 @@ universe' background for functional enrichment.
 all_genes <- rownames(dds) # a character vector of all genes used in DESeq2 analysis
 # save this for functional enrichment 
 all_genes %>% tibble(gene_id = all_genes) %>% nrow()
-```
 
-```{r, eval=FALSE}
 write_csv(tibble(gene_id = all_genes),  file.path(output_path, "all_genes.csv"))
 ```
 
@@ -1091,7 +1063,7 @@ dim(vst_mat_stage)
 ```
 
 ```{r}
-# Convert to dataframes 
+# Convert to dataframes and save 
 vst_mat_df <- vst_mat %>% 
   as.data.frame() %>% 
   rownames_to_column(var = "gene_id")
@@ -1103,10 +1075,7 @@ vst_mat_130_df <- vst_mat_130 %>%
 vst_mat_stage_df <- vst_mat_stage %>% 
   as.data.frame() %>% 
   rownames_to_column(var = "gene_id")
-```
 
-```{r, eval=FALSE}
-# and save 
 write_csv(vst_mat_df, file.path(output_path,"vst_mat_df.csv"))
 write_csv(vst_mat_130_df, file.path(output_path,"vst_mat_130_df.csv"))
 write_csv(vst_mat_stage_df, file.path(output_path,"vst_mat_stage_df.csv"))
@@ -1127,7 +1096,7 @@ dim(norm_stage)
 ```
 
 ```{r}
-# Convert to dataframes 
+# Convert to dataframes and save 
 norm_df <- norm %>% 
   as.data.frame() %>% 
   rownames_to_column(var = "gene_id")
@@ -1139,10 +1108,7 @@ norm_130_df <- norm_130 %>%
 norm_stage_df <- norm_stage %>% 
   as.data.frame() %>% 
   rownames_to_column(var = "gene_id")
-```
 
-```{r, eval=FALSE}
-# and save 
 write_csv(norm_df, file.path(output_path,"norm_df.csv"))
 write_csv(norm_130_df, file.path(output_path,"norm_130_df.csv"))
 write_csv(norm_stage_df, file.path(output_path,"norm_stage_df.csv"))
@@ -1164,7 +1130,7 @@ dim(raw_stage)
 ```
 
 ```{r}
-# Convert to dataframes  
+# Convert to dataframes and save 
 raw_df <- raw %>% 
   as.data.frame() %>% 
   rownames_to_column(var = "gene_id")
@@ -1176,16 +1142,18 @@ raw_130_df <- raw_130 %>%
 raw_stage_df <- raw_stage %>% 
   as.data.frame() %>% 
   rownames_to_column(var = "gene_id")
-```
 
-```{r, eval=FALSE}
-# and save
 write_csv(raw_df, file.path(output_path,"raw_df.csv"))
 write_csv(raw_130_df, file.path(output_path,"raw_130_df.csv"))
 write_csv(raw_stage_df, file.path(output_path,"raw_stage_df.csv"))
 ```
 
 # QC
+
+```{r}
+norm <- counts(dds, normalized = TRUE)
+design <- as.data.frame(colData(dds))
+```
 
 Covariates effect on count data
 
@@ -1225,7 +1193,7 @@ DEGs.\
 leachate130_GEPbystage <- degPatterns(vst_mat_130, metadata = meta_mat, time = "stage", col= "leachate", plot=TRUE, minc = 10)
 ```
 
-```{r, eval=FALSE}
+```{r}
 ggsave(filename="../../output/06_deg/cluster/DEG_LeachateClusterPatterns_bystage_plot.png", width=12, height=10)
 ```
 
@@ -1237,7 +1205,7 @@ embryos developed.
 leachate130_GEPbydose <- degPatterns(vst_mat_130, metadata = meta_mat, time = "leachate", col="stage", plot=TRUE, minc = 10)
 ```
 
-```{r, eval=FALSE}
+```{r}
 ggsave(filename="../../output/06_deg/cluster/DEG_LeachateClusterPatterns_bydose_plot.png", width=12, height=10)
 ```
 
@@ -1289,7 +1257,7 @@ stage_GEP_df <- stage_GEPbydose$df %>%
 
 Save the gene expression patterns
 
-```{r, eval=FALSE}
+```{r}
 write_csv(leachate_GEP_clusters, file.path("../../output/06_deg/cluster/gene_clusters.csv"))
 
 write_csv(stage_GEP_clusters, file.path("../../output/06_deg/cluster/gene_clusters.csv"))
@@ -1302,9 +1270,7 @@ gene_cluster_data <- leachate_clusters[["normalized"]]
 gene_cluster_data <- as.data.frame(gene_cluster_data) %>% 
   select(1:12) %>% 
   rename(zscore = value)
-```
 
-```{r, eval=FALSE}
 write_csv(gene_cluster_data, "../../output/06_deg/cluster/gene_cluster_zscores.csv")
 ```
 
@@ -1391,7 +1357,7 @@ pc
 
 ```
 
-```{r, eval=FALSE}
+```{r}
 ggsave("../../output/06_deg/cluster/leachate_cluster.png", plot = pl, width=18, height=6 , dpi=600)
 ggsave("../../output/06_deg/cluster/stage_cluster.png", plot = ps, width=18, height=6 , dpi=600)
 ggsave("../../output/06_deg/cluster/combo_cluster.png", plot = pc, width=18, height=12 , dpi=600)
@@ -1434,3 +1400,4 @@ We can perform functional enrichment on these clusters now!
 -   What do these genes do ? ... GO enrichment
 -   Are there correlations between these differentially expressed genes
     and differentially abundant taxa?
+
