@@ -43,6 +43,7 @@ knitr::opts_chunk$set(
 ```{r}
 library(tidyverse)
 library(DEGreport)
+library(WGCNA)
 ```
 
 
@@ -159,6 +160,134 @@ stage_GEPbystage <- degPatterns(
   plot = FALSE, 
   minc = 10)
 ```
+
+::: callout-note
+STUCK! 
+WGCNA blockwiseModules (network clustering, handles 10k+ well)
+
+If you want modules that behave like coexpression “communities” (often great for GO enrichment), WGCNA’s blockwise workflow is designed to scale and can use multiple threads.
+:::
+
+# WGCNA
+
+- [tutorial by Jennifer Chang](https://bioinformaticsworkbook.org/tutorials/wgcna.html#gsc.tab=0)
+
+Install WGCNA & package dependencies
+```{r}
+#install.packages(c("fields", "impute", "dynamicTreeCut", "qvalue", "flashClust", "Hmisc") )
+#BiocManager::install("impute", ask = FALSE, update = FALSE)
+#install.packages("WGCNA")
+```
+
+```{r}
+library(WGCNA)
+enableWGCNAThreads(nThreads = 8)
+```
+
+Transpose VST count matrix such that rows are samples and columns are genes
+```{r}
+vst_t_stage <- t(vst_mat_stage)  # WGCNA expects samples x genes
+```
+
+Pick a threshold value 
+
+
+Create the network using `blockwiseModules`
+
+```{r}
+net <- blockwiseModules(
+  vst_t_stage,
+  power = 6,                 # choose via pickSoftThreshold
+  TOMType = "signed",
+  minModuleSize = 30,
+  mergeCutHeight = 0.25,
+  numericLabels = TRUE,
+  saveTOMs = FALSE,
+  verbose = 2
+)
+```
+
+```{r}
+stage_deg_modules <- data.frame(
+  gene_id = rownames(vst_mat),            # your DEG gene IDs
+  module  = labels2colors(net$colors)     # convert numeric → color
+) %>%
+  mutate(
+    module = factor(module)
+  )
+```
+
+
+```{r}
+# Convert labels to colors for plotting
+mergedColors = labels2colors(net$colors)
+# Plot the dendrogram and the module colors underneath
+plotDendroAndColors(
+  net$dendrograms[[1]],
+  mergedColors[net$blockGenes[[1]]],
+  "Module colors",
+  dendroLabels = FALSE,
+  hang = 0.03,
+  addGuide = TRUE,
+  guideHang = 0.05 )
+```
+
+## Relate module (color cluster) assignments to treatment groups 
+
+```{r}
+module <- data.frame(
+  gene_id = names(net$colors),  # per-gene module labels
+  colors = labels2colors(net$colors)
+)
+
+module %>%
+  dplyr::group_by(colors) %>%
+  dplyr::summarise(n_genes = dplyr::n(), .groups = "drop")
+```
+
+> WGCNA will calcuate an Eigengene (hypothetical central gene) for each module
+
+```{r}
+# Get Module Eigengenes per cluster
+eig <- moduleEigengenes(vst_t_stage, mergedColors)$eigengenes
+```
+
+```{r}
+# Reorder modules so similar modules are next to each other
+eig <- orderMEs(eig)
+module_order = names(eig) %>% gsub("ME","", .)
+
+# Add treatment annotations
+metaeig <- cbind(eig, meta_mat[rownames(eig), , drop = FALSE]) # reorders meta_mat rownames to match eig rownames
+
+# make dataframe
+meig_df <- metaeig %>% 
+  rownames_to_column(var = "sample_id")
+```
+
+```{r}
+# tidy & plot data
+meig_df_long <-  meig_df %>%
+  pivot_longer(-c(sample_id, 11:18)) %>% 
+  mutate(
+    name = gsub("ME", "", name)
+  )
+
+meig_df_long %>% ggplot(., aes(x=sample_id, y=name, fill=value)) +
+  geom_tile() +
+  theme_bw() +
+  scale_fill_gradient2(
+    low = "blue",
+    high = "red",
+    mid = "white",
+    midpoint = 0,
+    limit = c(-1,1)) +
+  theme(axis.text.x = element_text(angle=90)) +
+  labs(title = "Module-trait Relationships", y = "Modules", fill="corr")
+```
+
+## Examine Expression Profiles
+
 
 ```{r}
 ggsave(filename="../../output/06_deg/cluster/DEG_StageClusterPatterns_bystage_plot.png", width=12, height=10)
