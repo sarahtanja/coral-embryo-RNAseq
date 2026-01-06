@@ -149,6 +149,17 @@ all_seqs <- readDNAStringSet("../../input/genome/Montipora_capitata_HIv3.assembl
 sig_seqs <- all_seqs[names(all_seqs) %in% sig_genes$gene_id]
 ```
 
+Import DEG cluster annotations
+...Add gene cluster annotation to gene list summaries
+
+```{r}
+# leachate
+sig_summary_leachate <- sig_summary_leachate %>%
+  left_join(gene_clusters, by = "gene_id")
+
+write_csv(sig_summary_leachate, file.path(output_path, "sig_summary_leachate.csv"))
+```
+
 # Annotate gene lists
 
 Match genes in all_genes to EggNog annotation dataframe
