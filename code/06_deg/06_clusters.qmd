@@ -40,12 +40,31 @@ knitr::opts_chunk$set(
 ```
 
 # Load Libraries
+
 ```{r}
 library(tidyverse)
 library(DEGreport)
-library(WGCNA)
+library(patchwork)
 ```
 
+Install WGCNA & package dependencies
+
+::: callout-note
+If you have not installed WGCNA before, you may need to install some
+dependencies first. Uncomment and run the code chunk below to install
+them, and then install WGCNA.
+:::
+
+```{r}
+#install.packages(c("fields", "dynamicTreeCut", "qvalue", "flashClust", "Hmisc") )
+#BiocManager::install("impute", ask = FALSE, update = FALSE)
+#install.packages("WGCNA")
+```
+
+```{r}
+library(WGCNA)
+enableWGCNAThreads(nThreads = 8)
+```
 
 # Inputs
 
@@ -82,9 +101,10 @@ vst_mat_stage_df <- read_csv("../../output/06_deg/spawnnight/vst_mat_stage_df.cs
 Detect Patterns of Expression see Roberts Lab Issue
 [#1916](https://github.com/RobertsLab/resources/issues/1916)
 
-Perform clustering. You'll need: 
+Perform clustering. You'll need:
 
-- a metadata matrix with sample_id as rows 
+-   a metadata matrix with sample_id as rows
+
 ```{r}
 meta_mat <- metadata_or %>%
   column_to_rownames(var = "sample_id")
@@ -92,9 +112,9 @@ meta_mat <- metadata_or %>%
 head(meta_mat)
 ```
 
-- a gene count matrix that has been variance stabilized and
-filtered to your significant genes of interest with genes in
-rows and sample ID in columns
+-   a gene count matrix that has been variance stabilized and filtered
+    to your significant genes of interest with genes in rows and sample
+    ID in columns
 
 ```{r}
 vst_mat_130 <- vst_mat_130_df %>%
@@ -112,12 +132,13 @@ dim(vst_mat_stage)
 vst_mat_stage[1:6,1:6]
 ```
 
-## Leachate DEGs 
+## Leachate DEGs
+
 Run with minimum 10 genes per cluster to detect because we have few
 DEGs.
 
-- DEGreport vignette,
-[degPatterns](https://www.bioconductor.org/packages/release/bioc/vignettes/DEGreport/inst/doc/DEGreport.html#:~:text=%22expression%22)
+-   DEGreport vignette,
+    [degPatterns](https://www.bioconductor.org/packages/release/bioc/vignettes/DEGreport/inst/doc/DEGreport.html#:~:text=%22expression%22)
 
 ```{r}
 # Use the `degPatterns` function from the 'DEGreport' package to show gene clusters across developmental stage
@@ -127,7 +148,6 @@ leachate130_GEPs <- degPatterns(vst_mat_130, metadata = meta_mat, time = "stage"
 ```{r, eval=FALSE}
 ggsave(filename="../../output/06_deg/cluster/DEG_LeachateClusterPatterns_bystage_plot.png", width=12, height=10)
 ```
-
 
 ```{r}
 # Use the `degPatterns` function from the 'DEGreport' package to show gene clusters across leachate dose
@@ -139,6 +159,7 @@ ggsave(filename="../../output/06_deg/cluster/DEG_LeachateClusterPatterns_bydose_
 ```
 
 ### Save leachate DEG clusters
+
 ```{r}
 # Rename and extract information 
 leachate130_GEP_df <- leachate130_GEPs$df %>%
@@ -148,11 +169,13 @@ leachate130_GEP_df <- leachate130_GEPs$df %>%
 ```{r, eval=FALSE}
 write_csv(leachate130_GEP_df, file.path("../../output/06_deg/cluster/leachate_DEG_GEP.csv"))
 ```
-*GEP: gene expression pattern
+
+\*GEP: gene expression pattern
 
 ### Extract z scores
 
 Dataframe values are Z score of VST normalized gene counts
+
 ```{r}
 leachate_cluster_z <- leachate130_GEPs[["normalized"]]
 leachate_cluster_z <- as.data.frame(leachate_cluster_z) %>% 
@@ -160,25 +183,27 @@ leachate_cluster_z <- as.data.frame(leachate_cluster_z) %>%
   rename(zscore = value)
 ```
 
-Save dataframe of zscores and cluster for each DEG across each stageXdose
+Save dataframe of zscores and cluster for each DEG across each
+stageXdose
+
 ```{r, eval=FALSE}
 write_csv(leachate_cluster_z, "../../output/06_deg/cluster/leachate_cluster_zscores.csv")
 ```
 
-
 Extract the list of genes in each cluster.
 
-The genes that have high relative transcript abundance in the earlygastrula stage group in group
-1, high relative transcript abundance in prawnchip are group 2, and high
-relative abundance in cleavage are group 3. There is a general trend of
-more transcripts present as development progresses... which makes sense
-because the embryo as it grows is doing more. The subtle leachate
-effects we do see (non monotonic patterns in cleavage in group 1 and 2,
-slight increase under high pvc leachate exposure in early gastrula in
-group 3) appear to impact the transcript abundances of the stage with
-the lowest abundances of those genes... so the lower the gene abundance
-the more effect leachate has on those genes? Is that just an artifact of
-increased variability at lower transcript abundance? 
+The genes that have high relative transcript abundance in the
+earlygastrula stage group in group 1, high relative transcript abundance
+in prawnchip are group 2, and high relative abundance in cleavage are
+group 3. There is a general trend of more transcripts present as
+development progresses... which makes sense because the embryo as it
+grows is doing more. The subtle leachate effects we do see (non
+monotonic patterns in cleavage in group 1 and 2, slight increase under
+high pvc leachate exposure in early gastrula in group 3) appear to
+impact the transcript abundances of the stage with the lowest abundances
+of those genes... so the lower the gene abundance the more effect
+leachate has on those genes? Is that just an artifact of increased
+variability at lower transcript abundance?
 
 ### Plot leachate DEG clusters
 
@@ -187,6 +212,7 @@ leachate_cluster_z <- read_csv("../../output/06_deg/cluster/leachate_cluster_zsc
 ```
 
 Set color scheme
+
 ```{r}
 leachate.colors <- c(control = "#AEF1FF", 
                 low = "#BBC7FF",
@@ -198,7 +224,8 @@ stage.colors <- c(cleavage = "#EBA600",
                   earlygastrula = "#A2223C")
 ```
 
-Wrangle and label 
+Wrangle and label
+
 ```{r}
 # reverse gene cluster order to plot from cleavage to eg
 leachate_cluster_zordered <- leachate_cluster_z %>%
@@ -212,6 +239,7 @@ facet_labs <- leachate_cluster_zordered %>%
 ```
 
 Plot and patch
+
 ```{r, warning=FALSE, fig.height=8, fig.width = 12}
 
 # leachate as x plot
@@ -265,14 +293,15 @@ pc
 ```
 
 Save plots as pngs
+
 ```{r}
 ggsave("../../output/06_deg/cluster/leachate_bystage_clusters.png", plot = pl, width=18, height=6 , dpi=600)
 ggsave("../../output/06_deg/cluster/leachate_bydose_clusters.png", plot = ps, width=18, height=6 , dpi=600)
 ggsave("../../output/06_deg/cluster/leachate_combo_clusters.png", plot = pc, width=18, height=12 , dpi=600)
 ```
 
-
 ## Stage DEGs clustering
+
 ```{r}
 # Use the `degPatterns` function from the 'DEGreport' package
 stage_GEPbystage <- degPatterns(
@@ -284,84 +313,297 @@ stage_GEPbystage <- degPatterns(
 ```
 
 ::: callout-note
-STUCK! 
-WGCNA blockwiseModules (network clustering, handles 10k+ well)
+STUCK! WGCNA blockwiseModules (network clustering, handles 10k+ well)
 
-If you want modules that behave like coexpression “communities” (often great for GO enrichment), WGCNA’s blockwise workflow is designed to scale and can use multiple threads.
+If you want modules that behave like coexpression “communities” (often
+great for GO enrichment), WGCNA’s blockwise workflow is designed to
+scale and can use multiple threads.
 :::
-
-```{r}
-ggsave(filename="../../output/06_deg/cluster/DEG_StageClusterPatterns_bystage_plot.png", width=12, height=10)
-```
-
-```{r}
-# Use the `degPatterns` function from the 'DEGreport' package to show gene clusters across sample groups
-stage_GEPbydose <- degPatterns(
-  vst_mat_130, 
-  metadata = meta_mat, 
-  time = "leachate", 
-  col= "stage", 
-  plot=TRUE, 
-  minc = 10)
-```
-
-```{r}
-ggsave(filename="../../output/06_deg/cluster/DEG_StageClusterPatterns_bydose_plot.png", width=12, height=10)
-```
 
 # WGCNA
 
-- [tutorial by Jennifer Chang](https://bioinformaticsworkbook.org/tutorials/wgcna.html#gsc.tab=0)
+-   [tutorial by Jennifer
+    Chang](https://bioinformaticsworkbook.org/tutorials/wgcna.html#gsc.tab=0)
 
-Install WGCNA & package dependencies
-```{r}
-#install.packages(c("fields", "impute", "dynamicTreeCut", "qvalue", "flashClust", "Hmisc") )
-#BiocManager::install("impute", ask = FALSE, update = FALSE)
-#install.packages("WGCNA")
-```
+::: callout-note
+Note that here we are starting with a subset of genes that have already
+been normalized using a variance stabilizing transformation and are
+differentially expressed.
+:::
 
-```{r}
-library(WGCNA)
-enableWGCNAThreads(nThreads = 8)
-```
+Transpose VST count matrix such that rows are samples and columns are
+genes
 
-Transpose VST count matrix such that rows are samples and columns are genes
 ```{r}
 vst_t_stage <- t(vst_mat_stage)  # WGCNA expects samples x genes
+
+vst_t_leachate <- t(vst_mat_130)
 ```
 
-Pick a threshold value 
+Examine the dataframe structure to confirm that rows are samples and
+columns are genes and values are VST normalized counts
 
+```{r}
+vst_t_stage %>%
+  as.data.frame() %>%
+  dplyr::select(1:3) %>%
+  head() %>%
+  knitr::kable()
+```
 
-Create the network using `blockwiseModules`
+```{r}
+vst_t_leachate %>% 
+  as.data.frame() %>% 
+  dplyr::select(1:3) %>% 
+  head() %>% 
+  knitr::kable()
+```
+
+## Pick soft threshhold 
+
+> We can see now that the rows = treatments and columns = gene probes.
+> We’re ready to start WGCNA. A correlation network will be a complete
+> network (all genes are connected to all other genes). Ergo we will
+> need to pick a threshhold value (if correlation is below threshold,
+> remove the edge). We assume the true biological network follows a
+> scale-free structure (see papers by Albert Barabasi). To do that,
+> WGCNA will try a range of soft thresholds and create a diagnostic
+> plot. - [Jennifer
+> Chang](https://bioinformaticsworkbook.org/tutorials/wgcna.html#gsc.tab=0:~:text=We%20can%20see,a%20diagnostic%20plot.)
+
+::: callout-note
+This step will take several minutes to run
+:::
+
+```{r}
+# Choose a set of soft-thresholding powers
+powers = c(c(1:10), seq(from = 12, to = 20, by = 2))
+
+# Call the network topology analysis function
+sft_stage = pickSoftThreshold(
+  vst_t_stage,             # <= Input data
+  powerVector = powers,
+  networkType = "signed",
+  #corFnc = cor,
+  verbose = 5)
+
+# Call the network topology analysis function
+sft_leachate = pickSoftThreshold(
+  vst_t_leachate,             # <= Input data
+  powerVector = powers,
+  networkType = "signed",
+  #corFnc = cor,
+  verbose = 5)
+```
+
+```{r}
+par(mfrow = c(1,2));
+cex1 = 0.9;
+
+plot(sft_stage$fitIndices[, 1],
+     -sign(sft_stage$fitIndices[, 3]) * sft_stage$fitIndices[, 2],
+     xlab = "Soft Threshold (power)",
+     ylab = "Scale Free Topology Model Fit, signed R^2",
+     main = paste("Scale independence stage")
+)
+text(sft_stage$fitIndices[, 1],
+     -sign(sft_stage$fitIndices[, 3]) * sft_stage$fitIndices[, 2],
+     labels = powers, cex = cex1, col = "red"
+)
+abline(h = 0.6, col = "red")
+plot(sft_stage$fitIndices[, 1],
+     sft_stage$fitIndices[, 5],
+     xlab = "Soft Threshold (power)",
+     ylab = "Mean Connectivity",
+     type = "n",
+     main = paste("Mean connectivity stage")
+)
+text(sft_stage$fitIndices[, 1],
+     sft_stage$fitIndices[, 5],
+     labels = powers,
+     cex = cex1, col = "red")
+```
+
+```{r}
+par(mfrow = c(1,2));
+cex1 = 0.9;
+
+plot(sft_leachate$fitIndices[, 1],
+     -sign(sft_leachate$fitIndices[, 3]) * sft_leachate$fitIndices[, 2],
+     xlab = "Soft Threshold (power)",
+     ylab = "Scale Free Topology Model Fit, signed R^2",
+     main = paste("Scale independence leachate")
+)
+text(sft_leachate$fitIndices[, 1],
+     -sign(sft_leachate$fitIndices[, 3]) * sft_leachate$fitIndices[, 2],
+     labels = powers, cex = cex1, col = "red"
+)
+abline(h = 0.6, col = "red")
+plot(sft_leachate$fitIndices[, 1],
+     sft_leachate$fitIndices[, 5],
+     xlab = "Soft Threshold (power)",
+     ylab = "Mean Connectivity",
+     type = "n",
+     main = paste("Mean connectivity leachate")
+)
+text(sft_leachate$fitIndices[, 1],
+     sft_leachate$fitIndices[, 5],
+     labels = powers,
+     cex = cex1, col = "red")
+```
+::: callout-note
+For stage DEGs (~10k genes)
+
+WGCNA is appropriate
+
+You should run enrichment on those modules
+
+You should treat those as “real” developmental programs
+
+✅ For leachate DEGs (~130 genes)
+
+degPatterns() / clustering on expression profiles is the right tool
+
+These clusters are pattern-based, not network-based
+
+You should not claim scale-free structure or co-expression modules
+
+Your instinct to keep these conceptually separate was correct.
+
+How I would describe this in methods (important)
+
+You don’t need to show this plot in the paper, but if asked:
+
+“Because the leachate-responsive gene set was small and pre-filtered for differential expression, scale-free topology criteria were not met across soft-threshold powers. Therefore, leachate-associated expression patterns were summarized using trajectory-based clustering (degReport) rather than co-expression network inference.”
+:::
+
+For **signed networks**, the authors explicitly recommend:
+
+-    Accepting **lower** R^2 (often 0.6–0.7)
+
+-   Prioritizing **reasonable connectivity**
+
+-   Choosing a power near the **knee**, not the ceiling
+
+<!-- -->
+
+-   Each red number is a candidate power (1–20)
+-   The red horizontal line is the cut-off of 0.6 for the scale-free
+    topology fit index
+-   As power increases, the network becomes more scale-free[^1]
+-   We want to find the lowest power where the curve crosses the red
+    line or plateaus near it
+
+[^1]:
+    ## what “scale-free” means
+
+    In a **scale-free network**:
+
+    -   **Most genes have very few connections**
+
+    -   **A small number of genes (hubs) have many connections**
+
+    -    There is **no “typical” number of connections** (no
+        characteristic scale)
+
+    -    This contrasts with a random or regular network, where most
+        nodes have roughly the same number of connections.
+
+::: callout-note
+“A soft-thresholding power of 8 was selected, as it was the lowest value
+achieving a high scale-free topology fit (R2≈0.9) while maintaining
+sufficient mean connectivity.”
+:::
+
+## Create the network using `blockwiseModules`
+
+Network type + TOM type (most important conceptual choice)
+
+ **`signed`**`network & corType`
+
+Signed networks are recommended for gene expression because they
+preserve direction: positively co-expressed genes cluster together;
+negative correlations don’t create “same module” structure. If you care
+about “genes moving together” (typical): **signed.** If you want modules
+that allow anti-correlated genes together: **unsigned**
+
+Use:
+
+-    `networkType = "signed"`
+
+-   `TOMType = "signed"`
+
+Correlation choice for VST
+
+For VST expression, the standard is:
+
+-   `corType = "pearson"` **if you trust the data are clean**
+
+### `minModuleSize`
+
+Because you’re using **DEGs only**, you often have fewer genes and
+stronger signal. Common choices:
+
+-   20–30 for DEG lists (\~100–3000 genes)
+
+-   50 if you want only big, robust modules
+
+### `deepSplit`
+
+Controls how aggressively the dendrogram is cut:
+
+-    1 = conservative (fewer, larger modules)
+
+-   2 = default sweet spot
+
+-   3–4 = more modules (often too fragmented for DEG-only sets)
+
+-   **Start with 2.** If you get one giant module, go to 3. If you get
+    tons of tiny modules, go to 1.
+
+### `mergeCutHeight`
+
+-   Controls module merging by eigengene similarity. Smaller = stricter
+    (less merging).
+
+-   0.25 = common default (more merging)
+
+-    **0.15** = stricter (keeps modules separate)
+
+-   0.10 = very strict
+
+-   For DEG-only, **0.15** is often good (keeps distinct patterns).
 
 ```{r}
 net <- blockwiseModules(
   vst_t_stage,
-  power = 6,                 # choose via pickSoftThreshold
+  power = 10, # choose via pickSoftThreshold
+  networkType = "signed", # cluster positively co-expressed genes together
   TOMType = "signed",
-  minModuleSize = 30,
-  mergeCutHeight = 0.25,
+  corType = "pearson",
+  deepSplit = 1,
+  minModuleSize = 50,
+  mergeCutHeight = 0.3,
   numericLabels = TRUE,
   saveTOMs = FALSE,
-  verbose = 2
+  verbose = 3
 )
 ```
 
 ```{r}
 stage_deg_modules <- data.frame(
-  gene_id = rownames(vst_mat),            # your DEG gene IDs
-  module  = labels2colors(net$colors)     # convert numeric → color
+  gene_id = colnames(vst_t_stage),            # your DEG gene IDs
+  WGCNAmodule  = labels2colors(net$colors)     # convert numeric → color
 ) %>%
   mutate(
-    module = factor(module)
+    WGCNAmodule = factor(WGCNAmodule)
   )
 ```
-
 
 ```{r}
 # Convert labels to colors for plotting
 mergedColors = labels2colors(net$colors)
+
 # Plot the dendrogram and the module colors underneath
 plotDendroAndColors(
   net$dendrograms[[1]],
@@ -373,20 +615,23 @@ plotDendroAndColors(
   guideHang = 0.05 )
 ```
 
-## Relate module (color cluster) assignments to treatment groups 
+## Relate module (color cluster) assignments to treatment groups
 
 ```{r}
-module <- data.frame(
-  gene_id = names(net$colors),  # per-gene module labels
-  colors = labels2colors(net$colors)
-)
-
-module %>%
-  dplyr::group_by(colors) %>%
-  dplyr::summarise(n_genes = dplyr::n(), .groups = "drop")
+stage_deg_modules %>%
+  dplyr::group_by(WGCNAmodule) %>% 
+  dplyr::summarise(n_genes = dplyr::n(), .groups = "drop") %>% 
+  arrange(desc(n_genes)) %>% 
+  knitr::kable()
 ```
 
-> WGCNA will calcuate an Eigengene (hypothetical central gene) for each module
+
+
+## Model Eigengenes
+
+
+> WGCNA will calculate an Eigengene (hypothetical central gene) for each
+> module
 
 ```{r}
 # Get Module Eigengenes per cluster
@@ -402,19 +647,20 @@ module_order = names(eig) %>% gsub("ME","", .)
 metaeig <- cbind(eig, meta_mat[rownames(eig), , drop = FALSE]) # reorders meta_mat rownames to match eig rownames
 
 # make dataframe
-meig_df <- metaeig %>% 
+ME_df <- metaeig %>% 
   rownames_to_column(var = "sample_id")
 ```
 
 ```{r}
 # tidy & plot data
-meig_df_long <-  meig_df %>%
-  pivot_longer(-c(sample_id, 11:18)) %>% 
+ME_df_long <-  ME_df %>%
+  pivot_longer(c(2:7)) %>% 
   mutate(
-    name = gsub("ME", "", name)
+    name = gsub("ME", "", name),
+    name = factor(name, levels = module_order)
   )
 
-meig_df_long %>% ggplot(., aes(x=sample_id, y=name, fill=value)) +
+ME_df_long %>% ggplot(., aes(x=sample_id, y=name, fill=value)) +
   geom_tile() +
   theme_bw() +
   scale_fill_gradient2(
@@ -427,13 +673,187 @@ meig_df_long %>% ggplot(., aes(x=sample_id, y=name, fill=value)) +
   labs(title = "Module-trait Relationships", y = "Modules", fill="corr")
 ```
 
+
+
+
 ## Examine Expression Profiles
 
 ```{r}
+expr_pat <- stage_deg_modules %>% 
+left_join(vst_mat_stage_df)
+
+expr_pat_long <- expr_pat %>% 
+  pivot_longer(
+    cols = -c(gene_id, WGCNAmodule),
+    names_to = "sample_id",
+    values_to = "vst"
+  ) %>% 
+  left_join(metadata_or, by = "sample_id") %>% 
+  group_by(gene_id) %>% 
+  mutate(
+    z = as.numeric(scale(vst))
+  ) %>% 
+  ungroup()
+```
+
+```{r}
+ggplot(expr_pat_long, aes(x=stage, y=z))+
+  geom_line(aes(group = gene_id), alpha = 0.05, linewidth = 0.01)+
+  geom_boxplot(alpha = 0.10, outlier.shape = NA) +
+  facet_wrap(~WGCNAmodule)
+```
+
+Cleavage-high → decreases over time
+
+turquoise: strongest “cleavage program” (high at cleavage, steadily down)
+
+Prawnchip-peak (hump-shaped)
+
+yellow: classic “mid-stage / prawnchip program” (up at prawnchip, down again by early gastrula)
+
+Prawnchip-dip (valley-shaped)
+green and red: cleavage-high → dip at prawnchip → rebound a bit at early gastrula
+These often represent “processes suppressed mid-stage then reactivated” or a mixed module that could merge/split depending on parameters.
+
+Early gastrula-high (increasing)
+
+blue and brown: “late program” (low at cleavage, increasing toward early gastrula)
+grey
+
+grey is the WGCNA “unassigned” bucket (genes that didn’t fit cleanly). Don’t enrich/interpret grey as a biological module.
+
+So: you do have the four big biological programs you expected (early / mid / late), but WGCNA is splitting them into submodules (early = turquoise; mid = yellow/green+red; late = blue+brown)... with mid stage 
+
+keep modules but label them as belonging to one of 4 programs
+
+Assign each module a “stage label” based on where its ME peaks (cleavage / prawn peak / prawn dip / early gastrula)
+
+Then do enrichment by the grouped “meta-programs”
+
+### Pick peaks & dips via Model Eigengene
+Summarize ME by stage and assign objective module labels
+- Compute stage means for each ME
+```{r}
+ME_stage_means <- ME_df %>%
+  pivot_longer(cols = starts_with("ME"),
+               names_to = "ME",
+               values_to = "eigengene") %>%
+  group_by(ME, stage) %>%
+  summarize(mean_ME = mean(eigengene, na.rm = TRUE), .groups = "drop") %>%
+  tidyr::pivot_wider(names_from = stage, values_from = mean_ME)
+
+ME_stage_means %>% knitr::kable()
+```
+
+Convert ME name → module_color and classify pattern
+
+This uses a simple, transparent rule set:
+
+peak stage = stage with highest mean ME
+
+also classify shape: monotonic up/down vs mid peak vs mid dip
+```{r}
+stage_levels <- c("cleavage", "prawnchip", "earlygastrula")  # adjust to your exact names
+
+ME_classified <- ME_stage_means %>%
+  mutate(
+    module_color = sub("^ME", "", ME),
+
+    # pull into numeric vectors for easy comparisons
+    cleav = .data[[stage_levels[1]]],
+    prawn = .data[[stage_levels[2]]],
+    gastr = .data[[stage_levels[3]]],
+
+    peak_stage = stage_levels[max.col(cbind(cleav, prawn, gastr), ties.method = "first")],
+
+    pattern_type = case_when(
+      cleav > prawn & prawn > gastr ~ "monotonic_down",
+      cleav < prawn & prawn < gastr ~ "monotonic_up",
+      prawn > cleav & prawn > gastr ~ "hump",
+      prawn < cleav & prawn < gastr ~ "valley",
+      TRUE                          ~ "other"
+    ),
+
+    # This is your final grouping variable (edit labels as you like)
+    module_stage = case_when(
+      pattern_type == "monotonic_down" ~ "cleavage_up",
+      pattern_type == "monotonic_up"   ~ "earlygastrula_up",
+      pattern_type == "hump"           ~ "prawnchip_up",
+      pattern_type == "valley"         ~ "prawnchip_dip",
+      TRUE                             ~ "unassigned"
+    )
+  ) %>%
+  select(module_color, peak_stage, pattern_type, module_stage)
+
+ME_classified %>% knitr::kable()
+```
+```{r}
+stage_deg_modules_ME <- stage_deg_modules %>%
+  left_join(ME_classified, by = c("WGCNAmodule" = "module_color"))
+
+ME_df %>%
+  pivot_longer(cols = starts_with("ME"), names_to = "ME", values_to = "eigengene") %>%
+  mutate(module_color = sub("^ME", "", ME)) %>%
+  left_join(ME_classified, by = "module_color") %>%
+  ggplot(aes(x = stage, y = eigengene, group = sample_id)) +
+  geom_line(alpha = 0.1) +
+  stat_summary(aes(group = 1), fun = median, geom = "line", linewidth = 1) +
+  facet_wrap(~ module_color, scales = "free_y") +
+  theme_bw()
 
 ```
 
 
-# Summary & Next Steps
 
-We can perform functional enrichment on these clusters now!
+## Extract & save 
+
+### Leachate clusters from degReport
+Per-gene meta-dataframe with cluster assignments
+Make a dataframe with one row per gene and its cluster assignment
+```{r}
+leachate_deg_clusters <- leachate130_GEPs$df
+
+head(leachate_deg_clusters)
+```
+tidy save to csv without rownames
+```{r}
+write_csv(leachate_deg_clusters, file.path(output_path,
+                                            "leachate_DEG_clusters.csv"))
+```
+
+Save zscores
+```{r}
+write_csv(leachate_cluster_z, file.path(output_path,
+                                    "leachate_DEG_cluster_zscores.csv"))
+```
+
+
+### Stage modules from WGCNA
+          
+Per-gene meta-dataframe with module assignments
+Make a dataframe with one row per gene and its module assignment and "stage label" 
+
+```{r}
+stage_deg_modules_ME
+```
+
+```{r}
+write_csv(stage_deg_modules_ME,
+          file.path(output_path,"stage_DEG_WGCNA_modules.csv"))
+```
+
+# Summary & Next Steps
+```{r}
+module_summary <- stage_deg_modules_ME %>%
+  count(module_stage, WGCNAmodule, name = "n_genes") %>%
+  arrange(module_stage, desc(n_genes))
+
+module_summary %>% knitr::kable()
+```
+We generated and saved:
+
+- stage_DEG_WGCNA_modules.csv
+- leachate_DEG_clusters.csv
+
+These define membership into groups of genes with similar expression patterns. 
+We can perform functional enrichment on these modules and clusters now!
