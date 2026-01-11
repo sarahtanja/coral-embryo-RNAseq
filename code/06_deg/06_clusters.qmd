@@ -207,10 +207,6 @@ variability at lower transcript abundance?
 
 ### Plot leachate DEG clusters
 
-```{r}
-leachate_cluster_z <- read_csv("../../output/06_deg/cluster/leachate_cluster_zscores.csv")
-```
-
 Set color scheme
 
 ```{r}
@@ -294,7 +290,7 @@ pc
 
 Save plots as pngs
 
-```{r}
+```{r, eval=FALSE}
 ggsave("../../output/06_deg/cluster/leachate_bystage_clusters.png", plot = pl, width=18, height=6 , dpi=600)
 ggsave("../../output/06_deg/cluster/leachate_bydose_clusters.png", plot = ps, width=18, height=6 , dpi=600)
 ggsave("../../output/06_deg/cluster/leachate_combo_clusters.png", plot = pc, width=18, height=12 , dpi=600)
@@ -302,14 +298,14 @@ ggsave("../../output/06_deg/cluster/leachate_combo_clusters.png", plot = pc, wid
 
 ## Stage DEGs clustering
 
-```{r}
+```{r, eval=FALSE}
 # Use the `degPatterns` function from the 'DEGreport' package
-stage_GEPbystage <- degPatterns(
-  vst_mat_stage, 
-  metadata = meta_mat, 
-  time = "stage", 
-  plot = FALSE, 
-  minc = 10)
+#stage_GEPbystage <- degPatterns(
+#  vst_mat_stage, 
+#  metadata = meta_mat, 
+#  time = "stage", 
+#  plot = FALSE, 
+#  minc = 10)
 ```
 
 ::: callout-note
@@ -816,13 +812,13 @@ leachate_deg_clusters <- leachate130_GEPs$df
 head(leachate_deg_clusters)
 ```
 tidy save to csv without rownames
-```{r}
+```{r, eval=FALSE}
 write_csv(leachate_deg_clusters, file.path(output_path,
                                             "leachate_DEG_clusters.csv"))
 ```
 
 Save zscores
-```{r}
+```{r. eval=FALSE}
 write_csv(leachate_cluster_z, file.path(output_path,
                                     "leachate_DEG_cluster_zscores.csv"))
 ```
@@ -834,10 +830,10 @@ Per-gene meta-dataframe with module assignments
 Make a dataframe with one row per gene and its module assignment and "stage label" 
 
 ```{r}
-stage_deg_modules_ME
+head(stage_deg_modules_ME) %>% knitr::kable()
 ```
 
-```{r}
+```{r, eval=FALSE}
 write_csv(stage_deg_modules_ME,
           file.path(output_path,"stage_DEG_WGCNA_modules.csv"))
 ```
