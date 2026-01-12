@@ -122,14 +122,18 @@ library(ggrepel)
 
 ## Load inputs
 
+the similarity matrix is the same given each module/cluster had the same "universe" of genes for enrichment testing.
+```{r}
+## Similarity matrix
+simMatrix <- read_csv(file.path(input_path, "simMatrix.csv")) 
+```
+
 ```{r}
 ## Reduced Terms
 reducedTerms <- read.csv(file.path(input_path, "reducedTerms_GO.csv"))
 reducedTerms.anno <- read.csv(file.path(input_path, "reducedTerms_GO_anno.csv"))
 
-## Similarity matrices
-simMatrix <- read_csv(file.path(input_path, "simMatrix.csv")) #%>% 
-  #column_to_rownames("GO") %>% as.matrix()  # uses the GO column as rownames
+
 
 ```
 
@@ -153,6 +157,9 @@ heatmapPlot(simMatrix,
             reducedTerms,
             annotateParent=TRUE,
             annotationLabel="parentTerm")
+```
+```{r}
+ggsave("heatmap_GO.png", width = 12, height = 8, dpi = 900)
 ```
 
 ### Scatter plot
@@ -421,105 +428,7 @@ ggplot() +
 
 ```
 
-### Table of top parent terms
 
-```{r}
-# Summarize cluster content by parent term
-cluster_summary <- sigdeg_pcoa %>%
-  group_by(cluster.x, parentTerm) %>%
-  summarise(
-    n_terms = n(),                     # how many GO terms in this parent within cluster
-    mean_score = mean(score, na.rm = TRUE),  # average enrichment strength
-    max_score = max(score, na.rm = TRUE),    # strongest term in that parent
-    .groups = "drop"
-  ) %>%
-  arrange(cluster.x, desc(n_terms))
-
-# For each cluster, show top 5 parent terms by count (or max score)
-top_parent_terms_by_cluster <- cluster_summary %>%
-  group_by(cluster.x) %>%
-  slice_max(order_by = n_terms, n = 5) %>% # top 5 terms for each of the 5 clusters
-  arrange(cluster.x, desc(n_terms))
-
-knitr::kable(top_parent_terms_by_cluster)
-```
-
-### Table of top terms
-
-```{r}
-# Summarize cluster content by parent term
-cluster_summary <- sigdeg_pcoa %>%
-  group_by(cluster.x, term) %>%
-  summarise(
-    n_terms = n(),                     # how many GO terms in this parent within cluster
-    mean_score = mean(score, na.rm = TRUE),  # average enrichment strength
-    max_score = max(score, na.rm = TRUE),    # strongest term in that parent
-    .groups = "drop"
-  ) %>%
-  arrange(cluster.x, desc(n_terms))
-
-# For each cluster, show top 5 terms by count (or max score)
-top_terms_by_cluster <- cluster_summary %>%
-  group_by(cluster.x) %>%
-  slice_max(order_by = n_terms, n = 5) %>% # top 5 terms for each of the 5 clusters
-  arrange(cluster.x, desc(n_terms))
-
-knitr::kable(top_terms_by_cluster)
-```
-
-### Table of top scores
-
-```{r}
-# For each cluster, show top 5 parent terms by count (or max score)
-top_score_by_cluster <- cluster_summary %>%
-  group_by(cluster.x) %>%
-  slice_max(order_by = mean_score, n = 5) %>% # top 5 terms for each of the 5 clusters
-  arrange(cluster.x, desc(mean_score))
-
-knitr::kable(top_score_by_cluster)
-```
-
-## Manuscript plots
-
-```{r}
-# 5) Quick visual check (should resemble your scatterPlot clusters)
-ggplot(sigdeg_pcoa, aes(Dim1, Dim2, size = score, label = parentTerm)) +
-  geom_point(alpha = 0.3) +
-  geom_text_repel()+
-  coord_equal()+
-  labs(title = "GO terms clustered in PCoA space") +
-  theme_minimal(base_size = 12)
-```
-
-```{r, fig.height=10, fig.width=15}
-# 5) Quick visual check (should resemble your scatterPlot clusters)
-ggplot(final_df, aes(Dim1, Dim2, color = parentTerm, size = score)) +
-  geom_jitter(alpha = 0.5)+
-  coord_equal() +
-  labs(color = "Parent Term", title = "GO parent terms clustered in PCoA space") +
-  theme_minimal(base_size = 12)+
-  theme(legend.position = "bottom",
-        legend.box = "vertical",
-        legend.text = element_text(size = 8),
-        legend.title = element_text(size = 9))
-```
-
-```{r, fig.height=17}
-ggplot(sigdeg_pcoa, aes(Dim1, Dim2, color = term, size = score)) +
-  geom_point(alpha = 0.5) +
-  coord_equal() +
-  labs(color = "Parent Term", title = "GO terms clustered in PCoA space") +
-  theme_minimal(base_size = 12) +
-  theme(
-    legend.position = "bottom",      # move below
-    legend.box = "vertical",         # stack if multiple guides
-    legend.text = element_text(size = 8),
-    legend.title = element_text(size = 9)
-  ) +
-  guides(                                  # hide size legend (optional)
-    color = guide_legend(nrow = 40, byrow = TRUE)     # wrap legend into rows
-  )
-```
 
 :::: column-margin
 ::: callout-note
@@ -572,28 +481,11 @@ Based on frequency of enriched terms, the clusters can be described: - 1
 :   Developmental, cellular, nuclear division - 2 : Regulation of metabolic processes - 3 : cellular stress response , response to chemical - 4 : metabolic / catabolic process - 5 : regulation cell cycle communication
 :::
 
-```{r}
-tbl_min <- top_score_by_cluster %>%
-  transmute(
-    Cluster = cluster.x,
-    `Parent term` = parentTerm,
-    n = as.integer(n_terms),
-    `Mean score` = round(mean_score, 1),
-    `Max score` = round(max_score, 1)
-  ) %>%
-  arrange(Cluster, desc(`Mean score`), desc(`Max score`))
 
-kable(
-  tbl_min,
-  format = "pipe",                            # <- Pandoc table -> native Word/Docs
-  align  = c("r", "l", "r", "r", "r"),
-  caption = "Top GO terms by cluster"
-)
-```
 
 # Lollipop plot?
 
-```{r}
+```{r, eval=FALSE}
 go_lolli <- early_data %>% 
   dplyr::arrange(bh_adjust) %>%
   mutate(percHits=(numDEInCat/numInCat)*100)%>%

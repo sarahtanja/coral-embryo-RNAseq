@@ -366,3 +366,16 @@ coord <- cmdscale(dist, k = 2)
 df_coords <- data.frame(go = rownames(simMatrix.1), Dim1 = coord[,1], Dim2 = coord[,2])
 ```
 
+```{r}
+anno <- reducedTerms.anno %>%
+  select(!gene) %>% 
+  group_by(go) %>%
+  mutate(pattern = paste0("GEP", pattern)) %>% 
+  mutate(value = 1L) %>% 
+  distinct(go, pattern, .keep_all = TRUE) %>% 
+  pivot_wider(
+    names_from  = pattern,
+    values_from = value,
+    values_fill = 0
+  )
+```
