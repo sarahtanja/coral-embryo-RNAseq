@@ -17,3 +17,4 @@
 *.ht2
 input/hisat/Montipora_capitata_HIv3-hisat2-indices.tar.gz
 input/genome/Montipora_capitata_HIv3.genes.gtf
+*universe_simMatrix.csv
