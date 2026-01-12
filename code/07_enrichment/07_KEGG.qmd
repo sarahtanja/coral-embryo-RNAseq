@@ -82,18 +82,26 @@ Get the corrected p-values and enriched GO terms.
 
 
 ## Inputs
+DEG vectors
 - `stage_DEG_WGCNA_modules.csv` - A dataframe mapping 10793 stage DEGs to a WGCNA module. *the grey module (genes that do not cluster) need not be passed through enrichment analysis* 
-- `sig_genes.csv` - A dataframe (list) of the 130 significant genes
+
 - `leachate_DEG_clusters.csv` - A dataframe mapping 128 genes to an expression cluster (1, 2, or 3)
+
+Background
 - `all_genes.csv` - a dataframe (list) of all genes used in the DESeq2 analysis
+
+Gene lengths
 - functional annotation: http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.EggNog_results.txt.gz (EggNog)
 - functional annotation: http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.KEGG_results.txt.gz (KEGG)
 
+
+> “We performed GO enrichment using GOseq for stage-program clusters/modules derived from co-expression patterns. Genes not assigned to a module (WGCNA grey) were retained in the DEG set but excluded from module-level interpretation.”
+
 ## Outputs
 
-- GO enrichment results for each of the 3 clusters
-- Reduced GO terms (redundancy removed) for all DEGs and for each cluster
-- Semantic similarity matrix for all DEGs and for each cluster
+- GO enrichment results for each of the modules/clusters
+- Reduced GO terms (redundancy removed) for gene universe, and for each module/cluster
+- Semantic similarity matrix for gene universe, and for each module/cluster
 
 # Setup
 ##  Path
@@ -135,17 +143,18 @@ library(tidyverse)
 Read in gene lists
 
 ```{r}
-# significant genes (130 total) (only those that are significant for leachate or stage:leachate)
-sig_genes <- read.csv("../../output/06_deg/spawnnight/sig_genes.csv")
+# significant genes lists
+sig_genes_leachate <- read.csv("../../output/06_deg/spawnnight/sig_genes_leachate.csv")
+sig_genes_stage <- read.csv("../../output/06_deg/spawnnight/sig_genes_stage.csv")
+
+# Full gene set tested in DESeq2 analysis
+universe_genes <- read.csv("../../output/06_deg/spawnnight/all_genes.csv")
 
 # leachate cluster assignments 
 leachate_DEG_clusters <- read.csv("../../output/06_deg/cluster/leachate_DEG_clusters.csv")
 
 # stage WGCNA module assignments
-stage_DEG_WGCNA_modules <- read.csv("../../output/06_deg/cluster/stage_DEG_WGCNA_modules.csv")
-
-# Full gene set tested in DESeq2 analysis
-all_genes <- read.csv("../../output/06_deg/spawnnight/all_genes.csv")
+stage_DEG_modules <- read.csv("../../output/06_deg/cluster/stage_DEG_WGCNA_modules.csv")
 ```
 
 Import EggNog for GO and KEGG annotation
@@ -165,30 +174,25 @@ Import fasta for sequence length annotation
 
 ```{r, eval=FALSE}
 # Load transcriptome sequences to get gene lengths
-all_seqs <- readDNAStringSet("../../input/genome/Montipora_capitata_HIv3.assembly.fasta")
+genome_seqs <- readDNAStringSet("../../input/genome/Montipora_capitata_HIv3.assembly.fasta")
 
-# Filter for the 130 significant genes
-sig_seqs <- all_seqs[names(all_seqs) %in% sig_genes$gene_id]
-```
+# Filter for the 12221 background universe genes
+universe_seqs <- genome_seqs[names(genome_seqs) %in% universe_genes$gene_id]
 
-Import DEG cluster annotations
-...Add gene cluster annotation to gene list summaries
+# Filter for the 130 leachate DEGs 
+leachate_seqs <- genome_seqs[names(genome_seqs) %in% sig_genes_leachate$gene_id]
 
-```{r}
-# leachate
-sig_summary_leachate <- sig_summary_leachate %>%
-  left_join(gene_clusters, by = "gene_id")
-
-write_csv(sig_summary_leachate, file.path(output_path, "sig_summary_leachate.csv"))
+# Filter for the 10793 stage DEGs
+stage_seqs <- genome_seqs[names(genome_seqs) %in% sig_genes_stage$gene_id]
 ```
 
 # Annotate gene lists
 
-Match genes in all_genes to EggNog annotation dataframe
+Match genes in universe_genes to EggNog annotation dataframe
 
 ```{r}
 # Annotate all genes with EggNog annotations
-all_genes_anno <- left_join(all_genes, EggNog, by = "gene_id")
+universe_genes_anno <- left_join(universe_genes, EggNog, by = "gene_id")
 ```
 
 ## Add gene lengths
@@ -222,16 +226,34 @@ if (file.exists(gff_file)) {
   lengths <- data.frame(gene_id = character(), transcript_lengths = integer())
 }
 ```
+## Add cluster & module info
 
-Add length and cluster info to the annotation dataframe
+Make leachate_DEG_clusters column named gene_id for joining, and rename clusters to be descriptive:
+Leachate DEG cluster breakdown:
+- **Cluster 1**: 72 genes, peak in early gastrula
+- **Cluster 2**: 25 genes, peak in prawnchip 
+- **Cluster 3**: 31 genes, peak in cleavage
 ```{r}
-all_genes_anno <- all_genes_anno %>% 
-  left_join(lengths, by = "gene_id")%>% 
-  left_join(gene_clusters, by = "gene_id")
+leachate_DEG_clusters <- leachate_DEG_clusters %>%
+  rename(gene_id = genes) %>% 
+  mutate(cluster_stage = case_when(
+    cluster == 1 ~ "early_gastrula_peak",
+    cluster == 2 ~ "prawnchip_peak",
+    cluster == 3 ~ "cleavage_peak"
+  ))
+```
+
+
+Add length & module/cluster info to the annotation dataframe
+```{r}
+universe_genes_anno <- universe_genes_anno %>% 
+  left_join(lengths, by = "gene_id") %>% 
+  left_join(leachate_DEG_clusters, by = "gene_id") %>% 
+  left_join(stage_DEG_modules, by = "gene_id")
 ```
 
 ```{r}
-write_csv(all_genes_anno, file.path(output_path, "all_genes_anno.csv"))
+write_csv(universe_genes_anno, file.path(output_path, "universe_genes_anno.csv"))
 ```
 
 ## Explore GO and KEGG 
@@ -239,43 +261,59 @@ write_csv(all_genes_anno, file.path(output_path, "all_genes_anno.csv"))
 How many of the genes are GO annotated?
 ```{r}
 # Filter out any that lack GO term annotation
-all_genes_GO <- all_genes_anno %>% 
+universe_genes_GO <- universe_genes_anno %>% 
   mutate(GOs = na_if(str_trim(GOs), "-")) %>%
   filter(!is.na(GOs), GOs != "")
 
 # What is GO coverage in the background universe?
 paste("GO annotated genes in DESeq background universe set:", 
-      nrow(all_genes_GO), "/", 
-      nrow(all_genes), "=",
-      round(100*nrow(all_genes_GO)/nrow(all_genes),1),"%")
+      nrow(universe_genes_GO), "/", 
+      nrow(universe_genes), "=",
+      round(100*nrow(universe_genes_GO)/nrow(universe_genes),1),"%")
+```
+- 12,221 genes are in our DESeq2 tested background universe
+- 6,846 of those have at least one GO annotation
+- 56% coverage is very typical for non-model or semi-annotated organisms
 
-# What is GO coverage for all DEGs and for each cluster?
-go_DE_genes <- all_genes_GO %>% filter(gene_id %in% sig_genes$gene_id)
-go_cluster1 <- all_genes_GO %>% filter(cluster == 1)
-go_cluster2 <- all_genes_GO %>% filter(cluster == 2)
-go_cluster3 <- all_genes_GO %>% filter(cluster == 3)
+> “Of the 12,221 genes included in the DESeq2 testing universe, 6,846 (56%) had at least one Gene Ontology annotation and were eligible for GO-based analyses.”
+> “Gene Ontology annotations were available for 6,846 of the 12,221 genes tested in DESeq2 (56%), consistent with partial functional annotation of the transcriptome.”
+> “GO enrichment analyses were restricted to the subset of tested genes with available GO annotations (6,846 of 12,221 genes; 56%), which constituted the effective background universe for functional analyses.”
 
-paste("All significant genes:", nrow(go_DE_genes), "/", nrow(all_genes), "=", round(100*nrow(go_DE_genes)/nrow(all_genes),1),"%", "genes with GO annotation")
 
-paste("Cluster 1:", nrow(go_cluster1), "/", nrow(all_genes), "=", round(100*nrow(go_cluster1)/nrow(all_genes),1),"%", "genes with GO annotation")
+Calculate GO coverage within clusters for descriptive purposes
+$$
+\text{GO coverage} = \frac{\#\,\text{genes with GO annotation in the set}}{\#\,\text{genes in the set}}
+$$
 
-paste("Cluster 2:", nrow(go_cluster2), "/", nrow(all_genes), "=", round(100*nrow(go_cluster2)/nrow(all_genes),1),"%", "genes with GO annotation")
+This answers: “how well annotated is this cluster?”
 
-paste("Cluster 3:", nrow(go_cluster3), "/", nrow(all_genes), "=", round(100*nrow(go_cluster3)/nrow(all_genes),1),"%", "genes with GO annotation")
+```{r}
+# What is GO coverage for all leachate DEG clusters?
+leachate_go_summary <- universe_genes_anno %>%
+  filter(gene_id %in% sig_genes_leachate$gene_id) %>%
+  mutate(has_GO = ifelse(!is.na(GOs) & GOs != "", 1, 0)) %>%
+  group_by(cluster) %>%
+  summarise(
+    n_genes = n(),
+    n_genes_with_GO = sum(has_GO),
+    GO_coverage = round(100 * n_genes_with_GO / n_genes, 1)
+  )
+
+leachate_go_summary %>% knitr::kable()
 ```
 
 ### KEGG coverage
 How many of the background universe set are KEGG_Pathway annotated?
 ```{r}
 # Filter out any that lack GO term annotation
-all_genes_KEGG <- all_genes_anno %>% 
+universe_genes_KEGG <- universe_genes_anno %>% 
   mutate(KEGG_Pathway = na_if(str_trim(KEGG_Pathway), "-")) %>%
   filter(!is.na(KEGG_Pathway), KEGG_Pathway != "")
 
 paste("KEGG annotated genes in DESeq background universe set:", 
-      nrow(all_genes_KEGG), "/", 
-      nrow(all_genes), "=",
-      round(100*nrow(all_genes_KEGG)/nrow(all_genes),1),"%")
+      nrow(universe_genes_KEGG), "/", 
+      nrow(universe_genes), "=",
+      round(100*nrow(universe_genes_KEGG)/nrow(universe_genes),1),"%")
 ```
 
 
@@ -283,33 +321,44 @@ paste("KEGG annotated genes in DESeq background universe set:",
 
 For bias correction
 
-The gene universe should be the full set of genes that were tested in the DESeq2 analysis (all_genes), including those that were not found to be differentially expressed. For goseq, we need to create a vector of all gene IDs in the DESeq2 dataset (include **all** genes, regardless of whether or not they have GO annotations), with a `1` value if DE and a `0` value if not.
+The gene universe should be the full set of genes that were tested in the DESeq2 analysis (universe_genes), including those that were not found to be differentially expressed. For goseq, we need to create a vector of all gene IDs in the DESeq2 dataset (include **all** genes, regardless of whether or not they have GO annotations), with a `1` value if DE and a `0` value if not.
 
 nullp() models the probability of being DE as a function of length using the full DE universe.
 
-Later, goseq() only tests GO terms using genes in gene2cat, but the PWF (bias correction) was learned from all the data.
+Later, goseq() only tests GO terms using genes in gene2cat (the ~6846 genes we have functional annotation for), but the PWF (bias correction) was learned from all the data (all 12,221 genes).
 
-So we need a background universe vectors for all DEGs, and each cluster. 
+So we need a background universe vectors for all DEGs, and each cluster / module. 
 ```{r}
 # Universe for bias correction
 # All 12221 genes from our filtered DEG test
-universe_genes <- all_genes$gene_id
+universe_genes <- universe_genes$gene_id
 names(universe_genes) <- universe_genes
 ```
 
 These are annotated dataframes subset to just DEGs and to each cluster
 ```{r}
-DE_genes <- all_genes_anno %>% filter(gene_id %in% sig_genes$gene_id)
-cluster1 <- all_genes_anno %>% filter(cluster == 1)
-cluster2 <- all_genes_anno %>% filter(cluster == 2)
-cluster3 <- all_genes_anno %>% filter(cluster == 3)
+leachate_anno <- universe_genes_anno %>% 
+  filter(gene_id %in% sig_genes_leachate$gene_id)
+
+cluster1 <- universe_genes_anno %>% filter(cluster == 1)
+cluster2 <- universe_genes_anno %>% filter(cluster == 2)
+cluster3 <- universe_genes_anno %>% filter(cluster == 3)
+```
+
+```{r}
+stage_anno <- universe_genes_anno %>% 
+  filter(gene_id %in% sig_genes_stage$gene_id)
+
+cleavage_up <- universe_genes_anno %>% filter(module_stage == "cleavage_up")
+prawnchip_up <- universe_genes_anno %>% filter(module_stage == "prawnchip_up")
+prawnchip_dip <- universe_genes_anno %>% filter(module_stage == "prawnchip_dip")
+earlygastrula_up <- universe_genes_anno %>% filter(module_stage == "earlygastrula_up")
 ```
 
 Create named vectors for DE status (1 = DE, 0 = not DE) for all DEGs and for each cluster
 ```{r}
-vector_deg <- as.integer(universe_genes %in% DE_genes$gene_id)
-names(vector_deg) <- universe_genes
-vector_deg <- vector_deg[universe_genes]
+vector_leachate <- as.integer(universe_genes %in% leachate_anno$gene_id)
+names(vector_leachate) <- universe_genes
 
 vector_1 <- as.integer(universe_genes %in% cluster1$gene_id)
 names(vector_1) <- universe_genes
@@ -319,6 +368,24 @@ names(vector_2) <- universe_genes
 
 vector_3 <- as.integer(universe_genes %in% cluster3$gene_id)
 names(vector_3) <- universe_genes
+```
+
+
+```{r}
+vector_stage <- as.integer(universe_genes %in% stage_anno$gene_id)
+names(vector_stage) <- universe_genes
+
+vector_cleavage <- as.integer(universe_genes %in% cleavage_up$gene_id)
+names(vector_cleavage) <- universe_genes
+
+vector_prawnchip_up <- as.integer(universe_genes %in% prawnchip_up$gene_id)
+names(vector_prawnchip_up) <- universe_genes
+
+vector_prawnchip_dip <- as.integer(universe_genes %in% prawnchip_dip$gene_id)
+names(vector_prawnchip_dip) <- universe_genes
+
+vector_earlygastrula <- as.integer(universe_genes %in% earlygastrula_up$gene_id)
+names(vector_earlygastrula) <- universe_genes
 ```
 
 # Make gene lengths vector
@@ -331,6 +398,7 @@ names(gene_lengths) <- lengths$gene_id
 gene_lengths <- gene_lengths[universe_genes]
 paste("Transcript lengths for", length(gene_lengths), "genes")
 ```
+Check for NAs in gene_lengths - there should be none
 ```{r}
 # Are there NAs in gene_lengths?
 sum(is.na(gene_lengths))
@@ -339,10 +407,17 @@ sum(is.na(gene_lengths))
 The order of genes in gene_lengths must match the order in universe_genes, should return TRUE
 ```{r}
 identical(names(gene_lengths), names(universe_genes))
-identical(names(gene_lengths), names(vector_deg))   
+
+identical(names(gene_lengths), names(vector_leachate))   
 identical(names(gene_lengths), names(vector_1))  
 identical(names(gene_lengths), names(vector_2))
 identical(names(gene_lengths), names(vector_3))
+
+identical(names(gene_lengths), names(vector_stage))
+identical(names(gene_lengths), names(vector_cleavage))
+identical(names(gene_lengths), names(vector_prawnchip_up))
+identical(names(gene_lengths), names(vector_prawnchip_dip))
+identical(names(gene_lengths), names(vector_earlygastrula))
 ```
 
 # Null probability weighting function (bias for gene length)
@@ -367,7 +442,13 @@ The names are again the same gene IDs
 pwf.1 <- nullp(vector_1, bias.data = gene_lengths)
 pwf.2 <- nullp(vector_2, bias.data = gene_lengths)
 pwf.3 <- nullp(vector_3, bias.data = gene_lengths)
-pwf.deg <- nullp(vector_deg, bias.data = gene_lengths)
+pwf.leachate <- nullp(vector_leachate, bias.data = gene_lengths)
+
+pwf.cleavage <- nullp(vector_cleavage, bias.data = gene_lengths)
+pwf.prawnchip_up <- nullp(vector_prawnchip_up, bias.data = gene_lengths)
+pwf.prawnchip_dip <- nullp(vector_prawnchip_dip, bias.data = gene_lengths)
+pwf.earlygastrula <- nullp(vector_earlygastrula, bias.data = gene_lengths)
+pwf.stage <- nullp(vector_stage, bias.data = gene_lengths)
 ```
 X axis is gene length
 Y axis is probability of being DE given length
@@ -391,7 +472,7 @@ This creates a dataframe that maps gene IDs to GO terms for all genes in the tes
 
 Build the gene to GO term mappings for all genes in the universe
 ```{r}
-gene2go <- all_genes_anno %>%
+gene2go <- universe_genes_anno %>%
   dplyr::select(gene_id, GOs) %>%
   separate_rows(GOs, sep = ",") %>%
   filter(!is.na(GOs), GOs != "") %>%
@@ -436,8 +517,49 @@ GO.bp.3 <- goseq(
   use_genes_without_cat = TRUE
 )
 
-GO.bp.deg <- goseq(
-  pwf = pwf.deg,
+GO.bp.leachate <- goseq(
+  pwf = pwf.leachate,
+  gene2cat = gene2go,
+  test.cats = c("GO:BP"),
+  method = "Wallenius",
+  use_genes_without_cat = TRUE
+)
+```
+```{r}
+GO.bp.stage <- goseq(
+  pwf = pwf.stage,
+  gene2cat = gene2go,
+  test.cats = c("GO:BP"),
+  method = "Wallenius",
+  use_genes_without_cat = TRUE
+)
+
+GO.bp.cleavage <- goseq(
+  pwf = pwf.cleavage,
+  gene2cat = gene2go,
+  test.cats = c("GO:BP"),
+  method = "Wallenius",
+  use_genes_without_cat = TRUE
+)
+
+GO.bp.prawnchip_up <- goseq(
+  pwf = pwf.prawnchip_up,
+  gene2cat = gene2go,
+  test.cats = c("GO:BP"),
+  method = "Wallenius",
+  use_genes_without_cat = TRUE
+)
+
+GO.bp.prawnchip_dip <- goseq(
+  pwf = pwf.prawnchip_dip,
+  gene2cat = gene2go,
+  test.cats = c("GO:BP"),
+  method = "Wallenius",
+  use_genes_without_cat = TRUE
+)
+
+GO.bp.earlygastrula <- goseq(
+  pwf = pwf.earlygastrula,
   gene2cat = gene2go,
   test.cats = c("GO:BP"),
   method = "Wallenius",
@@ -451,7 +573,13 @@ Use the Benjamini-Hochberg method to control false discovery rate
 GO.bp.1$bh_adjust <- p.adjust(GO.bp.1$over_represented_pvalue, method = "BH")
 GO.bp.2$bh_adjust <- p.adjust(GO.bp.2$over_represented_pvalue, method = "BH")
 GO.bp.3$bh_adjust <- p.adjust(GO.bp.3$over_represented_pvalue, method = "BH")
-GO.bp.deg$bh_adjust <- p.adjust(GO.bp.deg$over_represented_pvalue, method = "BH")
+GO.bp.leachate$bh_adjust <- p.adjust(GO.bp.leachate$over_represented_pvalue, method = "BH")
+
+GO.bp.stage$bh_adjust <- p.adjust(GO.bp.stage$over_represented_pvalue, method = "BH")
+GO.bp.cleavage$bh_adjust <- p.adjust(GO.bp.cleavage$over_represented_pvalue, method = "BH")
+GO.bp.prawnchip_up$bh_adjust <- p.adjust(GO.bp.prawnchip_up$over_represented_pvalue, method = "BH")
+GO.bp.prawnchip_dip$bh_adjust <- p.adjust(GO.bp.prawnchip_dip$over_represented_pvalue, method = "BH")
+GO.bp.earlygastrula$bh_adjust <- p.adjust(GO.bp.earlygastrula$over_represented_pvalue, method = "BH")
 ```
 
 Filter for biological process terms with valid p-values
@@ -475,7 +603,7 @@ GO.BP.3.sig <- GO.bp.3 %>%
   filter(bh_adjust < 0.05) %>%
   arrange(ontology, bh_adjust)
 
-GO.BP.deg.sig <- GO.bp.deg %>%
+GO.BP.leachate.sig <- GO.bp.leachate %>%
   filter(ontology == "BP") %>%
   filter(!is.na(bh_adjust)) %>% 
   filter(bh_adjust < 0.05) %>%
@@ -487,10 +615,10 @@ How many GO terms pass threshold for significantly enriched?
 paste("Cluster 1:", nrow(GO.BP.1.sig), "enriched BP terms (BH-adjusted p < 0.05)")
 paste("Cluster 2:", nrow(GO.BP.2.sig), "enriched BP terms (BH-adjusted p < 0.05)")
 paste("Cluster 3:", nrow(GO.BP.3.sig), "enriched BP terms (BH-adjusted p < 0.05)")
-paste("All together:", nrow(GO.BP.deg.sig), "enriched BP terms (BH-adjusted p < 0.05)")
+paste("All leachate together:", nrow(GO.BP.leachate.sig), "enriched BP terms (BH-adjusted p < 0.05)")
 ```
 
-Nothing! Nothing is enriched... fuck. 
+Nothing! Nothing is enriched for leachate... fuck. 
 
 Ok. Well. Now we know. This indicates that our DEGs impacted by leachate don't all do particuler functions, or that there is no particular type of thing that these genes all do which are impacted by leachate.
 
@@ -504,6 +632,47 @@ With non-model genomes, GO coverage is often patchy. You could have a true biolo
 DE list is “diffuse”
 If your DEGs represent many different processes at once (e.g., general stress + development + metabolism), each individual term may only get 2–3 hits → not enough to come out.
 
+```{r}
+GO.BP.stage.sig <- GO.bp.stage %>%
+  filter(ontology == "BP") %>%
+  filter(!is.na(bh_adjust)) %>% 
+  filter(bh_adjust < 0.05) %>%
+  arrange(ontology, bh_adjust)
+
+GO.BP.cleavage.sig <- GO.bp.cleavage %>%
+  filter(ontology == "BP") %>%
+  filter(!is.na(bh_adjust)) %>% 
+  filter(bh_adjust < 0.05) %>%
+  arrange(ontology, bh_adjust)
+
+GO.BP.prawnchip_up.sig <- GO.bp.prawnchip_up %>%
+  filter(ontology == "BP") %>%
+  filter(!is.na(bh_adjust)) %>% 
+  filter(bh_adjust < 0.05) %>%
+  arrange(ontology, bh_adjust)
+
+GO.BP.prawnchip_dip.sig <- GO.bp.prawnchip_dip %>%
+  filter(ontology == "BP") %>%
+  filter(!is.na(bh_adjust)) %>% 
+  filter(bh_adjust < 0.05) %>%
+  arrange(ontology, bh_adjust)
+
+GO.BP.earlygastrula.sig <- GO.bp.earlygastrula %>%
+  filter(ontology == "BP") %>%
+  filter(!is.na(bh_adjust)) %>% 
+  filter(bh_adjust < 0.05) %>%
+  arrange(ontology, bh_adjust)
+```
+
+```{r}
+paste("cleavage up:", nrow(GO.BP.cleavage.sig), "enriched BP terms (BH-adjusted p < 0.05)")
+paste("prawnchip up:", nrow(GO.BP.prawnchip_up.sig), "enriched BP terms (BH-adjusted p < 0.05)")
+paste("prawnchip dip:", nrow(GO.BP.prawnchip_dip.sig), "enriched BP terms (BH-adjusted p < 0.05)")
+paste("earlygastrula up:", nrow(GO.BP.earlygastrula.sig), "enriched BP terms (BH-adjusted p < 0.05)")
+paste("All stage together:", nrow(GO.BP.stage.sig), "enriched BP terms (BH-adjusted p < 0.05)")
+```
+
+
 We can still describe what the DEGs do!
 
 ## Reduce redundancy
@@ -511,13 +680,13 @@ We can still describe what the DEGs do!
 Calculate semantic similarity matrix with **all GO terms** that are present in DEGs
 ```{r}
 # filter GO terms to those that are present in DEGs
-GO.bp.deg.filt <- GO.bp.deg %>%
+GO.bp.leachate.filt <- GO.bp.leachate %>%
   filter(ontology == "BP") %>%
   filter(numDEInCat > 0) %>% 
   arrange(desc(numDEInCat))
 
 simMatrix <- calculateSimMatrix(
-    GO.bp.deg.filt$category,
+    GO.bp.leachate.filt$category,
     orgdb="org.Ce.eg.db",
     ont = "BP",
     method = "Rel"
@@ -620,6 +789,105 @@ KEGG.deg.anno <- KEGG.deg %>%
 write_csv(KEGG.deg, file.path(output_path, "KEGG_deg.csv"))
 write_csv(KEGG.deg.anno, file.path(output_path, "KEGG_deg_anno.csv"))
 ```
+
+# GO term landscape based on term prevalence
+
+plot GO terms annotated to your tested genes, weighted by how many genes map to each term.
+
+1. Map gene universe → GO terms
+
+2. Count how many genes hit each GO term (n_genes)
+
+3. Filter to terms with reasonable size (e.g., 10–300 genes)
+
+4. Compute semantic similarity on the remaining GO terms
+
+5. Reduce redundancy (rrvgo) and plot
+
+## Map gene universe to GO terms
+
+The `gene2go` dataframe maps gene IDs to GO terms for all genes in the testing universe. There will be 2 columns, gene_id and GO term, with one GO term mapped to one gene. Since there are multiple GO terms per gene, genes will appear in multiple rows in these dataframes. Likewise, more than one gene may map to the same GO term.
+
+Build the gene to GO term mappings for all genes in the universe
+```{r}
+head(gene2go)
+```
+
+## Count how many genes hit each GO term (n_genes)
+```{r}
+universe_go_counts <- gene2go %>%
+  group_by(category) %>%
+  summarise(n_genes = n()) %>%
+  arrange(desc(n_genes))
+
+head(universe_go_counts)
+```
+
+## Compute semantic similarity on the remaining GO terms
+Prepare the GO vector (this is what rrvgo wants)
+
+rrvgo expects a named numeric vector:
+
+names = GO IDs
+
+values = “scores” (you’ll use n_genes, not p-values)
+```{r}
+go_scores <- universe_go_counts %>%
+  dplyr::select(category, n_genes) %>%
+  distinct() %>%
+  tibble::deframe()
+
+head(go_scores)
+```
+
+```{r, eval=FALSE}
+simMatrix <- calculateSimMatrix(
+  x       = names(go_scores),
+  orgdb   = "org.Ce.eg.db",
+  ont     = "BP",
+  method  = "Rel"   # best general-purpose choice
+)
+```
+```{r, eval=FALSE}
+write_csv(as.data.frame(simMatrix), file.path(output_path, "universe_simMatrix.csv"))
+```
+
+## Reduce redundancy
+```{r}
+reducedTerms <- reduceSimMatrix(
+  simMatrix,
+  scores    = go_scores,
+  threshold = 0.7,            # adjust as needed
+  orgdb     = "org.Ce.eg.db"
+)
+```
+```{r, eval=FALSE}
+write_csv(reducedTerms, file.path(output_path, "universe_reducedTerms_GO.csv"))
+```
+
+## rrvgo plots
+```{r}
+library(rrvgo)
+```
+
+
+
+### Universe
+```{r}
+heatmapPlot(simMatrix,
+            reducedTerms,
+            annotateParent=TRUE,
+            annotationLabel="parentTerm")
+```
+
+```{r}
+scatterPlot(simMatrix, reducedTerms,
+            onlyParents = FALSE,
+            addLabel = TRUE,
+            labelSize = 4)
+```
+
+
 
 # Summary
 No GO Terms or KEGG pathways were significantly enriched among the DEGs impacted by leachate exposure, either overall or within specific gene expression clusters.

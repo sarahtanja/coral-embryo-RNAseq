@@ -1,0 +1,139 @@
+---
+title: "07_goslim"
+format: html
+---
+
+# Background
+
+I matched clustered/module grouped DEGs to GO terms, and tested for enrichment using goseq().
+
+I found that DEGs due to large shifts by stage had enriched GO terms only for prawnchip dip, earlygastrula up, or all stage DEGs combined. 
+No other cluster/ module had enrichment.
+
+I want to be able to show however what the DEGs for each cluster/moddule functionally represent, even if not statistically enriched.
+
+For each cluster/module:
+
+keep BP terms only
+
+rank by raw p-value
+
+take top N (e.g. 20–30)
+
+require a minimum gene count
+
+# Load libraries
+```{r}
+library(tidyverse)
+library(GO.db)
+```
+
+
+# Inputs
+```{r}
+input_path <- "../../output/07_enrichment/goseq/"
+```
+
+
+```{r}
+GO.bp.1 <- read_csv(file.path(input_path,"GO_bp_cluster1.csv"))
+```
+```{r}
+head(GO.bp.1) %>% knitr::kable()
+```
+## Semantic similarity
+## Reduce redundancy
+
+Calculate semantic similarity matrix with **all GO terms** that are present in DEGs
+```{r}
+# filter GO terms to those that are BP only
+GO.bp.1.filt <- GO.bp.1 %>%
+  filter(ontology == "BP") %>%
+  arrange(desc(numDEInCat))
+
+simMatrix.1 <- calculateSimMatrix(
+    GO.bp.1.filt$category,
+    orgdb="org.Ce.eg.db",
+    ont = "BP",
+    method = "Rel"
+  )
+```
+
+12599 GO terms... 
+
+```{r}
+write_csv(as.data.frame(simMatrix.1), file.path(output_path, "simMatrix_1.csv"))
+```
+
+Create named scores vector
+```{r}
+# Create scores
+scores <- setNames(
+    -log10(pmax(GO.bp.deg.filt$bh_adjust, .Machine$double.xmin)),
+    GO.bp.deg.filt$category
+  )
+```
+
+Reduce terms with similarity matrix
+```{r}
+# Reduce terms for all DEGs 
+reducedTerms <- reduceSimMatrix(
+    simMatrix,
+    scores = scores,
+    threshold = 0.7,
+    orgdb = "org.Ce.eg.db"
+  )
+```
+
+Add in gene and cluster annotation to reduced GO terms present in DEGs
+```{r}
+reducedTerms_anno <- reducedTerms %>%
+  left_join(GO.bp.deg.filt, by = c("go" = "category", "term")) %>% 
+  left_join(gene2go, by = c("go" = "category")) %>% 
+  left_join(gene_clusters, by = c("gene" = "gene_id")) %>% 
+  filter(!is.na(cluster))
+```
+
+```{r}
+write_csv(reducedTerms, file.path(output_path, "reducedTerms_GO.csv"))
+write_csv(reducedTerms_anno, file.path(output_path, "reducedTerms_GO_anno.csv"))
+```
+
+
+
+
+## GO.db
+```{r}
+?select
+```
+
+```{r}
+# see what GO slim objects exist in your GO.db
+ls("package:GO.db", pattern = "GOSLIM")
+
+# extract the generic GO slim IDs (this is what we will intersect with)
+goslim_ids <- names(GOSLIMGENERIC)
+
+length(goslim_ids)
+head(goslim_ids)
+```
+
+
+```{r}
+go_to_slim <- as.list(GOBPANCESTOR)
+
+top_terms_slim <- top_terms %>%
+  rowwise() %>%
+  mutate(
+    goslim = list(
+      intersect(
+        go_to_slim[[category]],
+        keys(GOSLIM_GENERIC)
+      )
+    )
+  ) %>%
+  ungroup() %>%
+  tidyr::unnest(goslim)
+```
+
+
