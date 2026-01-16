@@ -1,33 +1,53 @@
 ---
-title: "07_goslim"
-format: html
+title: "Map GO IDs to GOslims"
+subtitle: " Using `GSEABase` and `GO.db`"
+author: "Sarah Tanja"
+date: 01/16/2026
+date-modified: today
+format:
+  gfm: 
+    toc: true
+    number-sections: true
+  html:
+    theme: journal
+    highlight-style: github
+    page-layout: article
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    number-sections: true
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    reference-location: margin
+    citation-location: margin
 ---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,         # Display code chunks
+  eval = FALSE,        # Evaluate code chunks
+  warning = FALSE,     # Hide warnings
+  message = FALSE,     # Hide messages
+  comment = ""         # Prevents appending '##' to beginning of lines in code output
+)
+```
 
 # Background
 
-I matched clustered/module grouped DEGs to GO terms, and tested for enrichment using goseq().
+[Map GO IDs to GOslims](https://robertslab.github.io/resources/bio-Annotation/#:~:text=of%20the%20above.-,Map%20GO%20IDs%20to%20GOslims,-Below%20are%20a)
 
-I found that DEGs due to large shifts by stage had enriched GO terms only for prawnchip dip, earlygastrula up, or all stage DEGs combined. 
-No other cluster/ module had enrichment.
-
-I want to be able to show however what the DEGs for each cluster/moddule functionally represent, even if not statistically enriched.
-
-For each cluster/module:
-
-keep BP terms only
-
-rank by raw p-value
-
-take top N (e.g. 20–30)
-
-require a minimum gene count
 
 # Load libraries
 ```{r}
+library(GSEABase)
 library(tidyverse)
 library(GO.db)
 ```
-
 
 # Inputs
 ```{r}
