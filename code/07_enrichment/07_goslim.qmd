@@ -839,21 +839,30 @@ UpSet plots provide a powerful visualization to show which GOslim terms are uniq
 # Create a list of GOslim terms for each group
 # Each group will contain the Term names that are present in that group
 
-# Extract unique terms for each group
-goslim_term_lists <- bp_slim_mapped_df %>%
-  filter(Count > 0) %>%  # Only include terms with at least one gene
-  group_by(group) %>%
-  summarise(terms = list(unique(Term)), .groups = "drop") %>%
-  deframe()
-
-# Print summary
-cat("Number of terms per group:\n")
-imap(goslim_term_lists, ~ cat("  ", .y, ": ", length(.x), "\n"))
-
-# Pre-filter lists for different plot types
-term_list_all <- goslim_term_lists[!grepl("universe", names(goslim_term_lists))]
-term_list_leachate <- goslim_term_lists[grepl("leachate", names(goslim_term_lists))]
-term_list_stage <- goslim_term_lists[grepl("stage", names(goslim_term_lists))]
+# Check if bp_slim_mapped_df has data
+if (nrow(bp_slim_mapped_df) > 0) {
+  # Extract unique terms for each group
+  goslim_term_lists <- bp_slim_mapped_df %>%
+    filter(Count > 0) %>%  # Only include terms with at least one gene
+    group_by(group) %>%
+    summarise(terms = list(unique(Term)), .groups = "drop") %>%
+    deframe()
+  
+  # Print summary
+  cat("Number of terms per group:\n")
+  imap(goslim_term_lists, ~ cat("  ", .y, ": ", length(.x), "\n"))
+  
+  # Pre-filter lists for different plot types
+  term_list_all <- goslim_term_lists[!grepl("universe", names(goslim_term_lists))]
+  term_list_leachate <- goslim_term_lists[grepl("leachate", names(goslim_term_lists))]
+  term_list_stage <- goslim_term_lists[grepl("stage", names(goslim_term_lists))]
+} else {
+  cat("Warning: bp_slim_mapped_df is empty. No UpSet plots will be generated.\n")
+  goslim_term_lists <- list()
+  term_list_all <- list()
+  term_list_leachate <- list()
+  term_list_stage <- list()
+}
 ```
 
 ### UpSet Plot: All Groups
@@ -943,8 +952,8 @@ if (length(term_list_all) > 0) {
     keep.order = FALSE,
     point.size = 3.5,
     line.size = 1.5,
-    mainbar.y.label = "Intersection Size (Number of Shared Terms)",
-    sets.x.label = "Set Size (Total Terms per Group)",
+    mainbar.y.label = "Intersection Size\n(Number of Shared Terms)",
+    sets.x.label = "Set Size\n(Total Terms per Group)",
     text.scale = c(1.5, 1.3, 1.2, 1.2, 1.5, 1.2),
     mb.ratio = c(0.6, 0.4)
   )
@@ -970,8 +979,8 @@ if (length(term_list_leachate) > 0) {
     keep.order = TRUE,
     point.size = 3.5,
     line.size = 1.5,
-    mainbar.y.label = "Intersection Size (Number of Shared Terms)",
-    sets.x.label = "Set Size (Total Terms per Group)",
+    mainbar.y.label = "Intersection Size\n(Number of Shared Terms)",
+    sets.x.label = "Set Size\n(Total Terms per Group)",
     text.scale = c(1.5, 1.3, 1.2, 1.2, 1.5, 1.2),
     mb.ratio = c(0.6, 0.4)
   )
@@ -997,8 +1006,8 @@ if (length(term_list_stage) > 0) {
     keep.order = TRUE,
     point.size = 3.5,
     line.size = 1.5,
-    mainbar.y.label = "Intersection Size (Number of Shared Terms)",
-    sets.x.label = "Set Size (Total Terms per Group)",
+    mainbar.y.label = "Intersection Size\n(Number of Shared Terms)",
+    sets.x.label = "Set Size\n(Total Terms per Group)",
     text.scale = c(1.5, 1.3, 1.2, 1.2, 1.5, 1.2),
     mb.ratio = c(0.6, 0.4)
   )
