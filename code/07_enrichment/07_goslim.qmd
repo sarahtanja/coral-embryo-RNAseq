@@ -849,6 +849,11 @@ goslim_term_lists <- bp_slim_mapped_df %>%
 # Print summary
 cat("Number of terms per group:\n")
 imap(goslim_term_lists, ~ cat("  ", .y, ": ", length(.x), "\n"))
+
+# Pre-filter lists for different plot types
+term_list_all <- goslim_term_lists[!grepl("universe", names(goslim_term_lists))]
+term_list_leachate <- goslim_term_lists[grepl("leachate", names(goslim_term_lists))]
+term_list_stage <- goslim_term_lists[grepl("stage", names(goslim_term_lists))]
 ```
 
 ### UpSet Plot: All Groups
@@ -857,13 +862,10 @@ Visualize the overlap of GOslim terms across all groups (leachate effects and st
 
 ```{r upset-all-groups, fig.width=12, fig.height=8}
 # Create upset plot for all groups (excluding universe)
-groups_to_plot <- names(goslim_term_lists)[!grepl("universe", names(goslim_term_lists))]
-term_list_filtered <- goslim_term_lists[groups_to_plot]
-
-if (length(term_list_filtered) > 0) {
+if (length(term_list_all) > 0) {
   upset(
-    fromList(term_list_filtered),
-    nsets = length(term_list_filtered),
+    fromList(term_list_all),
+    nsets = length(term_list_all),
     order.by = "freq",
     keep.order = FALSE,
     point.size = 3.5,
@@ -882,13 +884,10 @@ Visualize the overlap of GOslim terms across leachate-responsive genes at differ
 
 ```{r upset-leachate-groups, fig.width=10, fig.height=6}
 # Filter to leachate groups only
-leachate_groups <- names(goslim_term_lists)[grepl("leachate", names(goslim_term_lists))]
-leachate_term_list <- goslim_term_lists[leachate_groups]
-
-if (length(leachate_term_list) > 0) {
+if (length(term_list_leachate) > 0) {
   upset(
-    fromList(leachate_term_list),
-    nsets = length(leachate_term_list),
+    fromList(term_list_leachate),
+    nsets = length(term_list_leachate),
     order.by = "freq",
     keep.order = TRUE,
     point.size = 3.5,
@@ -907,13 +906,10 @@ Visualize the overlap of GOslim terms across stage-specific gene expression patt
 
 ```{r upset-stage-groups, fig.width=10, fig.height=6}
 # Filter to stage groups only
-stage_groups <- names(goslim_term_lists)[grepl("stage", names(goslim_term_lists))]
-stage_term_list <- goslim_term_lists[stage_groups]
-
-if (length(stage_term_list) > 0) {
+if (length(term_list_stage) > 0) {
   upset(
-    fromList(stage_term_list),
-    nsets = length(stage_term_list),
+    fromList(term_list_stage),
+    nsets = length(term_list_stage),
     order.by = "freq",
     keep.order = TRUE,
     point.size = 3.5,
@@ -939,13 +935,10 @@ png(
   bg = "white"
 )
 
-groups_to_plot <- names(goslim_term_lists)[!grepl("universe", names(goslim_term_lists))]
-term_list_filtered <- goslim_term_lists[groups_to_plot]
-
-if (length(term_list_filtered) > 0) {
+if (length(term_list_all) > 0) {
   upset(
-    fromList(term_list_filtered),
-    nsets = length(term_list_filtered),
+    fromList(term_list_all),
+    nsets = length(term_list_all),
     order.by = "freq",
     keep.order = FALSE,
     point.size = 3.5,
@@ -969,13 +962,10 @@ png(
   bg = "white"
 )
 
-leachate_groups <- names(goslim_term_lists)[grepl("leachate", names(goslim_term_lists))]
-leachate_term_list <- goslim_term_lists[leachate_groups]
-
-if (length(leachate_term_list) > 0) {
+if (length(term_list_leachate) > 0) {
   upset(
-    fromList(leachate_term_list),
-    nsets = length(leachate_term_list),
+    fromList(term_list_leachate),
+    nsets = length(term_list_leachate),
     order.by = "freq",
     keep.order = TRUE,
     point.size = 3.5,
@@ -999,13 +989,10 @@ png(
   bg = "white"
 )
 
-stage_groups <- names(goslim_term_lists)[grepl("stage", names(goslim_term_lists))]
-stage_term_list <- goslim_term_lists[stage_groups]
-
-if (length(stage_term_list) > 0) {
+if (length(term_list_stage) > 0) {
   upset(
-    fromList(stage_term_list),
-    nsets = length(stage_term_list),
+    fromList(term_list_stage),
+    nsets = length(term_list_stage),
     order.by = "freq",
     keep.order = TRUE,
     point.size = 3.5,
