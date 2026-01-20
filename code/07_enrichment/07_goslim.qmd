@@ -46,6 +46,7 @@ knitr::opts_chunk$set(
 
 ```{r}
 #BiocManager::install("GSEABase")
+#BiocManager::install("GO.db")
 ```
 
 ```{r}
@@ -167,9 +168,15 @@ gene2GOs_list <- list(
 )
 ```
 
+# Outputs
+
+```{r}
+output_path <- "../../output/07_enrichment/goslim/"
+```
+
 Save input file with semi-colon separated GO IDs
 ```{r}
-write_csv(universe_gene2GOs, file.path(input_path, "universe_gene2GOs.csv"))
+write_csv(gene2GOs_universe, file.path(output_path, "gene2GOs_universe.csv"))
 ```
 
 ### Set variables
@@ -302,9 +309,9 @@ names(gene2GOs_flat) <- paste0(names(gene2GOs_flat), "_flat")
 
 This is the same as the gene2GO mapping file we did in the GO enrichment step.
 ```{r flatten-gene-and-GO-IDs, eval=TRUE}
-flat.gene.GO.df <- gene.GO.df %>% separate_rows(!!sym(GO.ID.column), sep = ";")
+#flat.gene.GO.df <- gene.GO.df %>% separate_rows(!!sym(GO.ID.column), sep = ";")
 
-str(flat.gene.GO.df)
+#str(flat.gene.GO.df)
 ```
 
 ### Group
@@ -337,11 +344,11 @@ names(gene2GOs_grouped) <- paste0(names(gene2GOs_grouped), "_grouped")
 
 
 ```{r group-by-GO, eval=TRUE}
-grouped.gene.GO.df <- flat.gene.GO.df %>%
-  group_by(!!sym(GO.ID.column)) %>%
-  summarise(!!gene.ID.column := paste(.data[[gene.ID.column]], collapse = ","))
+#grouped.gene.GO.df <- flat.gene.GO.df %>%
+#  group_by(!!sym(GO.ID.column)) %>%
+#  summarise(!!gene.ID.column := paste(.data[[gene.ID.column]], collapse = ","))
 
-str(grouped.gene.GO.df)
+#str(grouped.gene.GO.df)
 ```
 
 # Map GO IDs to GOslims
@@ -366,9 +373,9 @@ names(go_ids_list) <- paste0(names(go_ids_list), "_go_ids")
 The mapping steps were derived from this [bioconductor forum response](https://support.bioconductor.org/p/128407/#128408)
 ```{r vectorize-GOIDs, eval=TRUE}
 # Vector of GO IDs
-go_ids <- grouped.gene.GO.df[[GO.ID.column]]
+#go_ids <- grouped.gene.GO.df[[GO.ID.column]]
 
-str(go_ids)
+#str(go_ids)
 ```
 
 ## Retrieve GOslims from GSEABase
@@ -398,12 +405,33 @@ names(go_slims_list) <- paste0(names(go_slims_list), "_goslims")
 ```
 
 Creates new OBO Collection object of just GOslims, based on provided GO IDs.
+
+```{r}
+# 1) Load the GOslim OBO collection ONCE
+slim <- getOBOCollection(gseabase_files)
+
+# helper: clean GO IDs
+clean_go_ids <- function(x) {
+  x <- unique(na.omit(as.character(x)))
+  x[grepl("^GO:\\d{7}$", x)]
+}
+```
+
+```{r}
+# 2) For each element of go_ids_list, make a GOCollection
+go_collections <- map(go_ids_list, ~ GOCollection(clean_go_ids(.x)))
+
+# nice names if you want them
+names(go_collections) <- names(go_ids_list)
+```
+
+
 ```{r extract-GOslims-from-OBO, eval=TRUE}
 # Create GSEAbase GOCollection using `go_ids`
-myCollection <- GOCollection(go_ids)
+#myCollection <- GOCollection(go_ids)
 
 # Retrieve GOslims from GO OBO file set
-slim <- getOBOCollection(gseabase_files)
+#slim <- getOBOCollection(gseabase_files)
 
 ```
 
@@ -432,11 +460,16 @@ names(bp_goslims_list) <- paste0(names(bp_goslims_list), "_BP")
 ```{r}
 names(go_slims_list)
 ```
+
 ```{r}
 names(go_slims_list[[1]])
 ```
 ```{r}
-str(go_slims_list[[1]])
+names(bp_goslims_list)
+```
+
+```{r}
+bp_goslims_list[[1]]
 ```
 
 Are any of the dataframes missing the "slim" column?
@@ -446,10 +479,30 @@ which(!vapply(go_slims_list, function(x) "slim" %in% names(x), logical(1)))
 
 
 Get Biological Process (BP) GOslims associated with provided GO IDs
+
+```{r}
+# assumes you already created:
+# slim <- getOBOCollection(gseabase_files)
+# go_collections <- map(go_ids_list, ~ GOCollection(clean_go_ids(.x)))
+
+bp_slim_list <- imap(go_collections, function(myCollection, nm) {
+  message("Running goSlim for: ", nm)
+
+  out <- goSlim(myCollection, slim, "BP", verbose = FALSE)
+
+  # keep track of which group it came from
+  out$group <- nm
+  out
+})
+
+str(bp_slim_list[[1]])
+
+```
+
 ```{r retrieve-BP-GOslims, eval=TRUE}
 # Retrieve Biological Process (BP) GOslims
-slimdf <- goSlim(myCollection, slim, "BP", verbose)
-str(slimdf)
+#slimdf <- goSlim(myCollection, slim, "BP", verbose)
+#str(slimdf)
 ```
 
 Performs mapping of of GOIDs to GOslims
@@ -462,39 +515,123 @@ Counts of GO IDs matching to corresponding GOslim
 Percentage of GO IDs matching to corresponding GOslim
 GOIDs mapped to corresponding GOslim, in a semi-colon delimited format
 
-```{r map-GO-to-GOslims, eval=TRUE}
-# List of GOslims and all GO IDs from `go_ids`
-gomap <- as.list(GOBPOFFSPRING[rownames(slimdf)])
+```{r}
+clean_go_ids <- function(x) {
+  x <- unique(na.omit(as.character(x)))
+  x[grepl("^GO:\\d{7}$", x)]
+}
 
-# Maps `go_ids` to matching GOslims
-mapped <- lapply(gomap, intersect, ids(myCollection))
+map_go_to_goslims <- function(go_ids, slim, ontology = "BP", verbose = FALSE) {
+  go_ids <- clean_go_ids(go_ids)
 
-# Append all mapped GO IDs to `slimdf`
-# `sapply` needed to apply paste() to create semi-colon delimited values
-slimdf$GO.IDs <- sapply(lapply(gomap, intersect, ids(myCollection)), paste, collapse=";")
+  # Build GOCollection for this group's GO IDs
+  myCollection <- GOCollection(go_ids)
 
-# Remove "character(0) string from "GO.IDs" column
-slimdf$GO.IDs[slimdf$GO.IDs == "character(0)"] <- ""
+  # Get GOslim summary table (rownames are GOslim IDs)
+  slimdf <- goSlim(myCollection, slim, ontology, verbose = verbose)
 
-# Add self-matching GOIDs to "GO.IDs" column, if not present
-for (go_id in go_ids) {
-  # Check if the go_id is present in the row names
-  if (go_id %in% rownames(slimdf)) {
-    # Check if the go_id is not present in the GO.IDs column
-    # Also removes white space "trimws()" and converts all to upper case to handle
-    # any weird, "invisible" formatting issues.
-    if (!go_id %in% trimws(toupper(strsplit(slimdf[go_id, "GO.IDs"], ";")[[1]]))) {
-      # Append the go_id to the GO.IDs column with a semi-colon separator
-      if (length(slimdf$GO.IDs) > 0 && nchar(slimdf$GO.IDs[nrow(slimdf)]) > 0) {
-        slimdf[go_id, "GO.IDs"] <- paste0(slimdf[go_id, "GO.IDs"], "; ", go_id)
-      } else {
-        slimdf[go_id, "GO.IDs"] <- go_id
+  # --- Map GO IDs -> GOslims (semi-colon delimited) --------------------------
+  # For each GOslim term, get its "offspring" terms from GO.db, then intersect with this group's GO IDs
+  gomap <- as.list(GOBPOFFSPRING[rownames(slimdf)])
+
+  mapped_ids <- lapply(gomap, intersect, ids(myCollection))
+
+  slimdf$GO.IDs <- vapply(
+    mapped_ids,
+    function(x) paste(x, collapse = "; "),
+    FUN.VALUE = character(1)
+  )
+
+  # remove literal "character(0)" (usually shouldn’t happen with vapply, but keep it safe)
+  slimdf$GO.IDs[slimdf$GO.IDs %in% c("character(0)", "")] <- ""
+
+  # Add self-matching GOIDs to its own GOslim row, if applicable
+  for (go_id in go_ids) {
+    if (go_id %in% rownames(slimdf)) {
+      existing <- trimws(toupper(unlist(strsplit(slimdf[go_id, "GO.IDs"], ";"))))
+      existing <- existing[nzchar(existing)]
+
+      if (!toupper(go_id) %in% existing) {
+        if (nzchar(slimdf[go_id, "GO.IDs"])) {
+          slimdf[go_id, "GO.IDs"] <- paste0(slimdf[go_id, "GO.IDs"], "; ", go_id)
+        } else {
+          slimdf[go_id, "GO.IDs"] <- go_id
+        }
       }
     }
   }
+
+  slimdf
 }
 
-str(slimdf)
+```
+
+```{r}
+bp_slim_mapped_list <- imap(go_ids_list, ~ {
+  message("Mapping: ", .y)
+  map_go_to_goslims(.x, slim = slim, ontology = "BP", verbose = FALSE)
+})
+
+str(bp_slim_mapped_list[[1]])
+
+```
+
+```{r}
+bp_slim_mapped_df <- imap_dfr(bp_slim_mapped_list, ~ {
+  out <- .x
+  out$group <- .y
+  out$GOslimID <- rownames(out)
+  out
+})
+
+dplyr::glimpse(bp_slim_mapped_df)
+
+```
+
+```{r}
+# Do your GO IDs look valid?
+length(go_ids_list[[1]])
+sum(grepl("^GO:\\d{7}$", go_ids_list[[1]]))
+
+# Did we actually map anything?
+table(nzchar(bp_slim_mapped_list[[1]]$GO.IDs))
+
+```
+
+
+```{r map-GO-to-GOslims, eval=TRUE}
+# List of GOslims and all GO IDs from `go_ids`
+#gomap <- as.list(GOBPOFFSPRING[rownames(slimdf)])
+
+# Maps `go_ids` to matching GOslims
+#mapped <- lapply(gomap, intersect, ids(myCollection))
+
+# Append all mapped GO IDs to `slimdf`
+# `sapply` needed to apply paste() to create semi-colon delimited values
+#slimdf$GO.IDs <- sapply(lapply(gomap, intersect, ids(myCollection)), paste, collapse=";")
+
+# Remove "character(0) string from "GO.IDs" column
+#slimdf$GO.IDs[slimdf$GO.IDs == "character(0)"] <- ""
+
+# Add self-matching GOIDs to "GO.IDs" column, if not present
+#for (go_id in go_ids) {
+  # Check if the go_id is present in the row names
+ # if (go_id %in% rownames(slimdf)) {
+    # Check if the go_id is not present in the GO.IDs column
+    # Also removes white space "trimws()" and converts all to upper case to handle
+    # any weird, "invisible" formatting issues.
+#    if (!go_id %in% trimws(toupper(strsplit(slimdf[go_id, "GO.IDs"], ";")[[1]]))) {
+      # Append the go_id to the GO.IDs column with a semi-colon separator
+#      if (length(slimdf$GO.IDs) > 0 && nchar(slimdf$GO.IDs[nrow(slimdf)]) > 0) {
+#        slimdf[go_id, "GO.IDs"] <- paste0(slimdf[go_id, "GO.IDs"], "; ", go_id)
+#      } else {
+ #       slimdf[go_id, "GO.IDs"] <- go_id
+#      }
+#    }
+#  }
+#}
+
+#str(slimdf)
 ```
 "Flatten" file so each row is single GO ID with corresponding GOslim rownames_to_column needed to retain row name info
 
@@ -515,6 +652,41 @@ grouped_slimdf <- slimdf_separated %>%
 
 str(grouped_slimdf)
 ```
+
+
+```{r}
+flatten_goslim_df <- function(slimdf) {
+  slimdf %>%
+    rownames_to_column("GOslim") %>%
+    separate_rows(GO.IDs, sep = ";") %>%
+    mutate(GO.IDs = trimws(GO.IDs)) %>%
+    filter(!is.na(GO.IDs), GO.IDs != "") %>%
+    group_by(GO.IDs) %>%
+    summarize(
+      GOslim = paste(unique(GOslim), collapse = "; "),
+      Term   = paste(unique(Term),   collapse = "; "),
+      .groups = "drop"
+    )
+}
+
+```
+
+```{r}
+grouped_slimdf_list <- map(bp_slim_mapped_list, flatten_goslim_df)
+
+str(grouped_slimdf_list[[1]])
+
+```
+```{r}
+grouped_slimdf_all <- imap_dfr(bp_slim_mapped_list, ~ {
+  flatten_goslim_df(.x) %>%
+    mutate(group = .y, .before = 1)
+})
+
+dplyr::glimpse(grouped_slimdf_all)
+
+```
+
 
 Sorts GOslims by Count, in descending order and then selects just the Term and Count columns.
 ```{r sort-and-select-slimdf-counts, eval=TRUE}
@@ -546,13 +718,13 @@ Create a horizontal bar chart showing the top GOslim terms by number of associat
 
 ```{r visualize-top-goslims, eval=TRUE, fig.width=10, fig.height=8}
 # Select top 20 GOslim terms by count
-top_goslims <- slim.count.df %>%
-  slice_max(Count, n = 20) %>%
+top_goslims <- bp_slim_mapped_df %>%
+  slice_max(Count, n = 50) %>%
   mutate(Term = fct_reorder(Term, Count))
 
 # Create horizontal bar chart
-ggplot(top_goslims, aes(x = Count, y = Term)) +
-  geom_col(fill = "#4A90E2", alpha = 0.8) +
+ggplot(top_goslims, aes(x = Count, y = Term, fill = group)) +
+  geom_col(alpha = 0.7) +
   labs(
     title = "Top 20 GOslim Terms by Number of Associated Genes",
     x = "Number of Genes",
@@ -567,6 +739,91 @@ ggplot(top_goslims, aes(x = Count, y = Term)) +
     panel.grid.major.y = element_blank(),
     panel.grid.minor = element_blank()
   )
+```
+```{r, fig.width=10, fig.height=8}
+top_goslims <- bp_slim_mapped_df %>%
+  slice_max(Count, n = 30) %>%
+  mutate(Term = fct_reorder(Term, Count))
+
+ggplot(top_goslims, aes(x = Count, y = Term, fill = group)) +
+  geom_col(alpha = 0.7, position = "dodge") +   # <- grouped bars
+  scale_x_continuous(expand = c(0, 0)) +        # <- bars start at 0
+  #coord_flip() +                                # <- horizontal
+  labs(
+    title = "Top GOslim Terms by Number of Associated Genes",
+    x = "Number of Genes",
+    y = "GOslim Term"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    axis.text.y = element_text(size = 10),
+    axis.text.x = element_text(size = 10),
+    axis.title  = element_text(size = 12, face = "bold"),
+    plot.title  = element_text(size = 14, face = "bold", hjust = 0.5),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor   = element_blank()
+  )
+
+```
+```{r}
+library(dplyr)
+library(forcats)
+
+top_n <- 6
+
+top_by_group <- bp_slim_mapped_df %>%
+  group_by(group) %>%
+  slice_max(order_by = Count, n = top_n, with_ties = FALSE) %>%
+  ungroup()
+
+```
+
+```{r, fig.width=18}
+top_by_group %>%
+  group_by(group) %>%
+  mutate(Term = fct_reorder(Term, Count)) %>%
+  ungroup() %>%
+  ggplot(aes(x = Count, y = Term)) +
+  geom_col(alpha = 0.8) +
+  scale_x_continuous(expand = c(0, 0)) +
+  #coord_flip() +
+  facet_wrap(~ group, scales = "free_y", ncol = 1) +
+  labs(
+    title = "Top GOslim BP Terms by Group",
+    x = "Number of genes (Count)",
+    y = "GOslim term"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(panel.grid.major.y = element_blank())
+
+```
+```{r}
+terms_to_compare <- top_by_group %>%
+  distinct(Term) %>%
+  pull(Term)
+
+compare_df <- bp_slim_mapped_df %>%
+  filter(Term %in% terms_to_compare) %>%
+  group_by(Term) %>%
+  mutate(max_count = max(Count, na.rm = TRUE)) %>%
+  ungroup() %>%
+  mutate(Term = fct_reorder(Term, max_count))
+
+```
+
+```{r, fig.width=12}
+ggplot(compare_df, aes(x = Count, y = Term, fill = group)) +
+  geom_col(position = position_dodge(width = 0.9), alpha = 0.85) +
+  scale_x_continuous(expand = c(0, 0)) +
+  #coord_flip() +
+  labs(
+    title = "GOslim BP Terms: Counts Compared Across Groups",
+    x = "Number of genes (Count)",
+    y = "GOslim term"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(panel.grid.major.y = element_blank())
+
 ```
 
 This visualization helps identify the most prevalent biological processes represented in the GOslim mapping.
