@@ -45,7 +45,7 @@ knitr::opts_chunk$set(
 # Load libraries
 
 ```{r}
-#BiocManager::install("GSEABase")
+BiocManager::install("GSEABase")
 ```
 
 ```{r}
@@ -75,6 +75,7 @@ universe_genes_anno <- read_csv(file.path(input_path, "universe_genes_anno.csv")
 
 head(universe_genes_anno[ , c("gene_id", "GOs")])
 ```
+
 Change comma seperated GO IDs to semi-colon separated GO IDs
 ```{r}
 gene2GOs <- universe_genes_anno %>%
