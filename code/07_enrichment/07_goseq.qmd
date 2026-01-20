@@ -331,6 +331,7 @@ names(gene_lengths) <- lengths$gene_id
 gene_lengths <- gene_lengths[universe_genes]
 paste("Transcript lengths for", length(gene_lengths), "genes")
 ```
+
 ```{r}
 # Are there NAs in gene_lengths?
 sum(is.na(gene_lengths))
