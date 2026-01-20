@@ -537,3 +537,36 @@ output_path <- "../../output/07_enrichment/goslim/"
 write_csv(slim.count.df, file.path(output_path, "gene2goslim_mapping.csv")) 
 ```
 
+# Data Visualization
+
+## Horizontal Bar Chart of Top GOslim Terms
+
+Create a horizontal bar chart showing the top GOslim terms by number of associated genes.
+
+```{r visualize-top-goslims, eval=TRUE, fig.width=10, fig.height=8}
+# Select top 20 GOslim terms by count
+top_goslims <- slim.count.df %>%
+  slice_max(Count, n = 20) %>%
+  mutate(Term = fct_reorder(Term, Count))
+
+# Create horizontal bar chart
+ggplot(top_goslims, aes(x = Count, y = Term)) +
+  geom_col(fill = "#4A90E2", alpha = 0.8) +
+  labs(
+    title = "Top 20 GOslim Terms by Number of Associated Genes",
+    x = "Number of Genes",
+    y = "GOslim Term"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.y = element_text(size = 10),
+    axis.text.x = element_text(size = 10),
+    axis.title = element_text(size = 12, face = "bold"),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank()
+  )
+```
+
+This visualization helps identify the most prevalent biological processes represented in the GOslim mapping.
+
