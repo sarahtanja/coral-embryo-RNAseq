@@ -557,7 +557,7 @@ ggplot(top_goslims, aes(x = Count, y = Term)) +
     x = "Number of Genes",
     y = "GOslim Term"
   ) +
-  theme_minimal() +
+  theme_minimal(base_size = 12) +
   theme(
     axis.text.y = element_text(size = 10),
     axis.text.x = element_text(size = 10),
