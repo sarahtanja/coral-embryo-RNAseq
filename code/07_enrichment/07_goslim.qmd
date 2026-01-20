@@ -850,7 +850,7 @@ if (nrow(bp_slim_mapped_df) > 0) {
   
   # Print summary
   cat("Number of terms per group:\n")
-  imap(goslim_term_lists, ~ cat("  ", .y, ": ", length(.x), "\n"))
+  iwalk(goslim_term_lists, ~ cat("  ", .y, ": ", length(.x), "\n"))
   
   # Pre-filter lists for different plot types
   term_list_all <- goslim_term_lists[!grepl("universe", names(goslim_term_lists))]
@@ -871,6 +871,7 @@ Visualize the overlap of GOslim terms across all groups (leachate effects and st
 
 ```{r upset-all-groups, fig.width=12, fig.height=8}
 # Create upset plot for all groups (excluding universe)
+# Note: keep.order = FALSE allows reordering by frequency for better visualization
 if (length(term_list_all) > 0) {
   upset(
     fromList(term_list_all),
@@ -893,6 +894,7 @@ Visualize the overlap of GOslim terms across leachate-responsive genes at differ
 
 ```{r upset-leachate-groups, fig.width=10, fig.height=6}
 # Filter to leachate groups only
+# Note: keep.order = TRUE maintains the input order of groups
 if (length(term_list_leachate) > 0) {
   upset(
     fromList(term_list_leachate),
@@ -915,6 +917,7 @@ Visualize the overlap of GOslim terms across stage-specific gene expression patt
 
 ```{r upset-stage-groups, fig.width=10, fig.height=6}
 # Filter to stage groups only
+# Note: keep.order = TRUE maintains the input order of groups
 if (length(term_list_stage) > 0) {
   upset(
     fromList(term_list_stage),
