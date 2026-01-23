@@ -62,23 +62,24 @@ library(UpSetR)
 input_path <- "../../output/07_enrichment/goseq/"
 ```
 
-> The expected input file has at least two columns. One each with:
-gene ID
-Gene Ontology (GO) ID
+The expected input file has at least two columns. 
+One each with:
+- gene ID
+- Gene Ontology (GO) ID
 
 ::: callout-note
 The GO IDs in the GO ID column **should be separated with a semi-colon**.
 gene to go term mapping
 ::: 
 
-## Universe gene set
+## Load GO annotated genes
 ```{r}
 universe_genes_anno <- read_csv(file.path(input_path, "universe_genes_anno.csv"))
 
 head(universe_genes_anno[ , c("gene_id", "GOs")])
 ```
 
-Change comma seperated GO IDs to semi-colon separated GO IDs
+Change comma separated GO IDs to semi-colon separated GO IDs
 ```{r}
 gene2GOs <- universe_genes_anno %>%
   mutate(GOs = str_replace_all(GOs, ",", ";")) %>% 
@@ -95,9 +96,9 @@ The user needs to provide:
 - Path or URL to input file.
 :::
 
-A gene set for each cluster and module
+# Make a gene set for each cluster and module
 
-Leachate DEGs
+## Leachate DEGs
 ```{r}
 gene2GOs_leachate.cleavage <- gene2GOs %>%
   filter(cluster_stage == "cleavage_peak") %>%
@@ -119,7 +120,7 @@ gene2GOs_leachate.earlygastrula <- gene2GOs  %>%
   mutate(list = "leachate_earlygastrula")
 ```
 
-Stage DEGs
+## Stage DEGs
 ```{r}
 gene2GOs_stage.cleavage <- gene2GOs  %>%
   filter(module_stage == "cleavage_up") %>%
@@ -148,14 +149,14 @@ gene2GOs_stage.earlygastrulaup <- gene2GOs %>%
   mutate(list = "stage_earlygastrula_up")
 ```
 
-Universe
+## Universe
 ```{r}
 gene2GOs_universe <- gene2GOs%>%
   dplyr::select(gene_id, GOs) %>% 
   mutate(list = "universe")
 ```
 
-Save gene2GO dataframes as a named list
+## Save gene2GO dataframes as a named list
 ```{r}
 gene2GOs_list <- list(
   gene2GOs_leachate.cleavage      = gene2GOs_leachate.cleavage,
@@ -230,15 +231,6 @@ na_summary <- imap_dfr(
 na_summary
 ```
 
-```{r read-in-gene-file, eval=TRUE}
-full.gene.df <- read_csv(file = input.file)
-
-str(full.gene.df)
-
-# check for any NA values in GO ID column
-sum(is.na(full.gene.df[[GO.ID.column]]))
-```
-
 ```{r}
 clean_gene2go <- function(df, gene.ID.column, GO.ID.column) {
   df %>%
@@ -276,51 +268,47 @@ imap_dfr(
 )
 ```
 
+### Map  
 
-```{r remove-NA-and-uniprotIDs, eval=TRUE}
-
-# Clean whitespace, filter NA/empty rows, select columns, and split GO terms using column name variables
-gene.GO.df <- full.gene.df %>%
-  mutate(!!GO.ID.column := str_replace_all(.data[[GO.ID.column]], "\\s*;\\s*", ";")) %>% # Clean up spaces around ";"
-  filter(!is.na(.data[[gene.ID.column]]) & !is.na(.data[[GO.ID.column]]) & .data[[GO.ID.column]] != "") %>% 
-  select(all_of(c(gene.ID.column, GO.ID.column)))
-
-```
-
-### Flatten 
-Map gene 2 GO data frame so each row is single gene ID with single GO ID
+This is a function that will map gene 2 GO data frame so each row is single gene ID with single GO ID
 ```{r}
-flatten_gene2go <- function(gene.GO.df, GO.ID.column, sep = ";") {
-  gene.GO.df %>%
+map_gene2go <- function(df, GO.ID.column, sep = ";") {
+  df %>%
     separate_rows(!!sym(GO.ID.column), sep = sep)
 }
 ```
 
-
 ```{r}
-gene2GOs_flat <- imap(
-  gene2GOs_clean,   # or whatever list holds your cleaned gene.GO.df objects
-  ~ flatten_gene2go(.x, GO.ID.column = GO.ID.column)
+gene2GOs_map <- imap(
+  gene2GOs_clean,   # or whatever list holds your cleaned dataframes
+  ~ map_gene2go(.x, GO.ID.column = GO.ID.column)
 )
-
-names(gene2GOs_flat) <- paste0(names(gene2GOs_flat), "_flat")
-
 ```
 
-
-This is the same as the gene2GO mapping file we did in the GO enrichment step.
-```{r flatten-gene-and-GO-IDs, eval=TRUE}
-#flat.gene.GO.df <- gene.GO.df %>% separate_rows(!!sym(GO.ID.column), sep = ";")
-
-#str(flat.gene.GO.df)
+Check that mapping worked
+```{r}
+imap_dfr(
+  gene2GOs_map,
+  ~ tibble(
+    dataset = .y,
+    n_rows  = nrow(.x)
+  )
+)
 ```
+Let's see the structure of one of the mapped dataframes
+```{r}
+str(gene2GOs_map[[1]])
+```
+
+These dataframes just contain two columns, one with gene IDs and one with GO IDs, with one GO ID per row (and gene_id is repeated for as many GO IDs there are associated with that gene).
 
 ### Group
+
 Groups the genes by GO ID (i.e. lists all genes associated with each unique GO ID)
 
 ```{r}
-group_gene2go <- function(flat.gene.GO.df, gene.ID.column, GO.ID.column) {
-  flat.gene.GO.df %>%
+group_gene2go <- function(df, gene.ID.column, GO.ID.column) {
+      df %>%
     group_by(!!sym(GO.ID.column)) %>%
     summarise(
       !!sym(gene.ID.column) := paste(.data[[gene.ID.column]], collapse = ","),
@@ -331,33 +319,37 @@ group_gene2go <- function(flat.gene.GO.df, gene.ID.column, GO.ID.column) {
 
 ```{r}
 gene2GOs_grouped <- imap(
-  gene2GOs_flat,
+  gene2GOs_map,
   ~ group_gene2go(
       .x,
       gene.ID.column = gene.ID.column,
       GO.ID.column   = GO.ID.column
     )
 )
-
-names(gene2GOs_grouped) <- paste0(names(gene2GOs_grouped), "_grouped")
-
 ```
 
-
-```{r group-by-GO, eval=TRUE}
-#grouped.gene.GO.df <- flat.gene.GO.df %>%
-#  group_by(!!sym(GO.ID.column)) %>%
-#  summarise(!!gene.ID.column := paste(.data[[gene.ID.column]], collapse = ","))
-
-#str(grouped.gene.GO.df)
+Check that grouping worked
+```{r}
+imap_dfr(
+  gene2GOs_grouped,
+  ~ tibble(
+    dataset = .y,
+    n_rows  = nrow(.x)
+  )
+)
 ```
+So one row should have one unique GO ID, with all associated gene IDs listed in a comma delimited format. Let's look at one dataframe:
+```{r}
+head(gene2GOs_grouped[[1]])
+```
+
 
 # Map GO IDs to GOslims
 
-## Extract GO IDs as vector
+## Extract GO IDs as vectors
 ```{r}
-vectorize_go_ids <- function(grouped.gene.GO.df, GO.ID.column) {
-  grouped.gene.GO.df[[GO.ID.column]]
+vectorize_go_ids <- function(df, GO.ID.column) {
+  df[[GO.ID.column]]
 }
 ```
 
@@ -366,18 +358,14 @@ go_ids_list <- imap(
   gene2GOs_grouped,
   ~ vectorize_go_ids(.x, GO.ID.column = GO.ID.column)
 )
-
-names(go_ids_list) <- paste0(names(go_ids_list), "_go_ids")
 ```
 
-
-The mapping steps were derived from this [bioconductor forum response](https://support.bioconductor.org/p/128407/#128408)
-```{r vectorize-GOIDs, eval=TRUE}
-# Vector of GO IDs
-#go_ids <- grouped.gene.GO.df[[GO.ID.column]]
-
-#str(go_ids)
+```{r}
+head(go_ids_list[[1]])
 ```
+
+> The mapping steps were derived from this [bioconductor forum response](https://support.bioconductor.org/p/128407/#128408)
+
 
 ## Retrieve GOslims from GSEABase
 
@@ -400,10 +388,12 @@ go_slims_list <- imap(
       gseabase_files = gseabase_files
     )
 )
-
-names(go_slims_list) <- paste0(names(go_slims_list), "_goslims")
-
 ```
+
+```{r}
+head(go_slims_list[[1]])
+```
+
 
 Creates new OBO Collection object of just GOslims, based on provided GO IDs.
 
@@ -741,7 +731,8 @@ ggplot(top_goslims, aes(x = Count, y = Term, fill = group)) +
     panel.grid.minor = element_blank()
   )
 ```
-```{r, fig.width=10, fig.height=8}
+
+```{r, fig.width=18}
 top_goslims <- bp_slim_mapped_df %>%
   slice_max(Count, n = 30) %>%
   mutate(Term = fct_reorder(Term, Count))
@@ -767,9 +758,6 @@ ggplot(top_goslims, aes(x = Count, y = Term, fill = group)) +
 
 ```
 ```{r}
-library(dplyr)
-library(forcats)
-
 top_n <- 6
 
 top_by_group <- bp_slim_mapped_df %>%
@@ -798,6 +786,7 @@ top_by_group %>%
   theme(panel.grid.major.y = element_blank())
 
 ```
+
 ```{r}
 terms_to_compare <- top_by_group %>%
   distinct(Term) %>%
@@ -812,7 +801,7 @@ compare_df <- bp_slim_mapped_df %>%
 
 ```
 
-```{r, fig.width=12}
+```{r, fig.width=18}
 ggplot(compare_df, aes(x = Count, y = Term, fill = group)) +
   geom_col(position = position_dodge(width = 0.9), alpha = 0.85) +
   scale_x_continuous(expand = c(0, 0)) +
