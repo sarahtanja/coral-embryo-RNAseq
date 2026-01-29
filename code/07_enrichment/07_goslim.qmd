@@ -159,14 +159,14 @@ gene2GOs_universe <- gene2GOs%>%
 ## Save gene2GO dataframes as a named list
 ```{r}
 gene2GOs_list <- list(
-  gene2GOs_leachate.cleavage      = gene2GOs_leachate.cleavage,
-  gene2GOs_leachate.prawnchip     = gene2GOs_leachate.prawnchip,
-  gene2GOs_leachate.earlygastrula = gene2GOs_leachate.earlygastrula,
-  gene2GOs_stage.cleavage         = gene2GOs_stage.cleavage,
-  gene2GOs_stage.prawnchipup      = gene2GOs_stage.prawnchipup,
-  gene2GOs_stage.prawnchipdip     = gene2GOs_stage.prawnchipdip,
-  gene2GOs_stage.earlygastrulaup  = gene2GOs_stage.earlygastrulaup,
-  gene2GOs_universe               = gene2GOs_universe
+  leachate.cleavage      = gene2GOs_leachate.cleavage,
+  leachate.prawnchip     = gene2GOs_leachate.prawnchip,
+  leachate.earlygastrula = gene2GOs_leachate.earlygastrula,
+  stage.cleavage         = gene2GOs_stage.cleavage,
+  stage.prawnchipup      = gene2GOs_stage.prawnchipup,
+  stage.prawnchipdip     = gene2GOs_stage.prawnchipdip,
+  stage.earlygastrulaup  = gene2GOs_stage.earlygastrulaup,
+  universe               = gene2GOs_universe
 )
 ```
 
@@ -279,7 +279,7 @@ map_gene2go <- function(df, GO.ID.column, sep = ";") {
 ```
 
 ```{r}
-gene2GOs_map <- imap(
+gene2GO_map <- imap(
   gene2GOs_clean,   # or whatever list holds your cleaned dataframes
   ~ map_gene2go(.x, GO.ID.column = GO.ID.column)
 )
@@ -288,7 +288,7 @@ gene2GOs_map <- imap(
 Check that mapping worked
 ```{r}
 imap_dfr(
-  gene2GOs_map,
+  gene2GO_map,
   ~ tibble(
     dataset = .y,
     n_rows  = nrow(.x)
@@ -297,10 +297,12 @@ imap_dfr(
 ```
 Let's see the structure of one of the mapped dataframes
 ```{r}
-str(gene2GOs_map[[1]])
+head(gene2GO_map[[1]])
 ```
 
-These dataframes just contain two columns, one with gene IDs and one with GO IDs, with one GO ID per row (and gene_id is repeated for as many GO IDs there are associated with that gene).
+These dataframes just contain two columns, one with gene IDs and one with GO IDs, with one GO ID per row (and gene_id is repeated for as many GO IDs there are associated with that gene). This is a one to one dataframe! One gene to one GO term! 
+
+
 
 ### Group
 
@@ -318,20 +320,30 @@ group_gene2go <- function(df, gene.ID.column, GO.ID.column) {
 ```
 
 ```{r}
-gene2GOs_grouped <- imap(
-  gene2GOs_map,
-  ~ group_gene2go(
-      .x,
-      gene.ID.column = gene.ID.column,
-      GO.ID.column   = GO.ID.column
-    )
+GO2genes_grouped <- imap(
+  gene2GO_map,
+  ~ .x %>%
+      dplyr::filter(
+        !is.na(.data[[GO.ID.column]]),
+        .data[[GO.ID.column]] != "-"
+      ) %>%
+      group_gene2go(
+        gene.ID.column = gene.ID.column,
+        GO.ID.column   = GO.ID.column
+      )
 )
+
 ```
+What this does
+- `!is.na(...)` → removes missing GO IDs
+- `!= "-"` → removes placeholder dashes
+- `.data[[GO.ID.column]]` → tidy-eval safe, works with column names stored as strings
+
 
 Check that grouping worked
 ```{r}
 imap_dfr(
-  gene2GOs_grouped,
+  GO2genes_grouped,
   ~ tibble(
     dataset = .y,
     n_rows  = nrow(.x)
@@ -340,26 +352,56 @@ imap_dfr(
 ```
 So one row should have one unique GO ID, with all associated gene IDs listed in a comma delimited format. Let's look at one dataframe:
 ```{r}
-head(gene2GOs_grouped[[1]])
+head(GO2genes_grouped[[1]])
 ```
 
+::: callout-note
+How many unique genes are associated with each unique GO term?
+:::
+
+Let's make a function that will add a column that counts the number of genes associated with each GO term.
+```{r}
+count_genes_per_go <- function(df, gene.ID.column) {
+  df %>%
+    mutate(
+      DEG_count = str_count(.data[[gene.ID.column]], ",") + 1
+    )
+}
+```
+
+Now we can imap that function across our list
+```{r}
+GO2genes_grouped_counted <- imap(
+  GO2genes_grouped,
+  ~ count_genes_per_go(.x, gene.ID.column = gene.ID.column)
+)
+```
+
+```{r}
+head(GO2genes_grouped_counted[[1]])
+```
 
 # Map GO IDs to GOslims
 
 ## Extract GO IDs as vectors
+
+This is a function to extract GO IDs as a vector from the grouped gene-GO dataframe
 ```{r}
 vectorize_go_ids <- function(df, GO.ID.column) {
   df[[GO.ID.column]]
 }
 ```
 
+
+This loops through each grouped gene-GO dataframe in the list and extracts the GO IDs as a vector
 ```{r}
 go_ids_list <- imap(
-  gene2GOs_grouped,
+  GO2genes_grouped,
   ~ vectorize_go_ids(.x, GO.ID.column = GO.ID.column)
 )
 ```
 
+Each vector of GO IDs can now be used to create a `GOCollection` object in GSEABase.
 ```{r}
 head(go_ids_list[[1]])
 ```
@@ -369,6 +411,7 @@ head(go_ids_list[[1]])
 
 ## Retrieve GOslims from GSEABase
 
+This function creates a GOCollection object and retrieves GOslims from GSEABase
 ```{r}
 extract_go_slims <- function(go_ids, gseabase_files) {
   myCollection <- GOCollection(go_ids)
@@ -380,6 +423,7 @@ extract_go_slims <- function(go_ids, gseabase_files) {
 }
 ```
 
+Here we apply the above function across our list of GO ID vectors
 ```{r}
 go_slims_list <- imap(
   go_ids_list,
@@ -394,6 +438,26 @@ go_slims_list <- imap(
 head(go_slims_list[[1]])
 ```
 
+GO ⟶ GO-slim
+(many-to-one mapping via the ontology DAG)
+
+Note how for our first "module" leachate.cleavage there are 843 total GO ids in `$collection`, but 141 GOslims in `$slim`
+
+A `GOCollection` object:
+`$collection` → regular GO terms
+These are the specific, fine-grained GO annotations associated with your genes.
+- knows how to query GO.db
+- understands parent/child relationships
+- can be passed to functions like goSlim()
+📌 Without this object, GO terms are just strings.
+
+An `OBOCollection` object:
+`$slim` → GO-slim terms
+These are high-level, curated summary categories used to collapse many GO terms into interpretable bins.
+- GO-slim terms (a subset of GO)
+- Their relationships
+- Subset labels (generic, yeast, plant, etc.)
+📌 This object defines which high-level categories you allow.
 
 Creates new OBO Collection object of just GOslims, based on provided GO IDs.
 
@@ -412,18 +476,13 @@ clean_go_ids <- function(x) {
 # 2) For each element of go_ids_list, make a GOCollection
 go_collections <- map(go_ids_list, ~ GOCollection(clean_go_ids(.x)))
 
-# nice names if you want them
+# name each collection by module (list)
 names(go_collections) <- names(go_ids_list)
 ```
 
-
 ```{r extract-GOslims-from-OBO, eval=TRUE}
-# Create GSEAbase GOCollection using `go_ids`
-#myCollection <- GOCollection(go_ids)
-
 # Retrieve GOslims from GO OBO file set
-#slim <- getOBOCollection(gseabase_files)
-
+slim <- getOBOCollection(gseabase_files)
 ```
 
 ## Get Biological Process (BP) GOslims
@@ -439,7 +498,6 @@ bp_goslims_list <- map(go_slims_list, get_bp_goslims, verbose = FALSE)
 names(bp_goslims_list) <- paste0(names(go_slims_list), "_BP")
 ```
 
-
 ```{r}
 bp_goslims_list <- imap(
   go_slims_list,
@@ -448,20 +506,13 @@ bp_goslims_list <- imap(
 
 names(bp_goslims_list) <- paste0(names(bp_goslims_list), "_BP")
 ```
-```{r}
-names(go_slims_list)
-```
-
-```{r}
-names(go_slims_list[[1]])
-```
-```{r}
-names(bp_goslims_list)
-```
 
 ```{r}
 bp_goslims_list[[1]]
 ```
+
+## GO, Count, Percent, Term
+
 
 Are any of the dataframes missing the "slim" column?
 ```{r}
@@ -486,9 +537,10 @@ bp_slim_list <- imap(go_collections, function(myCollection, nm) {
   out
 })
 
-str(bp_slim_list[[1]])
+head(bp_slim_list[[1]])
 
 ```
+Now we have added the group column
 
 ```{r retrieve-BP-GOslims, eval=TRUE}
 # Retrieve Biological Process (BP) GOslims

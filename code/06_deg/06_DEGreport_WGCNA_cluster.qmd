@@ -718,11 +718,11 @@ grey
 
 grey is the WGCNA “unassigned” bucket (genes that didn’t fit cleanly). Don’t enrich/interpret grey as a biological module.
 
-So: you do have the four big biological programs you expected (early / mid / late), but WGCNA is splitting them into submodules (early = turquoise; mid = yellow/green+red; late = blue+brown)... with mid stage 
+We do have the three big biological programs we expected (early / mid / late), but WGCNA is splitting them into submodules (early = turquoise; mid = yellow/green+red; late = blue+brown)... with the mid stage having a up/dip distinction.
 
-keep modules but label them as belonging to one of 4 programs
+Keep modules but label them as belonging to one of 4 programs
 
-Assign each module a “stage label” based on where its ME peaks (cleavage / prawn peak / prawn dip / early gastrula)
+Assign each module a “stage label” based on expression pattern (cleavage peak / prawn peak / prawn dip / early gastrula peak)
 
 Then do enrichment by the grouped “meta-programs”
 
@@ -853,3 +853,8 @@ We generated and saved:
 
 These define membership into groups of genes with similar expression patterns. 
 We can perform functional enrichment on these modules and clusters now!
+
+```{r}
+sessionInfo()
+```
+

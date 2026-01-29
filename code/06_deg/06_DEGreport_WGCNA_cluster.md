@@ -221,7 +221,7 @@ DEGs.
 leachate130_GEPs <- degPatterns(vst_mat_130, metadata = meta_mat, time = "stage", col= "leachate", plot=TRUE, minc = 10)
 ```
 
-![](06_clusters_files/figure-commonmark/unnamed-chunk-10-1.png)
+![](06_DEGreport_WGCNA_cluster_files/figure-commonmark/unnamed-chunk-10-1.png)
 
 ``` r
 ggsave(filename="../../output/06_deg/cluster/DEG_LeachateClusterPatterns_bystage_plot.png", width=12, height=10)
@@ -232,7 +232,7 @@ ggsave(filename="../../output/06_deg/cluster/DEG_LeachateClusterPatterns_bystage
 degPatterns(vst_mat_130, metadata = meta_mat, time = "leachate", col="stage", plot=TRUE, minc = 10)
 ```
 
-![](06_clusters_files/figure-commonmark/unnamed-chunk-12-1.png)
+![](06_DEGreport_WGCNA_cluster_files/figure-commonmark/unnamed-chunk-12-1.png)
 
 ``` r
 ggsave(filename="../../output/06_deg/cluster/DEG_LeachateClusterPatterns_bydose_plot.png", width=12, height=10)
@@ -366,7 +366,7 @@ pc <- ps / pl
 pc
 ```
 
-![](06_clusters_files/figure-commonmark/unnamed-chunk-20-1.png)
+![](06_DEGreport_WGCNA_cluster_files/figure-commonmark/unnamed-chunk-20-1.png)
 
 Save plots as pngs
 
@@ -562,7 +562,7 @@ text(sft_stage$fitIndices[, 1],
      cex = cex1, col = "red")
 ```
 
-![](06_clusters_files/figure-commonmark/unnamed-chunk-27-1.png)
+![](06_DEGreport_WGCNA_cluster_files/figure-commonmark/unnamed-chunk-27-1.png)
 
 ``` r
 par(mfrow = c(1,2));
@@ -592,7 +592,7 @@ text(sft_leachate$fitIndices[, 1],
      cex = cex1, col = "red")
 ```
 
-![](06_clusters_files/figure-commonmark/unnamed-chunk-28-1.png)
+![](06_DEGreport_WGCNA_cluster_files/figure-commonmark/unnamed-chunk-28-1.png)
 
 > [!NOTE]
 >
@@ -817,7 +817,7 @@ plotDendroAndColors(
   guideHang = 0.05 )
 ```
 
-![](06_clusters_files/figure-commonmark/unnamed-chunk-31-1.png)
+![](06_DEGreport_WGCNA_cluster_files/figure-commonmark/unnamed-chunk-31-1.png)
 
 ## Relate module (color cluster) assignments to treatment groups
 
@@ -884,7 +884,7 @@ ME_df_long %>% ggplot(., aes(x=sample_id, y=name, fill=value)) +
   labs(title = "Module-trait Relationships", y = "Modules", fill="corr")
 ```
 
-![](06_clusters_files/figure-commonmark/unnamed-chunk-35-1.png)
+![](06_DEGreport_WGCNA_cluster_files/figure-commonmark/unnamed-chunk-35-1.png)
 
 ## Examine Expression Profiles
 
@@ -913,7 +913,7 @@ ggplot(expr_pat_long, aes(x=stage, y=z))+
   facet_wrap(~WGCNAmodule)
 ```
 
-![](06_clusters_files/figure-commonmark/unnamed-chunk-37-1.png)
+![](06_DEGreport_WGCNA_cluster_files/figure-commonmark/unnamed-chunk-37-1.png)
 
 Cleavage-high → decreases over time
 
@@ -1045,7 +1045,7 @@ ME_df %>%
   theme_bw()
 ```
 
-![](06_clusters_files/figure-commonmark/unnamed-chunk-40-1.png)
+![](06_DEGreport_WGCNA_cluster_files/figure-commonmark/unnamed-chunk-40-1.png)
 
 ## Extract & save
 
@@ -1136,6 +1136,100 @@ We generated and saved:
 These define membership into groups of genes with similar expression
 patterns. We can perform functional enrichment on these modules and
 clusters now!
+
+``` r
+sessionInfo()
+```
+
+    R version 4.5.1 (2025-06-13 ucrt)
+    Platform: x86_64-w64-mingw32/x64
+    Running under: Windows 11 x64 (build 26200)
+
+    Matrix products: default
+      LAPACK version 3.12.1
+
+    locale:
+    [1] LC_COLLATE=English_United States.utf8 
+    [2] LC_CTYPE=English_United States.utf8   
+    [3] LC_MONETARY=English_United States.utf8
+    [4] LC_NUMERIC=C                          
+    [5] LC_TIME=English_United States.utf8    
+
+    time zone: America/Los_Angeles
+    tzcode source: internal
+
+    attached base packages:
+    [1] stats     graphics  grDevices utils     datasets  methods   base     
+
+    other attached packages:
+     [1] WGCNA_1.73            fastcluster_1.3.0     dynamicTreeCut_1.63-1
+     [4] patchwork_1.3.2       DEGreport_1.44.0      lubridate_1.9.4      
+     [7] forcats_1.0.1         stringr_1.6.0         dplyr_1.1.4          
+    [10] purrr_1.2.1           readr_2.1.6           tidyr_1.3.2          
+    [13] tibble_3.3.1          ggplot2_4.0.1         tidyverse_2.0.0      
+
+    loaded via a namespace (and not attached):
+      [1] RColorBrewer_1.1-3          ggdendro_0.2.0             
+      [3] rstudioapi_0.18.0           jsonlite_2.0.0             
+      [5] shape_1.4.6.1               magrittr_2.0.4             
+      [7] farver_2.1.2                rmarkdown_2.30             
+      [9] GlobalOptions_0.1.3         vctrs_0.6.5                
+     [11] memoise_2.0.1               base64enc_0.1-3            
+     [13] htmltools_0.5.9             S4Arrays_1.8.1             
+     [15] broom_1.0.11                SparseArray_1.8.1          
+     [17] Formula_1.2-5               htmlwidgets_1.6.4          
+     [19] plyr_1.8.9                  impute_1.82.0              
+     [21] cachem_1.1.0                lifecycle_1.0.5            
+     [23] iterators_1.0.14            pkgconfig_2.0.3            
+     [25] Matrix_1.7-4                R6_2.6.1                   
+     [27] fastmap_1.2.0               GenomeInfoDbData_1.2.14    
+     [29] MatrixGenerics_1.20.0       clue_0.3-66                
+     [31] digest_0.6.39               colorspace_2.1-2           
+     [33] reshape_0.8.10              AnnotationDbi_1.70.0       
+     [35] S4Vectors_0.46.0            DESeq2_1.48.1              
+     [37] Hmisc_5.2-5                 GenomicRanges_1.60.0       
+     [39] RSQLite_2.4.5               labeling_0.4.3             
+     [41] timechange_0.3.0            mgcv_1.9-4                 
+     [43] httr_1.4.7                  abind_1.4-8                
+     [45] compiler_4.5.1              bit64_4.6.0-1              
+     [47] withr_3.0.2                 doParallel_1.0.17          
+     [49] htmlTable_2.4.3             ConsensusClusterPlus_1.72.0
+     [51] S7_0.2.1                    backports_1.5.0            
+     [53] BiocParallel_1.42.1         DBI_1.2.3                  
+     [55] psych_2.5.6                 MASS_7.3-65                
+     [57] DelayedArray_0.34.1         rjson_0.2.23               
+     [59] tools_4.5.1                 foreign_0.8-90             
+     [61] otel_0.2.0                  nnet_7.3-20                
+     [63] glue_1.8.0                  nlme_3.1-168               
+     [65] grid_4.5.1                  checkmate_2.3.3            
+     [67] cluster_2.1.8.1             generics_0.1.4             
+     [69] gtable_0.3.6                tzdb_0.5.0                 
+     [71] preprocessCore_1.70.0       data.table_1.18.0          
+     [73] hms_1.1.4                   XVector_0.48.0             
+     [75] BiocGenerics_0.54.1         ggrepel_0.9.6              
+     [77] foreach_1.5.2               pillar_1.11.1              
+     [79] vroom_1.6.7                 limma_3.64.3               
+     [81] logging_0.10-108            circlize_0.4.17            
+     [83] splines_4.5.1               lattice_0.22-7             
+     [85] survival_3.8-3              bit_4.6.0                  
+     [87] tidyselect_1.2.1            GO.db_3.21.0               
+     [89] ComplexHeatmap_2.24.1       locfit_1.5-9.12            
+     [91] Biostrings_2.76.0           knitr_1.51                 
+     [93] gridExtra_2.3               IRanges_2.42.0             
+     [95] edgeR_4.6.3                 SummarizedExperiment_1.38.1
+     [97] stats4_4.5.1                xfun_0.54                  
+     [99] Biobase_2.68.0              statmod_1.5.1              
+    [101] matrixStats_1.5.0           stringi_1.8.7              
+    [103] UCSC.utils_1.4.0            yaml_2.3.12                
+    [105] evaluate_1.0.5              codetools_0.2-20           
+    [107] cli_3.6.5                   rpart_4.1.24               
+    [109] dichromat_2.0-0.1           Rcpp_1.1.1                 
+    [111] GenomeInfoDb_1.44.3         png_0.1-8                  
+    [113] parallel_4.5.1              blob_1.3.0                 
+    [115] scales_1.4.0                crayon_1.5.3               
+    [117] GetoptLong_1.1.0            rlang_1.1.6                
+    [119] cowplot_1.2.0               KEGGREST_1.48.1            
+    [121] mnormt_2.1.1               
 
 [^1]:
     ## what “scale-free” means
