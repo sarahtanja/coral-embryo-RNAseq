@@ -1,0 +1,517 @@
+---
+title: "Create Gene to GOslim Mapping Dataframe"
+subtitle: "Map GOslim terms → GO terms → DEGs"
+author: "Sarah Tanja"
+date: 01/29/2026
+date-modified: today
+format:
+  gfm: 
+    toc: true
+    number-sections: true
+  html:
+    theme: journal
+    highlight-style: github
+    page-layout: article
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    number-sections: true
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    reference-location: margin
+    citation-location: margin
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,         # Display code chunks
+  eval = FALSE,        # Evaluate code chunks
+  warning = FALSE,     # Hide warnings
+  message = FALSE,     # Hide messages
+  comment = ""         # Prevents appending '##' to beginning of lines in code output
+)
+```
+
+# Background
+
+This script creates a dataframe that maps GO slim terms to GO terms to differentially expressed genes (DEGs).
+
+The output dataframe has three columns:
+- `goslimterm`: GO slim term names
+- `goterms`: comma-separated list of GO terms that map to each GO slim term
+- `deg`: comma-separated list of all genes that map to all the GO terms
+
+The dataframe can then be transformed to "long" format with one row per (GO slim term, GO term, gene) combination.
+
+# Load libraries
+
+```{r}
+library(GSEABase)
+library(tidyverse)
+library(GO.db)
+library(purrr)
+```
+
+# Inputs
+
+```{r}
+input_path <- "../../output/07_enrichment/goseq/"
+```
+
+## Load GO annotated genes
+
+```{r}
+universe_genes_anno <- read_csv(file.path(input_path, "universe_genes_anno.csv"))
+
+head(universe_genes_anno[ , c("gene_id", "GOs")])
+```
+
+Change comma separated GO IDs to semi-colon separated GO IDs
+
+```{r}
+gene2GOs <- universe_genes_anno %>%
+  mutate(GOs = str_replace_all(GOs, ",", ";")) %>% 
+  dplyr::select(gene_id, GOs, cluster_stage, module_stage)
+
+head(gene2GOs)
+```
+
+# Make a gene set for each cluster and module
+
+## Leachate DEGs
+
+```{r}
+gene2GOs_leachate.cleavage <- gene2GOs %>%
+  filter(cluster_stage == "cleavage_peak") %>%
+  dplyr::select(gene_id, GOs) %>% 
+  mutate(list = "leachate_cleavage")
+```
+
+```{r}
+gene2GOs_leachate.prawnchip <- gene2GOs  %>%
+  filter(cluster_stage == "prawnchip_peak") %>%
+  dplyr::select(gene_id, GOs) %>% 
+  mutate(list = "leachate_prawnchip")
+```
+
+```{r}
+gene2GOs_leachate.earlygastrula <- gene2GOs  %>%
+  filter(cluster_stage == "early_gastrula_peak") %>%
+  dplyr::select(gene_id, GOs) %>% 
+  mutate(list = "leachate_earlygastrula")
+```
+
+## Stage DEGs
+
+```{r}
+gene2GOs_stage.cleavage <- gene2GOs  %>%
+  filter(module_stage == "cleavage_up") %>%
+  dplyr::select(gene_id, GOs) %>% 
+  mutate(list = "stage_cleavage")
+```
+
+```{r}
+gene2GOs_stage.prawnchipup <- gene2GOs %>%
+  filter(module_stage == "prawnchip_up") %>%
+  dplyr::select(gene_id, GOs) %>% 
+  mutate(list = "stage_prawnchip_up")
+```
+
+```{r}
+gene2GOs_stage.prawnchipdip <- gene2GOs %>%
+  filter(module_stage == "prawnchip_dip") %>%
+  dplyr::select(gene_id, GOs) %>% 
+  mutate(list = "stage_prawnchip_dip")
+```
+
+```{r}
+gene2GOs_stage.earlygastrulaup <- gene2GOs %>%
+  filter(module_stage == "earlygastrula_up") %>%
+  dplyr::select(gene_id, GOs) %>% 
+  mutate(list = "stage_earlygastrula_up")
+```
+
+## Universe
+
+```{r}
+gene2GOs_universe <- gene2GOs%>%
+  dplyr::select(gene_id, GOs) %>% 
+  mutate(list = "universe")
+```
+
+## Save gene2GO dataframes as a named list
+
+```{r}
+gene2GOs_list <- list(
+  leachate.cleavage      = gene2GOs_leachate.cleavage,
+  leachate.prawnchip     = gene2GOs_leachate.prawnchip,
+  leachate.earlygastrula = gene2GOs_leachate.earlygastrula,
+  stage.cleavage         = gene2GOs_stage.cleavage,
+  stage.prawnchipup      = gene2GOs_stage.prawnchipup,
+  stage.prawnchipdip     = gene2GOs_stage.prawnchipdip,
+  stage.earlygastrulaup  = gene2GOs_stage.earlygastrulaup,
+  universe               = gene2GOs_universe
+)
+```
+
+# Set variables
+
+```{r set-variables, eval=TRUE}
+# Column names corresponding to gene name/ID and GO IDs
+GO.ID.column <- "GOs"
+gene.ID.column <- "gene_id"
+
+# Relative path or URL to input file
+input.file <- "../../output/07_enrichment/goseq/universe_gene2GOs.csv"
+
+##### Official GO info - no need to change #####
+goslims_obo <- "goslim_generic.obo"
+goslims_url <- "http://current.geneontology.org/ontology/subsets/goslim_generic.obo"
+```
+
+# Download GOslim OBO file
+
+```{r download-generic-goslim-obo, eval=TRUE}
+# Find GSEAbase installation location
+gseabase_location <- find.package("GSEABase")
+
+# Load path to GOslim OBO file
+goslim_obo_destintation <- file.path(gseabase_location, "extdata", goslims_obo, fsep = "/")
+
+# Download the GOslim OBO file
+download.file(url = goslims_url, destfile = goslim_obo_destintation)
+
+# Loads package files
+gseabase_files <- system.file("extdata", goslims_obo, package="GSEABase")
+```
+
+# Clean and prepare data
+
+## Helper functions
+
+```{r}
+# Clean NA values
+check_na_go <- function(df, GO.ID.column) {
+  tibble(
+    n_rows = nrow(df),
+    n_na_go = sum(is.na(df[[GO.ID.column]]))
+  )
+}
+
+# Clean gene2GO data
+clean_gene2go <- function(df, gene.ID.column, GO.ID.column) {
+  df %>%
+    mutate(
+      !!sym(GO.ID.column) :=
+        str_replace_all(.data[[GO.ID.column]], "\\s*;\\s*", ";")
+    ) %>%
+    filter(
+      !is.na(.data[[gene.ID.column]]),
+      !is.na(.data[[GO.ID.column]]),
+      .data[[GO.ID.column]] != ""
+    ) %>%
+    select(all_of(c(gene.ID.column, GO.ID.column)))
+}
+
+# Map gene2GO to one row per gene-GO pair
+map_gene2go <- function(df, GO.ID.column, sep = ";") {
+  df %>%
+    separate_rows(!!sym(GO.ID.column), sep = sep)
+}
+
+# Clean GO IDs
+clean_go_ids <- function(x) {
+  x <- unique(na.omit(as.character(x)))
+  x[grepl("^GO:\\d{7}$", x)]
+}
+```
+
+## Apply cleaning functions
+
+```{r}
+# Check for NAs
+na_summary <- imap_dfr(
+  gene2GOs_list,
+  ~ check_na_go(.x, GO.ID.column),
+  .id = "dataset"
+)
+
+na_summary
+```
+
+```{r}
+# Clean the data
+gene2GOs_clean <- imap(
+  gene2GOs_list,
+  ~ clean_gene2go(.x,
+                  gene.ID.column = gene.ID.column,
+                  GO.ID.column   = GO.ID.column)
+)
+```
+
+```{r}
+# Map to one row per gene-GO pair
+gene2GO_map <- imap(
+  gene2GOs_clean,
+  ~ map_gene2go(.x, GO.ID.column = GO.ID.column)
+)
+```
+
+```{r}
+# Check mapping
+imap_dfr(
+  gene2GO_map,
+  ~ tibble(
+    dataset = .y,
+    n_rows  = nrow(.x)
+  )
+)
+```
+
+# Map GO IDs to GOslims
+
+## Retrieve GOslims from GSEABase
+
+```{r extract-GOslims-from-OBO, eval=TRUE}
+# Retrieve GOslims from GO OBO file set
+slim <- getOBOCollection(gseabase_files)
+```
+
+## Extract GO IDs as vectors
+
+```{r}
+# Extract GO IDs as vectors for each group
+go_ids_list <- imap(
+  gene2GO_map,
+  ~ unique(.x[[GO.ID.column]])
+)
+```
+
+## Create GOCollection objects
+
+```{r}
+# For each element of go_ids_list, make a GOCollection
+go_collections <- map(go_ids_list, ~ GOCollection(clean_go_ids(.x)))
+
+# Name each collection by module (list)
+names(go_collections) <- names(go_ids_list)
+```
+
+## Map GO IDs to GOslims function
+
+```{r}
+map_go_to_goslims <- function(go_ids, slim, ontology = "BP", verbose = FALSE) {
+  go_ids <- clean_go_ids(go_ids)
+
+  # Build GOCollection for this group's GO IDs
+  myCollection <- GOCollection(go_ids)
+
+  # Get GOslim summary table (rownames are GOslim IDs)
+  slimdf <- goSlim(myCollection, slim, ontology, verbose = verbose)
+
+  # --- Map GO IDs -> GOslims (semi-colon delimited) --------------------------
+  # For each GOslim term, get its "offspring" terms from GO.db, then intersect with this group's GO IDs
+  gomap <- as.list(GOBPOFFSPRING[rownames(slimdf)])
+
+  mapped_ids <- lapply(gomap, intersect, ids(myCollection))
+
+  slimdf$GO.IDs <- vapply(
+    mapped_ids,
+    function(x) paste(x, collapse = "; "),
+    FUN.VALUE = character(1)
+  )
+
+  # Remove literal "character(0)" (usually shouldn't happen with vapply, but keep it safe)
+  slimdf$GO.IDs[slimdf$GO.IDs %in% c("character(0)", "")] <- ""
+
+  # Add self-matching GOIDs to its own GOslim row, if applicable
+  for (go_id in go_ids) {
+    if (go_id %in% rownames(slimdf)) {
+      existing <- trimws(toupper(unlist(strsplit(slimdf[go_id, "GO.IDs"], ";"))))
+      existing <- existing[nzchar(existing)]
+
+      if (!toupper(go_id) %in% existing) {
+        if (nzchar(slimdf[go_id, "GO.IDs"])) {
+          slimdf[go_id, "GO.IDs"] <- paste0(slimdf[go_id, "GO.IDs"], "; ", go_id)
+        } else {
+          slimdf[go_id, "GO.IDs"] <- go_id
+        }
+      }
+    }
+  }
+
+  slimdf
+}
+```
+
+## Apply mapping function
+
+```{r}
+bp_slim_mapped_list <- imap(go_ids_list, ~ {
+  message("Mapping: ", .y)
+  map_go_to_goslims(.x, slim = slim, ontology = "BP", verbose = FALSE)
+})
+
+str(bp_slim_mapped_list[[1]])
+```
+
+# Create gene2goslim dataframe
+
+Now we'll create a dataframe with three columns:
+- `goslimterm`: GO slim term name
+- `goterms`: comma-separated GO terms that map to the GO slim term
+- `deg`: comma-separated genes that map to all the GO terms
+
+## Map genes to GO terms to GOslim terms
+
+```{r}
+# Function to create the gene2goslim mapping
+create_gene2goslim <- function(gene2go_df, goslim_df, gene.ID.column = "gene_id", GO.ID.column = "GOs") {
+  
+  # Add GOslim ID as a column
+  goslim_with_id <- goslim_df %>%
+    rownames_to_column("GOslimID")
+  
+  # Separate GO.IDs into individual rows
+  goslim_long <- goslim_with_id %>%
+    separate_rows(GO.IDs, sep = ";") %>%
+    mutate(GO.IDs = trimws(GO.IDs)) %>%
+    filter(!is.na(GO.IDs), GO.IDs != "")
+  
+  # Join with gene2GO mapping to get genes for each GO term
+  gene2goslim <- gene2go_df %>%
+    inner_join(goslim_long, by = c(GO.ID.column = "GO.IDs")) %>%
+    # Group by GOslim term
+    group_by(GOslimID, Term) %>%
+    summarise(
+      goterms = paste(unique(!!sym(GO.ID.column)), collapse = ","),
+      deg = paste(unique(!!sym(gene.ID.column)), collapse = ","),
+      .groups = "drop"
+    ) %>%
+    # Rename columns to match requested names
+    rename(goslimterm = Term)
+  
+  return(gene2goslim)
+}
+```
+
+## Apply to all gene sets
+
+```{r}
+gene2goslim_list <- imap(names(gene2GO_map), ~ {
+  message("Creating gene2goslim for: ", .x)
+  create_gene2goslim(
+    gene2go_df = gene2GO_map[[.x]],
+    goslim_df = bp_slim_mapped_list[[.x]],
+    gene.ID.column = gene.ID.column,
+    GO.ID.column = GO.ID.column
+  ) %>%
+    mutate(group = .x, .before = 1)
+})
+
+names(gene2goslim_list) <- names(gene2GO_map)
+```
+
+## Combine all groups
+
+```{r}
+gene2goslim_all <- bind_rows(gene2goslim_list)
+
+glimpse(gene2goslim_all)
+```
+
+## Preview the dataframe
+
+```{r}
+head(gene2goslim_all)
+```
+
+# Transform to long format
+
+Create a "long" dataframe with one row per (GO slim term, GO term, gene) combination.
+
+```{r}
+gene2goslim_long <- gene2goslim_all %>%
+  # Separate GO terms
+  separate_rows(goterms, sep = ",") %>%
+  mutate(goterms = trimws(goterms)) %>%
+  # Separate genes
+  separate_rows(deg, sep = ",") %>%
+  mutate(deg = trimws(deg)) %>%
+  # Remove any empty values
+  filter(!is.na(goslimterm), goslimterm != "",
+         !is.na(goterms), goterms != "",
+         !is.na(deg), deg != "")
+
+glimpse(gene2goslim_long)
+```
+
+## Preview long format
+
+```{r}
+head(gene2goslim_long, 20)
+```
+
+# Summary statistics
+
+```{r}
+# Count entries by group
+gene2goslim_all %>%
+  group_by(group) %>%
+  summarise(
+    n_goslim_terms = n(),
+    n_go_terms = sum(str_count(goterms, ",") + 1),
+    n_genes = sum(str_count(deg, ",") + 1)
+  )
+```
+
+```{r}
+# Count entries in long format by group
+gene2goslim_long %>%
+  group_by(group) %>%
+  summarise(
+    n_unique_goslim_terms = n_distinct(goslimterm),
+    n_unique_go_terms = n_distinct(goterms),
+    n_unique_genes = n_distinct(deg),
+    n_total_rows = n()
+  )
+```
+
+# Save outputs
+
+```{r}
+output_path <- "../../output/07_enrichment/goslim/"
+```
+
+## Save wide format (comma-separated)
+
+```{r}
+write_csv(gene2goslim_all, file.path(output_path, "gene2goslim_wide.csv"))
+```
+
+## Save long format
+
+```{r}
+write_csv(gene2goslim_long, file.path(output_path, "gene2goslim_long.csv"))
+```
+
+## Save individual group files (optional)
+
+```{r}
+# Save each group separately if needed
+iwalk(gene2goslim_list, ~ {
+  write_csv(.x, file.path(output_path, paste0("gene2goslim_", .y, ".csv")))
+})
+```
+
+```{r}
+cat("Output files saved to:", output_path, "\n")
+cat("- gene2goslim_wide.csv: Wide format with comma-separated lists\n")
+cat("- gene2goslim_long.csv: Long format with one row per goslim-go-gene combination\n")
+```
