@@ -230,7 +230,7 @@ cluster.colors <- c("1:C" = "firebrick",   # cleavage
 
 ```{r}
 gene_cluster_data <- read_csv("../../output/06_deg/cluster/gene_cluster_zscores.csv")
-glimpse(gene_cluster_data)
+str(gene_cluster_data)
 ```
 
 ```{r}
@@ -246,29 +246,20 @@ facet_labs <- gene_cluster_data %>%
 ```
 
 ## Leachate across x axis
-```{r, warning=FALSE}
+```{r, warning=FALSE, fig.height=6, fig.width = 8}
 
 # leachate as x plot
 pl <- ggplot(gene_cluster_data %>%
          mutate(leachate = factor(leachate, levels = c("control","low","mid","high")),
                 stage = factor(stage, levels = c("cleavage", "prawnchip", "earlygastrula"))),
        aes(x = leachate, y = zscore, color = stage)) +
-  #geom_line(aes(group = interaction(genes, stage)), alpha = 0.1, linewidth = 0.4) + # per-gene(thin & transparent)
-  geom_boxplot(aes(fill = stage), alpha = 0.6, outlier.shape = NA) +
-  geom_point(
-    position = position_jitterdodge(
-      jitter.width = 0.12,
-      jitter.height = 0,
-      dodge.width = 0.7
-    ),
-    alpha = 0.8,
-    size  = 1.2
-  ) +
+  geom_line(aes(group = interaction(genes, stage)), alpha = 0.1, linewidth = 0.4) + # per-gene(thin & transparent)
+  geom_point(position = position_jitter(width = 0.12, height = 0), alpha = 0.2, size = 1.2) +
+  geom_boxplot(alpha = 0.10, outlier.shape = NA) +
   geom_smooth(aes(group = stage), se = FALSE) + # trend
-  facet_wrap(~ cluster, nrow = 1, labeller = as_labeller(facet_labels)) +
+  facet_wrap(~ cluster, nrow = 1) +
   labs(x = NULL, y = "Z-score of gene abundance", color = "stage") +
   theme_sleek_axe() +
-  scale_fill_manual(values = stage.colors)+
   scale_color_manual(values = stage.colors)+
   scale_y_continuous(breaks = function(x) pretty(x, n = 3)) +
   theme(panel.grid = element_blank(),
@@ -276,8 +267,8 @@ pl <- ggplot(gene_cluster_data %>%
   panel.grid.minor.y = element_blank(),  # drop minor horizontal
   panel.grid.major.x = element_blank(),  # drop vertical
   panel.grid.minor.x = element_blank(),
-  strip.text = element_text(hjust = 0),
-  #strip.text.x.top = element_blank(),
+  strip.text = element_blank(),
+  strip.text.x.top = element_blank(),
   strip.background = element_blank(),
   axis.line.x  = element_blank(),
   axis.line.y  = element_blank(),
@@ -291,15 +282,44 @@ pl <- ggplot(gene_cluster_data %>%
 ```{r}
 pl
 ```
-```{r}
-facet_labels <- c(
-  "1" = "D",
-  "2" = "E",
-  "3" = "F"
-)
-```
 
 ## Stage across x axis
+```{r}
+# stage as x plot
+ps <- ggplot(gene_cluster_data %>%
+         mutate(leachate = factor(leachate, levels = c("control","low","mid","high")),
+                stage = factor(stage, levels = c("cleavage", "prawnchip", "earlygastrula"))),
+       aes(x = stage, y = zscore, color = leachate)) +
+  geom_line(aes(group = interaction(genes, leachate)), alpha = 0.1, linewidth = 0.4) + # per-gene(thin & transparent)
+  geom_point(position = position_jitter(width = 0.12, height = 0), alpha = 0.2, size = 1.2) +
+  geom_boxplot(alpha = 0.10, outlier.shape = NA) +
+  geom_smooth(aes(group = leachate), se = FALSE) + #trend pattern 
+  facet_wrap(~ cluster, nrow = 1, labeller = labeller(cluster = facet_labs)) +
+  labs(title = "Patterns of DEG expression across embryonic stages and leachate doses",
+       x = NULL, 
+       y = "Z-score of gene abundance", 
+       color = "leachate") +
+  theme_sleek_axe() +
+  scale_color_manual(values = leachate.colors)+
+  scale_y_continuous(breaks = function(x) pretty(x, n = 3)) +
+  theme(panel.grid = element_blank(),
+  panel.grid.major.y = element_line(color = "grey80", linewidth = 0.3),   # keep major horizontal
+  panel.grid.minor.y = element_blank(),  # drop minor horizontal
+  panel.grid.major.x = element_blank(),  # drop vertical
+  panel.grid.minor.x = element_blank(),
+  axis.line.x  = element_blank(),
+  axis.line.y  = element_blank(),
+  axis.text.x = element_text(
+      angle = 45,      # rotate 45°
+      hjust = 1,       # horizontal justification
+      vjust = 1        # tweak if you want
+    ))
+```
+
+```{r, fig.height=8, fig.width = 12}
+ps
+```
+
 
 ```{r, fig.height=4, fig.width = 8}
 
@@ -367,7 +387,7 @@ I want to put arrows indicating the boxes that diverge and I want embryo logos o
 ## Combine stage and leachate plots
 ```{r}
 # combine with patchwork
-pc <- ps2 / pl
+pc <- ps / pl
 
 pc
 ```
@@ -562,7 +582,7 @@ str(fc_df)
 ```
 
 Make the plot that combines main and interaction effects 
-```{r}
+```{r, fig.height=8, fig.width=11}
 combo_plot <- ggplot() +
   # ===== MAIN EFFECT: segments + points, 1st colour scale =====
   geom_segment(
@@ -670,65 +690,8 @@ To re-iterate, the main point of this plot is that cleavage experienced the most
 
 Can I annotate the DEG FC plot with cluster info? 
 
-```{r}
-cluster_plot <- ggplot() +
-  # ===== MAIN EFFECT: segments + points, 1st colour scale =====
-  geom_segment(
-    data = fc_df,
-    aes(
-      x    = 0,
-      xend = log2FoldChange,
-      y    = gene_id_fac,
-      yend = gene_id_fac,
-      colour = cluster
-    ),
-    linewidth = 1
-  ) +
-  geom_point(
-    data = fc_df, 
-    aes(
-      x = log2FoldChange,
-      y = gene_id_fac,
-      colour = cluster
-    ),
-    size = 1
-  ) +
-  scale_colour_discrete(
-    name  = "Gene expression pattern",
-    type  = cluster.colors,
-    guide = guide_legend(order = 1)   # << put this legend first
-  ) +
-  # ===== facets + theme =====
-  facet_wrap(~ plot_group, nrow = 3) +
-  geom_vline(xintercept = 0, 
-             linetype = "dashed",
-             color = "#AEF1FF") + # same color as control leachate
-  theme_classic() +
-  theme(
-    legend.text      = element_text(size = 8, color = "grey60"),
-    legend.key.width = grid::unit(1.25, "cm"),  # increase until labels stop colliding
-    legend.title     = element_text(size = 10, color = "grey30"),
-    legend.position  = "top",
-    axis.text.y      = element_blank(),
-    axis.title.y     = element_blank(),
-    axis.line.y      = element_blank(),
-    axis.line.x      = element_blank(),
-    axis.ticks.y     = element_blank(),
-    axis.ticks.x     = element_blank(),
-    axis.text.x      = element_text(size = 12, color = "grey60"),
-    strip.background = element_blank(),
-    axis.title.x     = element_text(size = 14, color = "grey30"),
-    plot.title       = element_text(size = 16, color = "grey20", hjust = 0.5)
-  ) +
-  ggtitle("Log2 Fold Change of significant DEGs")+
-  labs(x = "Log2 Fold Change")
-
-cluster_plot
-```
-
-
 ## mfc Main plot with genes colored according to cluster
-```{r}
+```{r, fig.height=8.5, fig.width=8}
 mfc <- ggplot() +
   # ===== MAIN EFFECT: segments + points =====
   geom_segment(
@@ -790,15 +753,95 @@ mfc <- ggplot() +
 mfc 
 ```
 
+```{r}
+# make sure plot_group has nice labels
+fc_df <- fc_df %>% 
+  mutate(plot_group = factor(plot_group,
+                             levels = c("low", "mid", "high"),
+                             labels = c("Low", "Mid", "High")))
+
+mfc <- ggplot() +
+  # ===== MAIN EFFECT: segments + points =====
+  geom_segment(
+    data = dplyr::filter(fc_df, effect_type == "main"),
+    aes(
+      x    = 0,
+      xend = log2FoldChange,
+      y    = gene_id_fac,
+      yend = gene_id_fac,
+      colour = cluster
+    ),
+    alpha = 0.6,
+    linewidth = 1.2
+  ) +
+  scale_colour_discrete(
+    name  = "Gene expression pattern",
+    type  = cluster.colors,
+    guide = guide_legend(order = 2)
+  ) +
+  geom_point(
+    data = dplyr::filter(fc_df, effect_type == "main"),
+    aes(
+      x = log2FoldChange,
+      y = gene_id_fac,
+      colour = cluster
+    ),
+    size = 1.5
+  ) +
+  scale_y_discrete(expand = c(0.02, 0.01)) +
+  scale_x_continuous(breaks = function(x) pretty(x, n = 3)) +
+
+  # ===== facets: 3 rows, strips on the LEFT =====
+  facet_wrap(
+    ~ plot_group,
+    nrow = 3,
+    strip.position = "left"       # << move labels to far left
+  ) +
+  geom_vline(
+    xintercept = 0,
+    linetype   = "dashed",
+    linewidth  = 1,
+    color      = "#AEF1FF"
+  ) +
+  theme_sleek_axe() +
+  theme(
+    plot.title      = element_text(margin = margin(b = 60)),
+    panel.spacing.y = unit(4, "lines"),
+    legend.position = "none",
+    axis.text.y     = element_blank(),
+    axis.title.y    = element_blank(),
+    axis.line.y     = element_blank(),
+    axis.line.x     = element_blank(),
+    axis.ticks.y    = element_blank(),
+    axis.ticks.x    = element_blank(),
+    axis.text.x     = element_text(color = "grey60"),
+
+    # strips become your LOW / MID / HIGH labels
+    strip.background  = element_blank(),
+    strip.placement   = "outside",
+    strip.text.y.left = element_text(
+      angle = 0,          # horizontal
+      hjust = 0.5,
+      vjust = 0.5,
+      size  = 10,
+      colour = "grey30"
+    )
+  ) +
+  labs(x = "Log2 Fold Change")
+
+mfc
+
+
+```
 
 
 
 ## Combo plot with genes colored according to cluster
-```{r}
+```{r, fig.width=12, fig.height=10}
 pfc <- ggplot() +
   # ===== MAIN EFFECT: segments + points, 1st colour scale =====
   geom_segment(
-    data = fc_df,
+    data = dplyr::filter(fc_df),
     aes(
       x    = 0,
       xend = log2FoldChange,
@@ -810,7 +853,7 @@ pfc <- ggplot() +
   ) +
   scale_colour_discrete(
     name  = "Gene cluster pattern",
-    type  = cluster.colors,
+    type  = stage.colors,
     guide = guide_legend(order = 2)   # << put this legend last
   ) +
   ggnewscale::new_scale_colour() +
@@ -880,22 +923,22 @@ pfc
 ```
 # Combine with patchwork
 
-## caption 
-
-A. Z-scores of VST-normalized gene expression across 128 differentially expressed genes shown on the y axis with stage on the x axis. B. Z-scores of VST-normalized gene expression across 128 differentially expressed genes shown on the y axis with leachate dose on the x axis. C. Log two-fold change of differentially expressed genes identified in each treatment group. Direction of log two-fold change is indicated on the x axis; genes are shown on the y axis grouped by treatment. Point color indicates adjusted p-value for either the main effect of leachate (teal) or the interaction effect of stage and leachate (purple).Gene color indicates cluster membership based on expression patterns across stages and leachate doses.
-
-
-## Highlight the patterns
+## Add caption 
 ```{r}
-fig <- (ps/pl/pfc)
+cap_text <- paste(
+  "A. Z-scores of VST-normalized gene expression across 128 differentially expressed genes shown on the y axis with stage on the x axis. B. Z-scores of VST-normalized gene expression across 128 differentially expressed genes shown on the y axis with leachate dose on the x axis. C. Log two-fold change of differentially expressed genes identified in each treatment group. Direction of log two-fold change is indicated on the x axis; genes are shown on the y axis grouped by treatment. Point color indicates adjusted p-value for either the main effect of leachate (teal) or the interaction effect of stage and leachate (purple).Gene color indicates cluster membership based on expression patterns across stages and leachate doses (Sarah Tanja, Beautiful Graphics in R [AU25])."
+)
 
-fig
+# wrap to, say, 100 characters per line (tweak as needed)
+cap_wrapped <- str_wrap(cap_text, width = 140)
 ```
 
+## Highlight the patterns
 ```{r, fig.width = 10, fig.height = 12}
-hipat <- (pc/plot_spacer()/pfc) +
+hipat <- (ps2/plot_spacer()/mfc) +
   plot_layout(heights = c(1, 0.5, 1.2)) +
-  plot_annotation(tag_levels = "A") &
+  plot_annotation(tag_levels = "A",
+                  caption = cap_wrapped) &
   theme(plot.tag = element_text(size = 10, 
                                 colour = "grey50"),
         plot.caption = element_text(size   = 8,
