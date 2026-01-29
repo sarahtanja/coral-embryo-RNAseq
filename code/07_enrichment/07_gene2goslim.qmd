@@ -2,7 +2,7 @@
 title: "Create Gene to GOslim Mapping Dataframe"
 subtitle: "Map GOslim terms → GO terms → DEGs"
 author: "Sarah Tanja"
-date: 01/29/2026
+date: "01/29/2026"
 date-modified: today
 format:
   gfm: 
@@ -42,10 +42,12 @@ knitr::opts_chunk$set(
 
 This script creates a dataframe that maps GO slim terms to GO terms to differentially expressed genes (DEGs).
 
-The output dataframe has three columns:
+The output dataframe has the following columns:
+- `group`: The gene set group (e.g., leachate.cleavage, stage.prawnchipup)
+- `GOslimID`: The GO ID of the GO slim term
 - `goslimterm`: GO slim term names
-- `goterms`: comma-separated list of GO terms that map to each GO slim term
-- `deg`: comma-separated list of all genes that map to all the GO terms
+- `goterms`: comma-separated list of GO terms that map to each GO slim term (union of all GO terms)
+- `deg`: comma-separated list of all genes that map to any of the GO terms (union of all genes)
 
 The dataframe can then be transformed to "long" format with one row per (GO slim term, GO term, gene) combination.
 
@@ -140,7 +142,7 @@ gene2GOs_stage.earlygastrulaup <- gene2GOs %>%
 ## Universe
 
 ```{r}
-gene2GOs_universe <- gene2GOs%>%
+gene2GOs_universe <- gene2GOs %>%
   dplyr::select(gene_id, GOs) %>% 
   mutate(list = "universe")
 ```
@@ -182,10 +184,10 @@ goslims_url <- "http://current.geneontology.org/ontology/subsets/goslim_generic.
 gseabase_location <- find.package("GSEABase")
 
 # Load path to GOslim OBO file
-goslim_obo_destintation <- file.path(gseabase_location, "extdata", goslims_obo, fsep = "/")
+goslim_obo_destination <- file.path(gseabase_location, "extdata", goslims_obo, fsep = "/")
 
 # Download the GOslim OBO file
-download.file(url = goslims_url, destfile = goslim_obo_destintation)
+download.file(url = goslims_url, destfile = goslim_obo_destination)
 
 # Loads package files
 gseabase_files <- system.file("extdata", goslims_obo, package="GSEABase")
@@ -363,10 +365,12 @@ str(bp_slim_mapped_list[[1]])
 
 # Create gene2goslim dataframe
 
-Now we'll create a dataframe with three columns:
+Now we'll create a dataframe with the following columns:
+- `group`: The gene set group
+- `GOslimID`: The GO ID of the GO slim term
 - `goslimterm`: GO slim term name
 - `goterms`: comma-separated GO terms that map to the GO slim term
-- `deg`: comma-separated genes that map to all the GO terms
+- `deg`: comma-separated genes that map to any of the GO terms (union)
 
 ## Map genes to GO terms to GOslim terms
 
@@ -378,16 +382,19 @@ create_gene2goslim <- function(gene2go_df, goslim_df, gene.ID.column = "gene_id"
   goslim_with_id <- goslim_df %>%
     rownames_to_column("GOslimID")
   
-  # Separate GO.IDs into individual rows
+  # Separate GO.IDs (semicolon-delimited from goslim mapping) into individual rows
+  # Note: goslim_df has GO terms in semicolon-delimited format, we'll convert to comma-separated in output
   goslim_long <- goslim_with_id %>%
     separate_rows(GO.IDs, sep = ";") %>%
     mutate(GO.IDs = trimws(GO.IDs)) %>%
     filter(!is.na(GO.IDs), GO.IDs != "")
   
   # Join with gene2GO mapping to get genes for each GO term
+  # Note: gene2go_df has one row per gene-GO pair (already separated)
+  # The GO.ID.column in gene2go_df should contain individual GO IDs
   gene2goslim <- gene2go_df %>%
-    inner_join(goslim_long, by = c(GO.ID.column = "GO.IDs")) %>%
-    # Group by GOslim term
+    inner_join(goslim_long, by = setNames("GO.IDs", GO.ID.column)) %>%
+    # Group by GOslim term and aggregate GO terms and genes
     group_by(GOslimID, Term) %>%
     summarise(
       goterms = paste(unique(!!sym(GO.ID.column)), collapse = ","),
