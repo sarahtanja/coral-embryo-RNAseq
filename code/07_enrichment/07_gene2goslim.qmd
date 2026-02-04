@@ -78,8 +78,7 @@ Change comma separated GO IDs to semi-colon separated GO IDs
 
 ```{r}
 gene2GOs <- universe_genes_anno %>%
-  mutate(GOs = str_replace_all(GOs, ",", ";")) %>% 
-  dplyr::select(gene_id, GOs, cluster_stage, module_stage)
+  mutate(GOs = str_replace_all(GOs, ",", ";"))
 
 head(gene2GOs)
 ```
