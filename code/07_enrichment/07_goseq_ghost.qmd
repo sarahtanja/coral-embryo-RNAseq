@@ -50,25 +50,39 @@ of the three patterns.
 These genes cluster based on their expression patterns across stage &
 leachate concentrations (control, low, mid, high).
 
-Leachate DEG cluster breakdown: - **Cluster 1**: 72 genes, peak in early
-gastrula - **Cluster 2**: 25 genes, peak in prawnchip - **Cluster 3**:
-31 genes, peak in cleavage
+Leachate responsive DEGs cluster breakdown:
+
+\- **Cluster 1**: 72 genes, peak in early gastrula
+
+\- **Cluster 2**: 25 genes, peak in prawnchip
+
+\- **Cluster 3**: 31 genes, peak in cleavage
 
 We also binned the 10,793 stage DEGs into 4 developmental programs via
 WGCNA module (indicated by color).
 
-Stage DEG module breakdown: - **cleavage_up**\
-- turquoise: 2805 genes
+Stage responsive DEGs module breakdown:
+
+-   **cleavage_up**
+
+    -   turquoise: 2805 genes
 
 -   **prawnchip_up**
+
     -   yellow: 1381 genes
+
 -   **prawnchip_dip**
+
     -   green: 1108 genes
         -   red: 326 genes
+
 -   **earlygastrula_up**
+
     -   blue: 2588 genes
         -   brown: 2436 genes
+
 -   unassigned "grey module"
+
     -   grey: 149 genes
 
 ::: callout-important
@@ -141,21 +155,23 @@ for this by using a probability weighting function.
 Run GOseq using:
 
 DEG vector Background (all tested genes) Vector of gene lengths (from
-your annotation, GTF, eggNOG, etc.)
+your annotation, GTF, eggNOG)
 
 Get the corrected p-values and enriched GO terms.
 
 ## Inputs
 
-DEG vectors - `stage_DEG_WGCNA_modules.csv` - A dataframe mapping 10793
-stage DEGs to a WGCNA module. *the grey module (genes that do not
-cluster) need not be passed through enrichment analysis*
+DEG vectors
 
--   `leachate_DEG_clusters.csv` - A dataframe mapping 128 genes to an
+-    `stage_DEG_WGCNA_modules.csv` : A dataframe mapping 10793 stage
+    DEGs to a WGCNA module. *the grey module (genes that do not cluster)
+    need not be passed through enrichment analysis*
+
+-   `leachate_DEG_clusters.csv` : A dataframe mapping 128 genes to an
     expression cluster (1, 2, or 3)
 
-Background - `all_genes.csv` - a dataframe (list) of all genes used in
-the DESeq2 analysis
+-    `all_genes.csv` : a dataframe (list) of all genes used in the
+    DESeq2 analysis
 
 Gene lengths - functional annotation:
 http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.EggNog_results.txt.gz
@@ -234,20 +250,23 @@ stage_DEG_modules <- read.csv("../../output/06_deg/cluster/stage_DEG_WGCNA_modul
 
 ### Rename values for simplicity & clarity
 
-Make leachate_DEG_clusters column named gene_id for joining, and rename clusters to be descriptive: Leachate DEG cluster breakdown: 
-- **Cluster 1**: 72 genes, peak in early gastrula, pattern is up 
-- **Cluster 2**: 25 genes, peak in prawnchip, pattern is hump 
-- **Cluster 3**: 31 genes, peak in cleavage, pattern is down
+Make leachate_DEG_clusters column named gene_id for joining, and rename
+clusters to be descriptive: Leachate DEG cluster breakdown: - **Cluster
+1**: 72 genes, peak in early gastrula, pattern is up - **Cluster 2**: 25
+genes, peak in prawnchip, pattern is hump - **Cluster 3**: 31 genes,
+peak in cleavage, pattern is down
 
 ```{r}
 leachate_DEG_clusters <- leachate_DEG_clusters %>%
   dplyr::rename(gene_id = genes)
 ```
 
-
 ```{r}
-leachate_deg_patterns <- sig_genes_leachate %>%
-  left_join(leachate_DEG_clusters, by = "gene_id") %>%
+leachate_deg_clusters <- sig_genes_leachate %>%
+  left_join(leachate_DEG_clusters, by = "gene_id") 
+
+
+leachate_deg_clusters <- leachate_deg_clusters %>% 
   mutate(pattern = case_when(
                       cluster == 1 ~ "up",
                       cluster == 2 ~ "hump",
@@ -259,14 +278,12 @@ leachate_deg_patterns <- sig_genes_leachate %>%
                       cluster == 3 ~ "cleavage",
                       is.na(cluster) ~ "unassigned"
                     ),
-          deg = "leachate") %>% 
-  rename(DEGpattern = cluster)
+          responsive = "leachate") 
 
-leachate_deg_patterns %>% 
-count(DEGpattern, peak, pattern, sort = TRUE) %>% 
+leachate_deg_clusters %>% 
+count(pattern, peak, responsive, sort = TRUE) %>% 
   knitr::kable()  
 ```
-
 
 ```{r}
 stage_deg_modules <- stage_DEG_modules %>% 
@@ -284,12 +301,13 @@ stage_deg_modules <- stage_DEG_modules %>%
   dplyr::rename(pattern = pattern_type,
                 peak = peak_stage) %>% 
   dplyr::select(!module_stage) %>%
-  mutate(deg = "stage")
+  mutate(responsive = "stage")
 
 stage_deg_modules %>%
 count(peak, pattern, sort = TRUE) %>% 
   knitr::kable()
 ```
+
 ```{r}
 stage_deg_modules %>%
 count(WGCNAmodule, pattern, sort = TRUE) %>% 
@@ -305,6 +323,20 @@ a strong expression pattern.
 > Genes assigned to the WGCNA grey module were classified as unassigned,
 > while remaining genes grouped into cleavage-, prawn-chip–, and early
 > gastrula–associated expression programs.
+
+How many of the leachate responsive and stage responsive genes overlap?
+
+```{r}
+length(intersect(stage_deg_modules$gene_id, leachate_deg_clusters$gene_id))
+```
+
+::: callout-important
+ALL of our leachate responsive DEGs are ALSO stage responsive.
+:::
+
+What does this mean... this implies that the genes impacted by leachate
+are the ones that are changing...? I mean out of \~12k genes tested
+though, \~10k were changing across stage.
 
 Import EggNog for GO and KEGG annotation
 
@@ -378,8 +410,6 @@ if (file.exists(gff_file)) {
 ```
 
 ## Join gene length, cluster & module info
-
-
 
 Add length & module/cluster info to the annotation dataframe
 
@@ -466,6 +496,7 @@ stage_go_summary <- universe_anno %>%
 
 stage_go_summary %>% knitr::kable()
 ```
+
 ```{r}
 # What is GO coverage for all stage patterns?
 stage_pattern_go_summary <- universe_anno %>%
@@ -480,6 +511,7 @@ stage_pattern_go_summary <- universe_anno %>%
 
 stage_pattern_go_summary %>% knitr::kable()
 ```
+
 # Make gene universe vectors
 
 For bias correction

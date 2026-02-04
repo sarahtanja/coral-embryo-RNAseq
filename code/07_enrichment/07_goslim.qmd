@@ -45,8 +45,8 @@ knitr::opts_chunk$set(
 # Load libraries
 
 ```{r}
-#BiocManager::install("GSEABase")
-#BiocManager::install("GO.db")
+BiocManager::install("GSEABase")
+BiocManager::install("GO.db")
 ```
 
 ```{r}
@@ -76,8 +76,22 @@ gene to go term mapping
 ```{r}
 universe_genes_anno <- read_csv(file.path(input_path, "universe_genes_anno.csv"))
 
-head(universe_genes_anno[ , c("gene_id", "GOs")])
+glimpse(universe_genes_anno)
 ```
+
+```{r}
+gene2go <- read_csv(file.path(input_path, "gene2go.csv"))
+
+glimpse(gene2go)
+```
+```{r}
+GO_bp_cluster1 <- read_csv(file.path(input_path, "GO_bp_cluster1.csv"))
+
+glimpse(GO_bp_cluster1)
+```
+
+
+
 
 Change comma separated GO IDs to semi-colon separated GO IDs
 ```{r}
@@ -179,6 +193,14 @@ output_path <- "../../output/07_enrichment/goslim/"
 Save input file with semi-colon separated GO IDs
 ```{r}
 write_csv(gene2GOs_universe, file.path(output_path, "gene2GOs_universe.csv"))
+```
+
+
+```{r}
+gene2GOs_universe <- read_csv(file.path(output_path, "gene2GOs_universe.csv"))
+
+
+glimpse(gene2GOs_universe)
 ```
 
 ### Set variables

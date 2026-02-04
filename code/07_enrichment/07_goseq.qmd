@@ -39,10 +39,10 @@ knitr::opts_chunk$set(
 
 # Background
 
-In the clustering analysis (06_clusters.qmd), we identified 3 distinct gene expression patterns among the 130 significant genes affected by leachate, 128 genes out of the 130 DEGs fit into one of the three patterns. 
+In the clustering analysis (06_DEGreport_WGCNA_cluster.qmd), we identified 3 distinct gene expression patterns among the 130 significant genes affected by leachate, 128 genes out of the 130 DEGs fit into one of the three patterns. 
 These genes cluster based on their expression patterns across stage & leachate concentrations (control, low, mid, high).
 
-Leachate DEG cluster breakdown:
+leachate responsive DEG cluster breakdown:
 - **Cluster 1**: 72 genes, peak in early gastrula
 - **Cluster 2**: 25 genes, peak in prawnchip 
 - **Cluster 3**: 31 genes, peak in cleavage
@@ -50,7 +50,7 @@ Leachate DEG cluster breakdown:
 
 We also binned the DEGs across stage into 4 groups via WGCNA module (indicated by color).
 
-Stage DEG module breakdown:
+stage responsive DEG module breakdown:
 - **cleavage_up**	
     - turquoise: 2805 genes
 
@@ -66,19 +66,21 @@ Stage DEG module breakdown:
 	  - brown:	2436 genes
 
 
-We now perform functional enrichment analysis on each module & cluster separately to understand the biological processes associated with each expression pattern.
+We now perform functional enrichment analysis on each module & cluster separately to characterize the biological processes of each expression pattern.
 
 We use the R package `goseq` for GO enrichment. 
 `goseq` corrects for gene length bias - longer genes are more likely to be detected as DEGs in RNA-Seq simply because they accumulate more reads. 
 `goseq` accounts for this by using a probability weighting function.
 
-Run GOseq using:
+The goal here is to run GOseq using:
 
-DEG vector
-Background (all tested genes)
-Vector of gene lengths (from your annotation, GTF, eggNOG, etc.)
+- a DEG vector for each cluster and module
+- a gene lengths vector that matches the clusters and modules 
+  - (gene lengths are gotten from the annotation files GTF, eggNOG)
+- a background universe vector (all tested genes)
 
-Get the corrected p-values and enriched GO terms.
+
+Get the corrected p-values and GO terms.
 
 
 ## Inputs
@@ -91,7 +93,7 @@ Get the corrected p-values and enriched GO terms.
 
 ## Outputs
 
-- GO enrichment results for each of the 3 clusters
+- GO terms for each of the clusters and modules
 - Reduced GO terms (redundancy removed) for all DEGs and for each cluster
 - Semantic similarity matrix for all DEGs and for each cluster
 
@@ -116,18 +118,18 @@ output_path <- "../../output/07_enrichment/goseq/"
 #BiocManager::install("Biostrings")
 #BiocManager::install("goseq")
 #BiocManager::install("rrvgo")
-#BiocManager::install("org.Ce.eg.db") # c.elegans genome-wide annotation
+BiocManager::install("org.Ce.eg.db") # c.elegans genome-wide annotation
 ```
 
 ## Load packages
 
 ```{r}
+library(tidyverse)
 library(GenomicRanges)
 library(Biostrings)
 library(goseq)
 library(rrvgo)
 library(org.Ce.eg.db)
-library(tidyverse)
 ```
 
 ## Load inputs
@@ -135,7 +137,7 @@ library(tidyverse)
 Read in gene lists
 
 ```{r}
-# significant genes (130 total) (only those that are significant for leachate or stage:leachate)
+# leachate responsive genes (130 total)
 sig_genes <- read.csv("../../output/06_deg/spawnnight/sig_genes.csv")
 
 # leachate cluster assignments 
