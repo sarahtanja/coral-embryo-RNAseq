@@ -194,13 +194,13 @@ http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.KEGG_resul
 
 # Setup
 
-## Path
-
-## Install packages
+## Paths
 
 ```{r}
 output_path <- "../../output/07_enrichment/goseq/"
 ```
+
+## Install packages
 
 ```{r, eval=FALSE}
 # CRAN packages
@@ -262,27 +262,25 @@ leachate_DEG_clusters <- leachate_DEG_clusters %>%
 ```
 
 ```{r}
-leachate_deg_clusters <- sig_genes_leachate %>%
-  left_join(leachate_DEG_clusters, by = "gene_id") 
 
-
-leachate_deg_clusters <- leachate_deg_clusters %>% 
-  mutate(pattern = case_when(
+leachate_deg_patterns <- sig_genes_leachate %>%
+  left_join(leachate_DEG_clusters, by = "gene_id") %>%
+  mutate(pattern_leachate = case_when(
                       cluster == 1 ~ "up",
                       cluster == 2 ~ "hump",
                       cluster == 3 ~ "down",
                       is.na(cluster) ~ "unassigned"),
-          peak = case_when(
+          peak_leachate = case_when(
                       cluster == 1 ~ "earlygastrula",
                       cluster == 2 ~ "prawnchip",
                       cluster == 3 ~ "cleavage",
                       is.na(cluster) ~ "unassigned"
-                    ),
-          responsive = "leachate") 
+                    ), 
+          deg_leachate = "leachate") %>% 
+  rename(DEGpattern = cluster)
 
-leachate_deg_clusters %>% 
-count(pattern, peak, responsive, sort = TRUE) %>% 
-  knitr::kable()  
+leachate_deg_patterns %>% 
+count(DEGpattern, peak_leachate, pattern_leachate, sort = TRUE) %>% knitr::kable()  
 ```
 
 ```{r}
@@ -298,19 +296,19 @@ stage_deg_modules <- stage_DEG_modules %>%
     pattern_type = if_else(pattern_type == "monotonic_down", 
                            "down", pattern_type)
   ) %>% 
-  dplyr::rename(pattern = pattern_type,
-                peak = peak_stage) %>% 
+  dplyr::rename(pattern_stage = pattern_type) %>% 
   dplyr::select(!module_stage) %>%
-  mutate(responsive = "stage")
+  mutate(deg_stage = "stage")
+
 
 stage_deg_modules %>%
-count(peak, pattern, sort = TRUE) %>% 
+count(peak_stage, pattern_stage, sort = TRUE) %>% 
   knitr::kable()
 ```
 
 ```{r}
 stage_deg_modules %>%
-count(WGCNAmodule, pattern, sort = TRUE) %>% 
+count(WGCNAmodule, pattern_stage, sort = TRUE) %>% 
   knitr::kable()
 ```
 
@@ -361,10 +359,10 @@ genome_seqs <- readDNAStringSet("../../input/genome/Montipora_capitata_HIv3.asse
 universe_seqs <- genome_seqs[names(genome_seqs) %in% universe_genes$gene_id]
 
 # Filter for the 130 leachate DEGs 
-leachate_seqs <- genome_seqs[names(genome_seqs) %in% sig_genes_leachate$gene_id]
+#leachate_seqs <- genome_seqs[names(genome_seqs) %in% sig_genes_leachate$gene_id]
 
 # Filter for the 10793 stage DEGs
-stage_seqs <- genome_seqs[names(genome_seqs) %in% sig_genes_stage$gene_id]
+#stage_seqs <- genome_seqs[names(genome_seqs) %in% sig_genes_stage$gene_id]
 ```
 
 # Annotate gene lists
@@ -416,9 +414,11 @@ Add length & module/cluster info to the annotation dataframe
 ```{r}
 universe_anno <- universe_genes_anno %>% 
   left_join(lengths, by = "gene_id") %>% 
-  left_join(leachate_deg_clusters, by = "gene_id") %>% 
-  left_join(stage_deg_modules, by = "gene_id", suffix = c(".leachate", ".stage"))
+  left_join(leachate_deg_patterns, by = "gene_id") %>% 
+  left_join(stage_deg_modules, by = "gene_id")
 ```
+
+Write out the annotated universe dataframe
 
 ```{r}
 write_csv(universe_anno, file.path(output_path, "universe_anno.csv"))
@@ -465,10 +465,11 @@ Calculate GO coverage within clusters for descriptive purposes $$
 \text{GO coverage} = \frac{\#\,\text{genes with GO annotation in the set}}{\#\,\text{genes in the set}}
 $$
 
-This answers: “how well annotated is this DEGpattern?”
+This answers: “how well annotated is this DEGpattern?” or what is the GO
+coverage for all leachate responsive DEG expression patterns?
 
 ```{r}
-# What is GO coverage for all leachate DEG clusters?
+
 leachate_go_summary <- universe_anno %>%
   filter(gene_id %in% sig_genes_leachate$gene_id) %>%
   mutate(has_GO = ifelse(!is.na(GOs) & GOs != "", 1, 0)) %>%
@@ -481,6 +482,9 @@ leachate_go_summary <- universe_anno %>%
 
 leachate_go_summary %>% knitr::kable()
 ```
+
+What is the GO coverage for all DEGs due to developental stage WGCNA
+modules?
 
 ```{r}
 # What is GO coverage for all stage WGCNA modules?
@@ -502,7 +506,7 @@ stage_go_summary %>% knitr::kable()
 stage_pattern_go_summary <- universe_anno %>%
   filter(gene_id %in% sig_genes_stage$gene_id) %>%
   mutate(has_GO = ifelse(!is.na(GOs) & GOs != "", 1, 0)) %>%
-  group_by(pattern.stage) %>%
+  group_by(pattern_stage) %>%
   summarise(
     n_genes = n(),
     n_genes_with_GO = sum(has_GO),
@@ -546,19 +550,19 @@ These are annotated dataframes subset to just DEGs and to each cluster
 leachate_anno <- universe_anno %>% 
   filter(gene_id %in% sig_genes_leachate$gene_id)
 
-cluster1 <- universe_anno %>% filter(DEGpattern == 1)
-cluster2 <- universe_anno %>% filter(DEGpattern == 2)
-cluster3 <- universe_anno %>% filter(DEGpattern == 3)
+leachate_anno_up <- universe_anno %>% filter(pattern_leachate == "up")
+leachate_anno_hump <- universe_anno %>% filter(pattern_leachate == "hump")
+leachate_anno_down <- universe_anno %>% filter(pattern_leachate == "down")
 ```
 
 ```{r}
 stage_anno <- universe_anno %>% 
   filter(gene_id %in% sig_genes_stage$gene_id)
 
-cleavage_up <- universe_genes_anno %>% filter(module_stage == "cleavage_up")
-prawnchip_up <- universe_genes_anno %>% filter(module_stage == "prawnchip_up")
-prawnchip_dip <- universe_genes_anno %>% filter(module_stage == "prawnchip_dip")
-earlygastrula_up <- universe_genes_anno %>% filter(module_stage == "earlygastrula_up")
+stage_up_anno <- universe_anno %>% filter(pattern_stage == "up")
+stage_hump_anno <- universe_anno %>% filter(pattern_stage == "hump")
+stage_valley_anno <- universe_anno %>% filter(pattern_stage == "valley")
+stage_down_anno <- universe_anno %>% filter(pattern_stage == "down")
 ```
 
 Create named vectors for DE status (1 = DE, 0 = not DE) for all DEGs and
