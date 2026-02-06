@@ -1,0 +1,129 @@
+go,cluster,parent,score,size,term,parentTerm,termUniqueness,termUniquenessWithinCluster,termDispensability
+GO:0010467,1,GO:0010467,8.365526730513007,2460,gene expression,gene expression,0.8148593749999999,0.517,0
+GO:0009987,2,GO:0009987,6.151958260787771,9117,cellular process,cellular process,0.9767734375,1,0
+GO:0044238,1,GO:0010467,6.0925030692775834,4876,primary metabolic process,gene expression,0.850484375,0.5795,0.438
+GO:0006412,3,GO:0006412,5.964032365370988,363,translation,translation,0.8434375000000001,0.4766666666666667,0
+GO:0008152,1,GO:0010467,5.618774302658258,5539,metabolic process,gene expression,0.86259375,0.5783333333333334,0.464
+GO:0006518,4,GO:0006518,5.618774302658258,28,peptide metabolic process,peptide metabolic process,0.9326953125,0.5465,0
+GO:0006139,5,GO:0006139,5.139023820110194,2290,nucleobase-containing compound metabolic process,nucleobase-containing compound metabolic process,0.8225078125,0.4947272727272727,0
+GO:0043043,4,GO:0006518,5.058141616230287,5,peptide biosynthetic process,peptide metabolic process,0.919046875,0.5465,0.907
+GO:0016070,5,GO:0006139,4.949982193517113,1734,RNA metabolic process,nucleobase-containing compound metabolic process,0.803765625,0.43072727272727274,0.79
+GO:0043170,1,GO:0010467,4.615186515910988,4155,macromolecule metabolic process,gene expression,0.8356328125,0.5026666666666666,0.647
+GO:0002181,3,GO:0006412,4.324190855335326,58,cytoplasmic translation,translation,0.877171875,0.5273333333333333,0.764
+GO:0048856,6,GO:0048856,4.268608332781118,1625,anatomical structure development,anatomical structure development,0.866375,0.37981818181818183,0
+GO:0003002,7,GO:0003002,4.2367372563924945,107,regionalization,regionalization,0.885765625,0.34725000000000006,0
+GO:0009953,7,GO:0003002,4.206109331802188,1,dorsal/ventral pattern formation,regionalization,0.92046875,0.493,0.691
+GO:0007275,6,GO:0048856,4.136369433791946,1398,multicellular organism development,anatomical structure development,0.8544375,0.36609090909090913,0.847
+GO:0043603,8,GO:0043603,4.128633707021956,177,amide metabolic process,amide metabolic process,0.9140234375,0.474,0
+GO:0043604,8,GO:0043603,4.071284634054923,51,amide biosynthetic process,amide metabolic process,0.8971328125,0.49,0.895
+GO:0010468,9,GO:0010468,3.89625743882498,1504,regulation of gene expression,regulation of gene expression,0.7457421875,0.29379999999999995,0
+GO:0010557,9,GO:0010468,3.8074302940368265,445,positive regulation of macromolecule biosynthetic process,regulation of gene expression,0.7694062500000001,0.25970000000000004,0.711
+GO:0006413,3,GO:0006412,3.374156329480618,70,translational initiation,translation,0.8706484375,0.5133333333333333,0.806
+GO:0006614,10,GO:0006614,3.135805857097839,12,SRP-dependent cotranslational protein targeting to membrane,SRP-dependent cotranslational protein targeting to membrane,0.919390625,0.27080000000000004,0
+GO:0006613,10,GO:0006614,3.053550008504733,12,cotranslational protein targeting to membrane,SRP-dependent cotranslational protein targeting to membrane,0.9294765625,0.39990000000000003,1
+GO:0002376,11,GO:0002376,2.977160378458756,369,immune system process,immune system process,0.975296875,0.35575,0
+GO:0071705,13,GO:0071705,2.804798698210228,592,nitrogen compound transport,nitrogen compound transport,0.9413671875,0.56033333333333335,0
+GO:0022613,12,GO:0022613,2.804798698210228,258,ribonucleoprotein complex biogenesis,ribonucleoprotein complex biogenesis,0.9641796875,0.4115,0
+GO:0006955,11,GO:0002376,2.7644519045471,366,immune response,immune system process,0.9733984375,0.35550000000000004,0.986
+GO:0009891,9,GO:0010468,2.6967585557311704,456,positive regulation of biosynthetic process,regulation of gene expression,0.7793359375,0.26280000000000003,0.709
+GO:0010628,9,GO:0010468,2.52972423688769,153,positive regulation of gene expression,regulation of gene expression,0.7967500000000001,0.35135000000000005,0.607
+GO:0045944,9,GO:0010468,2.48398304358605,255,positive regulation of transcription by RNA polymerase II,regulation of gene expression,0.753703125,0.27125,0.652
+GO:0044248,14,GO:0044248,2.4622626913781,173,cellular catabolic process,cellular catabolic process,0.9172265625,0.634,0
+GO:0000184,5,GO:0006139,2.4622626913781,18,"nuclear-transcribed mRNA catabolic process, nonsense-mediated decay",nucleobase-containing compound metabolic process,0.8007265625,0.5695454545454546,0.38
+GO:0016071,5,GO:0006139,2.4622626913781,320,mRNA metabolic process,nucleobase-containing compound metabolic process,0.8393671875,0.44145454545454543,0.554
+GO:0010556,9,GO:0010468,2.4622626913781,1515,regulation of macromolecule biosynthetic process,regulation of gene expression,0.7475,0.29359999999999997,0.924
+GO:0090304,5,GO:0006139,2.456529065273587,2007,nucleic acid metabolic process,nucleobase-containing compound metabolic process,0.8040234374999999,0.4633636363636363,0.83
+GO:0007423,15,GO:0007423,2.4359325870011337,47,sensory organ development,sensory organ development,0.892046875,0.37375,0
+GO:0032502,6,GO:0048856,2.4124187281986424,1861,developmental process,anatomical structure development,0.87471875,0.41000000000000003,0.823
+GO:0006810,16,GO:0006810,2.3094909426432846,1922,transport,transport,0.93903125,0.45825000000000005,0
+GO:0048731,6,GO:0048856,2.300347196732521,643,system development,anatomical structure development,0.857890625,0.3502727272727273,0.718
+GO:1902680,9,GO:0010468,2.234257258141279,321,positive regulation of RNA biosynthetic process,regulation of gene expression,0.7476015625,0.25149999999999995,0.672
+GO:0090596,15,GO:0007423,2.2111374477956756,27,sensory organ morphogenesis,sensory organ development,0.8916328125,0.33887500000000004,0.956
+GO:0048598,17,GO:0048598,2.2073967332794884,183,embryonic morphogenesis,embryonic morphogenesis,0.8797578125,0.5553333333333333,0
+GO:0010608,9,GO:0010468,2.160858551617539,204,post-transcriptional regulation of gene expression,regulation of gene expression,0.8063828125,0.44975,0.648
+GO:0006396,5,GO:0006139,2.123516888548507,524,RNA processing,nucleobase-containing compound metabolic process,0.8021953125,0.37581818181818183,0.623
+GO:0045087,11,GO:0002376,2.1198820196339003,334,innate immune response,immune system process,0.9735390625,0.35850000000000004,0.977
+GO:0060255,9,GO:0010468,2.0933959172180634,1639,regulation of macromolecule metabolic process,regulation of gene expression,0.761765625,0.2994,0.905
+GO:0001654,15,GO:0007423,2.0722169195415705,2,eye development,sensory organ development,0.8987109375,0.437125,0.796
+GO:0009056,14,GO:0044248,2.0705207606416334,978,catabolic process,cellular catabolic process,0.8960703125,0.634,0.732
+GO:0019538,1,GO:0010467,2.0705207606416334,2050,protein metabolic process,gene expression,0.8459296875,0.5760000000000001,0.514
+GO:0042254,12,GO:0022613,2.0705207606416334,192,ribosome biogenesis,ribonucleoprotein complex biogenesis,0.964515625,0.41000000000000003,0.964
+GO:0048519,18,GO:0048519,2.0705207606416334,1012,negative regulation of biological process,negative regulation of biological process,0.9044921875,0.30580000000000007,0
+GO:0006417,9,GO:0010468,2.0546695013502494,110,regulation of translation,regulation of gene expression,0.8020078125,0.46535000000000004,0.593
+GO:0051254,9,GO:0010468,2.0546695013502494,351,positive regulation of RNA metabolic process,regulation of gene expression,0.755328125,0.25815,0.659
+GO:1903706,19,GO:1903706,2.051553036949608,1,regulation of hemopoiesis,regulation of hemopoiesis,0.852484375,0.5414285714285714,0
+GO:0045935,9,GO:0010468,1.9574814169680097,368,positive regulation of nucleobase-containing compound metabolic process,regulation of gene expression,0.7655234375,0.26115,0.65
+GO:0007389,7,GO:0003002,1.9349044918077247,131,pattern specification process,regionalization,0.8836640625,0.359,0.971
+GO:0009892,18,GO:0048519,1.9054671823915033,554,negative regulation of metabolic process,negative regulation of biological process,0.7968671875,0.271,0.862
+GO:0042886,13,GO:0071705,1.9051684852086799,25,amide transport,nitrogen compound transport,0.953078125,0.45199999999999996,0.67
+GO:0048513,15,GO:0007423,1.9051684852086799,413,animal organ development,sensory organ development,0.8745234375,0.4095,0.754
+GO:0010605,18,GO:0048519,1.9010525776569438,532,negative regulation of macromolecule metabolic process,negative regulation of biological process,0.7832578125,0.27180000000000004,0.857
+GO:0072594,10,GO:0006614,1.8788682276454562,136,establishment of protein localization to organelle,SRP-dependent cotranslational protein targeting to membrane,0.9173828125,0.3268,0.813
+GO:0045047,10,GO:0006614,1.8599607968411815,20,protein targeting to ER,SRP-dependent cotranslational protein targeting to membrane,0.920625,0.3026,0.962
+GO:0009889,9,GO:0010468,1.8492184111310268,1537,regulation of biosynthetic process,regulation of gene expression,0.760265625,0.29745,0.921
+GO:0072599,10,GO:0006614,1.8450448539771478,21,establishment of protein localization to endoplasmic reticulum,SRP-dependent cotranslational protein targeting to membrane,0.9223359375,0.32520000000000004,0.96
+GO:0042659,19,GO:1903706,1.837487804287658,64,regulation of cell fate specification,regulation of hemopoiesis,0.8306015625000001,0.42300000000000004,0.433
+GO:0009952,7,GO:0003002,1.837487804287658,66,anterior/posterior pattern specification,regionalization,0.891140625,0.36475,0.949
+GO:0048562,15,GO:0007423,1.8007966193012332,32,embryonic organ morphogenesis,sensory organ development,0.8836875,0.44200000000000006,0.595
+GO:0046903,16,GO:0006810,1.7612799819800875,157,secretion,transport,0.956375,0.63225,0.508
+GO:2000026,19,GO:1903706,1.7612799819800875,203,regulation of multicellular organismal development,regulation of hemopoiesis,0.8241171875,0.469,0.627
+GO:0030154,6,GO:0048856,1.7540740790966796,984,cell differentiation,anatomical structure development,0.8554140625,0.3525454545454545,0.673
+GO:0045893,9,GO:0010468,1.7488433572175084,321,positive regulation of DNA-templated transcription,regulation of gene expression,0.7468828125,0.25129999999999997,0.674
+GO:0045595,19,GO:1903706,1.7154710938497928,163,regulation of cell differentiation,regulation of hemopoiesis,0.818203125,0.4107142857142857,0.654
+GO:0009887,15,GO:0007423,1.7154710938497928,156,animal organ morphogenesis,sensory organ development,0.8817109375,0.38275000000000003,0.678
+GO:0015833,13,GO:0071705,1.7072963186960843,18,peptide transport,nitrogen compound transport,0.9542578125,0.45899999999999996,0.649
+GO:0048523,18,GO:0048519,1.7072963186960843,926,negative regulation of cellular process,negative regulation of biological process,0.885140625,0.2932,0.939
+GO:0009893,9,GO:0010468,1.7072963186960843,580,positive regulation of metabolic process,regulation of gene expression,0.7916796875000001,0.2631,0.702
+GO:0072521,20,GO:0072521,1.7010573690171849,219,purine-containing compound metabolic process,purine-containing compound metabolic process,0.91425,0.522,0
+GO:0006163,20,GO:0072521,1.6977148326968168,158,purine nucleotide metabolic process,purine-containing compound metabolic process,0.85171875,0.522,0.956
+GO:0051234,16,GO:0006810,1.6893580384467006,2037,establishment of localization,transport,0.939328125,0.45875,0.85
+GO:0048869,6,GO:0048856,1.6893580384467006,985,cellular developmental process,anatomical structure development,0.85540625,0.3525454545454545,0.673
+GO:0010629,18,GO:0048519,1.6830231538722449,345,negative regulation of gene expression,negative regulation of biological process,0.7774375,0.2986,0.813
+GO:0034248,8,GO:0043603,1.666103674163805,3,regulation of amide metabolic process,amide metabolic process,0.8834765625,0.5606666666666666,0.683
+GO:0009117,21,GO:0009117,1.6436691123473859,191,nucleotide metabolic process,nucleotide metabolic process,0.8515546875,0.32333333333333336,0
+GO:0019222,9,GO:0010468,1.641804717078508,1718,regulation of metabolic process,regulation of gene expression,0.778359375,0.30410000000000004,0.893
+GO:0080090,9,GO:0010468,1.635821466298569,1373,regulation of primary metabolic process,regulation of gene expression,0.7719609375,0.29584999999999995,0.844
+GO:0071840,12,GO:0022613,1.6286811973046396,2169,cellular component organization or biogenesis,ribonucleoprotein complex biogenesis,0.966546875,0.6092500000000001,0.568
+GO:0006753,21,GO:0009117,1.6286811973046396,268,nucleoside phosphate metabolic process,nucleotide metabolic process,0.8473515625,0.30933333333333335,0.953
+GO:0048592,15,GO:0007423,1.6280787945196848,1,eye morphogenesis,sensory organ development,0.899,0.41012499999999996,0.763
+GO:2000736,19,GO:1903706,1.6263891067723673,4,regulation of stem cell differentiation,regulation of hemopoiesis,0.8689375,0.5307142857142857,0.522
+GO:0010453,19,GO:1903706,1.6263891067723673,64,regulation of cell fate commitment,regulation of hemopoiesis,0.8306015625000001,0.42300000000000004,0.433
+GO:0015031,10,GO:0006614,1.6263891067723673,386,protein transport,SRP-dependent cotranslational protein targeting to membrane,0.906015625,0.35430000000000006,0.667
+GO:0008544,22,GO:0008544,1.6120526202830594,29,epidermis development,epidermis development,0.9170625,0.7185,0
+GO:0010604,9,GO:0010468,1.5834318607059183,544,positive regulation of macromolecule metabolic process,regulation of gene expression,0.77865625,0.2599,0.711
+GO:0051179,16,GO:0006810,1.5765455912684012,2286,localization,transport,0.942328125,0.47624999999999995,0.809
+GO:0048663,6,GO:0048856,1.4916564230054372,28,neuron fate commitment,anatomical structure development,0.874765625,0.4955454545454545,0.425
+GO:0022008,6,GO:0048856,1.4797839037625582,366,neurogenesis,anatomical structure development,0.8373515625,0.2859090909090909,0.655
+GO:0009161,21,GO:0009117,1.4666537053308004,28,ribonucleoside monophosphate metabolic process,nucleotide metabolic process,0.876,0.3101666666666667,0.741
+GO:0007399,6,GO:0048856,1.4564178658700955,451,nervous system development,anatomical structure development,0.8600703125,0.353090909090909,0.686
+GO:0000377,5,GO:0006139,1.4557263841585393,162,"RNA splicing, via transesterification reactions with bulged adenosine as nucleophile",nucleobase-containing compound metabolic process,0.828328125,0.38963636363636367,0.488
+GO:0000398,5,GO:0006139,1.4557263841585393,162,"mRNA splicing, via spliceosome",nucleobase-containing compound metabolic process,0.8208984375,0.3031818181818182,0.488
+GO:0048468,6,GO:0048856,1.4464260349310316,567,cell development,anatomical structure development,0.8575234375,0.3845454545454545,0.671
+GO:0051252,9,GO:0010468,1.4437158182103806,1083,regulation of RNA metabolic process,regulation of gene expression,0.733984375,0.29315,0.831
+GO:0019219,9,GO:0010468,1.4313938741391619,1132,regulation of nucleobase-containing compound metabolic process,regulation of gene expression,0.74684375,0.29725,0.818
+GO:1904396,23,GO:1904396,1.4167650473553857,19,regulation of neuromuscular junction development,regulation of neuromuscular junction development,0.92375,0.5005,0
+GO:0032501,17,GO:0048598,1.4099645543180943,2388,multicellular organismal process,embryonic morphogenesis,0.9369296874999999,0.6663333333333333,0.462
+GO:0043588,15,GO:0007423,1.4099645543180943,1,skin development,sensory organ development,0.924328125,0.599625,0.468
+GO:0042274,12,GO:0022613,1.4083009861831084,60,ribosomal small subunit biogenesis,ribonucleoprotein complex biogenesis,0.9687578125,0.47125000000000006,0.822
+GO:0055086,21,GO:0009117,1.4083009861831084,287,nucleobase-containing small molecule metabolic process,nucleotide metabolic process,0.8461484375,0.3198333333333333,0.936
+GO:0009996,19,GO:1903706,1.4019882739887266,6,negative regulation of cell fate specification,regulation of hemopoiesis,0.8402265625,0.4147142857142857,0.541
+GO:0045321,11,GO:0002376,1.3960092792675558,2,leukocyte activation,immune system process,0.9466484375,0.5407500000000001,0.614
+GO:0060537,22,GO:0008544,1.3954244249304428,1,muscle tissue development,epidermis development,0.9344609375,0.7185,0.563
+GO:0050684,5,GO:0006139,1.3954244249304428,44,regulation of mRNA processing,nucleobase-containing compound metabolic process,0.8029999999999999,0.46545454545454545,0.398
+GO:0048699,6,GO:0048856,1.3954244249304428,348,generation of neurons,anatomical structure development,0.8379375,0.2883636363636364,0.651
+GO:0009059,1,GO:0010467,1.3700695459902044,2720,macromolecule biosynthetic process,gene expression,0.8158828124999999,0.5088333333333334,0.835
+GO:0000375,5,GO:0006139,1.3700695459902044,162,"RNA splicing, via transesterification reactions",nucleobase-containing compound metabolic process,0.8282421875,0.38954545454545453,0.488
+GO:0070972,10,GO:0006614,1.3700695459902044,29,protein localization to endoplasmic reticulum,SRP-dependent cotranslational protein targeting to membrane,0.92615625,0.3691,0.938
+GO:0009126,21,GO:0009117,1.3700695459902044,20,purine nucleoside monophosphate metabolic process,nucleotide metabolic process,0.879765625,0.31866666666666665,0.715
+GO:0009167,21,GO:0009117,1.3700695459902044,20,purine ribonucleoside monophosphate metabolic process,nucleotide metabolic process,0.879421875,0.31133333333333335,0.715
+GO:0008283,24,GO:0008283,1.3598509359645505,77,cell population proliferation,cell population proliferation,0.9904296875,1,0
+GO:0090150,10,GO:0006614,1.3577071254089317,70,establishment of protein localization to membrane,SRP-dependent cotranslational protein targeting to membrane,0.92390625,0.38039999999999996,0.879
+GO:0022414,25,GO:0022414,1.3541117088215906,923,reproductive process,reproductive process,0.99028125,0.5853333333333333,0
+GO:0009790,17,GO:0048598,1.3441640887691118,510,embryo development,embryonic morphogenesis,0.8737578125000001,0.5296666666666667,0.872
+GO:0006888,10,GO:0006614,1.3429208968034199,60,endoplasmic reticulum to Golgi vesicle-mediated transport,SRP-dependent cotranslational protein targeting to membrane,0.9404609375,0.5952999999999999,0.397
+GO:0045184,10,GO:0006614,1.3404799888282315,447,establishment of protein localization,SRP-dependent cotranslational protein targeting to membrane,0.91371875,0.34640000000000004,0.676
+GO:0060828,26,GO:0060828,1.3355262936981211,31,regulation of canonical Wnt signaling pathway,regulation of canonical Wnt signaling pathway,0.934328125,1,0
+GO:0007292,25,GO:0022414,1.3340402489737715,170,female gamete generation,reproductive process,0.99090625,0.612,0.718
+GO:0008582,23,GO:1904396,1.328954899360296,19,regulation of synaptic assembly at neuromuscular junction,regulation of neuromuscular junction development,0.816828125,0.5005,0.999
+GO:0008380,5,GO:0006139,1.3287339839173042,207,RNA splicing,nucleobase-containing compound metabolic process,0.821609375,0.3801818181818182,0.519
+GO:0044703,25,GO:0022414,1.3174150946991445,11,multi-organism reproductive process,reproductive process,0.99240625,0.6759999999999999,0.526

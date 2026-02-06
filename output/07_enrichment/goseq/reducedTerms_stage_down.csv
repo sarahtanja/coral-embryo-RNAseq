@@ -1,0 +1,17 @@
+go,cluster,parent,score,size,term,parentTerm,termUniqueness,termUniquenessWithinCluster,termDispensability
+GO:0045321,6,GO:0045321,1.9768455843921104,2,leukocyte activation,leukocyte activation,0.89775,0.5415,0
+GO:0006119,7,GO:0006119,1.6272850635836487,53,oxidative phosphorylation,oxidative phosphorylation,0.9539375,1,0
+GO:0006955,5,GO:0006955,1.6272850635836487,366,immune response,immune response,0.9616875,1,0
+GO:0002181,3,GO:0002181,1.6272850635836487,58,cytoplasmic translation,cytoplasmic translation,0.910875,0.618,0
+GO:0001775,6,GO:0045321,1.6272850635836487,9,cell activation,leukocyte activation,0.93525,0.5415,0.917
+GO:0090150,4,GO:0090150,1.557857437696327,70,establishment of protein localization to membrane,establishment of protein localization to membrane,0.7746875,0.40780000000000005,0
+GO:0006614,4,GO:0090150,1.5088928484920061,12,SRP-dependent cotranslational protein targeting to membrane,establishment of protein localization to membrane,0.7270625,0.2398,0.879
+GO:1903531,2,GO:1903531,1.4624371661387334,8,negative regulation of secretion by cell,negative regulation of secretion by cell,0.8805000000000001,0.6345000000000001,0
+GO:0045047,4,GO:0090150,1.3826739827543555,20,protein targeting to ER,establishment of protein localization to membrane,0.7549375,0.33420000000000005,0.601
+GO:0006163,1,GO:0006163,1.3484881176663925,158,purine nucleotide metabolic process,purine nucleotide metabolic process,0.8426875,0.3596666666666667,0
+GO:0046903,2,GO:1903531,1.3440859925860384,157,secretion,negative regulation of secretion by cell,0.8654375,0.6345000000000001,0.731
+GO:0006613,4,GO:0090150,1.3440859925860384,12,cotranslational protein targeting to membrane,establishment of protein localization to membrane,0.7656875,0.36339999999999995,0.879
+GO:0072521,1,GO:0006163,1.3204367639438368,219,purine-containing compound metabolic process,purine nucleotide metabolic process,0.8489375,0.3716666666666667,0.956
+GO:0006412,3,GO:0002181,1.3062446964006518,363,translation,cytoplasmic translation,0.9009375,0.618,0.764
+GO:0072599,4,GO:0090150,1.3062446964006518,21,establishment of protein localization to endoplasmic reticulum,establishment of protein localization to membrane,0.769625,0.3812,0.602
+GO:0009150,1,GO:0006163,1.3062446964006518,126,purine ribonucleotide metabolic process,purine nucleotide metabolic process,0.8452500000000001,0.3686666666666667,0.965

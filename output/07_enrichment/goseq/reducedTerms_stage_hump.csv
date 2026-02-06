@@ -1,0 +1,87 @@
+go,cluster,parent,score,size,term,parentTerm,termUniqueness,termUniquenessWithinCluster,termDispensability
+GO:0016071,7,GO:0016071,4.373315971476355,320,mRNA metabolic process,mRNA metabolic process,0.7919069767441861,0.3144,0
+GO:0019752,18,GO:0019752,4.318175259862708,378,carboxylic acid metabolic process,carboxylic acid metabolic process,0.7659767441860466,0.35631250000000003,0
+GO:0006091,13,GO:0006091,4.318175259862708,143,generation of precursor metabolites and energy,generation of precursor metabolites and energy,0.8766511627906977,0.30225,0
+GO:0055086,18,GO:0019752,4.318175259862708,287,nucleobase-containing small molecule metabolic process,carboxylic acid metabolic process,0.7120232558139534,0.25268749999999995,0.75
+GO:0043436,18,GO:0019752,4.136184281815379,379,oxoacid metabolic process,carboxylic acid metabolic process,0.7659186046511628,0.356125,0.978
+GO:0006753,18,GO:0019752,4.136184281815379,268,nucleoside phosphate metabolic process,carboxylic acid metabolic process,0.6962558139534885,0.24593750000000003,0.738
+GO:0000375,11,GO:0000375,4.105739147610119,162,"RNA splicing, via transesterification reactions","RNA splicing, via transesterification reactions",0.7960581395348837,0.4171111111111111,0
+GO:0006082,18,GO:0019752,4.105739147610119,418,organic acid metabolic process,carboxylic acid metabolic process,0.7648953488372093,0.35362499999999997,0.971
+GO:0009117,18,GO:0019752,4.105739147610119,191,nucleotide metabolic process,carboxylic acid metabolic process,0.7021860465116279,0.26187499999999997,0.714
+GO:0000398,11,GO:0000375,4.029768185036259,162,"mRNA splicing, via spliceosome","RNA splicing, via transesterification reactions",0.7755697674418605,0.41722222222222227,0.993
+GO:0000377,11,GO:0000375,4.029768185036259,162,"RNA splicing, via transesterification reactions with bulged adenosine as nucleophile","RNA splicing, via transesterification reactions",0.7961627906976745,0.41722222222222227,0.993
+GO:0044281,18,GO:0019752,3.8846677812457577,736,small molecule metabolic process,carboxylic acid metabolic process,0.7538720930232559,0.32975,0.849
+GO:0006397,7,GO:0016071,3.6333385386382524,233,mRNA processing,mRNA metabolic process,0.7745930232558139,0.3308,0.946
+GO:0043603,16,GO:0043603,3.587884056090427,177,amide metabolic process,amide metabolic process,0.8949302325581395,0.5525,0
+GO:0043067,10,GO:0043067,3.571560699908261,110,regulation of programmed cell death,regulation of programmed cell death,0.9412674418604651,0.29200000000000004,0
+GO:0009141,18,GO:0019752,3.561007165351284,73,nucleoside triphosphate metabolic process,carboxylic acid metabolic process,0.7266744186046512,0.27712499999999995,0.621
+GO:0008380,11,GO:0000375,3.5171067230175894,207,RNA splicing,"RNA splicing, via transesterification reactions",0.7894418604651163,0.41433333333333333,0.947
+GO:0008152,15,GO:0008152,3.4829635801048133,5539,metabolic process,metabolic process,0.836953488372093,0.6413333333333333,0
+GO:0042981,10,GO:0043067,3.390705142547638,99,regulation of apoptotic process,regulation of programmed cell death,0.9416511627906977,0.2915,0.984
+GO:0009123,18,GO:0019752,3.2528251214766306,38,nucleoside monophosphate metabolic process,carboxylic acid metabolic process,0.7423023255813954,0.316875,0.582
+GO:0006139,15,GO:0008152,3.2349657194582813,2290,nucleobase-containing compound metabolic process,metabolic process,0.774546511627907,0.6576666666666666,0.467
+GO:0009987,19,GO:0009987,3.225968687943908,9117,cellular process,cellular process,0.9724069767441861,1,0
+GO:0009144,18,GO:0019752,3.1075169983935536,63,purine nucleoside triphosphate metabolic process,carboxylic acid metabolic process,0.7301279069767441,0.283625,0.61
+GO:0009199,18,GO:0019752,3.0682790479121955,66,ribonucleoside triphosphate metabolic process,carboxylic acid metabolic process,0.7288255813953488,0.28125,0.614
+GO:0019693,9,GO:0019693,2.918089254993587,141,ribose phosphate metabolic process,ribose phosphate metabolic process,0.7991744186046512,0.30225,0
+GO:0009205,18,GO:0019752,2.918089254993587,62,purine ribonucleoside triphosphate metabolic process,carboxylic acid metabolic process,0.7302790697674418,0.28331249999999997,0.609
+GO:0009161,18,GO:0019752,2.8705218327908626,28,ribonucleoside monophosphate metabolic process,carboxylic acid metabolic process,0.7483023255813954,0.33025000000000004,0.565
+GO:0006518,8,GO:0006518,2.7814840209809355,28,peptide metabolic process,peptide metabolic process,0.9116627906976744,0.5465,0
+GO:0044248,4,GO:0044248,2.754050237068167,173,cellular catabolic process,cellular catabolic process,0.8633604651162791,0.32899999999999996,0
+GO:0009126,18,GO:0019752,2.6267383621008826,20,purine nucleoside monophosphate metabolic process,carboxylic acid metabolic process,0.7558372093023256,0.3469375,0.545
+GO:0009167,18,GO:0019752,2.6267383621008826,20,purine ribonucleoside monophosphate metabolic process,carboxylic acid metabolic process,0.7553255813953488,0.3441875,0.545
+GO:0006163,17,GO:0006163,2.580275667164577,158,purine nucleotide metabolic process,purine nucleotide metabolic process,0.7030930232558139,0.522,0
+GO:0009259,9,GO:0019693,2.577961974942749,137,ribonucleotide metabolic process,ribose phosphate metabolic process,0.7118488372093024,0.30225,0.99
+GO:0043933,1,GO:0043933,2.4042848311515526,438,protein-containing complex organization,protein-containing complex organization,0.9208488372093023,0.4304,0
+GO:0007005,1,GO:0043933,2.3854801073186023,122,mitochondrion organization,protein-containing complex organization,0.9425813953488372,0.6042000000000001,0.406
+GO:0051028,12,GO:0051028,2.372419762538624,43,mRNA transport,mRNA transport,0.918953488372093,0.3586666666666667,0
+GO:0002181,11,GO:0000375,2.3297868979693868,58,cytoplasmic translation,"RNA splicing, via transesterification reactions",0.8674999999999999,0.6163333333333334,0.31
+GO:0009150,9,GO:0019693,2.3188437763348984,126,purine ribonucleotide metabolic process,ribose phosphate metabolic process,0.7060697674418605,0.31000000000000005,0.974
+GO:0015980,13,GO:0006091,2.2920233393803064,106,energy derivation by oxidation of organic compounds,generation of precursor metabolites and energy,0.8797906976744186,0.30025,0.96
+GO:0046034,18,GO:0019752,2.254372592548284,60,ATP metabolic process,carboxylic acid metabolic process,0.7137441860465117,0.2815,0.608
+GO:0046395,4,GO:0044248,2.204249410669945,141,carboxylic acid catabolic process,cellular catabolic process,0.7615116279069767,0.32825000000000004,0.976
+GO:0016054,4,GO:0044248,2.204249410669945,141,organic acid catabolic process,cellular catabolic process,0.7617906976744186,0.32825000000000004,0.976
+GO:0044238,15,GO:0008152,2.1857961346684687,4876,primary metabolic process,metabolic process,0.8196279069767441,0.6103333333333334,0.609
+GO:0071840,1,GO:0043933,2.1846983930124524,2169,cellular component organization or biogenesis,protein-containing complex organization,0.9193953488372093,0.4544,0.585
+GO:0072521,17,GO:0006163,2.1809802168584143,219,purine-containing compound metabolic process,purine nucleotide metabolic process,0.8723255813953488,0.522,0.956
+GO:0006413,11,GO:0000375,2.101161465146538,70,translational initiation,"RNA splicing, via transesterification reactions",0.861,0.5992222222222222,0.325
+GO:0010467,11,GO:0000375,2.097282079844089,2460,gene expression,"RNA splicing, via transesterification reactions",0.813593023255814,0.5448888888888889,0.494
+GO:0006520,14,GO:0006520,2.04597416962667,187,amino acid metabolic process,amino acid metabolic process,0.8750232558139535,0.5735,0
+GO:0043604,16,GO:0043603,2.04597416962667,51,amide biosynthetic process,amide metabolic process,0.8846046511627907,0.5525,0.895
+GO:0006406,6,GO:0006406,2.0434405823689534,28,mRNA export from nucleus,mRNA export from nucleus,0.7891162790697674,0.37470000000000003,0
+GO:0043069,10,GO:0043067,1.9761351273065921,59,negative regulation of programmed cell death,regulation of programmed cell death,0.9352790697674419,0.2909999999999999,0.926
+GO:0072599,6,GO:0006406,1.9503170929980655,21,establishment of protein localization to endoplasmic reticulum,mRNA export from nucleus,0.9156279069767442,0.48109999999999997,0.445
+GO:0071826,1,GO:0043933,1.9477000225718104,91,protein-RNA complex organization,protein-containing complex organization,0.9291511627906976,0.48419999999999996,0.828
+GO:0006396,11,GO:0000375,1.8503647408170565,524,RNA processing,"RNA splicing, via transesterification reactions",0.7716976744186046,0.4375555555555556,0.797
+GO:0006412,11,GO:0000375,1.7837728568706774,363,translation,"RNA splicing, via transesterification reactions",0.834906976744186,0.5347777777777778,0.387
+GO:1901990,2,GO:1901990,1.778680488136571,56,regulation of mitotic cell cycle phase transition,regulation of mitotic cell cycle phase transition,0.9521511627906977,0.376,0
+GO:0045047,6,GO:0006406,1.7687140055401116,20,protein targeting to ER,mRNA export from nucleus,0.913046511627907,0.4586,0.444
+GO:0022613,1,GO:0043933,1.7542751695720324,258,ribonucleoprotein complex biogenesis,protein-containing complex organization,0.9270581395348837,0.4808,0.429
+GO:0043066,10,GO:0043067,1.7380497033831226,57,negative regulation of apoptotic process,regulation of programmed cell death,0.9352093023255814,0.2869999999999999,0.922
+GO:0019637,9,GO:0019693,1.7241700046128114,469,organophosphate metabolic process,ribose phosphate metabolic process,0.7810697674418605,0.38450000000000006,0.827
+GO:0009056,4,GO:0044248,1.6932153697108836,978,catabolic process,cellular catabolic process,0.8435116279069768,0.4585,0.732
+GO:0044085,1,GO:0043933,1.6932153697108836,929,cellular component biogenesis,protein-containing complex organization,0.9199302325581395,0.4363,0.495
+GO:0051168,6,GO:0006406,1.6932153697108836,56,nuclear export,mRNA export from nucleus,0.9065813953488372,0.37360000000000004,0.941
+GO:0045333,13,GO:0006091,1.6806274729828572,78,cellular respiration,generation of precursor metabolites and energy,0.882546511627907,0.31074999999999997,0.937
+GO:1903311,7,GO:0016071,1.6171430033507348,78,regulation of mRNA metabolic process,mRNA metabolic process,0.8099883720930232,0.396,0.815
+GO:0051169,6,GO:0006406,1.5810497119001574,89,nuclear transport,mRNA export from nucleus,0.9057674418604651,0.3772,0.88
+GO:0043043,8,GO:0006518,1.5731823272861871,5,peptide biosynthetic process,peptide metabolic process,0.9035930232558139,0.5465,0.907
+GO:0000956,7,GO:0016071,1.5637018139937342,71,nuclear-transcribed mRNA catabolic process,mRNA metabolic process,0.7646627906976744,0.34220000000000006,0.822
+GO:0006611,6,GO:0006406,1.5221300984236052,8,protein export from nucleus,mRNA export from nucleus,0.9040813953488372,0.3972,0.81
+GO:0050658,12,GO:0051028,1.5221300984236052,62,RNA transport,mRNA transport,0.9173023255813954,0.3466666666666667,0.962
+GO:0050657,12,GO:0051028,1.5221300984236052,62,nucleic acid transport,mRNA transport,0.9277674418604651,0.3466666666666667,0.962
+GO:0010038,5,GO:0010038,1.5081433387692413,69,response to metal ion,response to metal ion,1,1,0
+GO:0006913,6,GO:0006406,1.5081433387692413,89,nucleocytoplasmic transport,mRNA export from nucleus,0.9057209302325582,0.37670000000000003,0.882
+GO:0022900,13,GO:0006091,1.5081433387692413,49,electron transport chain,generation of precursor metabolites and energy,0.8884186046511628,0.34775,0.894
+GO:0002376,3,GO:0002376,1.506005321388141,369,immune system process,immune system process,1,1,0
+GO:0016043,1,GO:0043933,1.5028325385734156,2012,cellular component organization,protein-containing complex organization,0.9183837209302326,0.4436,0.607
+GO:0070972,6,GO:0006406,1.4991208531653526,29,protein localization to endoplasmic reticulum,mRNA export from nucleus,0.9165116279069767,0.49129999999999996,0.455
+GO:0022618,1,GO:0043933,1.4661563553002972,88,protein-RNA complex assembly,protein-containing complex organization,0.9199767441860465,0.4052,0.825
+GO:0006405,6,GO:0006406,1.4661563553002972,39,RNA export from nucleus,mRNA export from nucleus,0.8821279069767441,0.3577,0.968
+GO:0006402,7,GO:0016071,1.4661563553002972,92,mRNA catabolic process,mRNA metabolic process,0.7586511627906977,0.3298,0.845
+GO:0009063,14,GO:0006520,1.3898838744201785,65,amino acid catabolic process,amino acid metabolic process,0.8621976744186046,0.5735,0.853
+GO:1901987,2,GO:1901990,1.3846551567888905,98,regulation of cell cycle phase transition,regulation of mitotic cell cycle phase transition,0.9520813953488372,0.42266666666666663,0.934
+GO:0007346,2,GO:1901990,1.3677240744858934,103,regulation of mitotic cell cycle,regulation of mitotic cell cycle phase transition,0.9521744186046511,0.42133333333333334,0.938
+GO:0006613,6,GO:0006406,1.3671988596718898,12,cotranslational protein targeting to membrane,mRNA export from nucleus,0.9264651162790698,0.5655,0.428
+GO:0006996,1,GO:0043933,1.3671988596718898,1175,organelle organization,protein-containing complex organization,0.9227790697674418,0.46919999999999995,0.556
+GO:0065003,1,GO:0043933,1.3671988596718898,382,protein-containing complex assembly,protein-containing complex organization,0.9146744186046512,0.3743000000000001,0.965

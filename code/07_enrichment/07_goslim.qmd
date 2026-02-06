@@ -72,34 +72,83 @@ The GO IDs in the GO ID column **should be separated with a semi-colon**.
 gene to go term mapping
 ::: 
 
-## Load GO annotated genes
-```{r}
-universe_genes_anno <- read_csv(file.path(input_path, "universe_genes_anno.csv"))
-
-glimpse(universe_genes_anno)
-```
-
+## GO counts
 ```{r}
 gene2go <- read_csv(file.path(input_path, "gene2go.csv"))
+gowide <- read_csv(file.path(input_path, "gowide.csv"))
+```
 
+```{r}
 glimpse(gene2go)
 ```
-```{r}
-GO_bp_cluster1 <- read_csv(file.path(input_path, "GO_bp_cluster1.csv"))
 
-glimpse(GO_bp_cluster1)
+```{r}
+glimpse(gowide)
+```
+
+```{r}
+GO_stage_up <- read_csv(file.path(input_path, "GO_stage_up.csv"))
+```
+
+```{r}
+GO_counts <- gowide %>% 
+  left_join(GO_stage_up %>% 
+              dplyr::select(numDEInCat_stage_up = numDEInCat,
+                            category, 
+                            ontology),
+            by = "category") %>% 
+  left_join(GO_stage_hump %>% 
+              dplyr::select(numDEInCat_stage_hump = numDEInCat,
+                            category, 
+                            ontology),
+            by = c("category", "ontology")) %>%
+  left_join(GO_stage_valley %>% 
+              dplyr::select(numDEInCat_stage_valley = numDEInCat,
+                            category, 
+                            ontology),
+            by = c("category", "ontology")) %>%
+  left_join(GO_stage_down %>% 
+              dplyr::select(numDEInCat_stage_down = numDEInCat,
+                            category, 
+                            ontology),
+            by = c("category", "ontology")) %>%
+  left_join(GO_leachate_up %>% 
+              dplyr::select(numDEInCat_leachate_up = numDEInCat,
+                            category, 
+                            ontology),
+            by = c("category", "ontology")) %>%
+  left_join(GO_leachate_hump %>% 
+              dplyr::select(numDEInCat_leachate_hump = numDEInCat,
+                            category, 
+                            ontology),
+            by = c("category", "ontology")) %>%
+  left_join(GO_leachate_down %>% 
+              dplyr::select(numDEInCat_leachate_down = numDEInCat,
+                            category, 
+                            ontology),
+            by = c("category", "ontology")) %>% 
+  filter(ontology == "BP")
 ```
 
 
+## Load GO annotated genes
+```{r}
+universe_anno <- read_csv(file.path(input_path, "universe_anno.csv"))
+dim(universe_genes_anno)
+```
+
+```{r}
+glimpse(universe_anno)
+```
 
 
 Change comma separated GO IDs to semi-colon separated GO IDs
 ```{r}
-gene2GOs <- universe_genes_anno %>%
+gene2GOs <- universe_anno %>%
   mutate(GOs = str_replace_all(GOs, ",", ";")) %>% 
-  dplyr::select(gene_id, GOs, cluster_stage, module_stage)
+  dplyr::select(gene_id, GOs, pattern_leachate, pattern_stage)
 
-head(gene2GOs)
+glimpse(gene2GOs)
 ```
 
 ::: callout-important
@@ -114,10 +163,10 @@ The user needs to provide:
 
 ## Leachate DEGs
 ```{r}
-gene2GOs_leachate.cleavage <- gene2GOs %>%
-  filter(cluster_stage == "cleavage_peak") %>%
+gene2GOs_leachate_up <- gene2GOs %>%
+  filter(pattern_leachate == "up") %>%
   dplyr::select(gene_id, GOs) %>% 
-  mutate(list = "leachate_cleavage")
+  mutate(list = "leachate_up")
 ```
 
 ```{r}

@@ -52,31 +52,31 @@ leachate concentrations (control, low, mid, high).
 
 Leachate responsive DEGs cluster breakdown:
 
-\- **Cluster 1**: 72 genes, peak in early gastrula
+-   **Cluster 1**: 72 genes, peak in early gastrula –\> leachate_up
 
-\- **Cluster 2**: 25 genes, peak in prawnchip
+-   **Cluster 2**: 25 genes, peak in prawnchip –\> leachate_hump
 
-\- **Cluster 3**: 31 genes, peak in cleavage
+-   **Cluster 3**: 31 genes, peak in cleavage –\> leachate_down
 
 We also binned the 10,793 stage DEGs into 4 developmental programs via
 WGCNA module (indicated by color).
 
 Stage responsive DEGs module breakdown:
 
--   **cleavage_up**
+-   **stage_down**
 
     -   turquoise: 2805 genes
 
--   **prawnchip_up**
+-   **stage_hump**
 
     -   yellow: 1381 genes
 
--   **prawnchip_dip**
+-   **stage_valley**
 
     -   green: 1108 genes
         -   red: 326 genes
 
--   **earlygastrula_up**
+-   **stage_up**
 
     -   blue: 2588 genes
         -   brown: 2436 genes
@@ -163,15 +163,15 @@ Get the corrected p-values and enriched GO terms.
 
 DEG vectors
 
--    `stage_DEG_WGCNA_modules.csv` : A dataframe mapping 10793 stage
-    DEGs to a WGCNA module. *the grey module (genes that do not cluster)
-    need not be passed through enrichment analysis*
+-   `stage_DEG_WGCNA_modules.csv` : A dataframe mapping 10793 stage DEGs
+    to a WGCNA module. *the grey module (genes that do not cluster) need
+    not be passed through enrichment analysis*
 
 -   `leachate_DEG_clusters.csv` : A dataframe mapping 128 genes to an
     expression cluster (1, 2, or 3)
 
--    `all_genes.csv` : a dataframe (list) of all genes used in the
-    DESeq2 analysis
+-   `all_genes.csv` : a dataframe (list) of all genes used in the DESeq2
+    analysis
 
 Gene lengths - functional annotation:
 http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.EggNog_results.txt.gz
@@ -325,7 +325,7 @@ a strong expression pattern.
 How many of the leachate responsive and stage responsive genes overlap?
 
 ```{r}
-length(intersect(stage_deg_modules$gene_id, leachate_deg_clusters$gene_id))
+length(intersect(stage_deg_modules$gene_id, leachate_deg_patterns$gene_id))
 ```
 
 ::: callout-important
@@ -407,7 +407,7 @@ if (file.exists(gff_file)) {
 }
 ```
 
-## Join gene length, cluster & module info
+## Join gene length, leachate pattern & stage module info
 
 Add length & module/cluster info to the annotation dataframe
 
@@ -540,8 +540,8 @@ So we need a background universe vectors for all DEGs, and each pattern
 ```{r}
 # Universe for bias correction
 # All 12221 genes from our filtered DEG test
-universe_genes <- universe_genes$gene_id
-names(universe_genes) <- universe_genes
+universe_vector <- universe_genes$gene_id
+names(universe_vector) <- universe_vector
 ```
 
 These are annotated dataframes subset to just DEGs and to each cluster
@@ -550,65 +550,81 @@ These are annotated dataframes subset to just DEGs and to each cluster
 leachate_anno <- universe_anno %>% 
   filter(gene_id %in% sig_genes_leachate$gene_id)
 
-leachate_anno_up <- universe_anno %>% filter(pattern_leachate == "up")
-leachate_anno_hump <- universe_anno %>% filter(pattern_leachate == "hump")
-leachate_anno_down <- universe_anno %>% filter(pattern_leachate == "down")
+leachate_anno_up <- universe_anno %>% 
+  filter(pattern_leachate == "up")
+
+leachate_anno_hump <- universe_anno %>%
+  filter(pattern_leachate == "hump")
+
+leachate_anno_down <- universe_anno %>%
+  filter(pattern_leachate == "down")
 ```
 
 ```{r}
 stage_anno <- universe_anno %>% 
   filter(gene_id %in% sig_genes_stage$gene_id)
 
-stage_up_anno <- universe_anno %>% filter(pattern_stage == "up")
-stage_hump_anno <- universe_anno %>% filter(pattern_stage == "hump")
-stage_valley_anno <- universe_anno %>% filter(pattern_stage == "valley")
-stage_down_anno <- universe_anno %>% filter(pattern_stage == "down")
+stage_anno_up <- universe_anno %>%
+  filter(pattern_stage == "up")
+
+stage_anno_hump <- universe_anno %>%
+  filter(pattern_stage == "hump")
+
+stage_anno_valley <- universe_anno %>%
+  filter(pattern_stage == "valley")
+
+stage_anno_down <- universe_anno %>%
+  filter(pattern_stage == "down")
 ```
 
-Create named vectors for DE status (1 = DE, 0 = not DE) for all DEGs and
-for each cluster
+Create named vectors for DE status (1 = DE, 0 = not DE) for each
+leachate responsive pattern and for each WGCNA cluster
+
+#### Vectors for leachate responsive gene patterns 
 
 ```{r}
-vector_leachate <- as.integer(universe_genes %in% leachate_anno$gene_id)
-names(vector_leachate) <- universe_genes
+vector_leachate <- as.integer(universe_vector %in% leachate_anno$gene_id)
+names(vector_leachate) <- universe_vector
 
-vector_1 <- as.integer(universe_genes %in% cluster1$gene_id)
-names(vector_1) <- universe_genes
+vector_leachate_up <- as.integer(universe_vector %in% leachate_anno_up$gene_id)
+names(vector_leachate_up) <- universe_vector
 
-vector_2 <- as.integer(universe_genes %in% cluster2$gene_id)
-names(vector_2) <- universe_genes
+vector_leachate_hump <- as.integer(universe_vector %in% leachate_anno_hump$gene_id)
+names(vector_leachate_hump) <- universe_vector
 
-vector_3 <- as.integer(universe_genes %in% cluster3$gene_id)
-names(vector_3) <- universe_genes
+vector_leachate_down <- as.integer(universe_vector %in% leachate_anno_down$gene_id)
+names(vector_leachate_down) <- universe_vector
 ```
+
+#### Vectors for DEGs due to developmental stage
 
 ```{r}
-vector_stage <- as.integer(universe_genes %in% stage_anno$gene_id)
-names(vector_stage) <- universe_genes
+vector_stage <- as.integer(universe_vector %in% stage_anno$gene_id)
+names(vector_stage) <- universe_vector
 
-vector_cleavage <- as.integer(universe_genes %in% cleavage_up$gene_id)
-names(vector_cleavage) <- universe_genes
+vector_stage_up <- as.integer(universe_vector %in% stage_anno_up$gene_id)
+names(vector_stage_up) <- universe_vector
 
-vector_prawnchip_up <- as.integer(universe_genes %in% prawnchip_up$gene_id)
-names(vector_prawnchip_up) <- universe_genes
+vector_stage_hump <- as.integer(universe_vector %in% stage_anno_hump$gene_id)
+names(vector_stage_hump) <- universe_vector
 
-vector_prawnchip_dip <- as.integer(universe_genes %in% prawnchip_dip$gene_id)
-names(vector_prawnchip_dip) <- universe_genes
+vector_stage_valley <- as.integer(universe_vector %in% stage_anno_valley$gene_id)
+names(vector_stage_valley) <- universe_vector
 
-vector_earlygastrula <- as.integer(universe_genes %in% earlygastrula_up$gene_id)
-names(vector_earlygastrula) <- universe_genes
+vector_stage_down <- as.integer(universe_vector %in% stage_anno_down$gene_id)
+names(vector_stage_down) <- universe_vector
 ```
 
-# Make gene lengths vector
+# Make gene lengths vectors
 
-Make named vector of genes and gene lengths, only keep the genes present
-in the background universe (our 12221 DESeq2 tested genes!)
+Make named vectors of genes and gene lengths, only keep the genes
+present in the background universe (our 12221 DESeq2 tested genes!)
 
 ```{r}
 gene_lengths <- as.integer(lengths$transcript_lengths)
 names(gene_lengths) <- lengths$gene_id
 
-gene_lengths <- gene_lengths[universe_genes]
+gene_lengths <- gene_lengths[universe_vector]
 paste("Transcript lengths for", length(gene_lengths), "genes")
 ```
 
@@ -623,18 +639,18 @@ The order of genes in gene_lengths must match the order in
 universe_genes, should return TRUE
 
 ```{r}
-identical(names(gene_lengths), names(universe_genes))
+identical(names(gene_lengths), names(universe_vector))
 
 identical(names(gene_lengths), names(vector_leachate))   
-identical(names(gene_lengths), names(vector_1))  
-identical(names(gene_lengths), names(vector_2))
-identical(names(gene_lengths), names(vector_3))
+identical(names(gene_lengths), names(vector_leachate_up))  
+identical(names(gene_lengths), names(vector_leachate_hump))
+identical(names(gene_lengths), names(vector_leachate_down))
 
 identical(names(gene_lengths), names(vector_stage))
-identical(names(gene_lengths), names(vector_cleavage))
-identical(names(gene_lengths), names(vector_prawnchip_up))
-identical(names(gene_lengths), names(vector_prawnchip_dip))
-identical(names(gene_lengths), names(vector_earlygastrula))
+identical(names(gene_lengths), names(vector_stage_up))
+identical(names(gene_lengths), names(vector_stage_hump))
+identical(names(gene_lengths), names(vector_stage_valley))
+identical(names(gene_lengths), names(vector_stage_down))
 ```
 
 # Null probability weighting function (bias for gene length)
@@ -646,32 +662,26 @@ simply because they accumulate more reads. If length data is not
 available, goseq can still run but without this correction.
 :::
 
-DEgenes and gene_lengths (for nullp()) defined for all genes you tested
-in DESeq2 (our full “universe” of 12221 genes), including genes with no
-GO annotation.
+The function `nullp()` takes as input:
+- a named vector of 1s and 0s indicating which genes are DE (1) and which are not (0) for all genes in the universe
+- a named vector of gene lengths for all genes in the universe (background)
 
-A numeric vector of the same length as DEgenes
-
-One number per gene, typically:
-
-total gene length (sum of exons), or
-
-transcript length
-
-The names are again the same gene IDs
+The probability weighting function is defined for all genes we tested in DESeq2 (our full “universe” of 12221
+genes), including genes with no GO annotation. 
 
 ```{r}
-# Calculate probability weighting function for all DEGs and for each cluster
-pwf.1 <- nullp(vector_1, bias.data = gene_lengths)
-pwf.2 <- nullp(vector_2, bias.data = gene_lengths)
-pwf.3 <- nullp(vector_3, bias.data = gene_lengths)
-pwf.leachate <- nullp(vector_leachate, bias.data = gene_lengths)
+# Calculate probability weighting function for each leachate responsive DEG pattern
+pwf_leachate <- nullp(vector_leachate, bias.data = gene_lengths) # all leachate responsive DEGs
+pwf_leachate_up <- nullp(vector_leachate_up, bias.data = gene_lengths)
+pwf_leachate_hump <- nullp(vector_leachate_hump, bias.data = gene_lengths)
+pwf_leachate_down <- nullp(vector_leachate_down, bias.data = gene_lengths)
 
-pwf.cleavage <- nullp(vector_cleavage, bias.data = gene_lengths)
-pwf.prawnchip_up <- nullp(vector_prawnchip_up, bias.data = gene_lengths)
-pwf.prawnchip_dip <- nullp(vector_prawnchip_dip, bias.data = gene_lengths)
-pwf.earlygastrula <- nullp(vector_earlygastrula, bias.data = gene_lengths)
-pwf.stage <- nullp(vector_stage, bias.data = gene_lengths)
+# Calculate probability weighting function for DEG stage modules
+pwf_stage <- nullp(vector_stage, bias.data = gene_lengths) # all DEGs across stage
+pwf_stage_up <- nullp(vector_stage_up, bias.data = gene_lengths)
+pwf_stage_hump <- nullp(vector_stage_hump, bias.data = gene_lengths)
+pwf_stage_valley <- nullp(vector_stage_valley, bias.data = gene_lengths)
+pwf_stage_down <- nullp(vector_stage_down, bias.data = gene_lengths)
 ```
 
 X axis is gene length Y axis is probability of being DE given length
@@ -690,9 +700,7 @@ correction is important.
 Nearly flat line → little or no detectable length bias → the enrichment
 results will be similar to a standard hypergeometric ORA.
 
-# GO Enrichment
-
-## GO term mapping
+# GO term mapping
 
 This creates a dataframe that maps gene IDs to GO terms for all genes in
 the testing universe. There will be 2 columns, gene_id and GO term, with
@@ -700,6 +708,7 @@ one GO term mapped to one gene. Since there are multiple GO terms per
 gene, genes will appear in multiple rows in these dataframes. Likewise,
 more than one gene may map to the same GO term.
 
+### gene2go
 Build the gene to GO term mappings for all genes in the universe
 
 ```{r}
@@ -710,47 +719,66 @@ gene2go <- universe_genes_anno %>%
   distinct(gene_id, GOs) %>%
   rename(gene = gene_id,
          category = GOs) %>%
-  filter(gene %in% universe_genes) %>%
+  filter(gene %in% universe_vector) %>%
   as.data.frame()
 ```
 
-Save GO term mapping
 
+Save GO term mapping
 ```{r}
 write_csv(gene2go, file.path(output_path, "gene2go.csv"))
 ```
+
+### gowide
+```{r}
+gowide <- gene2go %>%
+  distinct(gene, category) %>%          # drop duplicates if any
+  group_by(category) %>%
+  summarise(
+    universegenes = list(sort(unique(gene))),  # list-column of genes
+    universecount = n_distinct(gene),          # how many genes map
+    .groups  = "drop"
+  )
+
+```
+
+
+```{r}
+write_csv(gowide, file.path(output_path, "gowide.csv"))
+```
+
 
 ## Run `goseq`
 
 Run GO enrichment for biological process terms
 
 ```{r}
-GO.bp.1 <- goseq(
-  pwf = pwf.1,
+GO_leachate_up <- goseq(
+  pwf = pwf_leachate_up,
   gene2cat = gene2go,
   test.cats = c("GO:BP"),
   method = "Wallenius",
   use_genes_without_cat = TRUE
 )
 
-GO.bp.2 <- goseq(
-  pwf = pwf.2,
+GO_leachate_hump <- goseq(
+  pwf = pwf_leachate_hump,
   gene2cat = gene2go,
   test.cats = c("GO:BP"),
   method = "Wallenius",
   use_genes_without_cat = TRUE
 )
 
-GO.bp.3 <- goseq(
-  pwf = pwf.3,
+GO_leachate_down <- goseq(
+  pwf = pwf_leachate_down,
   gene2cat = gene2go,
   test.cats = c("GO:BP"),
   method = "Wallenius",
   use_genes_without_cat = TRUE
 )
 
-GO.bp.leachate <- goseq(
-  pwf = pwf.leachate,
+GO_leachate <- goseq(
+  pwf = pwf_leachate,
   gene2cat = gene2go,
   test.cats = c("GO:BP"),
   method = "Wallenius",
@@ -759,112 +787,237 @@ GO.bp.leachate <- goseq(
 ```
 
 ```{r}
-GO.bp.stage <- goseq(
-  pwf = pwf.stage,
+GO_stage_up <- goseq(
+  pwf = pwf_stage_up,
   gene2cat = gene2go,
   test.cats = c("GO:BP"),
   method = "Wallenius",
   use_genes_without_cat = TRUE
 )
 
-GO.bp.cleavage <- goseq(
-  pwf = pwf.cleavage,
+GO_stage_hump <- goseq(
+  pwf = pwf_stage_hump,
   gene2cat = gene2go,
   test.cats = c("GO:BP"),
   method = "Wallenius",
   use_genes_without_cat = TRUE
 )
 
-GO.bp.prawnchip_up <- goseq(
-  pwf = pwf.prawnchip_up,
+GO_stage_valley <- goseq(
+  pwf = pwf_stage_valley,
   gene2cat = gene2go,
   test.cats = c("GO:BP"),
   method = "Wallenius",
   use_genes_without_cat = TRUE
 )
 
-GO.bp.prawnchip_dip <- goseq(
-  pwf = pwf.prawnchip_dip,
+GO_stage_down <- goseq(
+  pwf = pwf_stage_down,
   gene2cat = gene2go,
   test.cats = c("GO:BP"),
   method = "Wallenius",
   use_genes_without_cat = TRUE
 )
 
-GO.bp.earlygastrula <- goseq(
-  pwf = pwf.earlygastrula,
+GO_stage <- goseq(
+  pwf = pwf_stage,
   gene2cat = gene2go,
   test.cats = c("GO:BP"),
   method = "Wallenius",
   use_genes_without_cat = TRUE
 )
 ```
+
+#### Control for FDR
 
 Use the Benjamini-Hochberg method to control false discovery rate
 
+Control for FDR with over represented p values
 ```{r}
-GO.bp.1$bh_adjust <- p.adjust(GO.bp.1$over_represented_pvalue, method = "BH")
-GO.bp.2$bh_adjust <- p.adjust(GO.bp.2$over_represented_pvalue, method = "BH")
-GO.bp.3$bh_adjust <- p.adjust(GO.bp.3$over_represented_pvalue, method = "BH")
-GO.bp.leachate$bh_adjust <- p.adjust(GO.bp.leachate$over_represented_pvalue, method = "BH")
+# leachate responsive
+GO_leachate$over_represented_bh <- 
+  p.adjust(GO_leachate$over_represented_pvalue, method = "BH")
 
-GO.bp.stage$bh_adjust <- p.adjust(GO.bp.stage$over_represented_pvalue, method = "BH")
-GO.bp.cleavage$bh_adjust <- p.adjust(GO.bp.cleavage$over_represented_pvalue, method = "BH")
-GO.bp.prawnchip_up$bh_adjust <- p.adjust(GO.bp.prawnchip_up$over_represented_pvalue, method = "BH")
-GO.bp.prawnchip_dip$bh_adjust <- p.adjust(GO.bp.prawnchip_dip$over_represented_pvalue, method = "BH")
-GO.bp.earlygastrula$bh_adjust <- p.adjust(GO.bp.earlygastrula$over_represented_pvalue, method = "BH")
+GO_leachate_up$over_represented_bh <-
+  p.adjust(GO_leachate_up$over_represented_pvalue, method = "BH")
+
+GO_leachate_hump$over_represented_bh <-
+  p.adjust(GO_leachate_hump$over_represented_pvalue, method = "BH")
+
+GO_leachate_down$over_represented_bh <-
+  p.adjust(GO_leachate_down$over_represented_pvalue, method = "BH")
+
+
+# DEGs across stage
+GO_stage$over_represented_bh <- 
+  p.adjust(GO_stage$over_represented_pvalue, method = "BH")
+
+GO_stage_up$over_represented_bh <- 
+  p.adjust(GO_stage_up$over_represented_pvalue, method = "BH")
+
+GO_stage_hump$over_represented_bh <- 
+  p.adjust(GO_stage_hump$over_represented_pvalue, method = "BH")
+
+GO_stage_valley$over_represented_bh <-
+  p.adjust(GO_stage_valley$over_represented_pvalue, method = "BH")
+
+GO_stage_down$over_represented_bh <- 
+  p.adjust(GO_stage_down$over_represented_pvalue, method = "BH")
 ```
 
-Save GO enrichment results
-
+Control for FDR with under represented p values
 ```{r}
-write_csv(GO.bp.1, file.path(output_path, "GO_bp_cluster1.csv"))
-write_csv(GO.bp.2, file.path(output_path, "GO_bp_cluster2.csv"))
-write_csv(GO.bp.3, file.path(output_path, "GO_bp_cluster3.csv"))
-write_csv(GO.bp.leachate, file.path(output_path, "GO_bp_leachate.csv"))
+# leachate responsive
+GO_leachate$under_represented_bh <- 
+  p.adjust(GO_leachate$under_represented_pvalue, method = "BH")
 
-write_csv(GO.bp.stage, file.path(output_path, "GO_bp_stage.csv"))
-write_csv(GO.bp.cleavage, file.path(output_path, "GO_bp_cleavage.csv"))
-write_csv(GO.bp.prawnchip_up, file.path(output_path, "GO_bp_prawnchip_up.csv"))
-write_csv(GO.bp.prawnchip_dip, file.path(output_path, "GO_bp_prawnchip_dip.csv"))
-write_csv(GO.bp.earlygastrula, file.path(output_path, "GO_bp_earlygastrula.csv"))
+GO_leachate_up$under_represented_bh <-
+  p.adjust(GO_leachate_up$under_represented_pvalue, method = "BH")
+
+GO_leachate_hump$under_represented_bh <-
+  p.adjust(GO_leachate_hump$under_represented_pvalue, method = "BH")
+
+GO_leachate_down$under_represented_bh <-
+  p.adjust(GO_leachate_down$under_represented_pvalue, method = "BH")
+
+
+# DEGs across stage
+GO_stage$under_represented_bh <- 
+  p.adjust(GO_stage$under_represented_pvalue, method = "BH")
+
+GO_stage_up$under_represented_bh <- 
+  p.adjust(GO_stage_up$under_represented_pvalue, method = "BH")
+
+GO_stage_hump$under_represented_bh <- 
+  p.adjust(GO_stage_hump$under_represented_pvalue, method = "BH")
+
+GO_stage_valley$under_represented_bh <-
+  p.adjust(GO_stage_valley$under_represented_pvalue, method = "BH")
+
+GO_stage_down$under_represented_bh <- 
+  p.adjust(GO_stage_down$under_represented_pvalue, method = "BH")
 ```
 
-Filter for biological process terms with valid p-values
+::: callout-note
+This should increase the number of columns in the GO_*** output dataframes from 7 to 9
+:::
 
+### Filter for BP terms only
 ```{r}
-GO.BP.1.sig <- GO.bp.1 %>%
-  filter(ontology == "BP") %>%
-  filter(!is.na(bh_adjust)) %>% 
-  filter(bh_adjust < 0.05) %>%
-  arrange(ontology, bh_adjust)
+GO_leachate <- GO_leachate %>% filter(ontology == "BP")
+GO_leachate_up <- GO_leachate_up %>% filter(ontology == "BP")
+GO_leachate_hump <- GO_leachate_hump %>% filter(ontology == "BP")
+GO_leachate_down <- GO_leachate_down %>% filter(ontology == "BP")
 
-GO.BP.2.sig <- GO.bp.2 %>%
-  filter(ontology == "BP") %>%
-  filter(!is.na(bh_adjust)) %>% 
-  filter(bh_adjust < 0.05) %>%
-  arrange(ontology, bh_adjust)
-
-GO.BP.3.sig <- GO.bp.3 %>%
-  filter(ontology == "BP") %>%
-  filter(!is.na(bh_adjust)) %>% 
-  filter(bh_adjust < 0.05) %>%
-  arrange(ontology, bh_adjust)
-
-GO.BP.leachate.sig <- GO.bp.leachate %>%
-  filter(ontology == "BP") %>%
-  filter(!is.na(bh_adjust)) %>% 
-  filter(bh_adjust < 0.05) %>%
-  arrange(ontology, bh_adjust)
+GO_stage <- GO_stage %>% filter(ontology == "BP")
+GO_stage_up <- GO_stage_up %>% filter(ontology == "BP")
+GO_stage_hump <- GO_stage_hump %>% filter(ontology == "BP")
+GO_stage_valley <- GO_stage_valley %>% filter(ontology == "BP")
+GO_stage_down <- GO_stage_down %>% filter(ontology == "BP")
 ```
 
-How many GO terms pass threshold for significantly enriched?
+
+#### Save GO results
 
 ```{r}
-paste("Cluster 1:", nrow(GO.BP.1.sig), "enriched BP terms (BH-adjusted p < 0.05)")
-paste("Cluster 2:", nrow(GO.BP.2.sig), "enriched BP terms (BH-adjusted p < 0.05)")
-paste("Cluster 3:", nrow(GO.BP.3.sig), "enriched BP terms (BH-adjusted p < 0.05)")
-paste("All leachate together:", nrow(GO.BP.leachate.sig), "enriched BP terms (BH-adjusted p < 0.05)")
+write_csv(GO_leachate, 
+          file.path(output_path, "GO_leachate.csv"))
+
+write_csv(GO_leachate_up, 
+          file.path(output_path, "GO_leachate_up.csv"))
+
+write_csv(GO_leachate_hump, 
+          file.path(output_path, "GO_leachate_hump.csv"))
+
+write_csv(GO_leachate_down, 
+          file.path(output_path, "GO_leachate_down.csv"))
+
+write_csv(GO_stage, 
+          file.path(output_path, "GO_bp_stage.csv"))
+
+write_csv(GO_stage_up, 
+          file.path(output_path, "GO_stage_up.csv"))
+
+write_csv(GO_stage_hump, 
+          file.path(output_path, "GO_stage_hump.csv"))
+
+write_csv(GO_stage_valley, 
+          file.path(output_path, "GO_stage_valley.csv"))
+
+write_csv(GO_stage_down, 
+          file.path(output_path, "GO_stage_down.csv"))
+```
+
+
+#### Filter for significantly enriched GO terms
+
+Filter for biological process terms with adjusted p-values < 0.05
+
+##### leachate responsive DEGs 
+```{r}
+GO_BPsig_leachate <- GO_leachate %>%
+  filter(ontology == "BP") %>%
+    filter(
+    coalesce(over_represented_bh, 1) < 0.05 |
+    coalesce(under_represented_bh, 1) < 0.05
+  ) %>% 
+  mutate(
+    enrichment_direction = case_when(
+      over_represented_bh  < 0.05 ~ "over",
+      under_represented_bh < 0.05 ~ "under",
+      TRUE                         ~ "none"
+    )
+  )
+
+paste("Number of significantly enriched GO BP terms for leachate DEGs:", nrow(GO_BPsig_leachate))
+
+GO_BPsig_leachate_up <- GO_leachate_up %>%
+  filter(ontology == "BP") %>%
+    filter(
+    coalesce(over_represented_bh, 1) < 0.05 |
+    coalesce(under_represented_bh, 1) < 0.05
+  ) %>% 
+  mutate(
+    enrichment_direction = case_when(
+      over_represented_bh  < 0.05 ~ "over",
+      under_represented_bh < 0.05 ~ "under",
+      TRUE                         ~ "none"
+    )
+  )
+
+paste("Number of significantly enriched GO BP terms for leachate up DEGs:", nrow(GO_BPsig_leachate_up))
+
+GO_BPsig_leachate_hump <- GO_leachate_hump %>%
+  filter(ontology == "BP") %>%
+    filter(
+    coalesce(over_represented_bh, 1) < 0.05 |
+    coalesce(under_represented_bh, 1) < 0.05
+  ) %>% 
+  mutate(
+    enrichment_direction = case_when(
+      over_represented_bh  < 0.05 ~ "over",
+      under_represented_bh < 0.05 ~ "under",
+      TRUE                         ~ "none"
+    )
+  )
+
+paste("Number of significantly enriched GO BP terms for leachate hump DEGs:", nrow(GO_BPsig_leachate_up))
+
+GO_BPsig_leachate_down <- GO_leachate_down %>%
+  filter(ontology == "BP") %>%
+    filter(
+    coalesce(over_represented_bh, 1) < 0.05 |
+    coalesce(under_represented_bh, 1) < 0.05
+  ) %>% 
+  mutate(
+    enrichment_direction = case_when(
+      over_represented_bh  < 0.05 ~ "over",
+      under_represented_bh < 0.05 ~ "under",
+      TRUE                         ~ "none"
+    )
+  )
+
+paste("Number of significantly enriched GO BP terms for leachate down DEGs:", nrow(GO_BPsig_leachate_up))
 ```
 
 Nothing! Nothing is enriched for leachate... fuck.
@@ -886,237 +1039,395 @@ of thing that these genes all do which are impacted by leachate.
 > at once (e.g., general stress + development + metabolism), each
 > individual term may only get 2–3 hits → not enough to come out.
 
+
+##### What about stage?
+
+How many DEGs are there across stage and in each module?
 ```{r}
-GO.BP.stage.sig <- GO.bp.stage %>%
-  filter(ontology == "BP") %>%
-  filter(!is.na(bh_adjust)) %>% 
-  filter(bh_adjust < 0.05) %>%
-  arrange(ontology, bh_adjust)
+numDE_stage <- nrow(stage_anno)
+numDE_stage_up <- nrow(stage_anno_up)
+numDE_stage_hump <- nrow(stage_anno_hump)
+numDE_stage_valley <- nrow(stage_anno_valley)
+numDE_stage_down <- nrow(stage_anno_down)
 
-GO.BP.cleavage.sig <- GO.bp.cleavage %>%
-  filter(ontology == "BP") %>%
-  filter(!is.na(bh_adjust)) %>% 
-  filter(bh_adjust < 0.05) %>%
-  arrange(ontology, bh_adjust)
-
-GO.BP.prawnchip_up.sig <- GO.bp.prawnchip_up %>%
-  filter(ontology == "BP") %>%
-  filter(!is.na(bh_adjust)) %>% 
-  filter(bh_adjust < 0.05) %>%
-  arrange(ontology, bh_adjust)
-
-GO.BP.prawnchip_dip.sig <- GO.bp.prawnchip_dip %>%
-  filter(ontology == "BP") %>%
-  filter(!is.na(bh_adjust)) %>% 
-  filter(bh_adjust < 0.05) %>%
-  arrange(ontology, bh_adjust)
-
-GO.BP.earlygastrula.sig <- GO.bp.earlygastrula %>%
-  filter(ontology == "BP") %>%
-  filter(!is.na(bh_adjust)) %>% 
-  filter(bh_adjust < 0.05) %>%
-  arrange(ontology, bh_adjust)
+numUniverse <- nrow(universe_genes_anno)
 ```
 
+
 ```{r}
-paste("cleavage up:", nrow(GO.BP.cleavage.sig), "enriched BP terms (BH-adjusted p < 0.05)")
-paste("prawnchip up:", nrow(GO.BP.prawnchip_up.sig), "enriched BP terms (BH-adjusted p < 0.05)")
-paste("prawnchip dip:", nrow(GO.BP.prawnchip_dip.sig), "enriched BP terms (BH-adjusted p < 0.05)")
-paste("earlygastrula up:", nrow(GO.BP.earlygastrula.sig), "enriched BP terms (BH-adjusted p < 0.05)")
-paste("All stage together:", nrow(GO.BP.stage.sig), "enriched BP terms (BH-adjusted p < 0.05)")
+# stage
+GO_BPsig_stage <- GO_stage %>%
+  filter(ontology == "BP") %>%
+    filter(over_represented_bh < 0.05 |
+             under_represented_bh < 0.05) %>% 
+  mutate(
+    enrichment_direction = case_when(
+      over_represented_bh  < 0.05 ~ "over",
+      under_represented_bh < 0.05 ~ "under",
+      TRUE                         ~ "none"
+    )
+  )
+
+paste("Number of significantly enriched GO BP terms for stage DEGs:", nrow(GO_BPsig_stage))
+
+# stage up 
+GO_BPsig_stage_up <- GO_stage_up %>%
+  filter(ontology == "BP") %>%
+    filter(
+    coalesce(over_represented_bh, 1) < 0.05 |
+    coalesce(under_represented_bh, 1) < 0.05
+  ) %>% 
+  mutate(
+    enrichment_direction = case_when(
+      over_represented_bh  < 0.05 ~ "over",
+      under_represented_bh < 0.05 ~ "under",
+      TRUE                         ~ "none"
+    )
+  )
+
+paste("Number of significantly enriched GO BP terms for stage up DEGs:", nrow(GO_BPsig_stage_up))
+
+# stage hump 
+GO_BPsig_stage_hump <- GO_stage_hump %>%
+  filter(ontology == "BP") %>%
+    filter(
+    coalesce(over_represented_bh, 1) < 0.05 |
+    coalesce(under_represented_bh, 1) < 0.05
+  ) %>% 
+  mutate(
+    enrichment_direction = case_when(
+      over_represented_bh  < 0.05 ~ "over",
+      under_represented_bh < 0.05 ~ "under",
+      TRUE                         ~ "none"
+    )
+  )
+
+paste("Number of significantly enriched GO BP terms for stage hump DEGs:", nrow(GO_BPsig_stage_hump))
+
+# stage valley
+GO_BPsig_stage_valley <- GO_stage_valley %>%
+  filter(ontology == "BP") %>%
+    filter(
+    coalesce(over_represented_bh, 1) < 0.05 |
+    coalesce(under_represented_bh, 1) < 0.05
+  ) %>% 
+  mutate(
+    enrichment_direction = case_when(
+      over_represented_bh  < 0.05 ~ "over",
+      under_represented_bh < 0.05 ~ "under",
+      TRUE                         ~ "none"
+    )
+  )
+
+paste("Number of significantly enriched GO BP terms for stage valley DEGs:", nrow(GO_BPsig_stage_valley))
+
+# stage down 
+GO_BPsig_stage_down <- GO_stage_down %>%
+  filter(ontology == "BP") %>%
+    filter(
+    coalesce(over_represented_bh, 1) < 0.05 |
+    coalesce(under_represented_bh, 1) < 0.05
+  ) %>% 
+  mutate(
+    enrichment_direction = case_when(
+      over_represented_bh  < 0.05 ~ "over",
+      under_represented_bh < 0.05 ~ "under",
+      TRUE                         ~ "none"
+    )
+  )
+
+paste("Number of significantly enriched GO BP terms for stage down DEGs:", nrow(GO_BPsig_stage_down))
 ```
+
+##### Over vs. Under
+How many of each were over vs under represented?
+```{r}
+# make a list
+GO_BPsig_stage_list <- list(
+  stage = GO_BPsig_stage,
+  stage_up = GO_BPsig_stage_up,
+  stage_hump = GO_BPsig_stage_hump,
+  stage_valley = GO_BPsig_stage_valley,
+  stage_down = GO_BPsig_stage_down
+)
+
+GOBPsig_stage_summary <- imap_dfr(
+  GO_BPsig_stage_list,
+  ~ .x %>%
+      group_by(enrichment_direction) %>%
+      summarise(n_terms = n(), .groups = "drop") %>%
+      mutate(dataset = .y,
+             n_total = nrow(.x))
+)
+
+GOBPsig_stage_summary %>% knitr::kable()
+```
+::: callout-important
+Weird that each module either ONLY has over or under represented terms, not a mix. 
+:::
 
 Save the filtered significant GO terms that had enrichment
 
 ```{r}
-write_csv(GO.BP.prawnchip_dip.sig, file.path(output_path, "GO_bp_prawnchip_dip_sigENRICHED.csv"))
+write_csv(GO_BPsig_stage, file.path(output_path, "GO_BPsigENRICHED_stage.csv"))
 
-write_csv(GO.BP.earlygastrula.sig, file.path(output_path, "GO_bp_earlygastrula_sigENRICHED.csv"))
+write_csv(GO_BPsig_stage_up, file.path(output_path, "GO_BPsigENRICHED_stage_up.csv"))
 
-write_csv(GO.BP.stage.sig, file.path(output_path, "GO_bp_stage_sigENRICHED.csv"))
+write_csv(GO_BPsig_stage_hump, file.path(output_path, "GO_BPsigENRICHED_stage_hump.csv"))
+
+write_csv(GO_BPsig_stage_valley, file.path(output_path, "GO_BPsigENRICHED_stage_valley.csv"))
+
+write_csv(GO_BPsig_stage_down, file.path(output_path, "GO_BPsigENRICHED_stage_down.csv"))
+
 ```
 
-We can still describe what the DEGs do!
 
-## Reduce redundancy
+## Reduce redundancy in significantly enriched GO terms
 
-Calculate semantic similarity matrix with **all GO terms** that are
-present in DEGs
+Calculate semantic similarity matrix with significantly enriched GO terms for each stage WGCNA cluster
 
+### stage
 ```{r}
-# filter GO terms to those that are present in DEGs
-GO.bp.leachate.filt <- GO.bp.leachate %>%
-  filter(ontology == "BP") %>%
-  filter(numDEInCat > 0) %>% 
-  arrange(desc(numDEInCat))
-
-simMatrix <- calculateSimMatrix(
-    GO.bp.leachate.filt$category,
+# Make similarity matrix
+simMatrix_stage <- calculateSimMatrix(
+    GO_BPsig_stage$category,
     orgdb="org.Ce.eg.db",
     ont = "BP",
     method = "Rel"
   )
-```
 
-```{r}
-write_csv(as.data.frame(simMatrix), file.path(output_path, "simMatrix.csv"))
-```
-
-Create named scores vector
-
-```{r}
 # Create scores
-scores <- setNames(
-    -log10(pmax(GO.bp.deg.filt$bh_adjust, .Machine$double.xmin)),
-    GO.bp.deg.filt$category
+scores_stage <- setNames(
+    -log10(pmax(GO_BPsig_stage$over_represented_bh, .Machine$double.xmin)),
+    GO_BPsig_stage$category
   )
-```
 
-Reduce terms with similarity matrix
-
-```{r}
 # Reduce terms for all DEGs 
-reducedTerms <- reduceSimMatrix(
-    simMatrix,
-    scores = scores,
+reducedTerms_stage <- reduceSimMatrix(
+    simMatrix_stage,
+    scores = scores_stage,
     threshold = 0.7,
     orgdb = "org.Ce.eg.db"
   )
+
+# save similarity matrix and reduced terms
+write_csv(as.data.frame(simMatrix_stage), file.path(output_path, "simMatrix_stage.csv"))
+write_csv(reducedTerms_stage, file.path(output_path, "reducedTerms_stage.csv"))
 ```
 
-Add in gene and cluster annotation to reduced GO terms present in DEGs
+### stage_up
+```{r}
+# Make similarity matrix
+simMatrix_stage_up <- calculateSimMatrix(
+    GO_BPsig_stage_up$category,
+    orgdb="org.Ce.eg.db",
+    ont = "BP",
+    method = "Rel"
+  )
+
+# Create scores
+scores_stage_up <- setNames(
+    -log10(pmax(GO_BPsig_stage_up$over_represented_bh, .Machine$double.xmin)),
+    GO_BPsig_stage_up$category
+  )
+
+# Reduce terms for all DEGs 
+reducedTerms_stage_up <- reduceSimMatrix(
+    simMatrix_stage_up,
+    scores = scores_stage_up,
+    threshold = 0.7,
+    orgdb = "org.Ce.eg.db"
+  )
+
+# save similarity matrix and reduced terms
+write_csv(as.data.frame(simMatrix_stage_up), file.path(output_path, "simMatrix_stage_up.csv"))
+write_csv(reducedTerms_stage_up, file.path(output_path, "reducedTerms_stage_up.csv"))
+```
+
+### stage_hump
+```{r}
+# Make similarity matrix
+simMatrix_stage_hump <- calculateSimMatrix(
+    GO_BPsig_stage_hump$category,
+    orgdb="org.Ce.eg.db",
+    ont = "BP",
+    method = "Rel"
+  )
+
+# Create scores
+scores_stage_hump <- setNames(
+    -log10(pmax(GO_BPsig_stage_hump$under_represented_bh, .Machine$double.xmin)),
+    GO_BPsig_stage_hump$category
+  )
+
+# Reduce terms for all DEGs 
+reducedTerms_stage_hump <- reduceSimMatrix(
+    simMatrix_stage_hump,
+    scores = scores_stage_hump,
+    threshold = 0.7,
+    orgdb = "org.Ce.eg.db"
+  )
+
+# save similarity matrix and reduced terms
+write_csv(as.data.frame(simMatrix_stage_hump), file.path(output_path, "simMatrix_stage_hump.csv"))
+write_csv(reducedTerms_stage_hump, file.path(output_path, "reducedTerms_stage_hump.csv"))
+```
+
+### stage_valley
+```{r}
+# Make similarity matrix
+simMatrix_stage_valley <- calculateSimMatrix(
+    GO_BPsig_stage_valley$category,
+    orgdb="org.Ce.eg.db",
+    ont = "BP",
+    method = "Rel"
+  )
+
+# Create scores
+scores_stage_valley <- setNames(
+    -log10(pmax(GO_BPsig_stage_valley$over_represented_bh, .Machine$double.xmin)),
+    GO_BPsig_stage_valley$category
+  )
+
+# Reduce terms for all DEGs 
+reducedTerms_stage_valley <- reduceSimMatrix(
+    simMatrix_stage_valley,
+    scores = scores_stage_valley,
+    threshold = 0.7,
+    orgdb = "org.Ce.eg.db"
+  )
+
+# save similarity matrix and reduced terms
+write_csv(as.data.frame(simMatrix_stage_valley), file.path(output_path, "simMatrix_stage_valley.csv"))
+write_csv(reducedTerms_stage_valley, file.path(output_path, "reducedTerms_stage_valley.csv"))
+```
+
+### stage_down
+```{r}
+# Make similarity matrix
+simMatrix_stage_down <- calculateSimMatrix(
+    GO_BPsig_stage_down$category,
+    orgdb="org.Ce.eg.db",
+    ont = "BP",
+    method = "Rel"
+  )
+
+# Create scores
+scores_stage_down <- setNames(
+    -log10(pmax(GO_BPsig_stage_down$under_represented_bh, .Machine$double.xmin)),
+    GO_BPsig_stage_down$category
+  )
+
+# Reduce terms for all DEGs 
+reducedTerms_stage_down <- reduceSimMatrix(
+    simMatrix_stage_down,
+    scores = scores_stage_down,
+    threshold = 0.7,
+    orgdb = "org.Ce.eg.db"
+  )
+
+# save similarity matrix and reduced terms
+write_csv(as.data.frame(simMatrix_stage_down), file.path(output_path, "simMatrix_stage_down.csv"))
+write_csv(reducedTerms_stage_down, file.path(output_path, "reducedTerms_stage_down.csv"))
+```
+
+
+
+# Reduce redundancy in non enriched GO terms 
+
+### Filter GO results to leachate responsive DEGs 
+Filter GO results for only terms that had a DEG annotated to them, even if they weren’t significantly enriched. This will allow us to visualize the full set of terms that had at least evidence of differential expression (even if enrichment of those associated terms are not significant after correction), and to see how they relate to each other semantically.
 
 ```{r}
-reducedTerms_anno <- reducedTerms %>%
-  left_join(GO.bp.deg.filt, by = c("go" = "category", "term")) %>% 
-  left_join(gene2go, by = c("go" = "category")) %>% 
-  left_join(gene_clusters, by = c("gene" = "gene_id")) %>% 
-  filter(!is.na(cluster))
+GO_leachate_DEG <- GO_leachate %>%
+  filter(ontology == "BP") %>%
+  filter(numDEInCat > 0)
+
+GO_leachate_up_DEG <- GO_leachate_up %>%
+  filter(ontology == "BP") %>%
+  filter(numDEInCat > 0)
+
+GO_leachate_hump_DEG <- GO_leachate_hump %>%
+  filter(ontology == "BP") %>%
+  filter(numDEInCat > 0)
+
+GO_leachate_down_DEG <- GO_leachate_down %>%
+  filter(ontology == "BP") %>%
+  filter(numDEInCat > 0)
 ```
 
 ```{r}
-write_csv(reducedTerms, file.path(output_path, "reducedTerms_GO.csv"))
-write_csv(reducedTerms_anno, file.path(output_path, "reducedTerms_GO_anno.csv"))
-```
-
-# KEGG Enrichment
-
-## KEGG term mapping
-
-This creates a dataframe that maps gene IDs to KEGG pathways for all
-genes in the testing universe. There will be 2 columns, gene_id and KEGG
-Pathway, with one KEGG Pathway mapped to one gene.
-
-Build the gene to KEGG Pathway mappings for all genes in the universe
-
-```{r}
-gene2kegg <- all_genes_anno %>%
-  dplyr::select(gene_id, KEGG_Pathway) %>%
-  separate_rows(KEGG_Pathway, sep = ",") %>%
-  mutate(KEGG_Pathway = trimws(KEGG_Pathway)) %>%
-  filter(!is.na(KEGG_Pathway), KEGG_Pathway != "") %>%
-  # normalize: map04714 -> ko04714
-  mutate(KEGG_Pathway = sub("^map", "ko", KEGG_Pathway)) %>%
-  # (optional but recommended) keep only proper ko IDs
-  filter(str_detect(KEGG_Pathway, "^ko\\d+")) %>%
-  # now deduplicate gene–pathway pairs
-  distinct(gene_id, KEGG_Pathway) %>%
-  rename(
-    gene     = gene_id,
-    category = KEGG_Pathway
-  ) %>%
-  filter(gene %in% universe_genes) %>%
-  as.data.frame()
-```
-
-Save KEGG pathway mapping
-
-```{r}
-write_csv(gene2kegg, file.path(output_path, "gene2kegg.csv"))
-```
-
-## Run `goseq`
-
-```{r}
-KEGG.deg <- goseq(
-  pwf = pwf.deg,
-  gene2cat = gene2kegg,
-  test.cats = c("KEGG"),
-  method = "Wallenius",
-  use_genes_without_cat = TRUE
-)
-```
-
-Adjust for multiple comparisons with Benjamini-Hochberg correction
-
-```{r}
-KEGG.deg$bh_adjust <- p.adjust(KEGG.deg$over_represented_pvalue, method = "BH")
-```
-
-Annotate KEGG pathways via genes and gene expression patterns
-
-```{r}
-KEGG.deg.anno <- KEGG.deg %>%
-  left_join(gene2kegg, by = "category") %>% 
-  left_join(gene_clusters, by = c("gene" = "gene_id")) %>% 
-  filter(!is.na(cluster))
+any(duplicated(GO_leachate_DEG$category))
+any(duplicated(GO_leachate_up_DEG$category))
+any(duplicated(GO_leachate_hump_DEG$category))
+any(duplicated(GO_leachate_down_DEG$category))
 ```
 
 ```{r}
-write_csv(KEGG.deg, file.path(output_path, "KEGG_deg.csv"))
-write_csv(KEGG.deg.anno, file.path(output_path, "KEGG_deg_anno.csv"))
-```
+GO_leachate_DEG %>% 
+   mutate(term = reorder(term, numDEInCat)) %>% 
+  slice_head(n = 15) %>%
+ggplot(., aes(y = term)) +
+  # Background: universe genes
+  geom_col(
+    aes(x = numInCat),
+    color = "grey80",
+    fill = "grey90",
+    alpha = 0.3,
+    width = 0.5
+  ) +
 
-# GO term landscape based on term prevalence
+  # Foreground: DEG genes
+  geom_col(
+    aes(x = numDEInCat),
+    fill = "steelblue",
+    alpha = 0.5,
+    width = 0.5
+  ) +
 
-plot GO terms annotated to your tested genes, weighted by how many genes
-map to each term.
+  labs(
+    x = "Number of genes",
+    y = NULL
+  ) +
 
-1.  Map gene universe → GO terms
+  theme_minimal()
+  
+```  
 
-2.  Count how many genes hit each GO term (n_genes)
-
-3.  Filter to terms with reasonable size (e.g., 10–300 genes)
-
-4.  Compute semantic similarity on the remaining GO terms
-
-5.  Reduce redundancy (rrvgo) and plot
-
-## Map gene universe to GO terms
-
-The `gene2go` dataframe maps gene IDs to GO terms for all genes in the
-testing universe. There will be 2 columns, gene_id and GO term, with one
-GO term mapped to one gene. Since there are multiple GO terms per gene,
-genes will appear in multiple rows in these dataframes. Likewise, more
-than one gene may map to the same GO term.
-
-Build the gene to GO term mappings for all genes in the universe
-
+### leachate
 ```{r}
-head(gene2go)
+# Make similarity matrix
+simMatrix_leachate <- calculateSimMatrix(
+    GO_leachate_DEG$category,
+    orgdb="org.Ce.eg.db",
+    ont = "BP",
+    method = "Rel"
+  )
+
+# Create scores
+scores_leachate <- setNames(
+    GO_leachate_DEG$numDEInCat,
+    GO_leachate_DEG$category
+  )
+
+# Reduce terms 
+reducedTerms_leachate <- reduceSimMatrix(
+    simMatrix_leachate,
+    scores = scores_leachate,
+    threshold = 0.7,
+    orgdb = "org.Ce.eg.db"
+  )
+
+# save similarity matrix and reduced terms
+write_csv(as.data.frame(simMatrix_leachate), file.path(output_path, "simMatrix_leachate.csv"))
+write_csv(reducedTerms_leachate, file.path(output_path, "reducedTerms_leachate.csv"))
 ```
 
-## Count how many genes hit each GO term (n_genes)
+### leachate_up
 
-```{r}
-universe_go_counts <- gene2go %>%
-  group_by(category) %>%
-  summarise(n_genes = n()) %>%
-  arrange(desc(n_genes))
+### leachate_hump
 
-head(universe_go_counts)
-```
-
-## Compute semantic similarity on the remaining GO terms
-
-Prepare the GO vector (this is what rrvgo wants)
-
-rrvgo expects a named numeric vector:
-
-names = GO IDs
-
-values = “scores” (you’ll use n_genes, not p-values)
-
+### leachate_down
 ```{r}
 go_scores <- universe_go_counts %>%
   dplyr::select(category, n_genes) %>%
