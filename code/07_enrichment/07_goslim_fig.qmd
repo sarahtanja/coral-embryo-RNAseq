@@ -1,0 +1,101 @@
+---
+title: "Visualize GOslims by numbers of DEGs"
+subtitle: "What do they genes do!? Can we see it with geom_bar and Upset plots?"
+date: 02/06/2026
+date-modified: today
+format:
+  gfm: 
+    toc: true
+    number-sections: true
+  html:
+    theme: journal
+    highlight-style: github
+    page-layout: article
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    number-sections: true
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    reference-location: margin
+    citation-location: margin
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,         # Display code chunks
+  eval = FALSE,        # Evaluate code chunks
+  warning = FALSE,     # Hide warnings
+  message = FALSE,     # Hide messages
+  comment = ""         # Prevents appending '##' to beginning of lines in code output
+)
+```
+
+# Background
+
+# Load inputs
+```{r}
+input_path <- "../../output/07_enrichment/goslim/"
+```
+
+```{r}
+goslim_summary <- read_csv(file.path(input_path, "goslim_summary.csv"))
+```
+
+```{r}
+glimpse(goslim_summary)
+```
+```{r}
+summary(goslim_summary)
+```
+```{r}
+colSums(is.na(goslim_summary_df))
+```
+
+# Wrangle
+remove rows that are 0 or NA
+```{r, fig.height = 10}
+goslim_summary %>%
+  drop_na(genes) %>% 
+  filter(DEdueto == "leachate") %>% 
+  filter(n_genes > 2) %>%
+  group_by(module) %>%
+  slice_max(order_by = n_genes, n = 10) %>%
+  ungroup() %>% 
+ggplot(., aes(x = n_genes, y = Term, fill = Term)) +
+  geom_col(position = position_dodge(width = 0.9), alpha = 0.85) +
+  facet_wrap(~ pattern, scales = "free_y", ncol = 1) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(
+    title = "GOslim BP Terms: Number of Genes Mapped",
+    x = "Number of differentially expressed genes mapped to GOslim terms",
+    y = "Top 10 GOslim terms per gene expression module"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(panel.grid.major.y = element_blank())
+```
+
+```{r}
+ggsave(
+  filename = "goslim_summary_barplot.png",
+  plot = last_plot(),
+  path = "../../output/07_enrichment/goslim/",
+  width = 10,
+  height = 8,
+  units = "in",
+  dpi = 900
+)
+```
+
+
+# What is unique? 
+
+# What is shared? 
+
+# How do I show this in context of background universe and stage signals?
+
