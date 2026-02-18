@@ -580,7 +580,7 @@ stage_anno_down <- universe_anno %>%
 Create named vectors for DE status (1 = DE, 0 = not DE) for each
 leachate responsive pattern and for each WGCNA cluster
 
-#### Vectors for leachate responsive gene patterns 
+#### Vectors for leachate responsive gene patterns
 
 ```{r}
 vector_leachate <- as.integer(universe_vector %in% leachate_anno$gene_id)
@@ -662,12 +662,14 @@ simply because they accumulate more reads. If length data is not
 available, goseq can still run but without this correction.
 :::
 
-The function `nullp()` takes as input:
-- a named vector of 1s and 0s indicating which genes are DE (1) and which are not (0) for all genes in the universe
-- a named vector of gene lengths for all genes in the universe (background)
+The function `nullp()` takes as input: - a named vector of 1s and 0s
+indicating which genes are DE (1) and which are not (0) for all genes in
+the universe - a named vector of gene lengths for all genes in the
+universe (background)
 
-The probability weighting function is defined for all genes we tested in DESeq2 (our full “universe” of 12221
-genes), including genes with no GO annotation. 
+The probability weighting function is defined for all genes we tested in
+DESeq2 (our full “universe” of 12221 genes), including genes with no GO
+annotation.
 
 ```{r}
 # Calculate probability weighting function for each leachate responsive DEG pattern
@@ -709,6 +711,7 @@ gene, genes will appear in multiple rows in these dataframes. Likewise,
 more than one gene may map to the same GO term.
 
 ### gene2go
+
 Build the gene to GO term mappings for all genes in the universe
 
 ```{r}
@@ -723,13 +726,14 @@ gene2go <- universe_genes_anno %>%
   as.data.frame()
 ```
 
-
 Save GO term mapping
+
 ```{r}
 write_csv(gene2go, file.path(output_path, "gene2go.csv"))
 ```
 
 ### gowide
+
 ```{r}
 gowide <- gene2go %>%
   distinct(gene, category) %>%          # drop duplicates if any
@@ -742,11 +746,9 @@ gowide <- gene2go %>%
 
 ```
 
-
 ```{r}
 write_csv(gowide, file.path(output_path, "gowide.csv"))
 ```
-
 
 ## Run `goseq`
 
@@ -833,6 +835,7 @@ GO_stage <- goseq(
 Use the Benjamini-Hochberg method to control false discovery rate
 
 Control for FDR with over represented p values
+
 ```{r}
 # leachate responsive
 GO_leachate$over_represented_bh <- 
@@ -866,6 +869,7 @@ GO_stage_down$over_represented_bh <-
 ```
 
 Control for FDR with under represented p values
+
 ```{r}
 # leachate responsive
 GO_leachate$under_represented_bh <- 
@@ -899,10 +903,12 @@ GO_stage_down$under_represented_bh <-
 ```
 
 ::: callout-note
-This should increase the number of columns in the GO_*** output dataframes from 7 to 9
+This should increase the number of columns in the GO\_\*\*\* output
+dataframes from 7 to 9
 :::
 
 ### Filter for BP terms only
+
 ```{r}
 GO_leachate <- GO_leachate %>% filter(ontology == "BP")
 GO_leachate_up <- GO_leachate_up %>% filter(ontology == "BP")
@@ -915,7 +921,6 @@ GO_stage_hump <- GO_stage_hump %>% filter(ontology == "BP")
 GO_stage_valley <- GO_stage_valley %>% filter(ontology == "BP")
 GO_stage_down <- GO_stage_down %>% filter(ontology == "BP")
 ```
-
 
 #### Save GO results
 
@@ -948,12 +953,12 @@ write_csv(GO_stage_down,
           file.path(output_path, "GO_stage_down.csv"))
 ```
 
-
 #### Filter for significantly enriched GO terms
 
-Filter for biological process terms with adjusted p-values < 0.05
+Filter for biological process terms with adjusted p-values \< 0.05
 
-##### leachate responsive DEGs 
+##### Are leachate-responsive DEGs enriched?
+
 ```{r}
 GO_BPsig_leachate <- GO_leachate %>%
   filter(ontology == "BP") %>%
@@ -1023,26 +1028,29 @@ paste("Number of significantly enriched GO BP terms for leachate down DEGs:", nr
 Nothing! Nothing is enriched for leachate... fuck.
 
 Ok. Well. Now we know. This indicates that our DEGs impacted by leachate
-don't all do particuler functions, or that there is no particular type
-of thing that these genes all do which are impacted by leachate.
+don't all do particular functions, or that there is no particular type
+of biological process that these genes all do which are impacted by
+leachate.
 
 > For our situation (≈12k background genes, ≈130 DEGs): Small DEG set +
-> custom annotation If only, say, 40–60 of your 130 DEGs have GO
+> custom annotation If only, say, 40–60 of our 130 DEGs have GO
 > annotations, and those are spread across many terms, there just may
 > not be enough clustering in any single GO category. Length bias
-> correction is conservative GOseq is explicitly correcting for bias. A
+> correction is conservative, GOseq is explicitly correcting for bias. A
 > lot of “borderline”-looking enrichments from simple hypergeometric
-> tests disappear once you account for length. Montipora annotation is
-> sparse With non-model genomes, GO coverage is often patchy. You could
-> have a true biological pattern that doesn’t map cleanly to GO terms.
-> DE list is “diffuse” If your DEGs represent many different processes
-> at once (e.g., general stress + development + metabolism), each
-> individual term may only get 2–3 hits → not enough to come out.
-
+> tests disappear once you account for length. *Montipora capitata*
+> annotation is sparse. With non-model genomes, GO coverage is often
+> patchy. Some explanations are that we could have a true biological
+> pattern that doesn’t map cleanly to GO terms. OR our DE list is sparse
+> so DEGs represent many different processes at once (e.g., general
+> stress + development + metabolism), each individual term may only get
+> 2–3 hits → not enough to reach significance threshold for enrichment,
+> especially after adjusting p-values for multiple comparisons.
 
 ##### What about stage?
 
 How many DEGs are there across stage and in each module?
+
 ```{r}
 numDE_stage <- nrow(stage_anno)
 numDE_stage_up <- nrow(stage_anno_up)
@@ -1052,7 +1060,6 @@ numDE_stage_down <- nrow(stage_anno_down)
 
 numUniverse <- nrow(universe_genes_anno)
 ```
-
 
 ```{r}
 # stage
@@ -1140,7 +1147,9 @@ paste("Number of significantly enriched GO BP terms for stage down DEGs:", nrow(
 ```
 
 ##### Over vs. Under
+
 How many of each were over vs under represented?
+
 ```{r}
 # make a list
 GO_BPsig_stage_list <- list(
@@ -1162,8 +1171,10 @@ GOBPsig_stage_summary <- imap_dfr(
 
 GOBPsig_stage_summary %>% knitr::kable()
 ```
+
 ::: callout-important
-Weird that each module either ONLY has over or under represented terms, not a mix. 
+Weird that each module either ONLY has over or under represented terms,
+not a mix.
 :::
 
 Save the filtered significant GO terms that had enrichment
@@ -1181,12 +1192,13 @@ write_csv(GO_BPsig_stage_down, file.path(output_path, "GO_BPsigENRICHED_stage_do
 
 ```
 
-
 ## Reduce redundancy in significantly enriched GO terms
 
-Calculate semantic similarity matrix with significantly enriched GO terms for each stage WGCNA cluster
+Calculate semantic similarity matrix with significantly enriched GO
+terms for each stage WGCNA cluster
 
 ### stage
+
 ```{r}
 # Make similarity matrix
 simMatrix_stage <- calculateSimMatrix(
@@ -1216,6 +1228,7 @@ write_csv(reducedTerms_stage, file.path(output_path, "reducedTerms_stage.csv"))
 ```
 
 ### stage_up
+
 ```{r}
 # Make similarity matrix
 simMatrix_stage_up <- calculateSimMatrix(
@@ -1245,6 +1258,7 @@ write_csv(reducedTerms_stage_up, file.path(output_path, "reducedTerms_stage_up.c
 ```
 
 ### stage_hump
+
 ```{r}
 # Make similarity matrix
 simMatrix_stage_hump <- calculateSimMatrix(
@@ -1274,6 +1288,7 @@ write_csv(reducedTerms_stage_hump, file.path(output_path, "reducedTerms_stage_hu
 ```
 
 ### stage_valley
+
 ```{r}
 # Make similarity matrix
 simMatrix_stage_valley <- calculateSimMatrix(
@@ -1303,6 +1318,7 @@ write_csv(reducedTerms_stage_valley, file.path(output_path, "reducedTerms_stage_
 ```
 
 ### stage_down
+
 ```{r}
 # Make similarity matrix
 simMatrix_stage_down <- calculateSimMatrix(
@@ -1331,12 +1347,16 @@ write_csv(as.data.frame(simMatrix_stage_down), file.path(output_path, "simMatrix
 write_csv(reducedTerms_stage_down, file.path(output_path, "reducedTerms_stage_down.csv"))
 ```
 
+# Reduce redundancy in non enriched GO terms
 
+### Filter GO results to leachate responsive DEGs
 
-# Reduce redundancy in non enriched GO terms 
-
-### Filter GO results to leachate responsive DEGs 
-Filter GO results for only terms that had a DEG annotated to them, even if they weren’t significantly enriched. This will allow us to visualize the full set of terms that had at least evidence of differential expression (even if enrichment of those associated terms are not significant after correction), and to see how they relate to each other semantically.
+Filter GO results for only terms that had a DEG annotated to them, even
+if they weren’t significantly enriched. This will allow us to visualize
+the full set of terms that had at least evidence of differential
+expression (even if enrichment of those associated terms are not
+significant after correction), and to see how they relate to each other
+semantically.
 
 ```{r}
 GO_leachate_DEG <- GO_leachate %>%
@@ -1392,9 +1412,10 @@ ggplot(., aes(y = term)) +
 
   theme_minimal()
   
-```  
+```
 
 ### leachate
+
 ```{r}
 # Make similarity matrix
 simMatrix_leachate <- calculateSimMatrix(
@@ -1428,6 +1449,7 @@ write_csv(reducedTerms_leachate, file.path(output_path, "reducedTerms_leachate.c
 ### leachate_hump
 
 ### leachate_down
+
 ```{r}
 go_scores <- universe_go_counts %>%
   dplyr::select(category, n_genes) %>%
@@ -1489,9 +1511,11 @@ scatterPlot(simMatrix, reducedTerms,
 
 # Summary
 
-No GO Terms or KEGG pathways were significantly enriched among the DEGs
-impacted by leachate exposure, either overall or within specific gene
-expression clusters.
+No GO Terms were significantly enriched among the DEGs impacted by
+leachate exposure, either overall (all \~128/130 leachate responsive
+DEGs) or within the specific gene expression patterns (down, hump, up).
+
+We did find enriched GO Terms in the
 
 ## Next steps
 
