@@ -1,969 +1,159 @@
 ---
-title: "Map GO IDs to GOslims"
-subtitle: " Using `GSEABase` and `GO.db`"
-author: "Sarah Tanja"
-date: 01/16/2026
-date-modified: today
-format:
-  gfm: 
-    toc: true
-    number-sections: true
-  html:
-    theme: journal
-    highlight-style: github
-    page-layout: article
-    code-background: true
-    code-tools: 
-      source: true
-      toggle: true
-    toc: true
-    toc-depth: 2
-    toc-location: left
-    number-sections: true
-    df-print: kable
-    smooth-scroll: true
-    link-external-icon: true
-    link-external-newwindow: true
-    reference-location: margin
-    citation-location: margin
+title: "07_goslim"
+format: html
 ---
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(
-  echo = TRUE,         # Display code chunks
-  eval = FALSE,        # Evaluate code chunks
-  warning = FALSE,     # Hide warnings
-  message = FALSE,     # Hide messages
-  comment = ""         # Prevents appending '##' to beginning of lines in code output
-)
-```
 
 # Background
 
-[Map GO IDs to GOslims](https://robertslab.github.io/resources/bio-Annotation/#:~:text=of%20the%20above.-,Map%20GO%20IDs%20to%20GOslims,-Below%20are%20a)
+I matched clustered/module grouped DEGs to GO terms, and tested for enrichment using goseq().
 
+I found that DEGs due to large shifts by stage had enriched GO terms only for prawnchip dip, earlygastrula up, or all stage DEGs combined. 
+No other cluster/ module had enrichment.
+
+I want to be able to show however what the DEGs for each cluster/moddule functionally represent, even if not statistically enriched.
+
+For each cluster/module:
+
+keep BP terms only
+
+rank by raw p-value
+
+take top N (e.g. 20–30)
+
+require a minimum gene count
 
 # Load libraries
-
-```{r}
-#BiocManager::install("GSEABase")
-#BiocManager::install("GO.db")
-```
-
 ```{r}
 library(GSEABase)
-library(tidyverse)
 library(GO.db)
-library(purrr)
-library(UpSetR)
+library(knitr)
+library(tidyverse)
 ```
+
 
 # Inputs
 ```{r}
 input_path <- "../../output/07_enrichment/goseq/"
 ```
 
-The expected input file has at least two columns. 
-One each with:
-- gene ID
-- Gene Ontology (GO) ID
-
-::: callout-note
-The GO IDs in the GO ID column **should be separated with a semi-colon**.
-gene to go term mapping
-::: 
-
-## GO counts
-```{r}
-gene2go <- read_csv(file.path(input_path, "gene2go.csv"))
-gowide <- read_csv(file.path(input_path, "gowide.csv"))
-```
-
-```{r}
-glimpse(gene2go)
-```
-
-```{r}
-glimpse(gowide)
-```
-
-```{r}
-GO_stage_up <- read_csv(file.path(input_path, "GO_stage_up.csv"))
-GO_stage_hump <- read_csv(file.path(input_path, "GO_stage_hump.csv"))
-GO_stage_valley <- read_csv(file.path(input_path, "GO_stage_valley.csv"))
-GO_stage_down <- read_csv(file.path(input_path, "GO_stage_down.csv"))
-
-
-GO_leachate_up <- read_csv(file.path(input_path, "GO_leachate_up.csv"))
-GO_leachate_hump <- read_csv(file.path(input_path, "GO_leachate_hump.csv"))
-GO_leachate_down <- read_csv(file.path(input_path, "GO_leachate_down.csv"))
-```
-
-```{r}
-GO_counts <- gowide %>% 
-  left_join(GO_stage_up %>% 
-              dplyr::select(numDEInCat_stage_up = numDEInCat,
-                            category, 
-                            ontology),
-            by = "category") %>% 
-  left_join(GO_stage_hump %>% 
-              dplyr::select(numDEInCat_stage_hump = numDEInCat,
-                            category, 
-                            ontology),
-            by = c("category", "ontology")) %>%
-  left_join(GO_stage_valley %>% 
-              dplyr::select(numDEInCat_stage_valley = numDEInCat,
-                            category, 
-                            ontology),
-            by = c("category", "ontology")) %>%
-  left_join(GO_stage_down %>% 
-              dplyr::select(numDEInCat_stage_down = numDEInCat,
-                            category, 
-                            ontology),
-            by = c("category", "ontology")) %>%
-  left_join(GO_leachate_up %>% 
-              dplyr::select(numDEInCat_leachate_up = numDEInCat,
-                            category, 
-                            ontology),
-            by = c("category", "ontology")) %>%
-  left_join(GO_leachate_hump %>% 
-              dplyr::select(numDEInCat_leachate_hump = numDEInCat,
-                            category, 
-                            ontology),
-            by = c("category", "ontology")) %>%
-  left_join(GO_leachate_down %>% 
-              dplyr::select(numDEInCat_leachate_down = numDEInCat,
-                            category, 
-                            ontology),
-            by = c("category", "ontology")) %>% 
-  filter(ontology == "BP")
-```
-
-
-## Load GO annotated genes
-```{r}
-universe_anno <- read_csv(file.path(input_path, "universe_anno.csv"))
-dim(universe_anno)
-```
-
-```{r}
-glimpse(universe_anno)
-```
-
-
-Change comma separated GO IDs to semi-colon separated GO IDs
-```{r}
-gene2GOs <- universe_anno %>%
-  mutate(GOs = str_replace_all(GOs, ",", ";")) %>% 
-  dplyr::select(gene_id, GOs, pattern_leachate, pattern_stage)
-
-glimpse(gene2GOs)
-```
-
-::: callout-important
-The user needs to provide:
-- names of the columns containing the GO IDs and the gene IDs!
-- Column name for GO IDs : `GOs`
-- Column name for gene IDs : `gene_id`
-- Path or URL to input file.
-:::
-
-# Make a gene set for each cluster and module
-
-## Leachate DEGs
-```{r}
-gene2GOs_leachate_up <- gene2GOs %>%
-  filter(pattern_leachate == "up") %>%
-  dplyr::select(gene_id, GOs) %>% 
-  mutate(DEG_pattern = "leachate_up")
-```
-
-```{r}
-gene2GOs_leachate_hump <- gene2GOs  %>%
-  filter(pattern_leachate == "hump") %>%
-  dplyr::select(gene_id, GOs) %>% 
-  mutate(DEG_pattern = "leachate_hump")
-```
-
-```{r}
-gene2GOs_leachate_down <- gene2GOs  %>%
-  filter(pattern_leachate == "down") %>%
-  dplyr::select(gene_id, GOs) %>% 
-  mutate(DEG_pattern = "leachate_down")
-```
-
-## Stage DEGs
-```{r}
-gene2GOs_stage_up <- gene2GOs  %>%
-  filter(pattern_stage == "up") %>%
-  dplyr::select(gene_id, GOs) %>% 
-  mutate(DEG_pattern = "stage_up")
-```
-
-```{r}
-gene2GOs_stage_hump <- gene2GOs %>%
-  filter(pattern_stage == "hump") %>%
-  dplyr::select(gene_id, GOs) %>% 
-  mutate(DEG_pattern = "stage_hump")
-```
-
-```{r}
-gene2GOs_stage_valley <- gene2GOs %>%
-  filter(pattern_stage == "valley") %>%
-  dplyr::select(gene_id, GOs) %>% 
-  mutate(DEG_pattern = "stage_valley")
-```
-
-```{r}
-gene2GOs_stage_down <- gene2GOs %>%
-  filter(pattern_stage == "down") %>%
-  dplyr::select(gene_id, GOs) %>% 
-  mutate(list = "stage_down")
-```
-
-## Universe
-```{r}
-gene2GOs_universe <- gene2GOs%>%
-  dplyr::select(gene_id, GOs) %>% 
-  mutate(list = "universe")
-```
-
-## Save gene2GO dataframes as a named list
-```{r}
-gene2GOs_list <- list(
-  leachate_up   = gene2GOs_leachate_up,
-  leachate_hump = gene2GOs_leachate_hump,
-  leachate_down = gene2GOs_leachate_down,
-  stage_up      = gene2GOs_stage_up,
-  stage_hump    = gene2GOs_stage_hump,
-  stage_valley  = gene2GOs_stage_valley,
-  stage_down    = gene2GOs_stage_down,
-  universe      = gene2GOs_universe
-)
-```
-
-# Outputs
-
-```{r}
-output_path <- "../../output/07_enrichment/goslim/"
-```
-
-Save input file with semi-colon separated GO IDs
-```{r}
-write_csv(gene2GOs_universe, file.path(output_path, "gene2GOs_universe.csv"))
-```
-
-
-### Set variables
 ```{r set-variables, eval=TRUE}
 # Column names corresponding to gene name/ID and GO IDs
-GO.ID.column <- "GOs"
+GO.ID.column <- "Gene.Ontology.IDs"
 gene.ID.column <- "gene_id"
 
 # Relative path or URL to input file
-input.file <- file.path(output_path, "gene2GOs_universe.csv")
+input.file <- "https://raw.githubusercontent.com/grace-ac/paper-pycno-sswd-2021-2022/d1cdf13c36085868df4ef4b75d2b7de03ef08d1c/analyses/25-compare-2021-2022/DEGlist_same_2021-2022_forGOslim.tab"
+
 
 ##### Official GO info - no need to change #####
 goslims_obo <- "goslim_generic.obo"
 goslims_url <- "http://current.geneontology.org/ontology/subsets/goslim_generic.obo"
 ```
 
-### Set GSEAbase location and download goslim_generic.obo
-```{r download-generic-goslim-obo, eval=TRUE}
-# Find GSEAbase installation location
-gseabase_location <- find.package("GSEABase")
-
-# Load path to GOslim OBO file
-goslim_obo_destintation <- file.path(gseabase_location, "extdata", goslims_obo, fsep = "/")
-
-# Download the GOslim OBO file
-download.file(url = goslims_url, destfile = goslim_obo_destintation)
-
-# Loads package files
-gseabase_files <- system.file("extdata", goslims_obo, package="GSEABase")
+```{r}
+GO.bp.1 <- read_csv(file.path(input_path,"GO_bp_cluster1.csv"))
 ```
 
-### Clean: remove NAs
-
-First check how many rows (aka genes) do not have GO terms annotated to them. If there are no GO terms annotated to a gene, the cell will be NA. We want to remove those rows because they will not be useful for mapping to GOslims.
-
-
-The following is a function that will check how many rows in a given dataframe have NA values in the GO ID column. It returns a tibble with the total number of rows and the number of rows with NA values in the GO ID column.
 ```{r}
-check_na_go <- function(df, GO.ID.column) {
-  tibble(
-    n_rows = nrow(df),
-    n_na_go = sum(is.na(df[[GO.ID.column]]))
+head(GO.bp.1) %>% knitr::kable()
+```
+## Semantic similarity
+## Reduce redundancy
+
+Calculate semantic similarity matrix with **all GO terms** that are present in DEGs
+```{r}
+# filter GO terms to those that are BP only
+GO.bp.1.filt <- GO.bp.1 %>%
+  filter(ontology == "BP") %>%
+  arrange(desc(numDEInCat))
+
+simMatrix.1 <- calculateSimMatrix(
+    GO.bp.1.filt$category,
+    orgdb="org.Ce.eg.db",
+    ont = "BP",
+    method = "Rel"
   )
-}
+```
+
+12599 GO terms... 
+
+```{r}
+write_csv(as.data.frame(simMatrix.1), file.path(output_path, "simMatrix_1.csv"))
 ```
 
 
-Now we use the function we created above to check how many rows in each of our gene2GO dataframes have NA values in the GO ID column. We use `imap_dfr()` to apply the function to each dataframe in our list and combine the results into a single tibble with an additional column indicating the dataset name.
+## Scores from DEInCat
+
+Create named scores vectors for each module/cluster
+
 ```{r}
-na_summary <- imap_dfr(
-  gene2GOs_list,
-  ~ check_na_go(.x, GO.ID.column),
-  .id = "dataset"
-)
-
-na_summary
-```
-
-Now we make a function that will clean the gene2GO dataframes by removing rows with NA values in the GO ID column and also removing any extra whitespace around the GO IDs. The function takes a dataframe, the name of the gene ID column, and the name of the GO ID column as arguments, and returns a cleaned dataframe with only those two columns.
-```{r}
-clean_gene2go <- function(df, gene.ID.column, GO.ID.column) {
-  df %>%
-    mutate(
-      !!sym(GO.ID.column) :=
-        str_replace_all(.data[[GO.ID.column]], "\\s*;\\s*", ";")
-    ) %>%
-    filter(
-      !is.na(.data[[gene.ID.column]]),
-      !is.na(.data[[GO.ID.column]]),
-      .data[[GO.ID.column]] != ""
-    ) %>%
-    select(all_of(c(gene.ID.column, GO.ID.column)))
-}
-```
-
-
-We use the function we created above across our list of gene2GO dataframes to clean them. We use `imap()` to apply the function to each dataframe in our list and keep the names of the datasets in the resulting list of cleaned dataframes, which we name `gene2GOs_clean`.
-```{r}
-gene2GOs_clean <- imap(
-  gene2GOs_list,
-  ~ clean_gene2go(.x,
-                  gene.ID.column = gene.ID.column,
-                  GO.ID.column   = GO.ID.column)
-)
-
-```
-
-
-Here we show that in our new list of dataframes, there are no NA values in the GO ID column and we also show the total number of rows for each dataframe. This is a quick check to confirm that our cleaning function worked as expected.
-```{r}
-imap_dfr(
-  gene2GOs_clean,
-  ~ tibble(
-    dataset = .y,
-    n_rows  = nrow(.x),
-    n_na_go = sum(is.na(.x[[GO.ID.column]]))
+# Create scores
+scores <- setNames(
+    -log10(pmax(GO.bp.1.filt$bh_adjust, .Machine$double.xmin)),
+    GO.bp.deg.filt$category
   )
-)
 ```
 
-### Map 1GO to 1Gene   
-
-This is a function that will map gene 2 GO data frame so each row is single gene ID with single GO ID
+Reduce terms with similarity matrix
 ```{r}
-map_gene2go <- function(df, GO.ID.column, sep = ";") {
-  df %>%
-    separate_rows(!!sym(GO.ID.column), sep = sep)
-}
-```
-
-```{r}
-gene2GO_map <- imap(
-  gene2GOs_clean,   # or whatever list holds your cleaned dataframes
-  ~ map_gene2go(.x, GO.ID.column = GO.ID.column)
-)
-```
-
-Check that mapping worked
-```{r}
-imap_dfr(
-  gene2GO_map,
-  ~ tibble(
-    dataset = .y,
-    n_rows  = nrow(.x)
+# Reduce terms for all DEGs 
+reducedTerms <- reduceSimMatrix(
+    simMatrix,
+    scores = scores,
+    threshold = 0.7,
+    orgdb = "org.Ce.eg.db"
   )
-)
-```
-Let's see the structure of one of the mapped dataframes
-```{r}
-head(gene2GO_map[[1]])
 ```
 
-These dataframes just contain two columns, one with gene IDs and one with GO IDs, with one GO ID per row (and gene_id is repeated for as many GO IDs there are associated with that gene). This is a one to one dataframe! One gene to one GO term! 
-
-
-
-### Group
-
-Groups the genes by GO ID (i.e. lists all genes associated with each unique GO ID)
-
+Add in gene and cluster annotation to reduced GO terms present in DEGs
 ```{r}
-group_gene2go <- function(df, gene.ID.column, GO.ID.column) {
-      df %>%
-    group_by(!!sym(GO.ID.column)) %>%
-    summarise(
-      !!sym(gene.ID.column) := paste(.data[[gene.ID.column]], collapse = ","),
-      .groups = "drop"
-    )
-}
+reducedTerms_anno <- reducedTerms %>%
+  left_join(GO.bp.deg.filt, by = c("go" = "category", "term")) %>% 
+  left_join(gene2go, by = c("go" = "category")) %>% 
+  left_join(gene_clusters, by = c("gene" = "gene_id")) %>% 
+  filter(!is.na(cluster))
 ```
 
 ```{r}
-GO2genes_grouped <- imap(
-  gene2GO_map,
-  ~ .x %>%
-      dplyr::filter(
-        !is.na(.data[[GO.ID.column]]),
-        .data[[GO.ID.column]] != "-"
-      ) %>%
-      group_gene2go(
-        gene.ID.column = gene.ID.column,
-        GO.ID.column   = GO.ID.column
-      )
-)
-
-```
-What this does
-- `!is.na(...)` → removes missing GO IDs
-- `!= "-"` → removes placeholder dashes
-- `.data[[GO.ID.column]]` → tidy-eval safe, works with column names stored as strings
-
-
-Check that grouping worked
-```{r}
-imap_dfr(
-  GO2genes_grouped,
-  ~ tibble(
-    dataset = .y,
-    n_rows  = nrow(.x)
-  )
-)
-```
-So one row should have one unique GO ID, with all associated gene IDs listed in a comma delimited format. Let's look at one dataframe:
-```{r}
-head(GO2genes_grouped[[1]])
-```
-
-
-```{r}
-dim(GO2genes_grouped[[1]])
-dim(GO2genes_grouped[[2]])
-dim(GO2genes_grouped[[3]])
-dim(GO2genes_grouped[[4]])
-dim(GO2genes_grouped[[5]])
-dim(GO2genes_grouped[[6]])
-dim(GO2genes_grouped[[7]])
-dim(GO2genes_grouped[[8]])
-```
-
-::: callout-note
-How many unique genes are associated with each unique GO term?
-:::
-
-Let's make a function that will add a column that counts the number of genes associated with each GO term.
-```{r}
-count_genes_per_go <- function(df, gene.ID.column) {
-  df %>%
-    mutate(
-      DEG_count = str_count(.data[[gene.ID.column]], ",") + 1
-    )
-}
-```
-
-Now we can imap that function across our list
-```{r}
-GO2genes_grouped_counted <- imap(
-  GO2genes_grouped,
-  ~ count_genes_per_go(.x, gene.ID.column = gene.ID.column)
-)
-```
-
-```{r}
-head(GO2genes_grouped_counted[[1]])
-```
-
-::: callout-note
-This is similar to the `GO_counts` dataframe we made above, but for some reason we lost the list of genes associated with each GO term in that dataframe....
-:::
-
-# Map GO IDs to GOslims
-The mapping steps were derived from this [bioconductor forum](https://support.bioconductor.org/p/128407/#128408) response
-
-## Extract GO IDs as vectors
-
-This is a function to extract GO IDs as a vector from the grouped gene-GO dataframe
-```{r}
-vectorize_go_ids <- function(df, GO.ID.column) {
-  df[[GO.ID.column]]
-}
-```
-
-
-This loops through each grouped gene-GO dataframe in the list and extracts the GO IDs as a vector
-```{r}
-go_ids_list <- imap(
-  GO2genes_grouped,
-  ~ vectorize_go_ids(.x, GO.ID.column = GO.ID.column)
-)
-```
-
-Each vector of GO IDs can now be used to create a `GOCollection` object in GSEABase.
-```{r}
-head(go_ids_list[[1]])
-```
-
-> The mapping steps were derived from this [bioconductor forum response](https://support.bioconductor.org/p/128407/#128408)
-
-
-## Create OBO Collections
-
-This extracts GOslims from GSEABase
-
-This function creates a GOCollection object of GOslims based on the provided GO IDs. 
-```{r}
-extract_go_slims <- function(go_ids, gseabase_files) {
-  myCollection <- GOCollection(go_ids)
-  slim <- getOBOCollection(gseabase_files)
-  list(
-    myCollection = myCollection,
-    slim       = slim
-  )
-}
-```
-
-Here we apply the above function across our list of GO ID vectors
-```{r}
-go_slims_list <- imap(
-  go_ids_list,
-  ~ extract_go_slims(
-      go_ids = .x,
-      gseabase_files = gseabase_files
-    )
-)
-```
-
-```{r}
-str(go_slims_list[[1]])
-```
-
-GO ⟶ GO-slim
-(many-to-one mapping via the ontology DAG)
-
-Note how for our first "module" leachate_up there are 2216 total GO term ids in `$collection`, but 141 GOslims in `$slim`
-
-A `GOCollection` object:
-`$collection` → regular GO terms
-These are the specific, fine-grained GO annotations associated with your genes.
-- knows how to query GO.db
-- understands parent/child relationships
-- can be passed to functions like goSlim()
-
-
-An `OBOCollection` object:
-`$slim` → GO-slim terms
-These are high-level, curated summary categories used to collapse many GO terms into interpretable bins.
-- GO-slim terms (a subset of GO)
-- Their relationships
-- Subset labels (generic, yeast, plant, etc.)
-📌 This object defines which high-level categories you allow.
-
-## Get Biological Process (BP) GOslims
-
-```{r}
-get_bp_goslims <- function(x, verbose = FALSE) {
-  goSlim(x$myCollection, x$slim, "BP", verbose)
-}
-```
-
-```{r}
-bp_goslims_list <- imap(
-  go_slims_list,
-  ~ get_bp_goslims(.x, verbose = FALSE)
-)
-```
-
-```{r}
-bp_goslims_list[[1]]
-```
-::: callout-important
-There seem to only be 72 GOslim BP terms across all of the dataframes... note that count is 0 in some of these rows indicating those GOslim terms are not represented by the GO IDs in that respective DEG dataframe.
-:::
-
-The columns in the resulting dataframes are:
-- GOslim ID (as rownames)
-- Count
-- Percent 
-- Term
-
-```{r}
-
-bp_slim_list <- imap(go_slims_list, function(myCollection, nm) {
-  message("Running goSlim for: ", nm)
-
-  out <- goSlim(myCollection, slim, "BP", verbose = FALSE)
-
-  # keep track of which group it came from
-  out$group <- nm
-  out
-})
-
-head(bp_slim_list[[1]])
-
-```
-Now we have added the group column
-
-
-
-# Perform mapping of of GOIDs to GOslims
-
-Returns:
-
-GOslim IDs (as rownames)
-GOslim terms
-Counts of GO IDs matching to corresponding GOslim
-Percentage of GO IDs matching to corresponding GOslim
-GOIDs mapped to corresponding GOslim, in a semi-colon delimited format
-
-
-```{r}
-# ---- function: map GO IDs to GOslims for ONE slimdf -------------------------
-map_go_to_goslims_one <- function(slimdf, myCollection, go_ids) {
-
-  # List of GOslims and all GO IDs from `go_ids`
-  gomap <- as.list(GOBPOFFSPRING[rownames(slimdf)])
-
-  # Maps `go_ids` to matching GOslims (kept if you want to inspect it)
-  mapped <- lapply(gomap, intersect, ids(myCollection))
-
-  # Append all mapped GO IDs to `slimdf` as semicolon-delimited string
-  slimdf$GO.IDs <- sapply(mapped, paste, collapse = ";")
-
-  # Remove literal "character(0)" strings (usually you'd get "" already, but keeping your intent)
-  slimdf$GO.IDs[slimdf$GO.IDs == "character(0)"] <- ""
-
-  # Add self-matching GOIDs to "GO.IDs" column, if not present
-  for (go_id in go_ids) {
-
-    if (go_id %in% rownames(slimdf)) {
-
-      existing <- slimdf[go_id, "GO.IDs"]
-
-      # split safely; handle "" -> character(0)
-      existing_vec <- trimws(toupper(unlist(strsplit(existing, ";", fixed = TRUE))))
-      existing_vec <- existing_vec[nzchar(existing_vec)]
-
-      if (!toupper(go_id) %in% existing_vec) {
-
-        if (nzchar(existing)) {
-          slimdf[go_id, "GO.IDs"] <- paste0(existing, "; ", go_id)
-        } else {
-          slimdf[go_id, "GO.IDs"] <- go_id
-        }
-      }
-    }
-  }
-
-  slimdf
-}
-```
-
-```{r}
-# ---- apply function to LIST of slim dfs ---------------------------------------------
-bp_slim_list_mapped <- imap(bp_goslims_list, \(slimdf, nm) {
-  map_go_to_goslims_one(
-    slimdf        = slimdf,
-    myCollection = go_slims_list[[nm]]$myCollection,  # <- S4 GOCollection
-    go_ids       = go_ids_list[[nm]]                  # <- character vector
-  )
-})
-
-# keep names (lapply preserves them, but this makes it explicit)
-bp_slim_list_mapped <- setNames(bp_slim_list_mapped, names(bp_goslims_list))
-
-# quick check
-str(bp_slim_list_mapped, max.level = 1)
-
-```
-
-# Perform mapping of gene_ids to GOIDS to GOslims
-
-Checkout Sam White's Bioconductor forum post [here](https://support.bioconductor.org/p/128430/)
-
-## Build a `GeneSetCollection` object with the GO annotations.
-Create a GO → gene mapping as a GeneSetCollection
-Goal
-
-Turn your raw annotation pairs (GO term, gene/transcript ID) into a Bioconductor object where each GO term “owns” a set of genes.
-
-Inputs
-
-  GO.db so you can fetch human-readable GO term names
-
-  A 2-column GO annotation table (from a file or data.frame)
-
-    What it must look like (conceptually):
-    
-      Column 1: GO IDs like "GO:0016874"
-      
-      Column 2: gene/transcript IDs like "Montipora_capitata_HIv3___RNAseq.g5198.t1"
-      
-      One row per association (i.e. if a gene is annotated to multiple GO terms, it will appear in multiple rows). 
-    
-    Example:
-    
-    ```{r}
-    gene2GO_map[[8]]
-    ```
-
-
-
-- input one GO term to multiple genes
-```{r}
-head(GO2genes_grouped[[8]])
-```
-
-- fetch GO terms into a named vector
-```{r}
-head(GO2genes_grouped$universe)
-```
-
-```{r}
-genesbygo_from_collapsed <- function(df,
-                                     go_col = "GOs",
-                                     genes_col = "gene_id",
-                                     sep = ",") {
-  go_ids <- as.character(df[[go_col]])
-
-  # split the comma-separated string into character vectors
-  gene_vecs <- strsplit(as.character(df[[genes_col]]), sep, fixed = TRUE)
-  gene_vecs <- lapply(gene_vecs, \(x) {
-    x <- trimws(x)
-    x <- x[nzchar(x)]
-    unique(x)
-  })
-
-  setNames(gene_vecs, go_ids)
-}
-
-```
-
-
-```{r}
-genesbygo_list <- lapply(GO2genes_grouped, genesbygo_from_collapsed)
-
-```
-
-
-```{r}
-universe_go_ids <- unique(as.character(GO2genes_grouped$universe$GOs))
-
-## fetch GO terms into a named vector
-goterms <- AnnotationDbi::select(GO.db, keys=universe_go_ids, columns="TERM")
-
-goterms <- setNames(goterms$TERM, goterms$GOID)
-```
-
-```{r}
-get_goterms_list <- function(go_ids, GOdb = GO.db) {
-
-  # ensure clean character vector
-  go_ids <- unique(as.character(go_ids))
-
-  # fetch GO term labels
-  goterms_df <- AnnotationDbi::select(
-    GOdb,
-    keys    = go_ids,
-    columns = "TERM",
-    keytype = "GOID"
-  )
-
-  # named character vector: names = GOID, values = TERM
-  goterms_vec <- setNames(goterms_df$TERM, goterms_df$GOID)
-
-  # convert to named list (one element per GO)
-  as.list(goterms_vec)
-}
-```
-
-
-```{r}
-goterms_list <- lapply(GO2genes_grouped, \(df) {
-  get_goterms_list(df$GOs)
-})
+write_csv(reducedTerms, file.path(output_path, "reducedTerms_GO.csv"))
+write_csv(reducedTerms_anno, file.path(output_path, "reducedTerms_GO_anno.csv"))
 ```
 
 
 
-## Build `GeneSetCollection` object
 
-Function to build a `GeneSetCollection` object from a list of GO → gene mappings and a list of GOID → GOTERM mappings. The function checks that the names of the two lists are identical, then uses `mapply()` to create a `GeneSet` for each GO term, which is then combined into a `GeneSetCollection` using `do.call()`.
+## GO.db
 ```{r}
-make_gsc <- function(genesbygo, goterms) {
-  stopifnot(identical(names(genesbygo), names(goterms)))
-
-  do.call(
-    "GeneSetCollection",
-    mapply(
-      FUN = function(geneSetID, geneIDs) {
-        term <- goterms[[geneSetID]]  # <- character(1) or NA
-
-        GeneSet(
-          NullIdentifier(),
-          geneIds = geneIDs,
-          setName = geneSetID,
-          shortDescription = if (is.na(term)) "" else term
-        )
-      },
-      geneSetID = names(genesbygo),
-      geneIDs   = genesbygo,
-      USE.NAMES = FALSE,
-      SIMPLIFY  = FALSE
-    )
-  )
-}
-
-```
-
-Now we apply the function to build a `GeneSetCollection` object for each of our datasets (leachate_up, leachate_hump, etc.) using the corresponding GO → gene mappings and GOID → GOTERM mappings.
-```{r}
-gsc_list <- mapply(
-  FUN = function(gbg, gtm) make_gsc(gbg, gtm),
-  gbg = genesbygo_list,
-  gtm = goterms_list,
-  SIMPLIFY = FALSE,
-  USE.NAMES = TRUE
-)
-
-# example:
-gsc_list$leachate_up
-
-```
-
-
-# GOslim dataframe with GOID and gene_id mapping
-
-
-```{r}
-parse_goids <- function(x) {
-  if (is.na(x) || !nzchar(x)) return(character(0))
-  x <- gsub("\\s+", "", x)               # remove spaces
-  ids <- unlist(strsplit(x, ";|,", perl = TRUE))
-  ids <- ids[nzchar(ids)]
-  unique(ids)
-}
-
+?select
 ```
 
 ```{r}
+# see what GO slim objects exist in your GO.db
+ls("package:GO.db", pattern = "GOSLIM")
 
-summarize_goslims <- function(bp_slim_df, gsc, keep_genes = FALSE) {
+# extract the generic GO slim IDs (this is what we will intersect with)
+goslim_ids <- names(GOSLIMGENERIC)
 
-  # GOID -> gene vector lookup
-  go2genes <- setNames(
-    lapply(gsc, geneIds),
-    names(gsc)
-  )
-
-  bp_slim_df$n_goids <- NA_integer_
-  bp_slim_df$n_genes <- NA_integer_
-
-  # OPTIONAL column (created up front)
-  if (keep_genes) {
-    bp_slim_df$genes <- NA_character_
-  }
-
-  for (i in seq_len(nrow(bp_slim_df))) {
-
-    # parse GO IDs mapped to this GOslim
-    goids <- parse_goids(bp_slim_df$GO.IDs[i])
-
-    bp_slim_df$n_goids[i] <- length(goids)
-
-    # collect genes for those GO IDs
-    genes_list <- go2genes[intersect(goids, names(go2genes))]
-
-    # UNIQUE genes within this GOslim
-    genes_unique <- unique(unlist(genes_list, use.names = FALSE))
-
-    bp_slim_df$n_genes[i] <- length(genes_unique)
-
-    # >>> THIS IS WHERE IT GETS ADDED <<<
-    if (keep_genes) {
-      bp_slim_df$genes[i] <- paste(genes_unique, collapse = ";")
-    }
-  }
-
-  bp_slim_df
-}
-
-
-```
-
-```{r}
-stopifnot(identical(names(bp_slim_list_mapped), names(gsc_list)))
-
-goslim_summary_list <- mapply(
-  FUN = summarize_goslims,
-  bp_slim_df = bp_slim_list_mapped,
-  gsc        = gsc_list,
-  keep_genes = TRUE,
-  SIMPLIFY   = FALSE,
-  USE.NAMES  = TRUE
-)
-
+length(goslim_ids)
+head(goslim_ids)
 ```
 
 
-# Combine
-
 ```{r}
-goslim_summary_df <- imap_dfr(
-  goslim_summary_list,
-  ~ mutate(.x, module = .y, .before = 1)
-)
-```
+go_to_slim <- as.list(GOBPANCESTOR)
 
-# Wrangle
-```{r}
-goslim_summary <- goslim_summary_df %>%
+top_terms_slim <- top_terms %>%
+  rowwise() %>%
   mutate(
-    DEdueto = case_when(
-      str_detect(module, "leachate") ~ "leachate",
-      str_detect(module, "stage") ~ "stage"
-    ),
-    pattern = case_when(
-      str_detect(module, "up") ~ "up",
-      str_detect(module, "hump") ~ "hump",
-      str_detect(module, "valley") ~ "valley",
-      str_detect(module, "down") ~ "down",
-      str_detect(module, "universe") ~ "universe",
-  ))
-```
-
-
-# Plot 
-
-```{r}
-goslim_summary %>% 
-  drop_na(pattern)%>%
-  group_by(module) %>%
-  slice_max(order_by = n_genes, n = 10, with_ties = FALSE) %>%
-  ungroup() %>% 
-ggplot(., aes(x = n_genes, y = Term, fill = DEdueto)) +
-  geom_col(position = position_dodge(width = 0.9), alpha = 0.85) +
-  facet_wrap(~ pattern, scales = "free_y", ncol = 1) +
-  scale_x_continuous(expand = c(0, 0)) +
-  labs(
-    title = "GOslim BP Terms: Number of Genes Mapped",
-    x = "Number of genes mapped to GOslim (n_genes)",
-    y = "GOslim term"
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(panel.grid.major.y = element_blank())
-```
-
-
-### Save outputs
-```{r}
-output_path <- "../../output/07_enrichment/goslim/"
-```
-
-```{r}
-write_csv(goslim_summary, file.path(output_path, "goslim_summary.csv")) 
+    goslim = list(
+      intersect(
+        go_to_slim[[category]],
+        keys(GOSLIM_GENERIC)
+      )
+    )
+  ) %>%
+  ungroup() %>%
+  tidyr::unnest(goslim)
 ```
 
 

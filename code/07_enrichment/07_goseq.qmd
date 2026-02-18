@@ -128,7 +128,6 @@ library(tidyverse)
 library(GenomicRanges)
 library(Biostrings)
 library(goseq)
-library(rrvgo)
 library(org.Ce.eg.db)
 ```
 
