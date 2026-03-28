@@ -114,6 +114,7 @@ library(forcats)
 library(ggforce)   # for facet_wrap_paginate
 library(ggnewscale) # to display 2 padj scales on same plot
 library(colorspace)
+library(kableExtra)
 ```
 
 ## Load inputs
@@ -128,6 +129,7 @@ for (i in seq_along(files)) {
 }
 ```
 
+Gene clusters
 ```{r}
 gene_cluster_zs <- read_csv("../../output/06_deg/cluster/gene_cluster_zscores.csv")
 gene_clusters <- read_csv("../../output/06_deg/cluster/gene_clusters.csv")
@@ -139,84 +141,183 @@ metadata_or <- read.csv("../../metadata/metadata_or.csv")
 str(metadata_or)
 ```
 
+# Data wrangle 
+I want to know if the DEGs found in the difference of differences Wald contrast (*.int) are already contained within the DEGs found in the individual stage x dose contrasts (*.vs.control) or if they are unique to the interaction test. 
+
+```{r}
+sig_summary2 <- sig_summary %>%
+  mutate(test = case_when(
+    list == "int" ~ "LRT",
+    list == "joint" ~ "LRT",
+    grepl("\\.int$", list) ~ "Wald_diffdiff",
+    grepl("vs\\.control", list) ~ "Wald_contrast",
+    TRUE ~ "other"
+  )) %>% 
+  mutate(stage = case_when(
+    grepl("cleavage", list) ~ "cleavage",
+    grepl("prawnchip", list) ~ "prawnchip",
+    grepl("earlygastrula", list) ~ "earlygastrula",
+    TRUE ~ "other"
+  )) %>% 
+  mutate(dose = case_when(
+    grepl("low", list) ~ "low",
+    grepl("mid", list) ~ "mid",
+    grepl("high", list) ~ "high",
+    TRUE ~ "other"
+  ))
+```
+
+```{r}
+gene_sets <- sig_summary2 %>%
+  filter(test %in% c("Wald_contrast", "Wald_diffdiff")) %>%
+  distinct(gene_id, test) %>%
+  mutate(value = TRUE) %>%
+  pivot_wider(
+    names_from = test,
+    values_from = value,
+    values_fill = FALSE
+  )
+
+overlap_summary <- gene_sets %>%
+  mutate(category = case_when(
+    Wald_contrast & Wald_diffdiff ~ "both",
+    Wald_contrast & !Wald_diffdiff ~ "contrast_only",
+    !Wald_contrast & Wald_diffdiff ~ "diffdiff_only"
+  )) %>%
+  count(category)
+
+kable(overlap_summary)
+```
+```{r}
+gene_diffdiff <- gene_sets %>%
+  filter(!Wald_contrast & Wald_diffdiff) %>%
+  pull(gene_id)
+
+gene_diffdiff
+
+gene_cluster_zs %>% filter(genes %in% gene_diffdiff)
+
+gene_cluster_zs %>% 
+  filter(genes %in% gene_diffdiff) %>%
+  mutate(leachate = factor(leachate, levels = c("control","low","mid","high")),
+        stage = factor(stage, levels = c("cleavage", "prawnchip", "earlygastrula"))
+        )%>% 
+  ggplot( ., aes(x = leachate, y = zscore, color = stage))+
+  geom_point()+
+  geom_smooth(aes(group = stage), se = FALSE)+
+  scale_color_manual(values = stage.3.colors)+
+  theme_sleek_axe()
+```
+```{r}
+gene_cluster_zs %>% 
+  filter(genes %in% gene_diffdiff) %>%
+  mutate(leachate = factor(leachate, levels = c("control","low","mid","high")),
+        stage = factor(stage, levels = c("cleavage", "prawnchip", "earlygastrula"))
+        )%>% 
+  ggplot( ., aes(x = stage, y = zscore, color = leachate))+
+  geom_point()+
+  geom_smooth(aes(group = leachate), se = FALSE)+
+  scale_color_manual(values = leachate.colors)+
+  theme_sleek_axe()
+```
+
+
+::: callout-important
+
+**Montipora_capitata_HIv3___TS.g9507.t1**
+
+This is the only gene that was significant for the Wald "difference of differences" contrast that was not also significant in the individual stage x dose contrasts. 
+
+What do we see?
+- A big dip in expression at 4 hpf (cleavage) in the low dose treatment. 
+- A decrease in expression at 14 hpf (early gastrula) in the low, mid and particularly, high, dose treatment.
+- A muted leachate signal (little or no effect) in the prawnchip stage.
+- Different patterns across stages!
+- Non monotonic leachate effect in the cleavage stage at the low dose (a suppression of transcription or an increase in translation?)
+- No effect at the prawnchip stage
+- Monotonic leachate effect in the early gastrula stage (a suppression of transcription or an increase in translation?)
+
+
+Some lingering questions:
+- How does this gene get flagged as significant in the interaction test but not in any of the contrasts? 
+
+```{r}
+sig_summary %>% group_by(gene_id) %>% summarise(n = n(),
+                                                sig = (list))
+```
+
+
+
+
 ## Custom ggplot theme
 ```{r}
 theme_sleek_axe <- function() {
   theme_sleek() +
     theme(
-      panel.border = element_blank(),
+      panel.border = element_rect(
+        color = "grey70",
+        fill = NA,
+        linewidth = 0.5
+      ),
       axis.line.x  = element_line(color = "grey70"),
       axis.line.y  = element_line(color = "grey70"),
+      
       plot.title = element_text(
-      size  = 14,
-      color = "grey40",
-      hjust = 0.5,    # center
-      margin = margin(b = 20) # add space BELOW title
-      ),      ,       
+        size  = 10,
+        color = "grey40",
+        hjust = 0.5,
+        margin = margin(b = 20)
+      ),
+      
+      strip.text = element_text(size = 8, color = "grey40"),
+      
       plot.subtitle = element_text(
-      size   = 10,       # smaller than title
-      colour = "grey60", # lighter grey
-      hjust  = 0.5 ),      # center
-      margin = margin(b = 40) # add space BELOW title
-      )
+        size   = 8,
+        color  = "grey40",
+        hjust  = 0.5,
+        margin = margin(b = 40)
+      ),
+      
+      axis.title = element_text(size = 8, color = "grey40"),
+      axis.text = element_text(size = 7, color = "grey40"),
+      legend.title = element_text(size = 8, color = "grey40"),
+      legend.text = element_text(size = 7, color = "grey40")
+    )
 }
 
+
 ```
 
-## Set colorschemes
-
+## Colorschemes
 ```{r}
-#colorspace::hclwizard()
-```
-### Leachate
-Leachate options
-Ocean environmental watery tones
-blue-purple
-```{r}
-leachate_0 <- c("#B0F4FA", "#75C165", "#A96C00", "#8B0069")
-leachate_1 <- c("#D5ECC0", "#6ACFBA", "#399AC2", "#80146E")
-leachate_2 <- c("#E4EBD6", "#8CC4AD", "#3E909F", "#4E4E7A")
-leachate_3 <- c("#DAE6FF", "#BBC7FF", "#9CA9FF", "#7D8BFF")
-
 leachate.colors <- c(control = "#AEF1FF", 
-                low = "#BBC7FF",
-                mid = "#7D8BFF", 
-                high = "#592F7D")
-```
+                     low     = "#BBC7FF",
+                     mid     = "#7D8BFF", 
+                     high    = "#592F7D")
 
-### Stage
-Earthy stony coral tones
-yellow-orange-red
-```{r}
-stage_0 <- c("#DCC14F", "#D89500", "#C86600")
-stage_1 <- c("#DCC14F", "#9F3D2F", "#000000")
-stage_2 <- c("#A2223C", "#E6AA83",  "#D9685B")
-stage_3 <- c("#D9685B", "#D89500",  "#9F3D2F")
-stage_4 <- c("#FFE362", "#EBA600", "#8D5300")
-
-stage.5.colors <- c(egg = "#FFE362",
-                    cleavage = "#EBA600", 
-                    morula = "#E6AA83",
-                    prawnchip = "#D9685B", 
+stage.5.colors <- c(egg           = "#FFE362",
+                    cleavage      = "#EBA600", 
+                    morula        = "#E6AA83",
+                    prawnchip     = "#D9685B", 
                     earlygastrula = "#A2223C")
 
+stage.3.colors <- c(cleavage      = "#EBA600", 
+                    prawnchip     = "#D9685B", 
+                    earlygastrula = "#A2223C")
 
-stage.colors <- c(cleavage = "#EBA600", 
-                  prawnchip = "#D9685B", 
-                  earlygastrula = "#A2223C")
-```
-
-### Spawn night
-
-```{r}
-night_0 <- c("#FDE725", "#440154", "#21918C")
-night_1 <- c("#FFCEF4", "#578B21", "#201158")
-night_2 <- c("#E3FAA5", "#B16776", "#1E2440")
+status.colors <- c(typical   = "#75C165", 
+                   uncertain = "#E3FAA5", 
+                   malformed = "#8B0069")
 
 night.colors <- c(July_6th = "#E3FAA5", 
                   July_7th = "#578B21", 
                   July_8th = "#1E2440")
+
+night.colors.alt <- c(July_6th = "#21918C", 
+                      July_7th = "#578B21", 
+                      July_8th = "#1E2440")
 ```
+
 
 ### Gene clusters
 ```{r}
@@ -229,31 +330,47 @@ cluster.colors <- c("1:C" = "firebrick",   # cleavage
 # Gene Clusters
 
 ```{r}
-gene_cluster_data <- read_csv("../../output/06_deg/cluster/gene_cluster_zscores.csv")
-glimpse(gene_cluster_data)
+glimpse(gene_cluster_zs)
 ```
 
 ```{r}
 # reverse gene cluster order to plot from cleavage to eg
-gene_cluster_data <- gene_cluster_data %>%
-  mutate(cluster = factor(cluster, levels = rev(sort(unique(cluster)))))
+gene_cluster_data <- gene_cluster_zs %>%
+  mutate(
+    leachate = factor(leachate, levels = c("control", "low", "mid", "high")),
+    stage = factor(stage, levels = c("cleavage", "prawnchip", "earlygastrula")),
+    cluster = factor(as.character(cluster), levels = c("3", "2", "1"))
+  )
 
+glimpse(gene_cluster_data)
+
+# counts unique genes per cluster
+# This shows that there are 31, 25, & 72 DEGs 
 facet_labs <- gene_cluster_data %>%
-  summarise(n_genes = n_distinct(genes), .by = cluster) %>%        # counts unique genes per cluster
+  summarise(n_genes = n_distinct(genes), .by = cluster) %>% 
   mutate(lab = paste0(n_genes, " DEGs")) %>%
   dplyr::select(cluster, lab) %>%
-  deframe()                                                        # named vector: names = cluster, values = lab
+  deframe()                                                        
+
 ```
 
-## Leachate across x axis
-```{r, warning=FALSE}
+```{r}
+levels(gene_cluster_data$cluster)
+```
+
+
+## pl: Leachate across x axis
+```{r, warning=FALSE, fig.height=4, fig.width = 8}
 
 # leachate as x plot
-pl <- ggplot(gene_cluster_data %>%
-         mutate(leachate = factor(leachate, levels = c("control","low","mid","high")),
-                stage = factor(stage, levels = c("cleavage", "prawnchip", "earlygastrula"))),
-       aes(x = leachate, y = zscore, color = stage)) +
-  #geom_line(aes(group = interaction(genes, stage)), alpha = 0.1, linewidth = 0.4) + # per-gene(thin & transparent)
+pl <- ggplot(gene_cluster_data, aes(x = leachate, y = zscore, color = stage)) +
+  # trends, first layer
+  geom_smooth(
+    aes(group = stage, fill = stage),
+    se = TRUE,
+    alpha = 0.3,
+    show.legend = FALSE
+  ) +
   geom_boxplot(aes(fill = stage), alpha = 0.6, outlier.shape = NA) +
   geom_point(
     position = position_jitterdodge(
@@ -264,46 +381,65 @@ pl <- ggplot(gene_cluster_data %>%
     alpha = 0.8,
     size  = 1.2
   ) +
-  geom_smooth(aes(group = stage), se = FALSE) + # trend
-  facet_wrap(~ cluster, nrow = 1, labeller = as_labeller(facet_labels)) +
-  labs(x = NULL, y = "Z-score of gene abundance", color = "stage") +
+  facet_wrap( ~ cluster, nrow = 1) +
+  labs(x = "PVC Leachate", y = "Z-score of gene abundance", color = "stage") +
   theme_sleek_axe() +
-  scale_fill_manual(values = stage.colors)+
-  scale_color_manual(values = stage.colors)+
-  scale_y_continuous(breaks = function(x) pretty(x, n = 3)) +
-  theme(panel.grid = element_blank(),
-  panel.grid.major.y = element_line(color = "grey80", linewidth = 0.3),   # keep major horizontal
-  panel.grid.minor.y = element_blank(),  # drop minor horizontal
-  panel.grid.major.x = element_blank(),  # drop vertical
-  panel.grid.minor.x = element_blank(),
-  strip.text = element_text(hjust = 0),
-  #strip.text.x.top = element_blank(),
-  strip.background = element_blank(),
-  axis.line.x  = element_blank(),
-  axis.line.y  = element_blank(),
-   axis.text.x = element_text(
-      angle = 45,      # rotate 45°
-      hjust = 1,       # horizontal justification
-      vjust = 1        # tweak if you want
-    ))
-```
+  scale_fill_manual(values = stage.3.colors) +
+  scale_color_manual(values = stage.3.colors) +
+  scale_y_continuous(
+    breaks = function(x)
+      pretty(x, n = 3)
+  ) +
+  theme(
+    plot.title = element_text(
+      margin = margin(b = 2)   # smaller space *under* title
+    ),
+    plot.subtitle = element_text(
+      margin = margin(t = 0)   # remove space *above* subtitle
+    ),
+    panel.border = element_blank(),
+    panel.grid = element_blank(),
+    panel.grid.major.y = element_line(color = "grey80", linewidth = 0.3),
+    panel.grid.minor.y = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    #axis.line.x  = element_blank(),
+    axis.line.y  = element_blank(),
+    strip.text = element_blank(),
+    strip.text.x.top = element_blank(),
+    #strip.background = element_blank(),
+    axis.text.x = element_text(
+      angle = 45,
+      # rotate 45°
+      hjust = 1,
+      # horizontal justification
+      vjust = 1        
+      # vertical justification
+    )
+  ) + geom_text(
+    data = tibble(
+      cluster = factor(
+        levels(gene_cluster_data$cluster),
+        levels = levels(gene_cluster_data$cluster)
+      ),
+      label = c("d", "e", "f")
+    ),
+    aes(x = -Inf, y = Inf, label = label),
+    hjust = -0.1,
+    vjust = 1.1,
+    inherit.aes = FALSE,
+    color = "grey30",
+    fontface = "bold"
+  )
 
-```{r}
 pl
 ```
-```{r}
-facet_labels <- c(
-  "1" = "D",
-  "2" = "E",
-  "3" = "F"
-)
-```
 
-## Stage across x axis
+## ps:  Stage across x axis
 
 ```{r, fig.height=4, fig.width = 8}
 
-ps2 <- ggplot(
+ps <- ggplot(
   gene_cluster_data %>%
     mutate(
       leachate = factor(leachate, levels = c("control","low","mid","high")),
@@ -312,7 +448,8 @@ ps2 <- ggplot(
   aes(x = hpf, y = zscore, color = leachate)
 ) +
   # trends, first layer
-  geom_smooth(aes(group = leachate, fill = leachate), se = TRUE, alpha = 0.3, show.legegnd = FALSE) +
+  geom_smooth(aes(group = leachate, fill = leachate), se = TRUE, alpha = 0.3, show.legend = FALSE) +
+  #geom_line(aes(group = interaction(genes, leachate)), alpha = 0.1, linewidth = 0.4) + 
   # boxes, second layer
   geom_boxplot(
     aes(fill = leachate),
@@ -349,29 +486,45 @@ ps2 <- ggplot(
     plot.subtitle = element_text(
       margin = margin(t = 0)   # remove space *above* subtitle
     ),
+    panel.border = element_blank(),
     panel.grid = element_blank(),
     panel.grid.major.y = element_line(color = "grey80", linewidth = 0.3),
     panel.grid.minor.y = element_blank(),
     panel.grid.major.x = element_blank(),
     panel.grid.minor.x = element_blank(),
-    axis.line.x  = element_blank(),
-    #axis.text.x = element_blank(), #supress axis labels and add in embryo stage logos after patching with logfc
+    #axis.line.x  = element_blank(),
     axis.line.y  = element_blank()
+  )+ geom_text(
+    data = tibble(
+      cluster = factor(
+        levels(gene_cluster_data$cluster),
+        levels = levels(gene_cluster_data$cluster)
+      ),
+      label = c("a", "b", "c")
+    ),
+    aes(x = - Inf, y = Inf, label = label),
+    hjust = -0.1, vjust = 0.75,
+    inherit.aes = FALSE,
+    color = "grey30", 
+    fontface = "bold"
   )
 
-ps2
+ps
 
 ```
 I want to put arrows indicating the boxes that diverge and I want embryo logos on the x axis instead of text. I will add these elements after patching this plot to the log2FC plot. 
 
-## Combine stage and leachate plots
-```{r}
+## pc: Combine stage and leachate plots
+```{r, fig.height=6, fig.width = 8}
 # combine with patchwork
-pc <- ps2 / pl
+pc <- ps / pl
 
 pc
 ```
 
+```{r}
+ggsave("../../output/06_deg/figs/cluster_zscores.png", width = 8, height = 6)
+```
 
 
 
@@ -400,8 +553,8 @@ sig_summary <-  sig_summary %>%
                     ))
 ```
 
-## Main effects plot
-Ok here we're going to only look at the 9 contrasts (sig effect of leachate on gene expression of an embryo at a specific stage and dose)
+## Wald contrasts plot
+Ok here we're going to look at the 9 contrasts (sig effect of leachate on gene expression of an embryo at a specific stage and dose)
 ```{r}
 main_plot <- sig_summary %>% 
   dplyr::filter(!list %in% c("int", "joint", 
@@ -448,7 +601,7 @@ main_plot <- sig_summary %>%
 main_plot
 ```
 
-## Interaction effects plot
+## LRT interaction effects plot
 And here we're going to look at the interaction effects
 ```{r}
 int_plot <- sig_summary %>% 
@@ -497,16 +650,7 @@ int_plot
 
 ```
 
-## Combine
 
-Cool! Next let's try to combine the info about main stage specific contrasts and interactions into one plot (thereby concentrating more information in less space!)
-
-We can use `ggnewscale` to map two scales to the same facet plot. 
-To do this we'll need a distinct color palette for each different adjusted pvalue scale.
-Checkout colorspace palette options: https://colorspace.r-forge.r-project.org/articles/hcl_palettes.html
-```{r}
-colorspace::hcl_palettes(type = "sequential")
-```
 Make another column by which we want to facet called plot_groups
 ```{r}
 groups <- c(
@@ -524,9 +668,8 @@ sig_summary <- sig_summary %>%
   )
 ```
 
-## fold-change dataframe for plotting
-
-Make a dataframe for plotting that breaks down the row into main or interaction contrast categories
+## Make a fold-change dataframe
+This is for plotting and breaks down the row into main or interaction contrast categories
 ```{r}
 plot_levels <- c(
   "cleavage_high", "prawnchip_high", "earlygastrula_high",
@@ -586,7 +729,7 @@ combo_plot <- ggplot() +
     size = 1
   ) +
   scale_colour_gradientn(
-    name    = "P(adj) stage specific leachate effect",
+    name    = "P(adj) stage  by dose specific leachate effect",
     colours = colorspace::sequential_hcl(7, palette = "TealGrn"),
     guide   = guide_colourbar(order = 1,
                             direction = "horizontal",
@@ -618,7 +761,7 @@ combo_plot <- ggplot() +
     size = 1
   ) +
   scale_colour_gradientn(
-    name    = "P(adj) stage × leachate interaction effect",
+    name    = "P(adj) difference of differences effect",
     colours = colorspace::sequential_hcl(7, palette = "Peach"),
     guide   = guide_colourbar(order = 2,
                             direction = "horizontal",
@@ -663,10 +806,10 @@ dplyr::n_distinct(fc_df$gene_id, na.rm = TRUE)
 ```
 Ok so ...122/130 genes are represented in this plot, which means 8 genes are present in the joint/int list that are not described by the contrasts... why is that? 
 
-To re-iterate, the main point of this plot is that cleavage experienced the most differential expression due to leachate, and low dose also shows a signal across stages... then there is this senescense of response in the prawnchip stage (a narrowing?), and another signal in the longest exposure and highest dose (early gatrula, high).
+To re-iterate, the main point of this plot is that cleavage experienced the most differential expression due to leachate, and low dose also shows a signal across stages... then there is this senescence of response in the prawnchip stage (a narrowing?), and another signal in the longest exposure and highest dose (early gatrula, high).
 
 
-
+## DEG FC colored by Gene Cluster
 
 Can I annotate the DEG FC plot with cluster info? 
 
@@ -882,7 +1025,7 @@ pfc
 
 ## caption 
 
-A. Z-scores of VST-normalized gene expression across 128 differentially expressed genes shown on the y axis with stage on the x axis. B. Z-scores of VST-normalized gene expression across 128 differentially expressed genes shown on the y axis with leachate dose on the x axis. C. Log two-fold change of differentially expressed genes identified in each treatment group. Direction of log two-fold change is indicated on the x axis; genes are shown on the y axis grouped by treatment. Point color indicates adjusted p-value for either the main effect of leachate (teal) or the interaction effect of stage and leachate (purple).Gene color indicates cluster membership based on expression patterns across stages and leachate doses.
+Z-scores of VST-normalized gene expression across 128 differentially expressed genes shown on the y axis with stage on the x axis. B. Z-scores of VST-normalized gene expression across 128 differentially expressed genes shown on the y axis with leachate dose on the x axis. C. Log two-fold change of differentially expressed genes identified in each treatment group. Direction of log two-fold change is indicated on the x axis; genes are shown on the y axis grouped by treatment. Point color indicates adjusted p-value for either the main effect of leachate (teal) or the interaction effect of stage and leachate (purple).Gene color indicates cluster membership based on expression patterns across stages and leachate doses.
 
 
 ## Highlight the patterns

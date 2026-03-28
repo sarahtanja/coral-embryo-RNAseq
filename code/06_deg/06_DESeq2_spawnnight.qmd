@@ -297,7 +297,7 @@ dds_stage_LRT <- DESeq(dds, test = "LRT", reduced = ~ spawn_night + leachate)
 ```
 
 | Model name | Reduced model formula | What it tests for | Interpretation of significant genes |
-|-----------------|-----------------|-----------------|-----------------------|
+|-----------------|-----------------|-----------------|---------------------|
 | **dds_stage_LRT** | `~ spawn_night + leachate + stage:leachate` | Tests the contribution of **stage** | Genes whose expression significantly varies **across stage**, after accounting for spawn_night and leachate |
 
 ```{r}
@@ -324,7 +324,7 @@ dds_sp_LRT <- DESeq(dds, test = "LRT", reduced = ~ stage + leachate + stage:leac
 ```
 
 | Model name | Reduced model formula | What it tests for | Interpretation of significant genes |
-|-----------------|-----------------|-----------------|-----------------------|
+|-----------------|-----------------|-----------------|---------------------|
 | **dds_sp_LRT** | `~ stage + leachate + stage:leachate` | Tests the contribution of **spawn_night** | Genes whose expression significantly varies **across spawn nights**, after accounting for stage, leachate, and their interaction |
 
 ```{r}
@@ -359,7 +359,7 @@ dds_int_LRT <- DESeq(dds, test = "LRT", reduced = ~ spawn_night + stage + leacha
 ```
 
 | Model name | Reduced model formula | What it tests for | Interpretation of significant genes |
-|-----------------|-----------------|-----------------|---------------------|
+|-----------------|-----------------|-----------------|--------------------|
 | **dds_int_LRT** | `~ spawn_night + stage + leachate` | Tests the contribution of the **stage × leachate interaction** | Genes whose expression patterns differ across **leachate treatments in a stage-dependent manner** |
 
 ```{r}
@@ -375,13 +375,12 @@ Out of 12,221 genes tested:
 -   We got **13 DEGs** ⇒ This subset only show stage-specific responses.
 
 For nearly all genes, the relationship between leachate level and
-expression does not change significantly across stages --- the leachate
-effect is fairly consistent through development. So the interaction term
-adds very little explanatory power after controlling for spawn night and
-main effects.
+expression does not change significantly across stages --- . So the
+interaction term adds very little explanatory power after controlling
+for spawn night and main effects.
 
-This result suggests that stage:leachate effects are **minimal** or
-**limited to a small subset of genes**.
+This result suggests that stage:leachate effects are largely non
+significant, **minimal** or **limited to a small subset of genes**.
 
 ### Main leachate effect
 
@@ -453,7 +452,7 @@ leachate signal jointly) is coherent.
 > the log fold change is a single comparison from among those variables
 > and levels.
 
-```
+```         
 ?results
 ```
 
