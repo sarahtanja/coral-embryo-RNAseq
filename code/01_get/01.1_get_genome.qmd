@@ -26,6 +26,7 @@ format:
     link-external-newwindow: true
     reference-location: margin
     citation-location: margin
+bibliography: "../../references.bib"
 ---
 
 ```{r setup, include=FALSE}
@@ -71,15 +72,16 @@ Download, check file integrity, and unzip genome reference files to our `input/g
 
 # Get reference genome files
 
-This code grabs the *Montipora capitata* fasta file (rna.fna) of genes.
+This code grabs the *Montipora capitata* fasta file (rna.fna) of genes from http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.assembly.fasta.gz, the file should be 745MB in size. The `wget` command is used to download the file from the specified URL and save it to the current `input/genome` directory.
 
 ```{r, engine='bash'}
-# change to work in data directory
+# change to input/genome directory
 cd ../../input/genome
 wget http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.assembly.fasta.gz
 ```
 
 ## GFF
+
 Obtain `Montipora_capitata_HIv3.genes_fixed.gff3` file by downloading from GitHub.
 
 ```{r, engine='bash'}
@@ -107,8 +109,8 @@ gunzip Montipora_capitata_HIv3.assembly.fasta.gz
 cd ../../input/genome
 md5sum *Montipora_capitata*
 ```
-`99819eadba1b13ed569bb902eef8da08` matches the expected checksum for assembly.fasta!
-## Checkout genome GFF format
+
+`99819eadba1b13ed569bb902eef8da08` matches the expected checksum for assembly.fasta! \## Checkout genome GFF format
 
 ```{r, engine = 'bash', eval=TRUE}
 cd ../../input/genome

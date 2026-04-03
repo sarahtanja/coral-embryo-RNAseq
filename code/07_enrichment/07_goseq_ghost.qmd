@@ -1,4 +1,5 @@
 ---
+ci---
 title: "Gene ontology (GO) term analysis for differentially expressed genes"
 subtitle: "using `goseq` with gene length bias correction"
 author: "Sarah Tanja"
@@ -42,13 +43,9 @@ knitr::opts_chunk$set(
 
 # Background
 
-In the clustering analysis (`06_DEGreport_WGCNA_cluster.qmd`), we
-identified 3 distinct gene expression patterns among the 130 significant
-genes affected by leachate, 128 genes out of the 130 DEGs fit into one
-of the three patterns.
+In the clustering analysis (`06_DEGreport_WGCNA_cluster.qmd`), we identified 3 distinct gene expression patterns among the 130 significant genes affected by leachate, 128 genes out of the 130 DEGs fit into one of the three patterns.
 
-These genes cluster based on their expression patterns across stage &
-leachate concentrations (control, low, mid, high).
+These genes cluster based on their expression patterns across stage & leachate concentrations (control, low, mid, high).
 
 Leachate responsive DEGs cluster breakdown:
 
@@ -58,8 +55,7 @@ Leachate responsive DEGs cluster breakdown:
 
 -   **Cluster 3**: 31 genes, peak in cleavage –\> leachate_down
 
-We also binned the 10,793 stage DEGs into 4 developmental programs via
-WGCNA module (indicated by color).
+We also binned the 10,793 stage DEGs into 4 developmental programs via WGCNA module (indicated by color).
 
 Stage responsive DEGs module breakdown:
 
@@ -86,13 +82,9 @@ Stage responsive DEGs module breakdown:
     -   grey: 149 genes
 
 ::: callout-important
-Our goal is to now perform functional enrichment analysis on each module
-& cluster separately to understand the biological processes associated
-with each expression pattern.
+Our goal is to now perform functional enrichment analysis on each module & cluster separately to understand the biological processes associated with each expression pattern.
 
-Functional enrichment tests whether a biological category contains more
-genes from a given gene set than expected under random sampling from the
-expressed genome.
+Functional enrichment tests whether a biological category contains more genes from a given gene set than expected under random sampling from the expressed genome.
 
 $$
 \text{Fold Enrichment} = \frac{k/n}{K/N}
@@ -104,8 +96,7 @@ $$ Where:
 
 -   K = number of genes in the background annotated to a GO term
 
--   N = total number of genes in the background (e.g. all genes tested
-    for differential expression, the "universe")
+-   N = total number of genes in the background (e.g. all genes tested for differential expression, the "universe")
 
 Fold enrichment can be:
 
@@ -117,45 +108,30 @@ Fold enrichment can be:
 
 GO / pathway enrichment tests ask:
 
-> Is a functional category over-represented in my gene list compared to
-> the background?
+> Is a functional category over-represented in my gene list compared to the background?
 
-H~o~: The null hypothesis is that genes in our gene set are a random
-sample from the background genome.
+H~o~: The null hypothesis is that genes in our gene set are a random sample from the background genome.
 
-H~a~: The alternative hypothesis is that genes in our gene set(s) are
-enriched for a particular function.
+H~a~: The alternative hypothesis is that genes in our gene set(s) are enriched for a particular function.
 
-Enrichment p-value is the probability of observing k or more annotated
-genes by chance $$
+Enrichment p-value is the probability of observing k or more annotated genes by chance $$
 p_{\text{enrich}} = P(X \ge k)
 $$
 
-**Functional enrichment analysis depends therefore on how we group our
-gene set.**
+**Functional enrichment analysis depends therefore on how we group our gene set.**
 
-For example, if we run GO enrichment on all 130 leachate DEGs together,
-we will get one set of GO terms that describe the overall functions of
-all these genes combined.
+For example, if we run GO enrichment on all 130 leachate DEGs together, we will get one set of GO terms that describe the overall functions of all these genes combined.
 
-If we run GO enrichment on each of the 3 leachate DEG clusters
-separately, we will get 3 different sets of GO terms, each describing
-the functions of genes in that specific co-expression pattern.
+If we run GO enrichment on each of the 3 leachate DEG clusters separately, we will get 3 different sets of GO terms, each describing the functions of genes in that specific co-expression pattern.
 
-Similarly, running GO enrichment on each of the 4 stage DEG modules
-separately yields 4 different sets of GO terms, each reflecting the
-functions of genes in that developmental program.
+Similarly, running GO enrichment on each of the 4 stage DEG modules separately yields 4 different sets of GO terms, each reflecting the functions of genes in that developmental program.
 :::
 
-We use the R package `goseq` for GO enrichment. `goseq` corrects for
-gene length bias - longer genes are more likely to be detected as DEGs
-in RNA-Seq simply because they accumulate more reads. `goseq` accounts
-for this by using a probability weighting function.
+We use the R package `goseq` for GO enrichment. `goseq` corrects for gene length bias - longer genes are more likely to be detected as DEGs in RNA-Seq simply because they accumulate more reads. `goseq` accounts for this by using a probability weighting function.
 
 Run GOseq using:
 
-DEG vector Background (all tested genes) Vector of gene lengths (from
-your annotation, GTF, eggNOG)
+DEG vector Background (all tested genes) Vector of gene lengths (from your annotation, GTF, eggNOG)
 
 Get the corrected p-values and enriched GO terms.
 
@@ -163,34 +139,21 @@ Get the corrected p-values and enriched GO terms.
 
 DEG vectors
 
--   `stage_DEG_WGCNA_modules.csv` : A dataframe mapping 10793 stage DEGs
-    to a WGCNA module. *the grey module (genes that do not cluster) need
-    not be passed through enrichment analysis*
+-   `stage_DEG_WGCNA_modules.csv` : A dataframe mapping 10793 stage DEGs to a WGCNA module. *the grey module (genes that do not cluster) need not be passed through enrichment analysis*
 
--   `leachate_DEG_clusters.csv` : A dataframe mapping 128 genes to an
-    expression cluster (1, 2, or 3)
+-   `leachate_DEG_clusters.csv` : A dataframe mapping 128 genes to an expression cluster (1, 2, or 3)
 
--   `all_genes.csv` : a dataframe (list) of all genes used in the DESeq2
-    analysis
+-   `all_genes.csv` : a dataframe (list) of all genes used in the DESeq2 analysis
 
-Gene lengths - functional annotation:
-http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.EggNog_results.txt.gz
-(EggNog) - functional annotation:
-http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.KEGG_results.txt.gz
-(KEGG)
+Gene lengths - functional annotation: http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.EggNog_results.txt.gz (EggNog) - functional annotation: http://cyanophora.rutgers.edu/montipora/Montipora_capitata_HIv3.genes.KEGG_results.txt.gz (KEGG)
 
-> “We performed GO enrichment using GOseq for stage-program
-> clusters/modules derived from co-expression patterns. Genes not
-> assigned to a module (WGCNA grey) were retained in the DEG set but
-> excluded from module-level interpretation.”
+> “We performed GO enrichment using GOseq for stage-program clusters/modules derived from co-expression patterns. Genes not assigned to a module (WGCNA grey) were retained in the DEG set but excluded from module-level interpretation.”
 
 ## Outputs
 
 -   GO enrichment results for each of the modules/clusters
--   Reduced GO terms (redundancy removed) for gene universe, and for
-    each module/cluster
--   Semantic similarity matrix for gene universe, and for each
-    module/cluster
+-   Reduced GO terms (redundancy removed) for gene universe, and for each module/cluster
+-   Semantic similarity matrix for gene universe, and for each module/cluster
 
 # Setup
 
@@ -230,7 +193,7 @@ library(tidyverse)
 
 ## Load inputs
 
-Read in gene lists
+##### Read in gene lists
 
 ```{r}
 # significant genes lists
@@ -248,13 +211,9 @@ leachate_DEG_clusters <- read.csv("../../output/06_deg/cluster/leachate_DEG_clus
 stage_DEG_modules <- read.csv("../../output/06_deg/cluster/stage_DEG_WGCNA_modules.csv")
 ```
 
-### Rename values for simplicity & clarity
+##### Rename values for simplicity & clarity
 
-Make leachate_DEG_clusters column named gene_id for joining, and rename
-clusters to be descriptive: Leachate DEG cluster breakdown: - **Cluster
-1**: 72 genes, peak in early gastrula, pattern is up - **Cluster 2**: 25
-genes, peak in prawnchip, pattern is hump - **Cluster 3**: 31 genes,
-peak in cleavage, pattern is down
+Make leachate_DEG_clusters column named gene_id for joining, and rename clusters to be descriptive: Leachate DEG cluster breakdown: - **Cluster 1**: 72 genes, peak in early gastrula, pattern is up - **Cluster 2**: 25 genes, peak in prawnchip, pattern is hump - **Cluster 3**: 31 genes, peak in cleavage, pattern is down
 
 ```{r}
 leachate_DEG_clusters <- leachate_DEG_clusters %>%
@@ -312,17 +271,11 @@ count(WGCNAmodule, pattern_stage, sort = TRUE) %>%
   knitr::kable()
 ```
 
-We should see 149 rows renamed with grey as unassigned. These are the
-genes that are differentially expressed due to stage, but did not
-cluster in the WGCNA analysis with any other expression patterns. We
-want big picture results, and these genes are "noise" that don't follow
-a strong expression pattern.
+We should see 149 rows renamed with grey as unassigned. These are the genes that are differentially expressed due to stage, but did not cluster in the WGCNA analysis with any other expression patterns. We want big picture results, and these genes are "noise" that don't follow a strong expression pattern.
 
-> Genes assigned to the WGCNA grey module were classified as unassigned,
-> while remaining genes grouped into cleavage-, prawn-chip–, and early
-> gastrula–associated expression programs.
+> Genes assigned to the WGCNA grey module were classified as unassigned, while remaining genes grouped into cleavage-, prawn-chip–, and early gastrula–associated expression programs.
 
-How many of the leachate responsive and stage responsive genes overlap?
+##### How many of the leachate responsive and stage responsive genes overlap?
 
 ```{r}
 length(intersect(stage_deg_modules$gene_id, leachate_deg_patterns$gene_id))
@@ -332,11 +285,9 @@ length(intersect(stage_deg_modules$gene_id, leachate_deg_patterns$gene_id))
 ALL of our leachate responsive DEGs are ALSO stage responsive.
 :::
 
-What does this mean... this implies that the genes impacted by leachate
-are the ones that are changing...? I mean out of \~12k genes tested
-though, \~10k were changing across stage.
+Does this imply that genes impacted by leachate are only the ones that are changing across stage (rather than stable genes that are core housekeeping)? Out of \~12k genes tested, \~10k were changing across stage... so it could just be more likely...
 
-Import EggNog for GO and KEGG annotation
+##### Import EggNog for GO and KEGG annotation
 
 ```{r}
 # Read in the file
@@ -349,7 +300,11 @@ EggNog <- EggNog %>%
 paste(nrow(EggNog), "genes have functional annotation")
 ```
 
-Import fasta for sequence length annotation
+##### Import fasta for sequence length annotation
+
+::: callout-tip
+You can download the assembled genome file from the Robert's Lab Handbook [Genomic Resources](https://robertslab.github.io/resources/Genomic-Resources/#montipora-capitata) page. The genome file was downloaded and MD5 sums checked in `code/01_get/01.1_get_genome.qmd`
+:::
 
 ```{r, eval=FALSE}
 # Load transcriptome sequences to get gene lengths
@@ -445,28 +400,19 @@ paste("GO annotated genes in DESeq background universe set:",
 
 -   12,221 genes are in our DESeq2 tested background universe
 -   6,846 of those have at least one GO annotation
--   56% coverage is very typical for non-model or semi-annotated
-    organisms
+-   56% coverage is very typical for non-model or semi-annotated organisms
 
-> “Of the 12,221 genes included in the DESeq2 testing universe, 6,846
-> (56%) had at least one Gene Ontology annotation and were eligible for
-> GO-based analyses.”
+> “Of the 12,221 genes included in the DESeq2 testing universe, 6,846 (56%) had at least one Gene Ontology annotation and were eligible for GO-based analyses.”
 >
-> “Gene Ontology annotations were available for 6,846 of the 12,221
-> genes tested in DESeq2 (56%), consistent with partial functional
-> annotation of the transcriptome.”
+> “Gene Ontology annotations were available for 6,846 of the 12,221 genes tested in DESeq2 (56%), consistent with partial functional annotation of the transcriptome.”
 >
-> “GO enrichment analyses were restricted to the subset of tested genes
-> with available GO annotations (6,846 of 12,221 genes; 56%), which
-> constituted the effective background universe for functional
-> analyses.”
+> “GO enrichment analyses were restricted to the subset of tested genes with available GO annotations (6,846 of 12,221 genes; 56%), which constituted the effective background universe for functional analyses.”
 
 Calculate GO coverage within clusters for descriptive purposes $$
 \text{GO coverage} = \frac{\#\,\text{genes with GO annotation in the set}}{\#\,\text{genes in the set}}
 $$
 
-This answers: “how well annotated is this DEGpattern?” or what is the GO
-coverage for all leachate responsive DEG expression patterns?
+This answers: “how well annotated is this DEGpattern?” or what is the GO coverage for all leachate responsive DEG expression patterns?
 
 ```{r}
 
@@ -483,8 +429,7 @@ leachate_go_summary <- universe_anno %>%
 leachate_go_summary %>% knitr::kable()
 ```
 
-What is the GO coverage for all DEGs due to developental stage WGCNA
-modules?
+What is the GO coverage for all DEGs due to developental stage WGCNA modules?
 
 ```{r}
 # What is GO coverage for all stage WGCNA modules?
@@ -520,22 +465,13 @@ stage_pattern_go_summary %>% knitr::kable()
 
 For bias correction
 
-The gene universe should be the full set of genes that were tested in
-the DESeq2 analysis (universe_genes), including those that were not
-found to be differentially expressed. For goseq, we need to create a
-vector of all gene IDs in the DESeq2 dataset (include **all** genes,
-regardless of whether or not they have GO annotations), with a `1` value
-if DE and a `0` value if not.
+The gene universe should be the full set of genes that were tested in the DESeq2 analysis (universe_genes), including those that were not found to be differentially expressed. For goseq, we need to create a vector of all gene IDs in the DESeq2 dataset (include **all** genes, regardless of whether or not they have GO annotations), with a `1` value if DE and a `0` value if not.
 
-nullp() models the probability of being DE as a function of length using
-the full DE universe.
+nullp() models the probability of being DE as a function of length using the full DE universe.
 
-Later, goseq() only tests GO terms using genes in gene2cat (the \~6846
-genes we have functional annotation for), but the PWF (bias correction)
-was learned from all the data (all 12,221 genes).
+Later, goseq() only tests GO terms using genes in gene2cat (the \~6846 genes we have functional annotation for), but the PWF (bias correction) was learned from all the data (all 12,221 genes).
 
-So we need a background universe vectors for all DEGs, and each pattern
-/ module.
+So we need a background universe vectors for all DEGs, and each pattern / module.
 
 ```{r}
 # Universe for bias correction
@@ -577,8 +513,7 @@ stage_anno_down <- universe_anno %>%
   filter(pattern_stage == "down")
 ```
 
-Create named vectors for DE status (1 = DE, 0 = not DE) for each
-leachate responsive pattern and for each WGCNA cluster
+Create named vectors for DE status (1 = DE, 0 = not DE) for each leachate responsive pattern and for each WGCNA cluster
 
 #### Vectors for leachate responsive gene patterns
 
@@ -617,8 +552,7 @@ names(vector_stage_down) <- universe_vector
 
 # Make gene lengths vectors
 
-Make named vectors of genes and gene lengths, only keep the genes
-present in the background universe (our 12221 DESeq2 tested genes!)
+Make named vectors of genes and gene lengths, only keep the genes present in the background universe (our 12221 DESeq2 tested genes!)
 
 ```{r}
 gene_lengths <- as.integer(lengths$transcript_lengths)
@@ -635,8 +569,7 @@ Check for NAs in gene_lengths - there should be none
 sum(is.na(gene_lengths))
 ```
 
-The order of genes in gene_lengths must match the order in
-universe_genes, should return TRUE
+The order of genes in gene_lengths must match the order in universe_genes, should return TRUE
 
 ```{r}
 identical(names(gene_lengths), names(universe_vector))
@@ -656,20 +589,12 @@ identical(names(gene_lengths), names(vector_stage_down))
 # Null probability weighting function (bias for gene length)
 
 ::: callout-note
-Gene length bias correction accounts for the fact that longer genes are
-more likely to be detected as differentially expressed in RNA-seq data
-simply because they accumulate more reads. If length data is not
-available, goseq can still run but without this correction.
+Gene length bias correction accounts for the fact that longer genes are more likely to be detected as differentially expressed in RNA-seq data simply because they accumulate more reads. If length data is not available, goseq can still run but without this correction.
 :::
 
-The function `nullp()` takes as input: - a named vector of 1s and 0s
-indicating which genes are DE (1) and which are not (0) for all genes in
-the universe - a named vector of gene lengths for all genes in the
-universe (background)
+The function `nullp()` takes as input: - a named vector of 1s and 0s indicating which genes are DE (1) and which are not (0) for all genes in the universe - a named vector of gene lengths for all genes in the universe (background)
 
-The probability weighting function is defined for all genes we tested in
-DESeq2 (our full “universe” of 12221 genes), including genes with no GO
-annotation.
+The probability weighting function is defined for all genes we tested in DESeq2 (our full “universe” of 12221 genes), including genes with no GO annotation.
 
 ```{r}
 # Calculate probability weighting function for each leachate responsive DEG pattern
@@ -688,27 +613,15 @@ pwf_stage_down <- nullp(vector_stage_down, bias.data = gene_lengths)
 
 X axis is gene length Y axis is probability of being DE given length
 
-For genes in each length bin, GOseq estimates the fraction of genes that
-are DE. Points are `#DE genes in bin/#genes in bin` for genes with
-similar length. GOseq then fits a smooth curve through those points –
-this is the probability weighting function (PWF). This fitted curve is
-what GOseq uses internally to correct for length bias when doing GO
-enrichment.
+For genes in each length bin, GOseq estimates the fraction of genes that are DE. Points are `#DE genes in bin/#genes in bin` for genes with similar length. GOseq then fits a smooth curve through those points – this is the probability weighting function (PWF). This fitted curve is what GOseq uses internally to correct for length bias when doing GO enrichment.
 
-Strong slope / curvature → there is substantial length bias → long genes
-are much more (or less) likely to be called DE than short ones → length
-correction is important.
+Strong slope / curvature → there is substantial length bias → long genes are much more (or less) likely to be called DE than short ones → length correction is important.
 
-Nearly flat line → little or no detectable length bias → the enrichment
-results will be similar to a standard hypergeometric ORA.
+Nearly flat line → little or no detectable length bias → the enrichment results will be similar to a standard hypergeometric ORA.
 
 # GO term mapping
 
-This creates a dataframe that maps gene IDs to GO terms for all genes in
-the testing universe. There will be 2 columns, gene_id and GO term, with
-one GO term mapped to one gene. Since there are multiple GO terms per
-gene, genes will appear in multiple rows in these dataframes. Likewise,
-more than one gene may map to the same GO term.
+This creates a dataframe that maps gene IDs to GO terms for all genes in the testing universe. There will be 2 columns, gene_id and GO term, with one GO term mapped to one gene. Since there are multiple GO terms per gene, genes will appear in multiple rows in these dataframes. Likewise, more than one gene may map to the same GO term.
 
 ### gene2go
 
@@ -903,8 +816,7 @@ GO_stage_down$under_represented_bh <-
 ```
 
 ::: callout-note
-This should increase the number of columns in the GO\_\*\*\* output
-dataframes from 7 to 9
+This should increase the number of columns in the GO\_\*\*\* output dataframes from 7 to 9
 :::
 
 ### Filter for BP terms only
@@ -1027,25 +939,9 @@ paste("Number of significantly enriched GO BP terms for leachate down DEGs:", nr
 
 Nothing! Nothing is enriched for leachate... fuck.
 
-Ok. Well. Now we know. This indicates that our DEGs impacted by leachate
-don't all do particular functions, or that there is no particular type
-of biological process that these genes all do which are impacted by
-leachate.
+Ok. Well. Now we know. This indicates that our DEGs impacted by leachate don't all do particular functions, or that there is no particular type of biological process that these genes all do which are impacted by leachate.
 
-> For our situation (≈12k background genes, ≈130 DEGs): Small DEG set +
-> custom annotation If only, say, 40–60 of our 130 DEGs have GO
-> annotations, and those are spread across many terms, there just may
-> not be enough clustering in any single GO category. Length bias
-> correction is conservative, GOseq is explicitly correcting for bias. A
-> lot of “borderline”-looking enrichments from simple hypergeometric
-> tests disappear once you account for length. *Montipora capitata*
-> annotation is sparse. With non-model genomes, GO coverage is often
-> patchy. Some explanations are that we could have a true biological
-> pattern that doesn’t map cleanly to GO terms. OR our DE list is sparse
-> so DEGs represent many different processes at once (e.g., general
-> stress + development + metabolism), each individual term may only get
-> 2–3 hits → not enough to reach significance threshold for enrichment,
-> especially after adjusting p-values for multiple comparisons.
+> For our situation (≈12k background genes, ≈130 DEGs): Small DEG set + custom annotation If only, say, 40–60 of our 130 DEGs have GO annotations, and those are spread across many terms, there just may not be enough clustering in any single GO category. Length bias correction is conservative, GOseq is explicitly correcting for bias. A lot of “borderline”-looking enrichments from simple hypergeometric tests disappear once you account for length. *Montipora capitata* annotation is sparse. With non-model genomes, GO coverage is often patchy. Some explanations are that we could have a true biological pattern that doesn’t map cleanly to GO terms. OR our DE list is sparse so DEGs represent many different processes at once (e.g., general stress + development + metabolism), each individual term may only get 2–3 hits → not enough to reach significance threshold for enrichment, especially after adjusting p-values for multiple comparisons.
 
 ##### What about stage?
 
@@ -1173,8 +1069,7 @@ GOBPsig_stage_summary %>% knitr::kable()
 ```
 
 ::: callout-important
-Weird that each module either ONLY has over or under represented terms,
-not a mix.
+Weird that each module either ONLY has over or under represented terms, not a mix.
 :::
 
 Save the filtered significant GO terms that had enrichment
@@ -1194,8 +1089,7 @@ write_csv(GO_BPsig_stage_down, file.path(output_path, "GO_BPsigENRICHED_stage_do
 
 ## Reduce redundancy in significantly enriched GO terms
 
-Calculate semantic similarity matrix with significantly enriched GO
-terms for each stage WGCNA cluster
+Calculate semantic similarity matrix with significantly enriched GO terms for each stage WGCNA cluster
 
 ### stage
 
@@ -1351,12 +1245,7 @@ write_csv(reducedTerms_stage_down, file.path(output_path, "reducedTerms_stage_do
 
 ### Filter GO results to leachate responsive DEGs
 
-Filter GO results for only terms that had a DEG annotated to them, even
-if they weren’t significantly enriched. This will allow us to visualize
-the full set of terms that had at least evidence of differential
-expression (even if enrichment of those associated terms are not
-significant after correction), and to see how they relate to each other
-semantically.
+Filter GO results for only terms that had a DEG annotated to them, even if they weren’t significantly enriched. This will allow us to visualize the full set of terms that had at least evidence of differential expression (even if enrichment of those associated terms are not significant after correction), and to see how they relate to each other semantically.
 
 ```{r}
 GO_leachate_DEG <- GO_leachate %>%
@@ -1511,18 +1400,14 @@ scatterPlot(simMatrix, reducedTerms,
 
 # Summary
 
-No GO Terms were significantly enriched among the DEGs impacted by
-leachate exposure, either overall (all \~128/130 leachate responsive
-DEGs) or within the specific gene expression patterns (down, hump, up).
+No GO Terms were significantly enriched among the DEGs impacted by leachate exposure, either overall (all \~128/130 leachate responsive DEGs) or within the specific gene expression patterns (down, hump, up).
 
 We did find enriched GO Terms in the
 
 ## Next steps
 
--   Visualize GO terms & KEGG Pathways for each cluster with `rrvgo`
-    plotting functions
--   Convert the GOseq output into a clusterProfiler-compatible object
-    for visualization (dotplot, emapplot).
+-   Visualize GO terms & KEGG Pathways for each cluster with `rrvgo` plotting functions
+-   Convert the GOseq output into a clusterProfiler-compatible object for visualization (dotplot, emapplot).
 
 ```{r}
 sessionInfo()
