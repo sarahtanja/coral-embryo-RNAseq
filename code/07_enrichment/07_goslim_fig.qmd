@@ -29,7 +29,7 @@ format:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   echo = TRUE,         # Display code chunks
-  eval = FALSE,        # Evaluate code chunks
+  eval = TRUE,        # Evaluate code chunks
   warning = FALSE,     # Hide warnings
   message = FALSE,     # Hide messages
   comment = ""         # Prevents appending '##' to beginning of lines in code output
@@ -37,6 +37,14 @@ knitr::opts_chunk$set(
 ```
 
 # Background
+We identified GOslim terms associated with DEGs in each cluster/module. This is a descriptive summary plot, and does not reflect statistical enrichment!
+
+With this plot we simply want to know what the DE genes do, and how many of them are associated with each GOslim term.
+
+# Load libraries
+```{r}
+library(tidyverse)
+```
 
 # Load inputs
 ```{r}
@@ -50,6 +58,7 @@ goslim_summary <- read_csv(file.path(input_path, "goslim_summary.csv"))
 ```{r}
 glimpse(goslim_summary)
 ```
+
 ```{r}
 summary(goslim_summary)
 ```
@@ -93,18 +102,30 @@ ggsave(
 ```
 
 
-# What is unique? 
-
-# What is shared? 
-
 # How do I show this in context of background universe and stage signals?
 
-How many GOSlims are there? 
+# How many GOSlims are there? 
 ```{r}
 length(unique(goslim_summary$Term))
 ```
+There are 72 unique Go Slim Terms. 
 
-Which are the top terms of *leachate-responsive DEGs* represented in each pattern?
+
+# How many terms are represented? 
+```{r}
+goslim_summary %>%
+  filter(DEdueto == "leachate", n_genes > 0) %>%
+  group_by(module) %>%
+  arrange(n_genes) %>%
+  ungroup() %>%
+  count(module, Term) %>%
+  count(module, name = "n_unique_terms")
+```
+There are 32 terms in the down pattern, 37 in the hump patterns, and 53 in the up pattern. 
+
+
+# Top 15 terms
+Which are the top ~15 terms of *leachate-responsive DEGs* represented in each pattern by percent?
 ```{r}
 goslim_summary %>%
   filter(DEdueto == "leachate", n_genes > 2) %>%
@@ -114,13 +135,73 @@ goslim_summary %>%
   count(module, Term) %>%
   count(module, name = "n_unique_terms")
 ```
+There are 14 unique terms represented in the down pattern, 9 in the hump pattern, and 16 in the up pattern. 
+
+# Which are unique? 
+Across down, hump, and up.. which terms are only found in one pattern (e.g. only in down, or only in up)?
 ```{r}
-top_terms <- goslim_summary %>%
-  filter(DEdueto == "leachate", n_genes > 2) %>%
+unique_terms <- goslim_summary %>%
+  filter(DEdueto == "leachate") %>%
   group_by(module) %>%
-  slice_max(order_by = Percent, n = 15, with_ties = FALSE) %>%
+  slice_max(order_by = Percent, n = 10, with_ties = FALSE) %>%
+  ungroup() %>%
+  group_by(Term) %>%
+  summarise(
+    n_modules = n_distinct(module),
+    modules = paste(sort(unique(module)), collapse = ", "),
+    patterns = paste(sort(unique(pattern)), collapse = ", "),
+    mean_percent = mean(Percent, na.rm = TRUE),
+    mean_n_genes = mean(n_genes, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  filter(n_modules == 1) %>%
+  arrange(desc(mean_percent), Term) %>% 
+  dplyr::select(Term, patterns, mean_percent, mean_n_genes) %>% 
+  arrange(patterns, desc(mean_percent))
+
+unique_terms
+
+```
+There are 13 unique terms
+
+Unique to down:
+- meitoc nuclear division, n_DEG = 3
+- amino acid metabolic process, n_DEG = 1
+- chromatin organization, n_DEG = 3
+
+Unique to hump:
+- lipid metablolic process, n_DEG = 4
+- carbohydrate derivative metabolic process
+- DNA-templated transcription
+
+Unique to up:
+- vesicle-mediated transport, n_DEG = 
+- 
+
+# Which are shared?
+```{r}
+top_terms_percent <- goslim_summary %>%
+  filter(DEdueto == "leachate") %>%
+  group_by(module) %>%
+  slice_max(order_by = Percent, n = 10, with_ties = FALSE) %>%
   ungroup()
 
+top_terms_genes <- goslim_summary %>%
+  filter(DEdueto == "leachate") %>%
+  group_by(module) %>%
+  slice_max(order_by = n_genes, n = 10, with_ties = FALSE) %>%
+  ungroup()
+
+setdiff(top_terms_percent$Term, top_terms_genes$Term) # percent only 
+setdiff(top_terms_genes$Term, top_terms_percent$Term) # gene count only
+intersect(top_terms_percent$Term, top_terms_genes$Term) # shared between both
+```
+
+Do I want top 10 by percent, or top 10 by gene count? ... I guess both, and then see how much overlap there is between them.
+
+How do I average top terms across all patterns? 
+
+```{r}
 overlap_terms <- top_terms %>%
   group_by(Term) %>%
   summarise(
@@ -132,10 +213,11 @@ overlap_terms <- top_terms %>%
     .groups = "drop"
   ) %>%
   filter(n_modules > 1) %>%
-  arrange(desc(n_modules), desc(mean_percent))
+  arrange(desc(mean_n_genes), desc(mean_percent))
 
 overlap_terms
 ```
+
 ```{r}
 overlap_detail <- top_terms %>%
   semi_join(overlap_terms, by = "Term") %>%
@@ -144,27 +226,14 @@ overlap_detail <- top_terms %>%
 
 overlap_detail
 ```
-```{r}
-goslim_summary %>%
-  drop_na(genes) %>% 
-  filter(DEdueto == "leachate") %>% 
-  filter(n_genes > 2) %>%
-  group_by(module) %>%
-  slice_max(order_by = Percent, n = 10) %>%
-  summarise(
-    unique_terms = list(unique(Term)),
-    n_unique_terms = n_distinct(Term),
-    .groups = "drop"
-  )
-```
 
+# Make plotting dataframe
 ```{r, fig.height = 12}
-library(tidyverse)
-
 gos_plot <- goslim_summary %>%
   drop_na(genes) %>%
   filter(DEdueto == "leachate", n_genes > 2)
 
+# top 10 terms by number of genes across all patterns
 term_levels <- gos_plot %>%
   group_by(Term) %>%
   summarise(total_n_genes = sum(n_genes, na.rm = TRUE), .groups = "drop") %>%
@@ -175,20 +244,27 @@ term_levels <- gos_plot %>%
 circ_df <- gos_plot %>%
   filter(Term %in% term_levels) %>%
   group_by(pattern, Term) %>%
-  summarise(n_genes = sum(n_genes), .groups = "drop") %>%
-  complete(pattern, Term = term_levels, fill = list(n_genes = 0)) %>%
+  summarise(n_genes = sum(n_genes),
+            Percent = max(Percent, na.rm = TRUE),
+            .groups = "drop") %>%
+  complete(pattern, Term = term_levels, 
+           fill = list(n_genes = 0, Percent = 0)) %>%
   mutate(
     pattern = factor(pattern, levels = c("down", "hump", "up")),
     Term = factor(Term, levels = term_levels),
-    Term_wrap = str_wrap(as.character(Term), width = 18)
+    Term_wrap = str_wrap(as.character(Term), width = 12)
   )
+```
 
-ggplot(circ_df, aes(x = factor(Term_wrap, levels = unique(Term_wrap)), y = n_genes, fill = Term)) +
-  geom_col(width = 0.95, alpha = 0.9) +
+# N genes wedge
+```{r}
+ngenes_wedge <- ggplot(circ_df, aes(x = factor(Term_wrap, levels = unique(Term_wrap)), y = n_genes, fill = Term)) +
+  geom_col(width = 0.8, alpha = 0.9) +
   coord_polar(start = -pi / 2) +
   facet_wrap(~pattern, nrow = 1) +
   labs(
     title = "GOslim BP terms across expression patterns",
+    subtitle = "Bar length reflects number of DE genes mapped to term",
     x = NULL,
     y = "Number of DE genes mapped to term"
   ) +
@@ -201,14 +277,11 @@ ggplot(circ_df, aes(x = factor(Term_wrap, levels = unique(Term_wrap)), y = n_gen
     axis.text.x = element_text(size = 8),
     legend.position = "none"
   )
+
+ngenes_wedge
 ```
+
 ```{r, fig,height = 12}
-library(tidyverse)
-
-gos_plot <- goslim_summary %>%
-  drop_na(genes) %>%
-  filter(DEdueto == "leachate", n_genes > 2)
-
 # choose one shared set of terms across all patterns
 term_levels <- gos_plot %>%
   group_by(Term) %>%
@@ -230,7 +303,9 @@ circ_df <- gos_plot %>%
     Term = factor(Term, levels = term_levels),
     Term_wrap = str_wrap(as.character(Term), width = 18)
   )
+```
 
+```{r}
 ggplot(
   circ_df,
   aes(
@@ -257,7 +332,9 @@ ggplot(
     axis.text.x = element_text(size = 8),
     legend.position = "none"
   )
+```
 
+```{r}
 ggplot(
   circ_df,
   aes(
@@ -285,5 +362,72 @@ ggplot(
     axis.text.x = element_text(size = 8),
     legend.position = "none"
   )
+```
+
+# Spoke plot
+```{r}
+ngenes_spoke <- ggplot(
+  circ_df,
+  aes(
+    x = factor(Term_wrap, levels = unique(Term_wrap)),
+    y = 0,
+    xend = factor(Term_wrap, levels = unique(Term_wrap)),
+    yend = n_genes,
+    color = Term
+  )
+) +
+  geom_segment(linewidth = 1, alpha = 0.9) +
+  coord_polar(start = -pi / 2) +
+  facet_wrap(~pattern, nrow = 1) +
+  scale_y_continuous(
+    limits = c(0, 21),
+    breaks = 1:20,
+    expand = c(0, 0)
+  ) +
+  labs(
+    title = "GOslim BP terms across expression patterns",
+    subtitle = "Spoke length reflects number of DE genes mapped to term",
+    x = NULL,
+    y = "Number of DE genes mapped to term"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.y = element_blank(),
+    axis.text.x = element_blank(),
+    legend.position = "none"
+  )
+
+ngenes_spoke
+```
+ # Spider/Radar
+ 
+ inspo from R graph gallery [here](https://r-graph-gallery.com/spider-or-radar-chart.html)
+ 
+```{r}
+plt <- ggplot(plot_df) +
+  # Make custom panel grid
+  geom_hline(
+    aes(yintercept = y), 
+    data.frame(y = c(0:3) * 1000),
+    color = "lightgrey"
+  ) + 
+```
+
+# Faceted lollipop
+```{r}
+ggplot(circ_df, aes(x = Percent, y = Term, color = Term)) +
+  geom_segment(aes(xend = 0, yend = Term), size = 3) +
+  geom_point(size = 4) +
+  facet_wrap(~pattern, ncol = 3) +
+  labs(
+    title = "GOslim BP terms across expression patterns",
+    subtitle = "Lollipop length reflects percent representation",
+    x = "Percent of genes mapped to GOslim term",
+    y = NULL
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "none")
 ```
 

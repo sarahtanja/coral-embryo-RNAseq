@@ -521,3 +521,8 @@ cat("Output files saved to:", output_path, "\n")
 cat("- gene2goslim_wide.csv: Wide format with comma-separated lists\n")
 cat("- gene2goslim_long.csv: Long format with one row per goslim-go-gene combination\n")
 ```
+
+```{r}
+SessionInfo()
+```
+

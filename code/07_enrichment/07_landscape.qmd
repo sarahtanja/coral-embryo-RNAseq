@@ -10,7 +10,7 @@ I matched clustered/module grouped DEGs to GO terms, and tested for enrichment u
 I found that DEGs due to large shifts by stage had enriched GO terms only for prawnchip dip, earlygastrula up, or all stage DEGs combined. 
 No other cluster/ module had enrichment.
 
-I want to be able to show however what the DEGs for each cluster/moddule functionally represent, even if not statistically enriched.
+I want to be able to show however what the DEGs for each cluster/module functionally represent, even if not statistically enriched.
 
 For each cluster/module:
 
@@ -68,6 +68,7 @@ simMatrix_12599BP <- calculateSimMatrix(
     method = "Rel"
   )
 ```
+
 ```{r}
 identical(simMatrix, simMatrix.1)
 ```
