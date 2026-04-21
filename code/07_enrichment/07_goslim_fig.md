@@ -1,65 +1,47 @@
----
-title: "Visualize GOslims by numbers of DEGs"
-subtitle: "What do they genes do!? Can we see it with geom_bar and Upset plots?"
-date: 02/06/2026
-date-modified: today
-format:
-  gfm: 
-    toc: true
-    number-sections: true
-  html:
-    theme: journal
-    highlight-style: github
-    page-layout: article
-    code-background: true
-    code-tools: 
-      source: true
-      toggle: true
-    toc: true
-    toc-depth: 2
-    toc-location: left
-    number-sections: true
-    df-print: kable
-    smooth-scroll: true
-    link-external-icon: true
-    link-external-newwindow: true
-    reference-location: margin
-    citation-location: margin
----
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(
-  echo = TRUE,         # Display code chunks
-  eval = FALSE,        # Evaluate code chunks
-  warning = FALSE,     # Hide warnings
-  message = FALSE,     # Hide messages
-  comment = ""         # Prevents appending '##' to beginning of lines in code output
-)
-```
+# Visualize GOslims by numbers of DEGs
+
+2026-02-06
+
+- [<span class="toc-section-number">1</span> Background](#background)
+- [<span class="toc-section-number">2</span> Load inputs](#load-inputs)
+- [<span class="toc-section-number">3</span> Wrangle](#wrangle)
+- [<span class="toc-section-number">4</span> What is
+  unique?](#what-is-unique)
+- [<span class="toc-section-number">5</span> What is
+  shared?](#what-is-shared)
+- [<span class="toc-section-number">6</span> How do I show this in
+  context of background universe and stage
+  signals?](#how-do-i-show-this-in-context-of-background-universe-and-stage-signals)
 
 # Background
 
 # Load inputs
-```{r}
+
+``` r
 input_path <- "../../output/07_enrichment/goslim/"
 ```
 
-```{r}
+``` r
 goslim_summary <- read_csv(file.path(input_path, "goslim_summary.csv"))
 ```
 
-```{r}
+``` r
 glimpse(goslim_summary)
 ```
-```{r}
+
+``` r
 summary(goslim_summary)
 ```
-```{r}
+
+``` r
 colSums(is.na(goslim_summary))
 ```
 
 # Wrangle
+
 remove rows that are 0 or NA
-```{r, fig.height = 10}
+
+``` r
 goslim_summary %>%
   drop_na(genes) %>% 
   filter(DEdueto == "leachate") %>% 
@@ -80,7 +62,7 @@ ggplot(., aes(x = n_genes, y = Term, fill = Term)) +
   theme(panel.grid.major.y = element_blank())
 ```
 
-```{r}
+``` r
 ggsave(
   filename = "goslim_summary_barplot.png",
   plot = last_plot(),
@@ -92,20 +74,22 @@ ggsave(
 )
 ```
 
+# What is unique?
 
-# What is unique? 
-
-# What is shared? 
+# What is shared?
 
 # How do I show this in context of background universe and stage signals?
 
-How many GOSlims are there? 
-```{r}
+How many GOSlims are there?
+
+``` r
 length(unique(goslim_summary$Term))
 ```
 
-Which are the top terms of *leachate-responsive DEGs* represented in each pattern?
-```{r}
+Which are the top terms of *leachate-responsive DEGs* represented in
+each pattern?
+
+``` r
 goslim_summary %>%
   filter(DEdueto == "leachate", n_genes > 2) %>%
   group_by(module) %>%
@@ -114,7 +98,8 @@ goslim_summary %>%
   count(module, Term) %>%
   count(module, name = "n_unique_terms")
 ```
-```{r}
+
+``` r
 top_terms <- goslim_summary %>%
   filter(DEdueto == "leachate", n_genes > 2) %>%
   group_by(module) %>%
@@ -136,7 +121,8 @@ overlap_terms <- top_terms %>%
 
 overlap_terms
 ```
-```{r}
+
+``` r
 overlap_detail <- top_terms %>%
   semi_join(overlap_terms, by = "Term") %>%
   arrange(Term, module, desc(Percent)) %>%
@@ -144,7 +130,8 @@ overlap_detail <- top_terms %>%
 
 overlap_detail
 ```
-```{r}
+
+``` r
 goslim_summary %>%
   drop_na(genes) %>% 
   filter(DEdueto == "leachate") %>% 
@@ -158,7 +145,7 @@ goslim_summary %>%
   )
 ```
 
-```{r, fig.height = 12}
+``` r
 library(tidyverse)
 
 gos_plot <- goslim_summary %>%
@@ -202,7 +189,8 @@ ggplot(circ_df, aes(x = factor(Term_wrap, levels = unique(Term_wrap)), y = n_gen
     legend.position = "none"
   )
 ```
-```{r, fig,height = 12}
+
+``` r
 library(tidyverse)
 
 gos_plot <- goslim_summary %>%
@@ -286,4 +274,3 @@ ggplot(
     legend.position = "none"
   )
 ```
-
