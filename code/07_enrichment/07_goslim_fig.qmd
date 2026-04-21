@@ -41,6 +41,7 @@ We identified GOslim terms associated with DEGs in each cluster/module. This is 
 
 With this plot we simply want to know what the DE genes do, and how many of them are associated with each GOslim term.
 
+`goslim_summary.csv` was generated in 
 # Load libraries
 ```{r}
 library(tidyverse)
@@ -202,7 +203,7 @@ Do I want top 10 by percent, or top 10 by gene count? ... I guess both, and then
 How do I average top terms across all patterns? 
 
 ```{r}
-overlap_terms <- top_terms %>%
+overlap_terms <- top_terms_percent %>%
   group_by(Term) %>%
   summarise(
     n_modules = n_distinct(module),
@@ -219,7 +220,7 @@ overlap_terms
 ```
 
 ```{r}
-overlap_detail <- top_terms %>%
+overlap_detail <- top_terms_percent %>%
   semi_join(overlap_terms, by = "Term") %>%
   arrange(Term, module, desc(Percent)) %>%
   select(Term, module, pattern, Percent, n_genes, Count, GO.IDs)
@@ -252,7 +253,8 @@ circ_df <- gos_plot %>%
   mutate(
     pattern = factor(pattern, levels = c("down", "hump", "up")),
     Term = factor(Term, levels = term_levels),
-    Term_wrap = str_wrap(as.character(Term), width = 12)
+    Term_wrap = str_wrap(as.character(Term), width = 12),
+    percent_scaled = Percent / max(Percent) * max(n_genes)
   )
 ```
 
@@ -281,29 +283,7 @@ ngenes_wedge <- ggplot(circ_df, aes(x = factor(Term_wrap, levels = unique(Term_w
 ngenes_wedge
 ```
 
-```{r, fig,height = 12}
-# choose one shared set of terms across all patterns
-term_levels <- gos_plot %>%
-  group_by(Term) %>%
-  summarise(total_percent = sum(Percent, na.rm = TRUE), .groups = "drop") %>%
-  arrange(desc(total_percent), Term) %>%
-  slice_head(n = 10) %>%
-  pull(Term)
-
-circ_df <- gos_plot %>%
-  filter(Term %in% term_levels) %>%
-  group_by(pattern, Term) %>%
-  summarise(
-    Percent = max(Percent, na.rm = TRUE),
-    .groups = "drop"
-  ) %>%
-  complete(pattern, Term = term_levels, fill = list(Percent = 0)) %>%
-  mutate(
-    pattern = factor(pattern, levels = c("down", "hump", "up")),
-    Term = factor(Term, levels = term_levels),
-    Term_wrap = str_wrap(as.character(Term), width = 18)
-  )
-```
+# % enriched wedge
 
 ```{r}
 ggplot(
@@ -395,25 +375,152 @@ ngenes_spoke <- ggplot(
     panel.grid.major.x = element_blank(),
     panel.grid.minor = element_blank(),
     axis.text.y = element_blank(),
-    axis.text.x = element_blank(),
+    #axis.text.x = element_blank(),
     legend.position = "none"
   )
 
 ngenes_spoke
 ```
- # Spider/Radar
+# Spider / Radar
  
  inspo from R graph gallery [here](https://r-graph-gallery.com/spider-or-radar-chart.html)
  
-```{r}
-plt <- ggplot(plot_df) +
+```{r, fig.height = 4, fig.width = 12}
+plt <- ggplot(circ_df) +
   # Make custom panel grid
   geom_hline(
     aes(yintercept = y), 
-    data.frame(y = c(0:3) * 1000),
+    data.frame(y = c(0:3) * 5),
     color = "lightgrey"
   ) + 
+  # Add bars to represent the number of genes mapped to each GO term
+  # str_wrap(Term, 12) wraps the text so each line has at most 12 characters
+  # (but it doesn't break long words!)
+  geom_col(
+    aes(
+      x = str_wrap(Term, 12),
+      y = n_genes,
+      fill = Term
+    ),
+    position = "dodge2",
+    show.legend = TRUE,
+    alpha = .7
+  ) +
+  
+  # Lollipop shaft for percent enriched
+  geom_segment(
+    aes(
+      x = str_wrap(Term, 12),
+      y = 0,
+      xend = str_wrap(Term, 12),
+      yend = 21,
+      color = Term
+    ),
+    linetype = "dashed"
+  ) + 
+  # Add dots to represent the percent enriched
+  #geom_point(
+  #  aes(
+  #    x = str_wrap(Term, 12),
+  #    y = percent_scaled
+  #  ),
+  #  size = 1.5, 
+  #  color = "grey30"
+  #) +
+  facet_wrap(~pattern, ncol = 3) +
+  # Make it circular!
+  coord_polar(clip = "off")+
+  # Scale y axis so bars don't start in the center
+  scale_y_continuous(
+    limits = c(-2, 22),
+    expand = c(0, 0),
+    breaks = c(0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)
+  ) + 
+  theme(
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.text.x = element_text(size = 8),
+    axis.ticks = element_blank(),
+    legend.position = "none", 
+    axis.title.x = element_blank(), 
+    panel.background = element_blank(),
+    panel.spacing.x = unit(2, "cm"),
+    plot.margin = margin(0.2, 0.75, 0.2, 0.5, "cm")
+  )
+  
+  
+plt  
 ```
+```{r}
+
+plt <- plt +
+# Annotate the bars and the lollipops so the reader understands the scaling
+  annotate(
+    x = 11, 
+    y = 10,
+    label = "Percent Enriched",
+    geom = "text",
+    angle = -67.5,
+    color = "gray12",
+    size = 2.5,
+    family = "Bell MT"
+  ) +
+  annotate(
+    x = 11, 
+    y = 30,
+    label = "Count of DE Genes",
+    geom = "text",
+    angle = 23,
+    color = "gray12",
+    size = 2.5,
+    family = "Bell MT"
+  ) +
+  # Annotate custom scale inside plot
+  annotate(
+    x = 11.7, 
+    y = 12, 
+    label = "5", 
+    geom = "text", 
+    color = "gray12", 
+    family = "Bell MT"
+  ) +
+  annotate(
+    x = 11.7, 
+    y = 12, 
+    label = "10", 
+    geom = "text", 
+    color = "gray12", 
+    family = "Bell MT"
+  ) +
+  annotate(
+    x = 11.7, 
+    y = 12, 
+    label = "15", 
+    geom = "text", 
+    color = "gray12", 
+    family = "Bell MT"
+  ) +
+  # Scale y axis so bars don't start in the center
+  scale_y_continuous(
+    limits = c(-2, 22),
+    expand = c(0, 0),
+    breaks = c(0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)
+  ) + 
+  theme(
+    # Remove axis ticks and text
+    axis.title = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text.y = element_blank(),
+    # Use gray text for the region names
+    axis.text.x = element_text(color = "grey40", size = 12),
+  )
+
+plt
+```
+
+
 
 # Faceted lollipop
 ```{r}

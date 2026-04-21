@@ -76,15 +76,15 @@ We now perform functional enrichment analysis on each module & cluster separatel
 
     -   grey: 149 genes
 
-::: callout-important
-Our goal is to now perform functional enrichment analysis on each module & cluster separately to understand the biological processes associated with each expression pattern.
+Our goal is to perform functional enrichment analysis on each module & cluster separately to understand the biological processes associated with each expression pattern.
 
 Functional enrichment tests whether a biological category contains more genes from a given gene set than expected under random sampling from the expressed genome.
 
 $$
 \text{Fold Enrichment} = \frac{k/n}{K/N}
-$$ Where:
+$$ 
 
+Where:
 -   n = number of genes in our gene set (e.g. DEGs or a WGCNA module)
 
 -   k = number of genes in our set annotated to a GO term
@@ -94,7 +94,6 @@ $$ Where:
 -   N = total number of genes in the background (e.g. all genes tested for differential expression, the "universe")
 
 Fold enrichment can be:
-
 -   `>1`: over-represented
 
 -   `=1`: expected
@@ -109,7 +108,8 @@ H~o~: The null hypothesis is that genes in our gene set are a random sample from
 
 H~a~: The alternative hypothesis is that genes in our gene set(s) are enriched for a particular function.
 
-Enrichment p-value is the probability of observing k or more annotated genes by chance $$
+Enrichment p-value is the probability of observing k or more annotated genes by chance 
+$$
 p_{\text{enrich}} = P(X \ge k)
 $$
 
@@ -120,7 +120,6 @@ For example, if we run GO enrichment on all 130 leachate DEGs together, we will 
 If we run GO enrichment on each of the 3 leachate DEG clusters separately, we will get 3 different sets of GO terms, each describing the functions of genes in that specific co-expression pattern.
 
 Similarly, running GO enrichment on each of the 4 stage DEG modules separately yields 4 different sets of GO terms, each reflecting the functions of genes in that developmental program.
-:::
 
 We use the R package `goseq` for GO enrichment. `goseq` corrects for gene length bias - longer genes are more likely to be detected as DEGs in RNA-Seq simply because they accumulate more reads. `goseq` accounts for this by using a probability weighting function.
 
@@ -137,7 +136,7 @@ DEG vectors
 
 -   `stage_DEG_WGCNA_modules.csv` : A dataframe mapping 10793 stage DEGs to a WGCNA module. *the grey module (genes that do not cluster) need not be passed through enrichment analysis*
 
--   `leachate_DEG_clusters.csv` : A dataframe mapping 128 genes to an expression cluster (1, 2, or 3)
+-   `leachate_DEG_clusters.csv` : A dataframe mapping 128 genes to an expression cluster (1 = early gastrula, 2 = prawnchip, or 3 = cleavage)
 
 -   `all_genes.csv` : a dataframe (list) of all genes used in the DESeq2 analysis
 
@@ -214,8 +213,8 @@ leachate_DEG_clusters <- leachate_DEG_clusters %>%
   dplyr::rename(gene_id = genes)
 ```
 
+Leachate patterns are the DE genes that group together based on their expression pattern and are DE due to leachate (leachate responsive DEGs) 
 ```{r}
-
 leachate_deg_patterns <- sig_genes_leachate %>%
   left_join(leachate_DEG_clusters, by = "gene_id") %>%
   mutate(pattern_leachate = case_when(
@@ -235,6 +234,8 @@ leachate_deg_patterns <- sig_genes_leachate %>%
 leachate_deg_patterns %>% 
 count(DEGpattern, peak_leachate, pattern_leachate, sort = TRUE) %>% knitr::kable()  
 ```
+
+Stage modules are the DE genes that group together based on their expression pattern and are DE due to stage (stage responsive DEGs)
 
 ```{r}
 stage_deg_modules <- stage_DEG_modules %>% 
