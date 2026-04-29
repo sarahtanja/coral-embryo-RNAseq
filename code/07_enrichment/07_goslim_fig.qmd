@@ -163,23 +163,21 @@ unique_terms <- goslim_summary %>%
 unique_terms
 
 ```
-There are 13 unique terms
+There are 6 unique terms
 
-Unique to down:
+Unique to down (aka cleavage):
 - meitoc nuclear division, n_DEG = 3
-- amino acid metabolic process, n_DEG = 1
-- chromatin organization, n_DEG = 3
 
 Unique to hump:
 - lipid metablolic process, n_DEG = 4
-- carbohydrate derivative metabolic process
-- DNA-templated transcription
+- carbohydrate derivative metabolic process n_DEG = 2
+- DNA-templated transcription, n_DEG = 5
+- protein catabolic process, n_DEG = 1
 
-Unique to up:
-- vesicle-mediated transport, n_DEG = 
-- 
+Unique to up (aka early gastrula):
+- vesicle-mediated transport, n_DEG = 11
 
-# Which are shared?
+# Which are shared across counts vs percents?
 ```{r}
 top_terms_percent <- goslim_summary %>%
   filter(DEdueto == "leachate") %>%
@@ -192,205 +190,117 @@ top_terms_genes <- goslim_summary %>%
   group_by(module) %>%
   slice_max(order_by = n_genes, n = 10, with_ties = FALSE) %>%
   ungroup()
+```
 
+```{r}
 setdiff(top_terms_percent$Term, top_terms_genes$Term) # percent only 
+```
+```{r}
 setdiff(top_terms_genes$Term, top_terms_percent$Term) # gene count only
+```
+```{r}
 intersect(top_terms_percent$Term, top_terms_genes$Term) # shared between both
 ```
 
-Do I want top 10 by percent, or top 10 by gene count? ... I guess both, and then see how much overlap there is between them.
 
-How do I average top terms across all patterns? 
+Highest-priority terms to discuss
+1. Cell division / early embryogenesis
+- meiotic nuclear division
+- mitotic cell cycle
+- chromosome segregation
+
+> Early embryos rely on rapid, tightly coordinated cell divisions. Changes here may reflect abnormal timing, spindle disruption, or DNA segregation stress. This provides further evidence that PVC leachate may subtly perturb cell cycle progression without causing overt mortality.
+
+2. Developmental patterning 
+- anatomical structure development
+- cell differentiation
+
+these support your observation of subtle developmental timing changes.
+
+Strong angle: transcriptional changes may precede visible malformations.
+
+3. Gene regulation / epigenetic control
+- regulation of DNA-templated transcription
+- DNA-templated transcription
+- chromatin organization
+
+> Embryos are executing tightly programmed developmental gene networks. Disturbance here suggests reprogramming of developmental trajectories.
+
+Especially strong if responses strongest at 4 hpf.
+
+4. Cellular signaling / communication
+- signaling
+- vesicle-mediated transport
+
+> Cells respond to external stressors through signaling pathways; vesicle trafficking is central to membrane dynamics, secretion, and stress responses.
+
+5. Metabolism / energetic shifts
+- lipid metabolic process
+- carbohydrate derivative metabolic process
+- protein catabolic process
+
+Why they matter: indicates resource reallocation, stress metabolism, membrane remodeling, or energetic costs of exposure.
+
+Cell cycle + chromosome segregation → altered developmental timing
+Transcription/chromatin regulation → early molecular reprogramming
+Metabolism + signaling → physiological stress compensation
+
+Programmed cell death
+- Useful if multiple apoptosis-related genes present. If not, mention briefly as potential stress response.
+
+Immune system process
+> DEGs included genes annotated to immune-related processes, potentially reflecting early innate defense or generalized cellular stress pathways.
+
+Reproductive process
+- A broad GOslim annotation. In embryos maybe this reflects maternally provisioned transcripts... indicator for maternal to zygote transition? 
+
+> Leachate-responsive DEGs were concentrated in functions related to cell division, developmental regulation, transcriptional control, and metabolism, suggesting that PVC leachate may subtly disrupt early embryogenic processes before overt morphological abnormalities become apparent.
+
 
 ```{r}
-overlap_terms <- top_terms_percent %>%
-  group_by(Term) %>%
+top_terms <- full_join(top_terms_genes, top_terms_percent)
+
+top_terms %>% 
+  group_by(Term, module) %>%
   summarise(
-    n_modules = n_distinct(module),
-    modules = paste(sort(unique(module)), collapse = ", "),
-    patterns = paste(sort(unique(pattern)), collapse = ", "),
-    mean_percent = mean(Percent, na.rm = TRUE),
-    mean_n_genes = mean(n_genes, na.rm = TRUE),
-    .groups = "drop"
+    sum_genes = sum(n_genes),
+    sum_percent = sum(Percent)
   ) %>%
-  filter(n_modules > 1) %>%
-  arrange(desc(mean_n_genes), desc(mean_percent))
-
-overlap_terms
+  arrange(desc(n_genes), desc(Percent))
 ```
 
-```{r}
-overlap_detail <- top_terms_percent %>%
-  semi_join(overlap_terms, by = "Term") %>%
-  arrange(Term, module, desc(Percent)) %>%
-  select(Term, module, pattern, Percent, n_genes, Count, GO.IDs)
 
-overlap_detail
-```
 
 # Make plotting dataframe
 ```{r, fig.height = 12}
-gos_plot <- goslim_summary %>%
-  drop_na(genes) %>%
-  filter(DEdueto == "leachate", n_genes > 2)
-
-# top 10 terms by number of genes across all patterns
-term_levels <- gos_plot %>%
-  group_by(Term) %>%
-  summarise(total_n_genes = sum(n_genes, na.rm = TRUE), .groups = "drop") %>%
-  arrange(desc(total_n_genes), Term) %>%
-  slice_head(n = 10) %>%
-  pull(Term)
-
-circ_df <- gos_plot %>%
-  filter(Term %in% term_levels) %>%
-  group_by(pattern, Term) %>%
-  summarise(n_genes = sum(n_genes),
-            Percent = max(Percent, na.rm = TRUE),
-            .groups = "drop") %>%
-  complete(pattern, Term = term_levels, 
-           fill = list(n_genes = 0, Percent = 0)) %>%
-  mutate(
+plot_df <- goslim_summary %>%
+  filter(Term %in% top_intersect, DEdueto == "leachate") %>% 
+  arrange(desc(n_genes)) %>%
+  mutate(Term = factor(Term),
     pattern = factor(pattern, levels = c("down", "hump", "up")),
-    Term = factor(Term, levels = term_levels),
-    Term_wrap = str_wrap(as.character(Term), width = 12),
     percent_scaled = Percent / max(Percent) * max(n_genes)
   )
+
+str(plot_df)
 ```
+::: callout-note
 
-# N genes wedge
-```{r}
-ngenes_wedge <- ggplot(circ_df, aes(x = factor(Term_wrap, levels = unique(Term_wrap)), y = n_genes, fill = Term)) +
-  geom_col(width = 0.8, alpha = 0.9) +
-  coord_polar(start = -pi / 2) +
-  facet_wrap(~pattern, nrow = 1) +
-  labs(
-    title = "GOslim BP terms across expression patterns",
-    subtitle = "Bar length reflects number of DE genes mapped to term",
-    x = NULL,
-    y = "Number of DE genes mapped to term"
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor = element_blank(),
-    axis.text.y = element_blank(),
-    axis.title.y = element_blank(),
-    axis.text.x = element_text(size = 8),
-    legend.position = "none"
-  )
+- Percent values were linearly rescaled to the range of gene counts to allow simultaneous visualization of enrichment percentage and DEG counts on the same axis.
 
-ngenes_wedge
-```
+- Percent was normalized to the maximum observed value and scaled to match the range of DEG counts for plotting.
+:::
 
-# % enriched wedge
-
-```{r}
-ggplot(
-  circ_df,
-  aes(
-    x = factor(Term_wrap, levels = unique(Term_wrap)),
-    y = Percent,
-    fill = Term
-  )
-) +
-  geom_col(width = 0.95, alpha = 0.9) +
-  coord_polar(start = -pi / 2) +
-  facet_wrap(~pattern, nrow = 1) +
-  labs(
-    title = "GOslim BP terms across expression patterns",
-    subtitle = "Bar length reflects percent representation",
-    x = NULL,
-    y = "Percent"
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor = element_blank(),
-    axis.text.y = element_blank(),
-    axis.title.y = element_blank(),
-    axis.text.x = element_text(size = 8),
-    legend.position = "none"
-  )
-```
-
-```{r}
-ggplot(
-  circ_df,
-  aes(
-    x = factor(Term_wrap, levels = unique(Term_wrap)),
-    y = Percent,
-    fill = Term
-  )
-) +
-  geom_col(width = 0.95, alpha = 0.9) +
-  coord_polar(start = -pi / 2) +
-  facet_wrap(~pattern, nrow = 1) +
-  scale_y_continuous(labels = scales::label_percent(scale = 1)) +
-  labs(
-    title = "GOslim BP terms across expression patterns",
-    subtitle = "Bar length reflects percent representation",
-    x = NULL,
-    y = "Percent of genes mapped to GOslim term"
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor = element_blank(),
-    axis.text.y = element_blank(),
-    axis.title.y = element_blank(),
-    axis.text.x = element_text(size = 8),
-    legend.position = "none"
-  )
-```
-
-# Spoke plot
-```{r}
-ngenes_spoke <- ggplot(
-  circ_df,
-  aes(
-    x = factor(Term_wrap, levels = unique(Term_wrap)),
-    y = 0,
-    xend = factor(Term_wrap, levels = unique(Term_wrap)),
-    yend = n_genes,
-    color = Term
-  )
-) +
-  geom_segment(linewidth = 1, alpha = 0.9) +
-  coord_polar(start = -pi / 2) +
-  facet_wrap(~pattern, nrow = 1) +
-  scale_y_continuous(
-    limits = c(0, 21),
-    breaks = 1:20,
-    expand = c(0, 0)
-  ) +
-  labs(
-    title = "GOslim BP terms across expression patterns",
-    subtitle = "Spoke length reflects number of DE genes mapped to term",
-    x = NULL,
-    y = "Number of DE genes mapped to term"
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor = element_blank(),
-    axis.text.y = element_blank(),
-    #axis.text.x = element_blank(),
-    legend.position = "none"
-  )
-
-ngenes_spoke
-```
 # Spider / Radar
  
  inspo from R graph gallery [here](https://r-graph-gallery.com/spider-or-radar-chart.html)
  
+## Counts 
 ```{r, fig.height = 4, fig.width = 12}
-plt <- ggplot(circ_df) +
+plt_count <- ggplot(plot_df) +
   # Make custom panel grid
   geom_hline(
     aes(yintercept = y), 
-    data.frame(y = c(0:3) * 5),
+    data.frame(y = c(0:4) * 5),
     color = "lightgrey"
   ) + 
   # Add bars to represent the number of genes mapped to each GO term
@@ -433,6 +343,111 @@ plt <- ggplot(circ_df) +
   # Scale y axis so bars don't start in the center
   scale_y_continuous(
     limits = c(-2, 22),
+    expand = c(0, 0)
+  ) + 
+  theme(
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    axis.text.x = element_text(size = 8),
+    axis.ticks = element_blank(),
+    legend.position = "none", 
+    axis.title.x = element_blank(), 
+    panel.background = element_blank(),
+    panel.spacing.x = unit(2, "cm"),
+    plot.margin = margin(0.2, 1, 0.2, 1, "cm")
+  )
+  
+  
+plt_count  
+```
+```{r, fig.width = 12, fig.height = 4}
+
+plt_anno <- plt_count +
+# Annotate the bars and the lollipops so the reader understands the scaling
+  annotate(
+    x = 11, 
+    y = 11,
+    label = "Count of DE Genes",
+    geom = "text",
+    angle = -75,
+    color = "gray30",
+    size = 3
+  ) +
+  # Annotate custom scale inside plot
+  annotate(
+    x = 11.4, 
+    y = 6, 
+    label = "5", 
+    geom = "text", 
+    color = "gray40", 
+    size = 3
+  ) +
+  annotate(
+    x = 11.4, 
+    y = 11, 
+    label = "10", 
+    geom = "text", 
+    color = "gray40", 
+    size = 3
+  ) +
+  annotate(
+    x = 11.4, 
+    y = 16, 
+    label = "15", 
+    geom = "text", 
+    color = "gray40", 
+    size = 3
+  )
+
+plt_anno
+```
+## Enriched
+```{r, fig.width=12, fig.height=4}
+plt_enriched <- ggplot(circ_df) +
+  # Make custom panel grid
+  geom_hline(
+    aes(yintercept = y), 
+    data.frame(y = c(0:5) * 5),
+    color = "lightgrey"
+  ) + 
+  geom_col(
+    aes(
+      x = str_wrap(Term, 12),
+      y = n_genes,
+      fill = Term
+    ),
+    position = "dodge2",
+    show.legend = TRUE,
+    alpha = .7
+  ) +
+  # Lollipop shaft for percent enriched
+  geom_segment(
+    aes(
+      x = str_wrap(Term, 12),
+      y = 0,
+      xend = str_wrap(Term, 12),
+      yend = 21,
+      color = Term
+    ),
+    linetype = "dashed"
+  ) + 
+  # Add dots to represent the percent enriched
+  geom_point(
+    aes(
+      x = str_wrap(Term, 12),
+      y = percent_scaled
+    ),
+    size = 1.5, 
+    color = "grey30"
+  ) +
+  facet_wrap(~pattern, ncol = 3) +
+  # Make it circular!
+  coord_polar(clip = "off")+
+  # Scale y axis so bars don't start in the center
+  scale_y_continuous(
+    limits = c(-2, 22),
     expand = c(0, 0),
     breaks = c(0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)
   ) + 
@@ -447,61 +462,63 @@ plt <- ggplot(circ_df) +
     axis.title.x = element_blank(), 
     panel.background = element_blank(),
     panel.spacing.x = unit(2, "cm"),
-    plot.margin = margin(0.2, 0.75, 0.2, 0.5, "cm")
+    plot.margin = margin(0.2, 1, 0.2, 1, "cm")
   )
   
   
-plt  
+plt_enriched  
 ```
-```{r}
 
-plt <- plt +
-# Annotate the bars and the lollipops so the reader understands the scaling
-  annotate(
-    x = 11, 
-    y = 10,
-    label = "Percent Enriched",
-    geom = "text",
-    angle = -67.5,
-    color = "gray12",
-    size = 2.5,
-    family = "Bell MT"
+## Universe
+```{r}
+uni_df <- goslim_summary %>%
+  drop_na(genes) %>%
+  filter(module == "universe") %>%
+  group_by(Term) %>%
+  arrange(desc(n_genes))
+```
+
+```{r, include=FALSE}
+plt_universe <- ggplot(uni_df) +
+  # Make custom panel grid
+  geom_hline(
+    aes(yintercept = y), 
+    data.frame(y = c(0:5) * 5),
+    color = "lightgrey"
+  ) + 
+  geom_col(
+    aes(
+      x = str_wrap(Term, 12),
+      y = n_genes,
+      fill = Term
+    ),
+    position = "dodge2",
+    show.legend = TRUE,
+    alpha = .7
   ) +
-  annotate(
-    x = 11, 
-    y = 30,
-    label = "Count of DE Genes",
-    geom = "text",
-    angle = 23,
-    color = "gray12",
-    size = 2.5,
-    family = "Bell MT"
-  ) +
-  # Annotate custom scale inside plot
-  annotate(
-    x = 11.7, 
-    y = 12, 
-    label = "5", 
-    geom = "text", 
-    color = "gray12", 
-    family = "Bell MT"
-  ) +
-  annotate(
-    x = 11.7, 
-    y = 12, 
-    label = "10", 
-    geom = "text", 
-    color = "gray12", 
-    family = "Bell MT"
-  ) +
-  annotate(
-    x = 11.7, 
-    y = 12, 
-    label = "15", 
-    geom = "text", 
-    color = "gray12", 
-    family = "Bell MT"
-  ) +
+  # Lollipop shaft for percent enriched
+  geom_segment(
+    aes(
+      x = str_wrap(Term, 12),
+      y = 0,
+      xend = str_wrap(Term, 12),
+      yend = 21,
+      color = Term
+    ),
+    linetype = "dashed"
+  ) + 
+  # Add dots to represent the percent enriched
+  #geom_point(
+  #  aes(
+  #    x = str_wrap(Term, 12),
+  #    y = percent_scaled
+  #  ),
+  #  size = 1.5, 
+   # color = "grey30"
+  #) +
+  #facet_wrap(~pattern, ncol = 3) +
+  # Make it circular!
+  coord_polar(clip = "off")+
   # Scale y axis so bars don't start in the center
   scale_y_continuous(
     limits = c(-2, 22),
@@ -509,25 +526,69 @@ plt <- plt +
     breaks = c(0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)
   ) + 
   theme(
-    # Remove axis ticks and text
-    axis.title = element_blank(),
-    axis.ticks = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
     axis.text.y = element_blank(),
-    # Use gray text for the region names
-    axis.text.x = element_text(color = "grey40", size = 12),
+    axis.title.y = element_blank(),
+    axis.text.x = element_text(size = 8),
+    axis.ticks = element_blank(),
+    legend.position = "none", 
+    axis.title.x = element_blank(), 
+    panel.background = element_blank(),
+    panel.spacing.x = unit(2, "cm"),
+    plot.margin = margin(0.2, 1, 0.2, 1, "cm")
   )
-
-plt
+  
+  
+plt_universe
 ```
 
 
+# Faceted lollipop ALL DEGs
+```{r, fig.height= 12}
+library("colorspace")
+hcl_palettes(plot = TRUE)
+```
 
-# Faceted lollipop
 ```{r}
-ggplot(circ_df, aes(x = Percent, y = Term, color = Term)) +
+hclwizard()
+```
+
+
+```{r}
+goslim_lollipop <- goslim_summary %>%
+  drop_na(genes) %>% 
+  filter(DEdueto == "leachate") %>% 
+  mutate()
+
+# number of goslim terms in goslim_lollipop
+length(unique(goslim_lollipop$Term))
+```
+
+## Count
+```{r, fig.height = 12}
+ggplot(goslim_lollipop, aes(x = n_genes, y = Term, color = Percent)) +
   geom_segment(aes(xend = 0, yend = Term), size = 3) +
   geom_point(size = 4) +
   facet_wrap(~pattern, ncol = 3) +
+  scale_color_continuous_sequential(palette = "Heat2", begin = 0.3, end = 1) +
+  labs(
+    title = "GOslim BP terms across expression patterns",
+    subtitle = "Lollipop length reflects counts of DEGs",
+    x = "Counts of genes mapped to GOslim term",
+    y = NULL
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "bottom")
+```
+
+## Enriched
+```{r, fig.height = 12}
+ggplot(goslim_lollipop, aes(x = Percent, y = Term, color = n_genes)) +
+  geom_segment(aes(xend = 0, yend = Term), size = 2) +
+  geom_point(size = 3) +
+  facet_wrap(~pattern, ncol = 3) +
+  scale_color_continuous_sequential(palette = "Heat2", begin = 0.3, end = 1) +
   labs(
     title = "GOslim BP terms across expression patterns",
     subtitle = "Lollipop length reflects percent representation",
@@ -535,6 +596,22 @@ ggplot(circ_df, aes(x = Percent, y = Term, color = Term)) +
     y = NULL
   ) +
   theme_minimal(base_size = 12) +
-  theme(legend.position = "none")
+  theme(legend.position = "bottom")
+```
+
+## Universe
+```{r, fig.height=12}
+ggplot(uni_df, aes(x = n_genes, y = Term)) +
+  geom_segment(aes(xend = 0, yend = Term, color = n_genes), size = 2) +
+  geom_point(aes(color = n_genes), size = 3) +
+  scale_color_continuous_sequential(palette = "Heat2", begin = 0.2, end = 1) +
+  labs(
+    title = "GOslim BP terms in the background universe",
+    subtitle = "Lollipop length reflects counts of genes mapped to GOslim term",
+    x = "Counts of genes mapped to GOslim term",
+    y = NULL
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "bottom")
 ```
 
