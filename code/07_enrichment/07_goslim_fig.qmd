@@ -45,6 +45,7 @@ With this plot we simply want to know what the DE genes do, and how many of them
 # Load libraries
 ```{r}
 library(tidyverse)
+library(kableExtra)
 ```
 
 # Load inputs
@@ -203,15 +204,14 @@ intersect(top_terms_percent$Term, top_terms_genes$Term) # shared between both
 ```
 
 
-Highest-priority terms to discuss
-1. Cell division / early embryogenesis
+#### 1. Cell division / early embryogenesis
 - meiotic nuclear division
 - mitotic cell cycle
 - chromosome segregation
 
 > Early embryos rely on rapid, tightly coordinated cell divisions. Changes here may reflect abnormal timing, spindle disruption, or DNA segregation stress. This provides further evidence that PVC leachate may subtly perturb cell cycle progression without causing overt mortality.
 
-2. Developmental patterning 
+#### 2. Developmental patterning 
 - anatomical structure development
 - cell differentiation
 
@@ -219,7 +219,7 @@ these support your observation of subtle developmental timing changes.
 
 Strong angle: transcriptional changes may precede visible malformations.
 
-3. Gene regulation / epigenetic control
+#### 3. Gene regulation / epigenetic control
 - regulation of DNA-templated transcription
 - DNA-templated transcription
 - chromatin organization
@@ -228,13 +228,13 @@ Strong angle: transcriptional changes may precede visible malformations.
 
 Especially strong if responses strongest at 4 hpf.
 
-4. Cellular signaling / communication
+#### 4. Cellular signaling / communication
 - signaling
 - vesicle-mediated transport
 
 > Cells respond to external stressors through signaling pathways; vesicle trafficking is central to membrane dynamics, secretion, and stress responses.
 
-5. Metabolism / energetic shifts
+#### 5. Metabolism / energetic shifts
 - lipid metabolic process
 - carbohydrate derivative metabolic process
 - protein catabolic process
@@ -258,30 +258,69 @@ Reproductive process
 
 
 ```{r}
-top_terms <- full_join(top_terms_genes, top_terms_percent)
+top_terms <- full_join(top_terms_genes, top_terms_percent) %>% 
+  mutate(
+    response = case_when(
+      Term %in% c("meiotic nuclear division",
+                  "mitotic cell cycle",
+                  "chromosome segregation",
+                  "anatomical structure development",
+                  "reproductive process",
+                  "cell differentiation", 
+                  "cytoskeleton organization") ~ "Early embryogenesis, cell division, and fate",
+      Term %in% c("regulation of DNA-templated transcription",
+                  "DNA-templated transcription",
+                  "chromatin organization") ~ "Gene regulation and epigenetic control",
+      Term %in% c("signaling", "vesicle-mediated transport") ~ "Cellular signaling and communication",
+      Term %in% c("lipid metabolic process", "carbohydrate derivative metabolic process", "protein catabolic process") ~ "Metabolism and energetic shifts",
+      Term %in% c("immune system process", "programmed cell death") ~ "Stress responses" 
+    )
+  )
 
 top_terms %>% 
-  group_by(Term, module) %>%
+  group_by(response) %>%
   summarise(
     sum_genes = sum(n_genes),
     sum_percent = sum(Percent)
   ) %>%
-  arrange(desc(n_genes), desc(Percent))
+  arrange(desc(sum_genes), desc(sum_percent)) %>% 
+  kable() 
 ```
-
 
 
 # Make plotting dataframe
 ```{r, fig.height = 12}
-plot_df <- goslim_summary %>%
-  filter(Term %in% top_intersect, DEdueto == "leachate") %>% 
-  arrange(desc(n_genes)) %>%
-  mutate(Term = factor(Term),
+plot_df <- top_terms %>%
+  filter(DEdueto == "leachate") %>% 
+  mutate(goterm = factor(Term, levels = unique(Term)),
+    pattern = factor(pattern, levels = c("down", "hump", "up")),
+    percent_scaled = Percent / max(Percent) * max(n_genes),
+    response = factor(
+      response,
+      levels = c(
+        "Early embryogenesis, cell division, and fate",
+        "Gene regulation and epigenetic control",
+        "Cellular signaling and communication",
+        "Stress responses",
+        "Metabolism and energetic shifts"
+      ), 
+      ordered = TRUE
+    )
+  ) %>%
+  arrange(response, desc(n_genes)) %>%
+  mutate(
+    goterm = factor(Term, levels = unique(Term)),
     pattern = factor(pattern, levels = c("down", "hump", "up")),
     percent_scaled = Percent / max(Percent) * max(n_genes)
   )
 
-str(plot_df)
+plot_df %>% group_by(response) %>%
+  summarise(
+    sum_genes = sum(n_genes),
+    sum_percent = sum(Percent)
+  ) %>%
+  arrange(desc(sum_genes), desc(sum_percent)) %>%
+  kable()
 ```
 ::: callout-note
 
@@ -308,9 +347,9 @@ plt_count <- ggplot(plot_df) +
   # (but it doesn't break long words!)
   geom_col(
     aes(
-      x = str_wrap(Term, 12),
+      x = str_wrap(goterm, 12),
       y = n_genes,
-      fill = Term
+      fill = response
     ),
     position = "dodge2",
     show.legend = TRUE,
@@ -320,11 +359,11 @@ plt_count <- ggplot(plot_df) +
   # Lollipop shaft for percent enriched
   geom_segment(
     aes(
-      x = str_wrap(Term, 12),
+      x = str_wrap(goterm, 12),
       y = 0,
-      xend = str_wrap(Term, 12),
+      xend = str_wrap(goterm, 12),
       yend = 21,
-      color = Term
+      color = response
     ),
     linetype = "dashed"
   ) + 
@@ -362,6 +401,7 @@ plt_count <- ggplot(plot_df) +
   
 plt_count  
 ```
+
 ```{r, fig.width = 12, fig.height = 4}
 
 plt_anno <- plt_count +
@@ -399,6 +439,9 @@ plt_anno <- plt_count +
     geom = "text", 
     color = "gray40", 
     size = 3
+  )+ 
+  theme(
+    panel.background = element_blank()
   )
 
 plt_anno
