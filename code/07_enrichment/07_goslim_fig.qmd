@@ -25,7 +25,11 @@ format:
     link-external-newwindow: true
     reference-location: margin
     citation-location: margin
+editor: 
+  markdown: 
+    wrap: 72
 ---
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   echo = TRUE,         # Display code chunks
@@ -37,40 +41,48 @@ knitr::opts_chunk$set(
 ```
 
 # Background
-We identified GOslim terms associated with DEGs in each cluster/module. This is a descriptive summary plot, and does not reflect statistical enrichment!
 
-With this plot we simply want to know what the DE genes do, and how many of them are associated with each GOslim term.
+We identified GOslim terms associated with DEGs in each cluster/module.
+This is a descriptive summary plot, and does not reflect statistical
+enrichment!
 
-`goslim_summary.csv` was generated in 
-# Load libraries
-```{r}
+With this plot we simply want to know what the DE genes do, and how many
+of them are associated with each GOslim term.
+
+`goslim_summary.csv` was generated in \# Load libraries
+
+```{r load-libraries}
 library(tidyverse)
 library(kableExtra)
 ```
 
 # Load inputs
-```{r}
+
+```{r input-path}
 input_path <- "../../output/07_enrichment/goslim/"
 ```
 
-```{r}
+```{r load-goslim-data}
 goslim_summary <- read_csv(file.path(input_path, "goslim_summary.csv"))
 ```
 
-```{r}
+```{r glimpse-goslim}
 glimpse(goslim_summary)
 ```
 
-```{r}
+```{r summary-goslim}
 summary(goslim_summary)
 ```
-```{r}
+
+```{r count-nas}
 colSums(is.na(goslim_summary))
 ```
 
 # Wrangle
+
 remove rows that are 0 or NA
-```{r, fig.height = 10}
+
+```{r horiz-bar, fig.height = 10}
 goslim_summary %>%
   drop_na(genes) %>% 
   filter(DEdueto == "leachate") %>% 
@@ -91,7 +103,7 @@ ggplot(., aes(x = n_genes, y = Term, fill = Term)) +
   theme(panel.grid.major.y = element_blank())
 ```
 
-```{r}
+```{r save-bar}
 ggsave(
   filename = "goslim_summary_barplot.png",
   plot = last_plot(),
@@ -103,18 +115,19 @@ ggsave(
 )
 ```
 
-
 # How do I show this in context of background universe and stage signals?
 
-# How many GOSlims are there? 
-```{r}
+# How many GOSlims are there?
+
+```{r length-unique}
 length(unique(goslim_summary$Term))
 ```
-There are 72 unique Go Slim Terms. 
 
+There are 72 unique Go Slim Terms.
 
-# How many terms are represented? 
-```{r}
+# How many terms are represented?
+
+```{r count-goslims}
 goslim_summary %>%
   filter(DEdueto == "leachate", n_genes > 0) %>%
   group_by(module) %>%
@@ -123,12 +136,16 @@ goslim_summary %>%
   count(module, Term) %>%
   count(module, name = "n_unique_terms")
 ```
-There are 32 terms in the down pattern, 37 in the hump patterns, and 53 in the up pattern. 
 
+There are 32 terms in the down pattern, 37 in the hump patterns, and 53
+in the up pattern.
 
 # Top 15 terms
-Which are the top ~15 terms of *leachate-responsive DEGs* represented in each pattern by percent?
-```{r}
+
+Which are the top \~15 terms of *leachate-responsive DEGs* represented
+in each pattern by percent?
+
+```{r unique-by-module}
 goslim_summary %>%
   filter(DEdueto == "leachate", n_genes > 2) %>%
   group_by(module) %>%
@@ -137,11 +154,16 @@ goslim_summary %>%
   count(module, Term) %>%
   count(module, name = "n_unique_terms")
 ```
-There are 14 unique terms represented in the down pattern, 9 in the hump pattern, and 16 in the up pattern. 
 
-# Which are unique? 
-Across down, hump, and up.. which terms are only found in one pattern (e.g. only in down, or only in up)?
-```{r}
+There are 14 unique terms represented in the down pattern, 9 in the hump
+pattern, and 16 in the up pattern.
+
+# Which are unique?
+
+Across down, hump, and up.. which terms are only found in one pattern
+(e.g. only in down, or only in up)?
+
+```{r unique}
 unique_terms <- goslim_summary %>%
   filter(DEdueto == "leachate") %>%
   group_by(module) %>%
@@ -164,22 +186,30 @@ unique_terms <- goslim_summary %>%
 unique_terms
 
 ```
+
 There are 6 unique terms
 
 Unique to down (aka cleavage):
-- meitoc nuclear division, n_DEG = 3
+
+-   **meitoc nuclear division, n_DEG = 3**
 
 Unique to hump:
-- lipid metablolic process, n_DEG = 4
-- carbohydrate derivative metabolic process n_DEG = 2
-- DNA-templated transcription, n_DEG = 5
-- protein catabolic process, n_DEG = 1
+
+-   lipid metabolic process, n_DEG = 4
+
+-   carbohydrate derivative metabolic process n_DEG = 2
+
+-   DNA-templated transcription, n_DEG = 5
+
+-   protein catabolic process, n_DEG = 1
 
 Unique to up (aka early gastrula):
-- vesicle-mediated transport, n_DEG = 11
+
+-   **vesicle-mediated transport, n_DEG = 11**
 
 # Which are shared across counts vs percents?
-```{r}
+
+```{r top10s}
 top_terms_percent <- goslim_summary %>%
   filter(DEdueto == "leachate") %>%
   group_by(module) %>%
@@ -193,87 +223,150 @@ top_terms_genes <- goslim_summary %>%
   ungroup()
 ```
 
-```{r}
+```{r percent-only}
 setdiff(top_terms_percent$Term, top_terms_genes$Term) # percent only 
 ```
-```{r}
+
+```{r count-only}
 setdiff(top_terms_genes$Term, top_terms_percent$Term) # gene count only
 ```
-```{r}
+
+```{r intersect}
 intersect(top_terms_percent$Term, top_terms_genes$Term) # shared between both
 ```
 
-
 #### 1. Cell division / early embryogenesis
-- meiotic nuclear division
-- mitotic cell cycle
-- chromosome segregation
 
-> Early embryos rely on rapid, tightly coordinated cell divisions. Changes here may reflect abnormal timing, spindle disruption, or DNA segregation stress. This provides further evidence that PVC leachate may subtly perturb cell cycle progression without causing overt mortality.
+-   **meiotic nuclear division**
+-   **mitotic cell cycle**
+-   chromosome segregation
 
-#### 2. Developmental patterning 
-- anatomical structure development
-- cell differentiation
+> Early embryos rely on rapid, tightly coordinated cell divisions.
+> Changes here may reflect abnormal timing, spindle disruption, or DNA
+> segregation stress. This provides further evidence that PVC leachate
+> may subtly perturb cell cycle progression without causing overt
+> mortality.
+
+#### 2. Developmental patterning
+
+-   **anatomical structure development**
+-   **cell differentiation**
 
 these support your observation of subtle developmental timing changes.
 
 Strong angle: transcriptional changes may precede visible malformations.
 
 #### 3. Gene regulation / epigenetic control
-- regulation of DNA-templated transcription
-- DNA-templated transcription
-- chromatin organization
 
-> Embryos are executing tightly programmed developmental gene networks. Disturbance here suggests reprogramming of developmental trajectories.
+-   **regulation of DNA-templated transcription**
+-   DNA-templated transcription
+-   chromatin organization
+
+> Embryos are executing tightly programmed developmental gene networks.
+> Disturbance here suggests reprogramming of developmental trajectories.
 
 Especially strong if responses strongest at 4 hpf.
 
 #### 4. Cellular signaling / communication
-- signaling
-- vesicle-mediated transport
 
-> Cells respond to external stressors through signaling pathways; vesicle trafficking is central to membrane dynamics, secretion, and stress responses.
+-   **signaling**
+-   **vesicle-mediated transport**
+
+> Cells respond to external stressors through signaling pathways;
+> vesicle trafficking is central to membrane dynamics, secretion, and
+> stress responses.
 
 #### 5. Metabolism / energetic shifts
-- lipid metabolic process
-- carbohydrate derivative metabolic process
-- protein catabolic process
 
-Why they matter: indicates resource reallocation, stress metabolism, membrane remodeling, or energetic costs of exposure.
+-   **lipid metabolic process**
+-   carbohydrate derivative metabolic process
+-   protein catabolic process
+
+Why they matter: indicates resource reallocation, stress metabolism,
+membrane remodeling, or energetic costs of exposure.
 
 Cell cycle + chromosome segregation → altered developmental timing
 Transcription/chromatin regulation → early molecular reprogramming
 Metabolism + signaling → physiological stress compensation
 
-Programmed cell death
-- Useful if multiple apoptosis-related genes present. If not, mention briefly as potential stress response.
+Programmed cell death - Useful if multiple apoptosis-related genes
+present. If not, mention briefly as potential stress response.
 
-Immune system process
-> DEGs included genes annotated to immune-related processes, potentially reflecting early innate defense or generalized cellular stress pathways.
+Immune system process \> DEGs included genes annotated to immune-related
+processes, potentially reflecting early innate defense or generalized
+cellular stress pathways.
 
-Reproductive process
-- A broad GOslim annotation. In embryos maybe this reflects maternally provisioned transcripts... indicator for maternal to zygote transition? 
+Reproductive process - A broad GOslim annotation. In embryos maybe this
+reflects maternally provisioned transcripts... indicator for maternal to
+zygote transition?
 
-> Leachate-responsive DEGs were concentrated in functions related to cell division, developmental regulation, transcriptional control, and metabolism, suggesting that PVC leachate may subtly disrupt early embryogenic processes before overt morphological abnormalities become apparent.
+> Leachate-responsive DEGs were concentrated in functions related to
+> cell division, developmental regulation, transcriptional control, and
+> metabolism, suggesting that PVC leachate may subtly disrupt early
+> embryogenic processes before overt morphological abnormalities become
+> apparent.
 
-
-```{r}
+```{r full-join}
 top_terms <- full_join(top_terms_genes, top_terms_percent) %>% 
   mutate(
     response = case_when(
-      Term %in% c("meiotic nuclear division",
-                  "mitotic cell cycle",
-                  "chromosome segregation",
-                  "anatomical structure development",
-                  "reproductive process",
-                  "cell differentiation", 
-                  "cytoskeleton organization") ~ "Early embryogenesis, cell division, and fate",
-      Term %in% c("regulation of DNA-templated transcription",
-                  "DNA-templated transcription",
-                  "chromatin organization") ~ "Gene regulation and epigenetic control",
-      Term %in% c("signaling", "vesicle-mediated transport") ~ "Cellular signaling and communication",
-      Term %in% c("lipid metabolic process", "carbohydrate derivative metabolic process", "protein catabolic process") ~ "Metabolism and energetic shifts",
-      Term %in% c("immune system process", "programmed cell death") ~ "Stress responses" 
+      
+      # Early development, cleavage, morphogenesis
+      Term %in% c(
+        "mitotic cell cycle",
+        "anatomical structure development",
+        "cell differentiation",
+        "cytoskeleton organization",
+        "meiotic nuclear division"
+      ) ~ "Early embryogenesis, cell division, and fate",
+      
+      # Maternal-effect / early cell-cycle regulatory processes
+      Term %in% c(
+        "chromosome segregation",
+        "reproductive process"
+      ) ~ "Cell cycle and maternal-effect processes",
+      
+      # Transcriptional control / chromatin state
+      Term %in% c(
+        "regulation of DNA-templated transcription",
+        "DNA-templated transcription",
+        "chromatin organization"
+      ) ~ "Gene regulation and epigenetic control",
+      
+      # Communication, trafficking, signaling cascades
+      Term %in% c(
+        "signaling",
+        "vesicle-mediated transport"
+      ) ~ "Cellular signaling and communication",
+      
+      # Cellular defense / damage response
+      Term %in% c(
+        "immune system process",
+        "programmed cell death"
+      ) ~ "Stress responses",
+      
+      # Resource use / biochemical processing
+      Term %in% c(
+        "lipid metabolic process",
+        "carbohydrate derivative metabolic process",
+        "protein catabolic process"
+      ) ~ "Metabolism and energetic shifts",
+      
+      TRUE ~ "Other"
+    ),
+    
+    response = factor(
+      response,
+      levels = c(
+        "Early embryogenesis, cell division, and fate",
+        "Cell cycle and maternal-effect processes",
+        "Gene regulation and epigenetic control",
+        "Cellular signaling and communication",
+        "Stress responses",
+        "Metabolism and energetic shifts",
+        "Other"
+      ),
+      ordered = TRUE
     )
   )
 
@@ -286,7 +379,8 @@ top_terms %>%
   arrange(desc(sum_genes), desc(sum_percent)) %>% 
   kable() 
 ```
-```{r}
+
+```{r top17-summary}
 top_terms %>% 
   group_by(Term) %>%
   summarise(
@@ -297,63 +391,98 @@ top_terms %>%
   kable() 
 ```
 
-
-
 # Make plotting dataframe
-```{r, fig.height = 12}
-plot_df <- top_terms %>%
-  filter(DEdueto == "leachate") %>% 
-  mutate(goterm = factor(Term, levels = unique(Term)),
-    pattern = factor(pattern, levels = c("down", "hump", "up")),
-    percent_scaled = Percent / max(Percent) * max(n_genes),
-    response = factor(
-      response,
-      levels = c(
-        "Early embryogenesis, cell division, and fate",
-        "Gene regulation and epigenetic control",
-        "Cellular signaling and communication",
-        "Stress responses",
-        "Metabolism and energetic shifts"
-      ), 
-      ordered = TRUE
-    )
-  ) %>%
-  arrange(response, desc(n_genes)) %>%
-  mutate(
-    goterm = factor(Term, levels = unique(Term)),
-    pattern = factor(pattern, levels = c("down", "hump", "up")),
-    percent_scaled = Percent / max(Percent) * max(n_genes)
-  )
-
-plot_df %>% group_by(response) %>%
-  summarise(
-    sum_genes = sum(n_genes),
-    sum_percent = sum(Percent)
-  ) %>%
-  arrange(desc(sum_genes), desc(sum_percent)) %>%
-  kable()
-```
 
 ```{r}
-plot_terms <- c()
 
-top_plot <- top_terms %>% 
-  dplyr::filter
+plot_terms <- c(
+  "anatomical structure development",
+  "cell differentiation",
+  "meiotic nuclear division",
+  "mitotic cell cycle",
+  "signaling",
+  "vesicle-mediated transport",
+  "regulation of DNA-templated transcription",
+  "lipid metabolic process"
+)
+
+response_levels <- c(
+  "Early embryogenesis, cell division, and fate",
+  "Gene regulation and epigenetic control",
+  "Cellular signaling and communication",
+  "Stress responses",
+  "Metabolism and energetic shifts"
+)
+
+top_plot <- top_terms %>%
+  filter(Term %in% plot_terms) %>% 
+  mutate(goterm = factor(Term, levels=plot_terms, ordered=TRUE)) %>% 
+  complete(goterm, pattern, fill = list(n_genes = 0, 
+                                             n_goids = 0, 
+                                             Percent = 0, 
+                                             Count = 0)) %>% 
+   group_by(goterm) %>% 
+  fill(response, .direction = "downup") %>% 
+  ungroup() %>% 
+  dplyr::select(goterm, pattern, response, n_genes, Percent)
+  
+
+str(top_plot)
 ```
 
 ::: callout-note
-- Percent values were linearly rescaled to the range of gene counts to allow simultaneous visualization of enrichment percentage and DEG counts on the same axis.
+-   Percent values were linearly rescaled to the range of gene counts to
+    allow simultaneous visualization of enrichment percentage and DEG
+    counts on the same axis.
 
-- Percent was normalized to the maximum observed value and scaled to match the range of DEG counts for plotting.
+-   Percent was normalized to the maximum observed value and scaled to
+    match the range of DEG counts for plotting.
 :::
 
 # Spider / Radar
- 
- inspo from R graph gallery [here](https://r-graph-gallery.com/spider-or-radar-chart.html)
- 
-## Counts 
-```{r, fig.height = 4, fig.width = 18}
-plt_count <- ggplot(plot_df) +
+
+inspo from R graph gallery
+[here](https://r-graph-gallery.com/spider-or-radar-chart.html)
+
+```{r}
+library(PNWColors)
+```
+
+```{r}
+bay <- pnw_palette(name="Bay", n=5, type="discrete") #early embryo cell stuff
+pnw_palette(name="Spring", n=2, type="discrete") #signaling
+pnw_palette(name="Lake", n=2, type="discrete") # gene reg & metabolism
+```
+
+```{r}
+radar_pal <- c(
+  "anatomical structure development" = "firebrick4",
+  "cell differentiation" = "firebrick",
+  "meiotic nuclear division" = "firebrick1",
+  "mitotic cell cycle" = "firebrick3",
+  "signaling" = "deepskyblue4",
+  "vesicle-mediated transport" = "deepskyblue2",
+  "regulation of DNA-templated transcription" = "olivedrab4",
+  "lipid metabolic process" = "orchid3"
+)
+```
+
+```{r}
+top_plot <- top_plot %>% 
+  mutate(
+    palette = case_when(
+      response == "Early embryogenesis, cell division, and fate" ~ embryo_pal, 
+      response == "Cellular signaling and communication"~signal_pal, 
+      response %in% c("Gene regulation and epigenetic control",
+      "Metabolism and energetic shifts")~genereg_pal
+    )
+  )
+```
+
+## Counts
+
+```{r, fig.height = 4, fig.width = 12}
+plt_count <- ggplot(top_plot) +
   # Make custom panel grid
   geom_hline(
     aes(yintercept = y), 
@@ -365,9 +494,9 @@ plt_count <- ggplot(plot_df) +
   # (but it doesn't break long words!)
   geom_col(
     aes(
-      x = str_wrap(goterm, 12),
+      x = goterm,
       y = n_genes,
-      fill = response
+      fill = goterm
     ),
     position = "dodge2",
     show.legend = TRUE,
@@ -377,31 +506,28 @@ plt_count <- ggplot(plot_df) +
   # Lollipop shaft for percent enriched
   geom_segment(
     aes(
-      x = str_wrap(goterm, 12),
+      x = goterm,
       y = 0,
-      xend = str_wrap(goterm, 12),
+      xend = goterm,
       yend = 21,
-      color = response
+      color = goterm
     ),
     linetype = "dashed"
   ) + 
-  # Add dots to represent the percent enriched
-  #geom_point(
-  #  aes(
-  #    x = str_wrap(Term, 12),
-  #    y = percent_scaled
-  #  ),
-  #  size = 1.5, 
-  #  color = "grey30"
-  #) +
   facet_wrap(~pattern, ncol = 3) +
   # Make it circular!
   coord_polar(clip = "off")+
   # Scale y axis so bars don't start in the center
   scale_y_continuous(
-    limits = c(-2, 22),
+    limits = c(-2, 25),
     expand = c(0, 0)
   ) + 
+  # Wrap text labels
+   scale_x_discrete(labels = \(x) stringr::str_wrap(x, 15)
+  )+
+  # Add color palette
+  scale_color_manual(values = radar_pal)+
+  scale_fill_manual(values = radar_pal)+
   theme(
     panel.grid.major.x = element_blank(),
     panel.grid.minor = element_blank(),
@@ -425,19 +551,9 @@ plt_count
 ```{r, fig.width = 12, fig.height = 4}
 
 plt_anno <- plt_count +
-# Annotate the bars and the lollipops so the reader understands the scaling
-  annotate(
-    x = 11, 
-    y = 11,
-    label = "Count of DE Genes",
-    geom = "text",
-    angle = -75,
-    color = "gray30",
-    size = 3
-  ) +
   # Annotate custom scale inside plot
   annotate(
-    x = 11.4, 
+    x = 8.5, 
     y = 6, 
     label = "5", 
     geom = "text", 
@@ -445,7 +561,7 @@ plt_anno <- plt_count +
     size = 3
   ) +
   annotate(
-    x = 11.4, 
+    x = 8.5, 
     y = 11, 
     label = "10", 
     geom = "text", 
@@ -453,20 +569,27 @@ plt_anno <- plt_count +
     size = 3
   ) +
   annotate(
-    x = 11.4, 
+    x = 8.5, 
     y = 16, 
     label = "15", 
     geom = "text", 
     color = "gray40", 
     size = 3
-  )+ 
-  theme(
-    panel.background = element_blank()
   )
 
 plt_anno
+
+
 ```
+
+##### Save radar plot
+
+```{r}
+ggsave("../../figs/radar.png", plt_anno, width=12, height=4, units="in", dpi=900)
+```
+
 ## Enriched
+
 ```{r, fig.width=12, fig.height=4}
 plt_enriched <- ggplot(circ_df) +
   # Make custom panel grid
@@ -533,6 +656,7 @@ plt_enriched
 ```
 
 ## Universe
+
 ```{r}
 uni_df <- goslim_summary %>%
   drop_na(genes) %>%
@@ -606,8 +730,8 @@ plt_universe <- ggplot(uni_df) +
 plt_universe
 ```
 
-
 # Faceted lollipop ALL DEGs
+
 ```{r, fig.height= 12}
 library("colorspace")
 hcl_palettes(plot = TRUE)
@@ -616,7 +740,6 @@ hcl_palettes(plot = TRUE)
 ```{r}
 hclwizard()
 ```
-
 
 ```{r}
 goslim_lollipop <- goslim_summary %>%
@@ -629,6 +752,7 @@ length(unique(goslim_lollipop$Term))
 ```
 
 ## Count
+
 ```{r, fig.height = 12}
 ggplot(goslim_lollipop, aes(x = n_genes, y = Term, color = Percent)) +
   geom_segment(aes(xend = 0, yend = Term), size = 3) +
@@ -646,6 +770,7 @@ ggplot(goslim_lollipop, aes(x = n_genes, y = Term, color = Percent)) +
 ```
 
 ## Enriched
+
 ```{r, fig.height = 12}
 ggplot(goslim_lollipop, aes(x = Percent, y = Term, color = n_genes)) +
   geom_segment(aes(xend = 0, yend = Term), size = 2) +
@@ -663,6 +788,7 @@ ggplot(goslim_lollipop, aes(x = Percent, y = Term, color = n_genes)) +
 ```
 
 ## Universe
+
 ```{r, fig.height=12}
 ggplot(uni_df, aes(x = n_genes, y = Term)) +
   geom_segment(aes(xend = 0, yend = Term, color = n_genes), size = 2) +
@@ -677,4 +803,3 @@ ggplot(uni_df, aes(x = n_genes, y = Term)) +
   theme_minimal(base_size = 12) +
   theme(legend.position = "bottom")
 ```
-
