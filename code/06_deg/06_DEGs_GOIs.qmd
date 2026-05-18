@@ -1,0 +1,366 @@
+---
+title: "Look for GOIs in DEGs"
+subtitle: "in comparison to Morgan et al. 2022 "
+author: "Sarah Tanja"
+date: 2026-05-17
+date-modified: today
+format:
+  gfm: 
+    toc: true
+    number-sections: true
+  html:
+    theme: journal
+    highlight-style: github
+    page-layout: article
+    code-background: true
+    code-tools: 
+      source: true
+      toggle: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    number-sections: true
+    df-print: kable
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
+    reference-location: margin
+    citation-location: margin
+editor: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, # Display code chunks
+  eval = TRUE, # Evaluate code chunks
+  warning = FALSE, # Hide warnings
+  message = FALSE) # Hide messages
+```
+
+# Background
+
+> The GOIs are:
+>
+> 1.  17β-hydroxysteroid dehydrogenases type 14 (17β HSD14)
+>
+> 2.  17β-hydroxysteroid dehydrogenases type 12 (17β HSD12)
+>
+> 3.   Niemann-Pick C type 2 (NPC2)
+>
+> 4.  Equistatin (EI)
+>
+> 5.  Complement component C3 (C3)
+>
+> 6.  Cathepsin L (CTSL)
+>
+> 7.  Patched domain-containing protein 3 (PTCH3)
+>
+> 8.  Smoothened (SMO)
+>
+> 9.  Desert Hedgehog (DHH)
+>
+> 10. Zinc finger protein GLI2 (GLI2)
+>
+> 11. Vitellogenin (VTG)
+>
+> These GOIs were selected because of functional associations with
+> steroid hormone biosynthesis; cholesterol binding/transport; immunity;
+> phagocytosis; or Hedgehog signaling.
+
+# Load Libraries
+
+```{r libraries}
+library(tidyverse)
+library(GenomicRanges)
+library(Biostrings)
+library(kableExtra)
+```
+
+# Load DEG lists
+
+```{r}
+sig_summary <- read_csv("../../output/06_deg/spawnnight/sig_summary.csv")
+
+length(unique(sig_summary$gene_id))
+```
+
+130 DEGs including Wald and LRT contrasts
+
+```{r}
+sig_summary_Wald <- sig_summary %>% 
+  dplyr::filter(!list %in% c("joint","int"))
+
+length(unique(sig_summary_Wald$gene_id))
+```
+
+122 DEGs only Wald contrasts (specific stagexlevel vs control)
+
+##### Read in gene lists
+
+```{r}
+# significant genes list
+sig_genes_leachate <- read.csv("../../output/06_deg/spawnnight/sig_genes_leachate.csv")
+```
+
+##### Import annotated EggNog GO annotation dataframe
+
+```{r}
+EggNog <- read_csv("../../output/07_enrichment/goseq/universe_genes_anno_semi.csv") 
+
+EggNog %>% names()
+```
+
+Filter for our 130 DEGs
+
+```{r}
+EggNog_leachate_degs <- EggNog %>% 
+  dplyr::filter(gene_id %in% sig_genes_leachate$gene_id) %>% 
+  dplyr::select(gene_id, Description, Preferred_name, PFAMs, peak_stage)
+
+length(unique(EggNog_leachate_degs$gene_id))
+```
+
+Save it!
+
+```{r}
+write_csv(EggNog_leachate_degs, 
+          "../../output/06_deg/spawnnight/EggNog_leachate_degs.csv")
+```
+
+How do we look for those 11 GOIs??
+
+Let's look across EggNog Descriptions & PFAMs... 
+
+```{r}
+goi_patterns <- tribble(
+  ~GOI, ~pattern,
+  "HSD17B14 / 17β-HSD14", "HSD17B14|HSD14|17.?beta.*hydroxysteroid|hydroxysteroid.*14",
+  "HSD17B12 / 17β-HSD12", "HSD17B12|HSD12|17.?beta.*hydroxysteroid|hydroxysteroid.*12",
+  "NPC2", "NPC2|Niemann.?Pick|cholesterol.*binding|sterol.*transport",
+  "Equistatin / EI", "equistatin|cystatin|thyropin|protease inhibitor|cathepsin inhibitor",
+  "C3", "\\bC3\\b|complement component|complement C3",
+  "CTSL", "CTSL|cathepsin.?L|cathepsin",
+  "PTCH3", "PTCH3|patched|hedgehog receptor",
+  "SMO", "\\bSMO\\b|smoothened",
+  "DHH", "\\bDHH\\b|desert hedgehog|hedgehog",
+  "GLI2", "GLI2|zinc finger.*GLI|GLI zinc finger|glioma-associated",
+  "VTG", "\\bVTG\\b|vitellogenin"
+)
+
+search_cols <- c(
+  "Description", "Preferred_name", "PFAMs"
+)
+
+deg_search <- EggNog_leachate_degs %>%
+  mutate(search_text = str_c(across(any_of(search_cols)), collapse = " | "))
+
+goi_hits <- goi_patterns %>%
+  mutate(matches = map(pattern, ~ deg_search %>%
+                         filter(str_detect(search_text, regex(.x, ignore_case = TRUE))))) %>%
+  unnest(matches)
+
+goi_hits %>%
+  select(GOI, gene_id, Preferred_name, Description, PFAMs)
+```
+Hmmmm.... non model organism frustration
+
+
+Let's describe the top log2fold change genes instead?
+
+```{r top-log2FC}
+sig_df <- sig_summary %>% 
+left_join(., EggNog_leachate_degs, by = "gene_id") %>% 
+  filter(gene_id %in% sig_genes_leachate$gene_id)
+  
+# Group by cluster/peak_stage and print the top 3 log2Fold changes....
+sig_df %>% 
+  group_by(peak_stage) %>% 
+  slice_max(order_by = abs(log2FoldChange), n=7) %>% 
+  summarize(top_hits = paste0(
+      Preferred_name,
+      ": ",
+      Description,
+      collapse = "; "
+    ),
+    .groups = "drop") %>% 
+  kable()
+```
+
+
+Prepare to join
+
+```{r}
+gene2go <- read_csv("../../output/07_enrichment/goseq/gene2go.csv")
+
+gene2go_join <- gene2go %>% 
+  as.tibble() %>% 
+  dplyr::rename(go = category) %>% 
+  dplyr::filter(gene %in% sig_summary$gene_id)
+
+length(unique(gene2go_join$gene))
+length(unique(gene2go_join$go))
+
+gene2go_join %>% names()
+```
+Ok we have 110 DE leachate-responsive genes, that map to 3295 go terms
+
+Now we want the descriptions for those go terms!
+
+
+```{r}
+# read in the terms
+termsGO <- read_csv("../../output/07_enrichment/goseq/universe_reducedTerms_GO.csv") 
+
+# column names
+termsGO %>% names()
+length(unique(termsGO$go))
+
+# Do these terms match what we have in our gene2go_join df?
+setdiff(gene2go_join$go, termsGO$go)
+```
+
+
+```{r}
+EggNog_join <- EggNog_leachate_degs %>% 
+  dplyr::rename(gene = gene_id)
+EggNog_join %>% names()
+```
+```{r}
+sig_sum_join <- sig_summary %>% 
+  dplyr::rename(gene = gene_id)
+
+sig_sum_join %>% names()
+```
+
+```{r big-join}
+
+gene2go2bp <- gene2go %>% 
+  left_join(., reducedGO, by = "go") %>% 
+  left_join(., EggNog_leachate_degs, by = c("gene" = "gene_id")) %>% 
+  left_join(., sig_summary, by = c("gene" = "gene_id")) %>% 
+  dplyr::select(gene, pattern, list, log2FoldChange, lfcSE, padj, Description, Preferred_name, PFAMs, term, parentTerm)
+
+length(unique(gene2go$gene))
+length(unique(gene2go2bp$gene))
+```
+
+# Look for GPCR-associated go terms in DEG list
+```{r}
+# read in the terms
+termsGO <- read_csv("../../output/07_enrichment/goseq/GO_leachate.csv") 
+
+termsGO %>% names()
+
+length(unique(termsGO$category))
+```
+12,599 GO terms... really? 130 DEGs expand to *that many* GO terms??
+
+No.. that is all GO terms in universe!
+We have to filter for NumDEInCat > 0!
+```{r}
+de_terms <- termsGO %>% 
+  dplyr::filter(numDEInCat > 0)
+
+length(unique(de_terms$category))
+```
+
+```{r gpcr-terms}
+gpcr_terms <- c(
+  "G protein",
+  "GPCR",
+  "signal transduction",
+  "receptor",
+  "transmembrane signaling",
+  "second messenger",
+  "hedgehog",
+  "adenylate cyclase",
+  "Wnt",
+  "cell signaling"
+)
+
+gpcrterms <- de_terms %>% 
+  filter(
+    str_detect(
+      term,
+      regex(paste(gpcr_terms, collapse = "|"), ignore_case = TRUE)
+    )
+  )
+
+head(gpcrterms)
+
+length(gpcrterms$term)
+```
+74 GO terms ... Which DE genes do those terms map back to???
+
+Some special ones to check:
+
+GO:0008277 - regulation of G protein-coupled receptor signaling pathway
+GO:0043401 - steroid hormone receptor signaling pathway
+GO:0030518 - nuclear receptor-mediated steroid hormone signaling pathway
+GO:0007186 - G protein-coupled receptor signaling pathway
+GO:0030111 - regulation of Wnt signaling pathway
+GO:0060828 - regulation of canonical Wnt signaling pathway
+.
+.
+.
+
+
+```{r}
+gene2go %>% names()
+```
+```{r summarize-ngos}
+gene2go %>% 
+  filter(gene %in% sig_summary$gene_id) %>% 
+  group_by(gene) %>% 
+  summarize(
+    n_go_terms = n_distinct(category),
+    .groups = "drop"
+  )
+```
+```{r}
+gpcr_flagged <- sig_summary %>% 
+  mutate(
+    gpcr_adjacent = gene_id %in%
+      gene2go$gene[gene2go$category %in% gpcrterms$category]
+  )
+
+
+length(unique(gpcr_flagged$gene_id))
+length(unique(gpcr_flagged$gene_id))
+```
+# Volcano plots
+
+
+```{r}
+library(tidyverse)
+library(ggsidekick)
+library(ggrepel)
+
+volcano_df <- gpcr_flagged %>% 
+  mutate(
+    gpcr_adjacent = if_else(gpcr_adjacent == TRUE, "GPCR-adjacent", "Other"),
+    neg_log10_padj = -log10(padj)
+  )
+
+ggplot(volcano_df, aes(x = log2FoldChange, y = neg_log10_padj)) +
+  geom_point(
+    aes(color = gpcr_adjacent),
+    alpha = 0.7,
+    size = 2
+  ) +
+  scale_color_manual(
+    values = c("GPCR-adjacent" = "red", "Other" = "grey70")
+  ) +
+  facet_wrap(~ pattern) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "grey50") +
+  labs(
+    x = expression(log[2]~fold~change),
+    y = expression(-log[10]~adjusted~italic(p)),
+    color = NULL
+  ) +
+  theme_sleek_axe()
+```
+
+

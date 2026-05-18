@@ -394,6 +394,17 @@ top_terms %>%
 # Make plotting dataframe
 
 ```{r}
+universe <- goslim_summary %>% 
+  dplyr::filter(module == "universe") %>% 
+  rename(universe_n_genes = n_genes, 
+         goterm = Term) %>% 
+  dplyr::select(goterm, universe_n_genes)
+
+plot_df <- 
+
+```
+
+```{r}
 
 plot_terms <- c(
   "anatomical structure development",
@@ -414,9 +425,14 @@ response_levels <- c(
   "Metabolism and energetic shifts"
 )
 
+
+
 top_plot <- top_terms %>%
   filter(Term %in% plot_terms) %>% 
-  mutate(goterm = factor(Term, levels=plot_terms, ordered=TRUE)) %>% 
+  mutate(goterm = factor(Term, levels=plot_terms, ordered=TRUE)) %>%
+  left_join(., universe)
+
+
   complete(goterm, pattern, fill = list(n_genes = 0, 
                                              n_goids = 0, 
                                              Percent = 0, 
@@ -424,7 +440,8 @@ top_plot <- top_terms %>%
    group_by(goterm) %>% 
   fill(response, .direction = "downup") %>% 
   ungroup() %>% 
-  dplyr::select(goterm, pattern, response, n_genes, Percent)
+  dplyr::select(goterm, pattern, response, n_genes, Percent) %>% 
+
   
 
 str(top_plot)
@@ -465,18 +482,6 @@ radar_pal <- c(
   "regulation of DNA-templated transcription" = "olivedrab4",
   "lipid metabolic process" = "orchid3"
 )
-```
-
-```{r}
-top_plot <- top_plot %>% 
-  mutate(
-    palette = case_when(
-      response == "Early embryogenesis, cell division, and fate" ~ embryo_pal, 
-      response == "Cellular signaling and communication"~signal_pal, 
-      response %in% c("Gene regulation and epigenetic control",
-      "Metabolism and energetic shifts")~genereg_pal
-    )
-  )
 ```
 
 ## Counts
@@ -550,7 +555,7 @@ plt_count
 
 ```{r, fig.width = 12, fig.height = 4}
 
-plt_anno <- plt_count +
+plt_count_anno <- plt_count +
   # Annotate custom scale inside plot
   annotate(
     x = 8.5, 
@@ -577,21 +582,21 @@ plt_anno <- plt_count +
     size = 3
   )
 
-plt_anno
+plt_count_anno
 
 
 ```
 
 ##### Save radar plot
 
-```{r}
-ggsave("../../figs/radar.png", plt_anno, width=12, height=4, units="in", dpi=900)
+```{r save-radar}
+ggsave("../../figs/radar_counts.png", plt_count_anno, width=12, height=4, units="in", dpi=900)
 ```
 
 ## Enriched
 
 ```{r, fig.width=12, fig.height=4}
-plt_enriched <- ggplot(circ_df) +
+plt_enriched <- ggplot(top_plot) +
   # Make custom panel grid
   geom_hline(
     aes(yintercept = y), 
@@ -600,9 +605,9 @@ plt_enriched <- ggplot(circ_df) +
   ) + 
   geom_col(
     aes(
-      x = str_wrap(Term, 12),
+      x = str_wrap(goterm, 12),
       y = n_genes,
-      fill = Term
+      fill = goterm
     ),
     position = "dodge2",
     show.legend = TRUE,
@@ -611,18 +616,18 @@ plt_enriched <- ggplot(circ_df) +
   # Lollipop shaft for percent enriched
   geom_segment(
     aes(
-      x = str_wrap(Term, 12),
+      x = str_wrap(goterm, 12),
       y = 0,
-      xend = str_wrap(Term, 12),
+      xend = str_wrap(goterm, 12),
       yend = 21,
-      color = Term
+      color = goterm
     ),
     linetype = "dashed"
   ) + 
   # Add dots to represent the percent enriched
   geom_point(
     aes(
-      x = str_wrap(Term, 12),
+      x = str_wrap(goterm, 12),
       y = percent_scaled
     ),
     size = 1.5, 
@@ -737,15 +742,10 @@ library("colorspace")
 hcl_palettes(plot = TRUE)
 ```
 
-```{r}
-hclwizard()
-```
-
-```{r}
+```{r lollipop-plotting-df}
 goslim_lollipop <- goslim_summary %>%
   drop_na(genes) %>% 
-  filter(DEdueto == "leachate") %>% 
-  mutate()
+  filter(DEdueto == "leachate")
 
 # number of goslim terms in goslim_lollipop
 length(unique(goslim_lollipop$Term))
@@ -753,12 +753,13 @@ length(unique(goslim_lollipop$Term))
 
 ## Count
 
-```{r, fig.height = 12}
-ggplot(goslim_lollipop, aes(x = n_genes, y = Term, color = Percent)) +
+```{r, fig.width= 18, fig.height = 12}
+lolli_counts <- 
+  ggplot(goslim_lollipop, aes(x = n_genes, y = Term, color = Percent)) +
   geom_segment(aes(xend = 0, yend = Term), size = 3) +
   geom_point(size = 4) +
   facet_wrap(~pattern, ncol = 3) +
-  scale_color_continuous_sequential(palette = "Heat2", begin = 0.3, end = 1) +
+  scale_color_continuous_sequential(palette = "Hawaii") +
   labs(
     title = "GOslim BP terms across expression patterns",
     subtitle = "Lollipop length reflects counts of DEGs",
@@ -767,6 +768,13 @@ ggplot(goslim_lollipop, aes(x = n_genes, y = Term, color = Percent)) +
   ) +
   theme_minimal(base_size = 12) +
   theme(legend.position = "bottom")
+
+lolli_counts
+```
+
+```{r save-lolli}
+#save to fig 
+ggsave("../../figs/lolli_counts.png", lolli_counts, width=18, height=12, units="in", dpi=900)
 ```
 
 ## Enriched
