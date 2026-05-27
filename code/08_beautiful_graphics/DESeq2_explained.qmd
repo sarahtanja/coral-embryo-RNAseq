@@ -1,0 +1,202 @@
+---
+title: "DESeq2_explained"
+format: html
+---
+
+```{r}
+library(tidyverse)
+library(ggbeeswarm)
+```
+
+```{r}
+sig_summary <- read_csv("../../output/06_deg/spawnnight/sig_summary.csv")
+norm_130_df <- read_csv("../../output/06_deg/spawnnight/norm_130_df.csv")
+metadata <- read_csv("../../metadata/metadata_or.csv")
+```
+
+```{r}
+top_gene <- sig_summary %>% 
+  arrange(desc(log2FoldChange)) %>% 
+  slice(1) %>% 
+  pull(gene_id)
+```
+
+```{r}
+plot_top <- norm_130_df %>% 
+  dplyr::filter(gene_id == top_gene) %>% 
+  pivot_longer(cols = 2:last_col(), names_to = "sample_id") %>% 
+  left_join(metadata)%>% 
+  mutate(
+    hpf = factor(hpf, levels = c(4, 9, 14)),
+    leachate = factor(leachate, levels = c("control", "low", "mid", "high"))
+  )
+
+plot_sum <- plot_top %>% 
+  group_by(group, hpf, stage, leachate) %>% 
+  summarize(mean_expr = mean(value)) %>% 
+  mutate(
+    hpf = factor(hpf, levels = c(4, 9, 14)),
+    leachate = factor(leachate, levels = c("control", "low", "mid", "high")),
+    stage = factor(stage, levels = c("cleavage", "prawnchip", "earlygastrula"))
+  )
+```
+```{r}
+theme_mcap <- theme_sleek_axe <- function() {
+  theme_minimal() +
+    theme(
+      panel.border = element_rect(
+        color = "grey70",
+        fill = NA,
+        linewidth = 0.5
+      ),
+      axis.line.x  = element_line(color = "grey70"),
+      axis.line.y  = element_line(color = "grey70"),
+      
+      plot.title = element_text(
+        size  = 12,
+        color = "grey40",
+        hjust = 0.5,
+        margin = margin(b = 20)
+      ),
+      
+      strip.text = element_text(size = 10, color = "grey40"),
+      
+      plot.subtitle = element_text(
+        size   = 10,
+        color  = "grey40",
+        hjust  = 0.5,
+        margin = margin(b = 40)
+      ),
+      
+      axis.title = element_text(size = 10, color = "grey40"),
+      axis.text = element_text(size = 10, color = "grey40"),
+      legend.title = element_text(size = 10, color = "grey40"),
+      legend.text = element_text(size = 10, color = "grey40")
+    )
+}
+
+
+leachate.colors <- c(control = "#AEF1FF", 
+                     low     = "#BBC7FF",
+                     mid     = "#7D8BFF", 
+                     high    = "#592F7D")
+
+stage.5.colors <- c(egg           = "#FFE362",
+                    cleavage      = "#EBA600", 
+                    morula        = "#E6AA83",
+                    prawnchip     = "#D9685B", 
+                    earlygastrula = "#A2223C")
+
+stage.3.colors <- c(cleavage      = "#EBA600", 
+                    prawnchip     = "#D9685B", 
+                    earlygastrula = "#A2223C")
+
+status.colors <- c(typical   = "#75C165", 
+                   uncertain = "#E3FAA5", 
+                   malformed = "#8B0069")
+
+night.colors <- c(July_6th = "#E3FAA5", 
+                  July_7th = "#578B21", 
+                  July_8th = "#1E2440")
+
+night.colors.alt <- c(July_6th = "#21918C", 
+                      July_7th = "#201158", 
+                      July_8th = "#1E2440")
+```
+
+
+```{r}
+ggplot(plot_sum, aes(x=leachate, y=mean_expr, fill=leachate)) + 
+  geom_point(shape=21, size=5, color="grey20")+
+  labs(
+    y = "Log2 Normalized Gene Expression",
+    x = ""
+  ) +
+  geom_hline(yintercept=41.49945, linetype="dashed", color="grey40")+
+  scale_fill_manual(values=leachate.colors) +
+  theme_mcap()
+```
+
+```{r}
+ggplot(plot_sum, aes(x=leachate, y=mean_expr, fill=stage)) + 
+  geom_point(shape=21, size=5, color="grey20")+
+  labs(
+    y = "Log2 Normalized Gene Expression",
+    x = ""
+  ) +
+  guides(fill = guide_legend(reverse = TRUE)) +
+  geom_hline(yintercept=41.49945, linetype="dashed", color="grey20") +
+  scale_fill_manual(values=stage.3.colors) +
+  theme_mcap()
+```
+```{r}
+p_stage <- ggplot(
+  plot_sum,
+  aes(
+    x = leachate,
+    y = mean_expr,
+    fill = stage,
+    group = stage
+  )
+) + 
+  geom_point(shape = 21, size = 5, color = "grey20") +
+  geom_hline(yintercept = 41.49945, linetype = "dashed", color = "grey20") +
+  scale_fill_manual(values = stage.3.colors) +
+  guides(fill = guide_legend(reverse = TRUE)) +
+  labs(
+    y = "Log2 Normalized Gene Expression",
+    x = ""
+  ) +
+  theme_mcap()
+
+stage_reveal <- reveal_groups(
+  p_stage,
+  order = c(1,2,3,4)
+)
+
+stage_reveal
+```
+```{r}
+for(i in seq_along(stage_reveal)) {
+
+  ggsave(
+    filename = paste0("../../figs/reveal_", i, ".png"),
+    plot = revealed[[i]],
+    width = 8,
+    height = 4.5,
+    dpi = 900
+  )
+
+}
+```
+
+
+
+```{r}
+ggsave(
+  "../../figs/deg_ex.png",
+  width=8,
+  height = 4.5,
+  dpi = 900
+)
+```
+
+
+
+```{r}
+library(ggreveal)
+```
+
+
+```{r}
+
+```
+
+
+# log2fold change
+
+```{r}
+ggplot(sig_summary, aes(x=log2FoldChange, y=list, color=list)) + 
+  geom_point()
+```
+
