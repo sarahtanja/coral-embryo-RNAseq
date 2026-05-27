@@ -76,6 +76,8 @@ library(tidyverse)
 library(GenomicRanges)
 library(Biostrings)
 library(kableExtra)
+library(ggsidekick)
+library(ggrepel)
 ```
 
 # Load DEG lists
@@ -330,14 +332,73 @@ gpcr_flagged <- sig_summary %>%
 length(unique(gpcr_flagged$gene_id))
 length(unique(gpcr_flagged$gene_id))
 ```
-# Volcano plots
+
+How many of the 130 are GPCR adjacent?
+```{r}
+gpcr_flagged %>% 
+  group_by(cluster) %>% 
+  summarize(
+    n_gpcr_genes = n_distinct(gene_id[gpcr_adjacent == TRUE]),  
+    .groups = "drop"
+  )
+```
+```{r}
+16+8+6+2
+```
 
 
 ```{r}
-library(tidyverse)
-library(ggsidekick)
-library(ggrepel)
+gpcr_genes <- gpcr_flagged %>% 
+  dplyr::filter(gpcr_adjacent == TRUE) %>% 
+  left_join(., EggNog_leachate_degs, by = "gene_id")
+```
 
+Save list of GPCR genes and descriptions:
+```{r}
+write_csv(gpcr_genes, "../../output/07_enrichment/gpcr/gpcr_genes.csv")
+```
+
+
+# Volcano plots
+```{r custom-theme}
+theme_sleek_axe <- function() {
+  theme_sleek() +
+    theme(
+      panel.border = element_rect(
+        color = "grey70",
+        fill = NA,
+        linewidth = 0.5
+      ),
+      axis.line.x  = element_line(color = "grey70"),
+      axis.line.y  = element_line(color = "grey70"),
+      
+      plot.title = element_text(
+        size  = 10,
+        color = "grey40",
+        hjust = 0.5,
+        margin = margin(b = 20)
+      ),
+      
+      strip.text = element_text(size = 8, color = "grey40"),
+      
+      plot.subtitle = element_text(
+        size   = 8,
+        color  = "grey40",
+        hjust  = 0.5,
+        margin = margin(b = 40)
+      ),
+      
+      axis.title = element_text(size = 8, color = "grey40"),
+      axis.text = element_text(size = 7, color = "grey40"),
+      legend.title = element_text(size = 8, color = "grey40"),
+      legend.text = element_text(size = 7, color = "grey40")
+    )
+}
+
+```
+
+
+```{r volcano}
 volcano_df <- gpcr_flagged %>% 
   mutate(
     gpcr_adjacent = if_else(gpcr_adjacent == TRUE, "GPCR-adjacent", "Other"),
@@ -353,7 +414,7 @@ ggplot(volcano_df, aes(x = log2FoldChange, y = neg_log10_padj)) +
   scale_color_manual(
     values = c("GPCR-adjacent" = "red", "Other" = "grey70")
   ) +
-  facet_wrap(~ pattern) +
+  facet_wrap(~ cluster) +
   geom_vline(xintercept = 0, linetype = "dashed", color = "grey50") +
   labs(
     x = expression(log[2]~fold~change),
