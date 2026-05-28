@@ -62,7 +62,7 @@ pca <- read_csv("../../output/05_explore/pca_500_or.csv")
 pheat_df <- readRDS("../../output/05_explore/pheat_annotation_df.rds")
 ```
 
-## Custom ggplot theme
+## Custom ggplot themes
 ```{r}
 theme_sleek_axe <- function() {
   theme_sleek() +
@@ -76,26 +76,89 @@ theme_sleek_axe <- function() {
       axis.line.y  = element_line(color = "grey70"),
       
       plot.title = element_text(
-        size  = 10,
-        color = "grey40",
+        size  = 12,
+        color = "grey30",
         hjust = 0.5,
-        margin = margin(b = 0)
+        margin = margin(b = 2)
       ),
       
-      strip.text = element_text(size = 8, color = "grey40"),
+      strip.text = element_text(size = 10, color = "grey30"),
       
       plot.subtitle = element_text(
-        size   = 8,
-        color  = "grey40",
+        size   = 10,
+        color  = "grey30",
         hjust  = 0.5,
-        margin = margin(t = 0, b = 10)
+        margin = margin(t = 0)
       ),
       
-      axis.title = element_text(size = 8, color = "grey40"),
-      axis.text = element_text(size = 7, color = "grey40"),
-      legend.title = element_text(size = 8, color = "grey40"),
-      legend.text = element_text(size = 7, color = "grey40")
+      axis.title = element_text(size = 10, color = "grey30"),
+      axis.text = element_text(size = 10, color = "grey30"),
+      legend.title = element_text(size = 10, color = "grey30"),
+      legend.text = element_text(size = 10, color = "grey30")
     )
+}
+
+
+theme_pptx <- function() {
+  theme_sleek() +
+    theme(
+      panel.border = element_blank(),
+      axis.line.x  = element_line(color = "grey70"),
+      axis.line.y  = element_line(color = "grey70"),
+      
+      plot.title = element_text(
+        size  = 40,
+        color = "grey30",
+        hjust = 0.5,
+        margin = margin(b = 20)
+      ),
+      
+      strip.text = element_text(size = 24, color = "grey30"),
+      
+      plot.subtitle = element_text(
+        size   = 24,
+        color  = "grey30",
+        hjust  = 0.5,
+        margin = margin(b = 40)
+      ),
+      
+      axis.title = element_text(size = 24, color = "grey30"),
+      axis.text = element_text(size = 24, color = "grey30"),
+      legend.title = element_text(size = 24, color = "grey30"),
+      legend.text = element_text(size = 24, color = "grey30")
+    )
+}
+```
+
+```{r, geoms}
+geom_defaults <- function() {
+  update_geom_defaults("point",      list(size = 1.5, stroke = 0.5))
+  update_geom_defaults("line",       list(linewidth = 0.5))
+  update_geom_defaults("boxplot",    list(linewidth = 0.5))
+  update_geom_defaults("violin",     list(linewidth = 0.5))
+  update_geom_defaults("vline",      list(linewidth = 0.5))
+  update_geom_defaults("hline",      list(linewidth = 0.5))
+  update_geom_defaults("abline",     list(linewidth = 0.5))
+  update_geom_defaults("errorbar",   list(linewidth = 0.5))
+  update_geom_defaults("pointrange", list(linewidth = 0.5))
+  update_geom_defaults("crossbar",   list(linewidth = 0.5))
+  update_geom_defaults("linerange",  list(linewidth = 0.5))
+  update_geom_defaults("path", list(linewidth = 0.5))
+}
+
+geom_pptx <- function() {
+  update_geom_defaults("point",   list(size = 5, stroke = 1.2))
+  update_geom_defaults("line",    list(linewidth = 1.5))
+  update_geom_defaults("boxplot", list(linewidth = 1.2))
+  update_geom_defaults("violin",  list(linewidth = 1.2))
+  update_geom_defaults("vline", list(linewidth = 1.5))
+  update_geom_defaults("hline", list(linewidth = 1.5))
+  update_geom_defaults("abline", list(linewidth = 1.5))
+  update_geom_defaults("errorbar", list(linewidth = 1.5))
+  update_geom_defaults("pointrange", list(linewidth = 1.5))
+  update_geom_defaults("crossbar", list(linewidth = 1.5))
+  update_geom_defaults("linerange", list(linewidth = 1.5))
+  update_geom_defaults("path", list(linewidth = 1.5))
 }
 
 ```
@@ -171,7 +234,7 @@ labs_leachate <- c(control = "0 mg/L (control)",
 labs_stage <- c(cleavage = "Cleavage", prawnchip = "Prawn chip", earlygastrula = "Early gastrula")
 
 pca_plot <- ggplot(pca_flip, aes(PC1, PC2, color = stage, shape = leachate, fill = leachate, label = name)) +
-  geom_point(size = 1.2, stroke = 1, alpha = 0.7) +
+  geom_point(alpha = 0.7) +
   xlab(paste0("PC1: ", pc1_var, "% variance")) +
   ylab(paste0("PC2: ", pc2_var, "% variance")) + 
   coord_fixed() +
@@ -195,7 +258,7 @@ pca_plot <- ggplot(pca_flip, aes(PC1, PC2, color = stage, shape = leachate, fill
     #guide = "none" # prevents duplicate legend
   )+
 
-  stat_ellipse(aes(group = stage, color = stage), linewidth = 0.4, show.legend = FALSE) + 
+  stat_ellipse(aes(group = stage, color = stage), show.legend = FALSE) + 
   labs(
     title = "Variation of gene expression patterns among samples",
     subtitle = "PCA of 500 most variable genes • Each point is a sample"
@@ -203,7 +266,37 @@ pca_plot <- ggplot(pca_flip, aes(PC1, PC2, color = stage, shape = leachate, fill
   theme_sleek_axe() +
   theme(panel.border = element_blank())
 
+geom_defaults()
 pca_plot
+```
+
+```{r}
+ggsave(
+  "../../figs/pca_gene.png",
+  plot=pca_plot,
+  width=7,
+  height=3,
+  units="in",
+  dpi=600
+)
+```
+
+
+```{r pca-pptx, fig.width=16, fig.height=9}
+geom_pptx()
+pca_pptx <- pca_plot + theme_pptx()
+pca_pptx
+```
+
+```{r}
+ggsave(
+  "../../figs/pca_pptx.png",
+  plot=pca_pptx,
+  width=16,
+  height=9,
+  units = "in",
+  dpi=600
+)
 ```
 
 
@@ -311,27 +404,57 @@ heatmap_wrapped <- heatmap_wrapped +
   ) +
   theme(
     plot.title = element_text(
-      size = 10,
-      colour = "grey50",
+      size = 12,
+      colour = "grey30",
       hjust = 0.5
     ),
     plot.subtitle = element_text(
-      size = 9,
-      colour = "grey60",
+      size = 10,
+      colour = "grey30",
       hjust = 0.5
     )
   )
+
+heatmap_wrapped
 ```
+```{r}
+ggsave(
+  "../../figs/heatmap_gene.png",
+  plot=heatmap_wrapped,
+  width=6,
+  height=8,
+  dpi=600
+)
+```
+
+```{r, fig.width=16, fig.height=9}
+geom_pptx()
+heatmap_pptx <- heatmap_wrapped + theme_pptx() 
+heatmap_pptx
+```
+
+```{r}
+ggsave(
+  "../../figs/heatmap_pptx.png",
+  plot=heatmap_pptx,
+  width=16,
+  height=9,
+  units    = "in",
+  dpi=600
+)
+```
+
 
 Join plots and add text annotations
 
 ```{r, fig.height= 11, fig.width= 8}
+geom_defaults()
 fig_pca_heat <- (
   (wrap_elements(pca_plot) / heatmap_wrapped) +
     plot_layout(heights = c(0.8, 1.5))+
-  plot_annotation(tag_levels = "a") &
+  plot_annotation(tag_levels = "A") &
   theme(plot.tag = element_text(size = 10, 
-                                colour = "grey50")
+                                colour = "grey30")
         )
   )  
 
@@ -339,23 +462,12 @@ fig_pca_heat <- (
 fig_pca_heat
 ```
 
-> caption = paste(
-        "A. Principal Component Analysis (PCA) of VST-normalized gene expression across all samples.",
-        "PC1 explains 53.9% of the total variance and primarily separates samples by embryonic stage,",
-        "while PC2 explains 18.5% of the variance, accounting for 72.4% of total sample variance.",
-        "Each point represents an individual sample, positioned according to its overall expression profile.",
-        "B. Heatmap of z-scored variance-stabilized gene count matrix. Values were transformed using variance-stabilizing",
-        "transformation (VST) and then standardized on a per-gene basis (z-score transformation). For each gene, the mean",
-        "expression across samples was subtracted, and the standard deviation was used to scale its expression profile.",
-        "A value of 0 indicates no change in expression for that gene across all samples, positive values indicate",
-        "above-average expression, and negative values indicate below-average expression. This allows visual comparison",
-        "of expression patterns across samples (columns), not absolute expression levels between genes (rows).",
-        sep = " ")
+> A. Variance-stabilized gene expression profiles across all samples visualized using principal component analysis (PCA). PC1 explained 53.9% of the total variance and primarily separated samples by embryonic stage, while PC2 explained 18.5% of the variance, together accounting for 72.4% of total sample variation. Each point represents an individual sample positioned according to its overall gene expression profile. B. Relative gene expression patterns across samples based on variance-stabilized and z-score standardized gene counts. For each gene, mean expression across samples was centered to zero and scaled by the standard deviation, allowing comparison of relative expression patterns among samples rather than absolute expression levels between genes. Positive values indicate above-average expression for a given gene, while negative values indicate below-average expression.
 
 ```{r}
 # Save figure
 ggsave(
-  filename = "../../output/05_explore/fig_pca_heatmap_fullgene.png",
+  filename = "../../figs/pca_heatmap.png",
   plot     = fig_pca_heat,
   width    = 8,
   height   = 11,

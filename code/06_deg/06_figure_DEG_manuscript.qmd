@@ -249,8 +249,8 @@ sig_summary %>% group_by(gene_id) %>% summarise(n = n(),
 
 
 
-## Custom ggplot theme
-```{r}
+## Custom ggplot themes
+```{r theme}
 theme_sleek_axe <- function() {
   theme_sleek() +
     theme(
@@ -263,28 +263,94 @@ theme_sleek_axe <- function() {
       axis.line.y  = element_line(color = "grey70"),
       
       plot.title = element_text(
-        size  = 10,
-        color = "grey40",
+        size  = 12,
+        color = "grey30",
+        hjust = 0.5,
+        margin = margin(b = 2)
+      ),
+      
+      strip.text = element_text(size = 10, color = "grey30"),
+      
+      plot.subtitle = element_text(
+        size   = 10,
+        color  = "grey30",
+        hjust  = 0.5,
+        margin = margin(t = 0)
+      ),
+      
+      axis.title = element_text(size = 10, color = "grey30"),
+      axis.text = element_text(size = 10, color = "grey30"),
+      legend.title = element_text(size = 10, color = "grey30"),
+      legend.text = element_text(size = 10, color = "grey30")
+    )
+}
+
+
+theme_pptx <- function() {
+  theme_sleek() +
+    theme(
+      panel.border = element_blank(),
+      axis.line.x  = element_line(color = "grey70"),
+      axis.line.y  = element_line(color = "grey70"),
+      
+      plot.title = element_text(
+        size  = 40,
+        color = "grey30",
         hjust = 0.5,
         margin = margin(b = 20)
       ),
       
-      strip.text = element_text(size = 8, color = "grey40"),
+      strip.text = element_text(size = 24, color = "grey30"),
       
       plot.subtitle = element_text(
-        size   = 8,
-        color  = "grey40",
+        size   = 24,
+        color  = "grey30",
         hjust  = 0.5,
         margin = margin(b = 40)
       ),
       
-      axis.title = element_text(size = 8, color = "grey40"),
-      axis.text = element_text(size = 7, color = "grey40"),
-      legend.title = element_text(size = 8, color = "grey40"),
-      legend.text = element_text(size = 7, color = "grey40")
+      axis.title = element_text(size = 24, color = "grey30"),
+      axis.text = element_text(size = 24, color = "grey30"),
+      legend.title = element_text(size = 24, color = "grey30"),
+      legend.text = element_text(size = 24, color = "grey30")
     )
 }
 
+```
+
+## Geoms
+```{r geoms}
+geom_defaults <- function() {
+  update_geom_defaults("point",      list(size = 1.5, stroke = 0.5))
+  update_geom_defaults("line",       list(linewidth = 0.5))
+  update_geom_defaults("boxplot",    list(linewidth = 0.5))
+  update_geom_defaults("violin",     list(linewidth = 0.5))
+  update_geom_defaults("vline",      list(linewidth = 0.5))
+  update_geom_defaults("hline",      list(linewidth = 0.5))
+  update_geom_defaults("abline",     list(linewidth = 0.5))
+  update_geom_defaults("errorbar",   list(linewidth = 0.5))
+  update_geom_defaults("pointrange", list(linewidth = 0.5))
+  update_geom_defaults("crossbar",   list(linewidth = 0.5))
+  update_geom_defaults("linerange",  list(linewidth = 0.5))
+  update_geom_defaults("path", list(linewidth = 0.5))
+  update_geom_defaults("text", list(size = 3))
+}
+
+geom_pptx <- function() {
+  update_geom_defaults("point",   list(size = 5, stroke = 1.2))
+  update_geom_defaults("line",    list(linewidth = 1.5))
+  update_geom_defaults("boxplot", list(linewidth = 1.2))
+  update_geom_defaults("violin",  list(linewidth = 1.2))
+  update_geom_defaults("vline", list(linewidth = 1.5))
+  update_geom_defaults("hline", list(linewidth = 1.5))
+  update_geom_defaults("abline", list(linewidth = 1.5))
+  update_geom_defaults("errorbar", list(linewidth = 1.5))
+  update_geom_defaults("pointrange", list(linewidth = 1.5))
+  update_geom_defaults("crossbar", list(linewidth = 1.5))
+  update_geom_defaults("linerange", list(linewidth = 1.5))
+  update_geom_defaults("path", list(linewidth = 1.5))
+  update_geom_defaults("text", list(size = 7))
+}
 
 ```
 
@@ -363,7 +429,8 @@ levels(gene_cluster_data$cluster)
 ```{r, warning=FALSE, fig.height=4, fig.width = 8}
 
 # leachate as x plot
-pl <- ggplot(gene_cluster_data, aes(x = leachate, y = zscore, color = stage)) +
+pl <- ggplot(gene_cluster_data, aes(x = leachate, y = zscore, 
+                                    color = stage, fill=stage)) +
   # trends, first layer
   geom_smooth(
     aes(group = stage, fill = stage),
@@ -371,7 +438,24 @@ pl <- ggplot(gene_cluster_data, aes(x = leachate, y = zscore, color = stage)) +
     alpha = 0.3,
     show.legend = FALSE
   ) +
-  geom_boxplot(aes(fill = stage), alpha = 0.6, outlier.shape = NA) +
+   
+
+  #geom_violin(alpha = 0.5, 
+  #            width = 1,
+  #            position=position_dodge(width = 0.7),
+  #            show.legend=FALSE) +
+  
+  #geom_boxplot(color="black", 
+  #             width = 0.8, 
+  #             position=position_dodge(width = 0.7),
+  #             outlier.shape = NA, 
+  #             show.legend=FALSE) +
+  
+  geom_boxplot(aes(fill = stage), 
+               position=position_dodge(width = 0.7),
+               alpha = 0.6, 
+               outlier.shape = NA) +
+  
   geom_point(
     position = position_jitterdodge(
       jitter.width = 0.12,
@@ -381,7 +465,7 @@ pl <- ggplot(gene_cluster_data, aes(x = leachate, y = zscore, color = stage)) +
     alpha = 0.8,
     size  = 1.2
   ) +
-  facet_wrap( ~ cluster, nrow = 1) +
+  facet_wrap( ~ cluster, nrow = 1, labeller = labeller(cluster = facet_labs)) +
   labs(x = "PVC Leachate", y = "Z-score of gene abundance", color = "stage") +
   theme_sleek_axe() +
   scale_fill_manual(values = stage.3.colors) +
@@ -405,8 +489,8 @@ pl <- ggplot(gene_cluster_data, aes(x = leachate, y = zscore, color = stage)) +
     panel.grid.minor.x = element_blank(),
     #axis.line.x  = element_blank(),
     axis.line.y  = element_blank(),
-    strip.text = element_blank(),
-    strip.text.x.top = element_blank(),
+    #strip.text = element_blank(),
+    #strip.text.x.top = element_blank(),
     #strip.background = element_blank(),
     axis.text.x = element_text(
       angle = 45,
@@ -422,7 +506,7 @@ pl <- ggplot(gene_cluster_data, aes(x = leachate, y = zscore, color = stage)) +
         levels(gene_cluster_data$cluster),
         levels = levels(gene_cluster_data$cluster)
       ),
-      label = c("d", "e", "f")
+      label = c("D", "E", "F")
     ),
     aes(x = -Inf, y = Inf, label = label),
     hjust = -0.1,
@@ -432,8 +516,45 @@ pl <- ggplot(gene_cluster_data, aes(x = leachate, y = zscore, color = stage)) +
     fontface = "bold"
   )
 
+geom_defaults()
 pl
 ```
+```{r}
+ggsave(
+  "../../figs/cluster_leachate.png",
+  plot=pl,
+  width=8, 
+  height=4,
+  units="in",
+  dpi=600
+)
+```
+
+```{r, fig.width=16, fig.height=9}
+geom_pptx()
+pl_pptx <- pl + 
+  labs(
+    title = "Differential expression is driven by stage specific patterns",
+    subtitle = "Z-scores across 128 DEGs clustered by expression pattern",
+    x = "Hours post-fertilization",
+    y = "Z-score of gene abundance",
+    color = "leachate",
+    fill  = "leachate"
+  ) +
+  theme_pptx()
+pl_pptx
+```
+```{r}
+ggsave(
+  "../../figs/cluster_leachate_pptx.png",
+  width=16, 
+  height=9,
+  units="in",
+  dpi=600,
+  plot=pl_pptx
+)
+```
+
 
 ## ps:  Stage across x axis
 
@@ -492,6 +613,7 @@ ps <- ggplot(
     panel.grid.minor.y = element_blank(),
     panel.grid.major.x = element_blank(),
     panel.grid.minor.x = element_blank(),
+    strip.background=element_blank(),
     #axis.line.x  = element_blank(),
     axis.line.y  = element_blank()
   )+ geom_text(
@@ -500,32 +622,75 @@ ps <- ggplot(
         levels(gene_cluster_data$cluster),
         levels = levels(gene_cluster_data$cluster)
       ),
-      label = c("a", "b", "c")
+      label = c("A", "B", "C")
     ),
     aes(x = - Inf, y = Inf, label = label),
-    hjust = -0.1, vjust = 0.75,
+    hjust = -0.1, vjust = 1.1,
     inherit.aes = FALSE,
     color = "grey30", 
     fontface = "bold"
   )
 
+geom_defaults()
 ps
 
 ```
+```{r}
+ggsave(
+  "../../figs/cluster_stage.png",
+  width=8, 
+  height=4, 
+  units="in",
+  dpi=600,
+  plot=ps
+)
+```
+
+```{r, fig.width=16, fig.height=9}
+geom_pptx()
+ps_pptx <- ps + theme_pptx() + theme(strip.background=element_blank())
+ps_pptx
+```
+
+```{r}
+ggsave(
+  "../../figs/cluster_stage_pptx.png",
+  width=16, 
+  height=9,
+  units="in",
+  dpi=600,
+  plot=ps_pptx
+)
+```
+
 I want to put arrows indicating the boxes that diverge and I want embryo logos on the x axis instead of text. I will add these elements after patching this plot to the log2FC plot. 
 
 ## pc: Combine stage and leachate plots
 ```{r, fig.height=6, fig.width = 8}
 # combine with patchwork
+geom_defaults()
 pc <- ps / pl
 
 pc
 ```
 
 ```{r}
-ggsave("../../output/06_deg/figs/cluster_zscores.png", width = 8, height = 6)
+ggsave("../../figs/cluster_zscores.png", 
+       width = 8,
+       height = 6,
+       units="in",
+       dpi=600,
+       plot=pc)
 ```
 
+```{r}
+ggsave("../../figs/cluster_zscores_pptx.png", 
+       width = 8,
+       height = 4.5,
+       units="in",
+       dpi=600,
+       plot=pc)
+```
 
 
 # Fold Change plot
@@ -705,7 +870,7 @@ str(fc_df)
 ```
 
 Make the plot that combines main and interaction effects 
-```{r}
+```{r, fig.width=6, fig.height=5}
 combo_plot <- ggplot() +
   # ===== MAIN EFFECT: segments + points, 1st colour scale =====
   geom_segment(
@@ -770,14 +935,15 @@ combo_plot <- ggplot() +
   ) +
 
   # ===== facets + theme =====
-  facet_wrap(~ plot_group, nrow = 3) +
+  facet_wrap(~ plot_group, nrow = 3 ) +
   geom_vline(xintercept = 0, linetype = "dashed", color = "grey") +
-  theme_classic() +
+  theme_sleek_axe() +
   theme(
     legend.text      = element_text(size = 8, color = "grey60"),
     legend.key.width = grid::unit(1.25, "cm"),  # increase until labels stop colliding
     legend.title     = element_text(size = 10, color = "grey30"),
     legend.position  = "top",
+    panel.border     = element_blank(),
     axis.text.y      = element_blank(),
     axis.title.y     = element_blank(),
     axis.line.y      = element_blank(),
@@ -792,14 +958,51 @@ combo_plot <- ggplot() +
   ggtitle("Log2 Fold Change of significant DEGs")+
   labs(x = "Log2 Fold Change")
 
+geom_defaults()
 combo_plot
 
-ggsave("../../output/06_deg/figs/log2FC.png", width = 11, height = 8)
+ggsave("../../figs/combo_log2FC.png",
+       width = 6, 
+       height = 5,
+       units="in",
+       dpi=600,
+       plot=combo_plot)
 ```
 I like this plot! This will be what I tweak for the final manuscript. I'd like to add symbols for the embryonic stages and leachate dose in place of the facet titles. If possible, I'd like to link the genes to enriched function on the y axis... but gene semantic similarity doesn't necessarily map to log2Fold change or significance... 
 
 Should I include the number of up and down regulated DEGs in each group?
 How many genes are shared among these groups with log2FC values?
+
+
+```{r, fig.width=16, fig.height=9}
+geom_pptx()
+combo_plot_pptx <- combo_plot + theme_pptx() +
+  theme(
+    legend.text      = element_text(size = 20, color = "grey30"),
+    legend.key.width = grid::unit(3, "cm"),  # increase until labels stop colliding
+    legend.position  = "top",
+    panel.border     = element_blank(),
+    axis.text.y      = element_blank(),
+    axis.title.y     = element_blank(),
+    axis.line.y      = element_blank(),
+    axis.line.x      = element_blank(),
+    axis.ticks.y     = element_blank(),
+    axis.ticks.x     = element_blank(),
+    axis.text.x      = element_text(size = 20, color = "grey30"),
+    strip.background = element_blank(),
+    axis.title.x     = element_text(size = 24, color = "grey30"),
+    plot.title       = element_text(size = 24, color = "grey20", hjust = 0.5)
+  )
+
+combo_plot_pptx
+
+ggsave("../../figs/combo_log2FC_pptx.png",
+       width = 16, 
+       height = 9,
+       units="in",
+       dpi=600,
+       plot=combo_plot_pptx)
+```
 
 ```{r}
 dplyr::n_distinct(fc_df$gene_id, na.rm = TRUE)
@@ -1030,6 +1233,7 @@ Z-scores of VST-normalized gene expression across 128 differentially expressed g
 
 ## Highlight the patterns
 ```{r}
+geom_defaults()
 fig <- (ps/pl/pfc)
 
 fig

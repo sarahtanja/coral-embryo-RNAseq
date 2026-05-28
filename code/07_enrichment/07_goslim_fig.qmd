@@ -53,7 +53,151 @@ of them are associated with each GOslim term.
 
 ```{r load-libraries}
 library(tidyverse)
+library(ggsidekick)
+library(PNWColors)
 library(kableExtra)
+```
+
+# Setup
+
+## Custom ggplot themes
+
+```{r theme}
+theme_sleek_axe <- function() {
+  theme_sleek() +
+    theme(
+      panel.border = element_rect(
+        color = "grey70",
+        fill = NA,
+        linewidth = 0.5
+      ),
+      axis.line.x  = element_line(color = "grey70"),
+      axis.line.y  = element_line(color = "grey70"),
+      
+      plot.title = element_text(
+        size  = 12,
+        color = "grey30",
+        hjust = 0.5,
+        margin = margin(b = 2)
+      ),
+      
+      strip.text = element_text(size = 10, color = "grey30"),
+      
+      plot.subtitle = element_text(
+        size   = 10,
+        color  = "grey30",
+        hjust  = 0.5,
+        margin = margin(t = 0)
+      ),
+      
+      axis.title = element_text(size = 10, color = "grey30"),
+      axis.text = element_text(size = 10, color = "grey30"),
+      legend.title = element_text(size = 10, color = "grey30"),
+      legend.text = element_text(size = 10, color = "grey30")
+    )
+}
+
+
+theme_pptx <- function() {
+  theme_sleek() +
+    theme(
+      panel.border = element_blank(),
+      axis.line.x  = element_line(color = "grey70"),
+      axis.line.y  = element_line(color = "grey70"),
+      
+      plot.title = element_text(
+        size  = 40,
+        color = "grey30",
+        hjust = 0.5,
+        margin = margin(b = 20)
+      ),
+      
+      strip.text = element_text(size = 24, color = "grey30"),
+      
+      plot.subtitle = element_text(
+        size   = 24,
+        color  = "grey30",
+        hjust  = 0.5,
+        margin = margin(b = 40)
+      ),
+      
+      axis.title = element_text(size = 24, color = "grey30"),
+      axis.text = element_text(size = 24, color = "grey30"),
+      legend.title = element_text(size = 24, color = "grey30"),
+      legend.text = element_text(size = 24, color = "grey30")
+    )
+}
+
+```
+
+## Geoms
+
+```{r geoms}
+geom_defaults <- function() {
+  update_geom_defaults("point",      list(size = 1.5, stroke = 0.5))
+  update_geom_defaults("line",       list(linewidth = 0.5))
+  update_geom_defaults("boxplot",    list(linewidth = 0.5))
+  update_geom_defaults("violin",     list(linewidth = 0.5))
+  update_geom_defaults("vline",      list(linewidth = 0.5))
+  update_geom_defaults("hline",      list(linewidth = 0.5))
+  update_geom_defaults("abline",     list(linewidth = 0.5))
+  update_geom_defaults("errorbar",   list(linewidth = 0.5))
+  update_geom_defaults("pointrange", list(linewidth = 0.5))
+  update_geom_defaults("crossbar",   list(linewidth = 0.5))
+  update_geom_defaults("linerange",  list(linewidth = 0.5))
+  update_geom_defaults("path", list(linewidth = 0.5))
+  update_geom_defaults("segment", list(linewidth = 0.5))
+  update_geom_defaults("text", list(size = 3))
+}
+
+geom_pptx <- function() {
+  update_geom_defaults("point",   list(size = 5, stroke = 1.2))
+  update_geom_defaults("line",    list(linewidth = 1.5))
+  update_geom_defaults("boxplot", list(linewidth = 1.2))
+  update_geom_defaults("violin",  list(linewidth = 1.2))
+  update_geom_defaults("vline", list(linewidth = 1.5))
+  update_geom_defaults("hline", list(linewidth = 1.5))
+  update_geom_defaults("abline", list(linewidth = 1.5))
+  update_geom_defaults("errorbar", list(linewidth = 1.5))
+  update_geom_defaults("pointrange", list(linewidth = 1.5))
+  update_geom_defaults("crossbar", list(linewidth = 1.5))
+  update_geom_defaults("linerange", list(linewidth = 1.5))
+  update_geom_defaults("path", list(linewidth = 1.5))
+  update_geom_defaults("segment", list(linewidth = 1.5))
+  update_geom_defaults("text", list(size = 7))
+}
+
+```
+
+## Colorschemes
+
+```{r colors}
+leachate.colors <- c(control = "#AEF1FF", 
+                     low     = "#BBC7FF",
+                     mid     = "#7D8BFF", 
+                     high    = "#592F7D")
+
+stage.5.colors <- c(egg           = "#FFE362",
+                    cleavage      = "#EBA600", 
+                    morula        = "#E6AA83",
+                    prawnchip     = "#D9685B", 
+                    earlygastrula = "#A2223C")
+
+stage.3.colors <- c(cleavage      = "#EBA600", 
+                    prawnchip     = "#D9685B", 
+                    earlygastrula = "#A2223C")
+
+status.colors <- c(typical   = "#75C165", 
+                   uncertain = "#E3FAA5", 
+                   malformed = "#8B0069")
+
+night.colors <- c(July_6th = "#E3FAA5", 
+                  July_7th = "#578B21", 
+                  July_8th = "#1E2440")
+
+night.colors.alt <- c(July_6th = "#21918C", 
+                      July_7th = "#578B21", 
+                      July_8th = "#1E2440")
 ```
 
 # Load inputs
@@ -400,8 +544,6 @@ universe <- goslim_summary %>%
          goterm = Term) %>% 
   dplyr::select(goterm, universe_n_genes)
 
-plot_df <- 
-
 ```
 
 ```{r}
@@ -425,14 +567,10 @@ response_levels <- c(
   "Metabolism and energetic shifts"
 )
 
-
-
 top_plot <- top_terms %>%
   filter(Term %in% plot_terms) %>% 
   mutate(goterm = factor(Term, levels=plot_terms, ordered=TRUE)) %>%
-  left_join(., universe)
-
-
+  left_join(., universe) %>% 
   complete(goterm, pattern, fill = list(n_genes = 0, 
                                              n_goids = 0, 
                                              Percent = 0, 
@@ -440,7 +578,7 @@ top_plot <- top_terms %>%
    group_by(goterm) %>% 
   fill(response, .direction = "downup") %>% 
   ungroup() %>% 
-  dplyr::select(goterm, pattern, response, n_genes, Percent) %>% 
+  dplyr::select(goterm, pattern, response, n_genes, Percent)
 
   
 
@@ -461,17 +599,13 @@ str(top_plot)
 inspo from R graph gallery
 [here](https://r-graph-gallery.com/spider-or-radar-chart.html)
 
-```{r}
-library(PNWColors)
-```
-
-```{r}
+```{r palette}
 bay <- pnw_palette(name="Bay", n=5, type="discrete") #early embryo cell stuff
 pnw_palette(name="Spring", n=2, type="discrete") #signaling
 pnw_palette(name="Lake", n=2, type="discrete") # gene reg & metabolism
 ```
 
-```{r}
+```{r radar_palette}
 radar_pal <- c(
   "anatomical structure development" = "firebrick4",
   "cell differentiation" = "firebrick",
@@ -486,7 +620,7 @@ radar_pal <- c(
 
 ## Counts
 
-```{r, fig.height = 4, fig.width = 12}
+```{r plot-radar-count, fig.height = 4, fig.width = 12}
 plt_count <- ggplot(top_plot) +
   # Make custom panel grid
   geom_hline(
@@ -538,7 +672,7 @@ plt_count <- ggplot(top_plot) +
     panel.grid.minor = element_blank(),
     axis.text.y = element_blank(),
     axis.title.y = element_blank(),
-    axis.text.x = element_text(size = 10),
+    axis.text.x = element_text(size = 12, color="grey30"),
     axis.ticks = element_blank(),
     legend.position = "none", 
     axis.title.x = element_blank(), 
@@ -553,7 +687,7 @@ plt_count <- ggplot(top_plot) +
 plt_count  
 ```
 
-```{r, fig.width = 12, fig.height = 4}
+```{r plot-count-annotated-axis, fig.width = 12, fig.height = 4}
 
 plt_count_anno <- plt_count +
   # Annotate custom scale inside plot
@@ -562,24 +696,24 @@ plt_count_anno <- plt_count +
     y = 6, 
     label = "5", 
     geom = "text", 
-    color = "gray40", 
-    size = 3
+    color = "gray30", 
+    size = 4
   ) +
   annotate(
     x = 8.5, 
     y = 11, 
     label = "10", 
     geom = "text", 
-    color = "gray40", 
-    size = 3
+    color = "gray30", 
+    size = 4
   ) +
   annotate(
     x = 8.5, 
     y = 16, 
     label = "15", 
     geom = "text", 
-    color = "gray40", 
-    size = 3
+    color = "gray30", 
+    size = 4
   )
 
 plt_count_anno
@@ -593,6 +727,220 @@ plt_count_anno
 ggsave("../../figs/radar_counts.png", plt_count_anno, width=12, height=4, units="in", dpi=900)
 ```
 
+#### radar for pptx
+
+```{r plot-count-pptx, fig.width=16, fig.height=9}
+geom_pptx()
+radar_count_pptx <- plt_count_anno + 
+  theme(axis.text.x = element_text(size = 16, color="grey30"))
+radar_count_pptx
+ggsave(
+  "../../figs/radar_count_pptx.png",
+  width=16,
+  height=9,
+  dpi=600,
+  plot=radar_count_pptx
+)
+```
+
+### highlight per GoSlim
+
+```{r}
+
+geom_pptx()
+
+terms_to_highlight <- levels(factor(top_plot$goterm))
+
+radar_plots <- purrr::map(
+  terms_to_highlight,
+  \(term_i) {
+
+    top_plot_hi <- top_plot %>%
+      mutate(
+        hi_fill = if_else(goterm == term_i, as.character(goterm), "Other"),
+        hi_color = if_else(goterm == term_i, as.character(goterm), "Other")
+      )
+
+    ggplot(top_plot_hi) +
+      geom_hline(
+        aes(yintercept = y),
+        data = data.frame(y = c(0:4) * 5),
+        color = "lightgrey"
+      ) +
+      geom_col(
+        aes(x = goterm, y = n_genes, fill = hi_fill),
+        alpha = 0.7,
+        show.legend = FALSE
+      ) +
+      geom_segment(
+        aes(
+          x = goterm,
+          y = 0,
+          xend = goterm,
+          yend = 21,
+          color = hi_color
+        ),
+        linetype = "dashed",
+        show.legend = FALSE
+      ) +
+      facet_wrap(~pattern, ncol = 3) +
+      coord_polar(clip = "off") +
+      scale_y_continuous(
+        limits = c(-2, 25),
+        expand = c(0, 0)
+      ) +
+      scale_x_discrete(labels = \(x) stringr::str_wrap(x, 15)) +
+      scale_fill_manual(values = c(radar_pal, Other = "grey80")) +
+      scale_color_manual(values = c(radar_pal, Other = "grey80")) +
+      #labs(title = term_i) +
+  # Annotate custom scale inside plot
+      annotate(
+        x = 8.5, 
+        y = 6, 
+        label = "5", 
+        geom = "text", 
+        color = "gray30", 
+        size = 4
+      ) +
+      annotate(
+        x = 8.5, 
+        y = 11, 
+        label = "10", 
+        geom = "text", 
+        color = "gray30", 
+        size = 4
+      ) +
+      annotate(
+        x = 8.5, 
+        y = 16, 
+        label = "15", 
+        geom = "text", 
+        color = "gray30", 
+        size = 4
+      )+
+      theme(
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.x = element_text(size = 16, color = "grey30"),
+        axis.ticks = element_blank(),
+        legend.position = "none",
+        axis.title.x = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_blank(),
+        strip.text = element_blank(),
+        panel.spacing.x = unit(2, "cm"),
+        plot.margin = margin(0.2, 1, 0.2, 1, "cm")
+      )
+  }
+)
+```
+
+```{r radar-highlight fig.width=16, fig.height=9}
+radar_plots[[1]]
+radar_plots[[2]]
+radar_plots[[3]]
+radar_plots[[4]]
+radar_plots[[5]]
+radar_plots[[6]]
+radar_plots[[7]]
+radar_plots[[8]]
+
+```
+
+```{r radar-anatomical, fig.width=16, fig.height=9}
+radar_anatomical <- radar_plots[[1]]
+radar_anatomical
+ggsave(
+  "../../figs/radar_anatomical_pptx.png",
+  width=16,
+  height=9,
+  dpi=600,
+  plot=radar_anatomical
+)
+```
+
+```{r radar-celldiff, fig.width=16, fig.height=9}
+radar_celldiff <- radar_plots[[2]]
+radar_celldiff
+ggsave(
+  "../../figs/radar_celldiff_pptx.png",
+  width=16,
+  height=9,
+  dpi=600,
+  plot=radar_celldiff
+)
+```
+
+```{r radar-lipid, fig.width=16, fig.height=9}
+radar_lipid <- radar_plots[[3]]
+radar_lipid
+ggsave(
+  "../../figs/radar_lipid_pptx.png",
+  width=16,
+  height=9,
+  dpi=600,
+  plot=radar_lipid
+)
+```
+```{r radar-meiotic, fig.width=16, fig.height=9}
+radar_meiotic <- radar_plots[[4]]
+radar_meiotic
+ggsave(
+  "../../figs/radar_meiotic_pptx.png",
+  width=16,
+  height=9,
+  dpi=600,
+  plot=radar_meiotic
+)
+```
+
+
+```{r radar-mitotic, fig.width=16, fig.height=9}
+radar_mitotic <- radar_plots[[5]]
+radar_mitotic
+ggsave(
+  "../../figs/radar_mitotic_pptx.png",
+  width=16,
+  height=9,
+  dpi=600,
+  plot=radar_mitotic
+)
+```
+```{r radar-dnareg, fig.width=16, fig.height=9}
+radar_dnareg <- radar_plots[[6]]
+radar_dnareg
+ggsave(
+  "../../figs/radar_dnareg_pptx.png",
+  width=16,
+  height=9,
+  dpi=600,
+  plot=radar_dnareg
+)
+```
+```{r radar-signaling, fig.width=16, fig.height=9}
+radar_signaling <- radar_plots[[7]]
+radar_signaling
+ggsave(
+  "../../figs/radar_signaling_pptx.png",
+  width=16,
+  height=9,
+  dpi=600,
+  plot=radar_signaling
+)
+```
+```{r radar-vesicle, fig.width=16, fig.height=9}
+radar_vesicle <- radar_plots[[8]]
+radar_vesicle
+ggsave(
+  "../../figs/radar_vesicle_pptx.png",
+  width=16,
+  height=9,
+  dpi=600,
+  plot=radar_vesicle
+)
+```
 ## Enriched
 
 ```{r, fig.width=12, fig.height=4}
