@@ -6,6 +6,7 @@ format: html
 ```{r}
 library(tidyverse)
 library(ggbeeswarm)
+library(ggreveal)
 ```
 
 ```{r}
@@ -41,8 +42,8 @@ plot_sum <- plot_top %>%
   )
 ```
 ```{r}
-theme_mcap <- theme_sleek_axe <- function() {
-  theme_minimal() +
+theme_sleek_axe <- function() {
+  theme_sleek() +
     theme(
       panel.border = element_rect(
         color = "grey70",
@@ -54,56 +55,130 @@ theme_mcap <- theme_sleek_axe <- function() {
       
       plot.title = element_text(
         size  = 12,
-        color = "grey40",
+        color = "grey30",
         hjust = 0.5,
         margin = margin(b = 20)
       ),
       
-      strip.text = element_text(size = 10, color = "grey40"),
+      strip.text = element_text(size = 10, color = "grey30"),
       
       plot.subtitle = element_text(
         size   = 10,
-        color  = "grey40",
+        color  = "grey30",
         hjust  = 0.5,
         margin = margin(b = 40)
       ),
       
-      axis.title = element_text(size = 10, color = "grey40"),
-      axis.text = element_text(size = 10, color = "grey40"),
-      legend.title = element_text(size = 10, color = "grey40"),
-      legend.text = element_text(size = 10, color = "grey40")
+      axis.title = element_text(size = 10, color = "grey30"),
+      axis.text = element_text(size = 10, color = "grey30"),
+      legend.title = element_text(size = 10, color = "grey30"),
+      legend.text = element_text(size = 10, color = "grey30")
     )
 }
 
 
-leachate.colors <- c(control = "#AEF1FF", 
-                     low     = "#BBC7FF",
-                     mid     = "#7D8BFF", 
-                     high    = "#592F7D")
+theme_pptx <- function() {
+  theme_sleek() +
+    theme(
+      panel.border = element_blank(),
+      axis.line.x  = element_line(color = "grey70"),
+      axis.line.y  = element_line(color = "grey70"),
+      
+      plot.title = element_text(
+        size  = 40,
+        color = "grey30",
+        hjust = 0.5,
+        margin = margin(b = 20)
+      ),
+      
+      strip.text = element_text(size = 24, color = "grey30"),
+      
+      plot.subtitle = element_text(
+        size   = 24,
+        color  = "grey30",
+        hjust  = 0.5,
+        margin = margin(b = 40)
+      ),
+      
+      axis.title = element_text(size = 24, color = "grey30"),
+      axis.text = element_text(size = 24, color = "grey30"),
+      legend.title = element_text(size = 24, color = "grey30"),
+      legend.text = element_text(size = 24, color = "grey30")
+    )
+}
 
-stage.5.colors <- c(egg           = "#FFE362",
-                    cleavage      = "#EBA600", 
-                    morula        = "#E6AA83",
-                    prawnchip     = "#D9685B", 
-                    earlygastrula = "#A2223C")
+```
 
-stage.3.colors <- c(cleavage      = "#EBA600", 
-                    prawnchip     = "#D9685B", 
-                    earlygastrula = "#A2223C")
+## Geoms
+```{r}
+geom_defaults <- function() {
+  update_geom_defaults("point",      list(size = 1.5, stroke = 0.5))
+  update_geom_defaults("line",       list(linewidth = 0.5))
+  update_geom_defaults("boxplot",    list(linewidth = 0.5))
+  update_geom_defaults("violin",     list(linewidth = 0.5))
+  update_geom_defaults("vline",      list(linewidth = 0.5))
+  update_geom_defaults("hline",      list(linewidth = 0.5))
+  update_geom_defaults("abline",     list(linewidth = 0.5))
+  update_geom_defaults("errorbar",   list(linewidth = 0.5))
+  update_geom_defaults("pointrange", list(linewidth = 0.5))
+  update_geom_defaults("crossbar",   list(linewidth = 0.5))
+  update_geom_defaults("linerange",  list(linewidth = 0.5))
+  update_geom_defaults("path", list(linewidth = 0.5))
+  update_geom_defaults("segment", list(linewidth = 0.5))
+  update_geom_defaults("text", list(size = 3))
+}
+
+geom_pptx <- function() {
+  update_geom_defaults("point",   list(size = 5, stroke = 1.2))
+  update_geom_defaults("line",    list(linewidth = 1.5))
+  update_geom_defaults("boxplot", list(linewidth = 1.2))
+  update_geom_defaults("violin",  list(linewidth = 1.2))
+  update_geom_defaults("vline", list(linewidth = 1.5))
+  update_geom_defaults("hline", list(linewidth = 1.5))
+  update_geom_defaults("abline", list(linewidth = 1.5))
+  update_geom_defaults("errorbar", list(linewidth = 1.5))
+  update_geom_defaults("pointrange", list(linewidth = 1.5))
+  update_geom_defaults("crossbar", list(linewidth = 1.5))
+  update_geom_defaults("linerange", list(linewidth = 1.5))
+  update_geom_defaults("path", list(linewidth = 1.5))
+  update_geom_defaults("segment", list(linewidth = 1.5))
+  update_geom_defaults("text", list(size = 7))
+}
+
+```
+
+
+
+## Set colorschemes
+
+```{r}
+leachate.colors <- c(control = "#5ABDAC", 
+                low = "#BBC7FF",
+                mid = "#7D8BFF", 
+                high = "#592F7D")
+
+stage.5.colors <- c(
+  egg           = "#FFE066",
+  cleavage      = "#FFBA08",
+  morula        = "#F48C06",
+  prawnchip     = "#DC2F02",
+  earlygastrula = "#6A040F"
+  )
+
+stage.3.colors <- c(
+  cleavage      = "#FFBA08",
+  prawnchip     = "#DC2F02",
+  earlygastrula = "#6A040F"
+  )
+
+night.colors <- c(July_6th = "#21918C", 
+                  July_7th = "#578B21", 
+                  July_8th = "#1E2440")
 
 status.colors <- c(typical   = "#75C165", 
                    uncertain = "#E3FAA5", 
                    malformed = "#8B0069")
-
-night.colors <- c(July_6th = "#E3FAA5", 
-                  July_7th = "#578B21", 
-                  July_8th = "#1E2440")
-
-night.colors.alt <- c(July_6th = "#21918C", 
-                      July_7th = "#201158", 
-                      July_8th = "#1E2440")
 ```
-
 
 ```{r}
 ggplot(plot_sum, aes(x=leachate, y=mean_expr, fill=leachate)) + 
@@ -112,9 +187,12 @@ ggplot(plot_sum, aes(x=leachate, y=mean_expr, fill=leachate)) +
     y = "Log2 Normalized Gene Expression",
     x = ""
   ) +
-  geom_hline(yintercept=41.49945, linetype="dashed", color="grey40")+
   scale_fill_manual(values=leachate.colors) +
-  theme_mcap()
+  theme_sleek_axe()+
+  theme(
+    panel.grid.major=element_line(color="grey70"),
+    panel.grid.minor=element_line(color="grey70")
+  )
 ```
 
 ```{r}
@@ -125,29 +203,39 @@ ggplot(plot_sum, aes(x=leachate, y=mean_expr, fill=stage)) +
     x = ""
   ) +
   guides(fill = guide_legend(reverse = TRUE)) +
-  geom_hline(yintercept=41.49945, linetype="dashed", color="grey20") +
+  #geom_hline(yintercept=41.49945, linetype="dashed", color="grey20") +
   scale_fill_manual(values=stage.3.colors) +
-  theme_mcap()
+  theme_sleek_axe()+
+  theme(
+    panel.grid.major=element_line(color="grey70"),
+    panel.grid.minor=element_line(color="grey70")
+  )
 ```
-```{r}
+```{r fig.width=16, fig.height=9}
+geom_pptx()
 p_stage <- ggplot(
   plot_sum,
   aes(
     x = leachate,
     y = mean_expr,
-    fill = stage,
+    #fill = stage,
+    color=stage,
     group = stage
   )
 ) + 
-  geom_point(shape = 21, size = 5, color = "grey20") +
-  geom_hline(yintercept = 41.49945, linetype = "dashed", color = "grey20") +
-  scale_fill_manual(values = stage.3.colors) +
-  guides(fill = guide_legend(reverse = TRUE)) +
+  geom_point(shape = 16, size = 10) +
+  #scale_fill_manual(values = stage.3.colors) +
+  scale_color_manual(values = stage.3.colors) +
+  guides(color=guide_legend(reverse=TRUE))+
   labs(
     y = "Log2 Normalized Gene Expression",
     x = ""
   ) +
-  theme_mcap()
+  theme_pptx()+
+  theme(
+    panel.grid.major=element_line(color="grey70"),
+    panel.grid.minor=element_line(color="grey70")
+  )
 
 stage_reveal <- reveal_groups(
   p_stage,
@@ -161,10 +249,10 @@ for(i in seq_along(stage_reveal)) {
 
   ggsave(
     filename = paste0("../../figs/reveal_", i, ".png"),
-    plot = revealed[[i]],
-    width = 8,
-    height = 4.5,
-    dpi = 900
+    plot = stage_reveal[[i]],
+    width = 16,
+    height = 9,
+    dpi = 600
   )
 
 }

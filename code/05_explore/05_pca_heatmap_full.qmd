@@ -167,32 +167,32 @@ geom_pptx <- function() {
 ## Set colorschemes
 
 ```{r}
-leachate.colors <- c(control = "#AEF1FF", 
-                     low     = "#BBC7FF",
-                     mid     = "#7D8BFF", 
-                     high    = "#592F7D")
+leachate.colors <- c(control = "#5ABDAC", 
+                low = "#BBC7FF",
+                mid = "#7D8BFF", 
+                high = "#592F7D")
 
-stage.5.colors <- c(egg           = "#FFE362",
-                    cleavage      = "#EBA600", 
-                    morula        = "#E6AA83",
-                    prawnchip     = "#D9685B", 
-                    earlygastrula = "#A2223C")
+stage.5.colors <- c(
+  egg           = "#FFE066",
+  cleavage      = "#FFBA08",
+  morula        = "#F48C06",
+  prawnchip     = "#DC2F02",
+  earlygastrula = "#6A040F"
+  )
 
-stage.3.colors <- c(cleavage      = "#EBA600", 
-                    prawnchip     = "#D9685B", 
-                    earlygastrula = "#A2223C")
+stage.3.colors <- c(
+  cleavage      = "#FFBA08",
+  prawnchip     = "#DC2F02",
+  earlygastrula = "#6A040F"
+  )
+
+night.colors <- c(July_6th = "#21918C", 
+                  July_7th = "#578B21", 
+                  July_8th = "#1E2440")
 
 status.colors <- c(typical   = "#75C165", 
                    uncertain = "#E3FAA5", 
                    malformed = "#8B0069")
-
-night.colors <- c(July_6th = "#E3FAA5", 
-                  July_7th = "#578B21", 
-                  July_8th = "#1E2440")
-
-night.colors.alt <- c(July_6th = "#21918C", 
-                      July_7th = "#578B21", 
-                      July_8th = "#1E2440")
 ```
 
 
@@ -201,7 +201,7 @@ night.colors.alt <- c(July_6th = "#21918C",
 ann_colors = list(
   leachate = leachate.colors,
   stage = stage.3.colors,
-  night = night.colors.alt
+  night = night.colors
 )
 ```
 
